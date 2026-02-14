@@ -1,0 +1,149 @@
+import React, { useState, useEffect } from 'react';
+import { Search, Filter, Mail, Phone, Calendar, MessageSquare } from 'lucide-react';
+
+const LeadsPage = () => {
+    const [leads, setLeads] = useState([]);
+    const [filter, setFilter] = useState('All');
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const fetchLeads = async () => {
+        try {
+            const res = await fetch(`http://localhost:8000/leads?status=${filter}`);
+            const data = await res.json();
+            setLeads(data);
+        } catch (e) {
+            console.error("Failed to fetch leads");
+        }
+    };
+
+    useEffect(() => {
+        fetchLeads();
+    }, [filter]);
+
+    const handleStatusChange = async (leadId, newStatus) => {
+        try {
+            await fetch(`http://localhost:8000/leads/${leadId}/status`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus })
+            });
+            fetchLeads(); // Refresh list
+        } catch (e) {
+            console.error("Failed to update status");
+        }
+    };
+
+    const filteredLeads = leads.filter(lead =>
+        lead.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    const getStatusClass = (status) => {
+        switch (status) {
+            case 'New': return 'status-new';
+            case 'Follow-Up': return 'status-followup';
+            case 'Contract': return 'status-contract';
+            case 'Project Given': return 'status-project';
+            case 'Finished': return 'status-finished';
+            default: return '';
+        }
+    };
+
+    return (
+        <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold' }}>Lead Management</h1>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <div style={{ position: 'relative' }}>
+                        <Search size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                        <input
+                            type="text"
+                            placeholder="Search leads..."
+                            style={{ padding: '0.6rem 1rem 0.6rem 2.5rem', borderRadius: '8px', border: '1px solid var(--border)', width: '250px' }}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <select
+                        className="btn btn-secondary"
+                        style={{ background: 'white', border: '1px solid var(--border)', color: 'var(--text)' }}
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                    >
+                        <option value="All">All Status</option>
+                        <option value="New">New</option>
+                        <option value="Follow-Up">Follow-Up</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Project Given">Project Given</option>
+                        <option value="Finished">Finished</option>
+                    </select>
+                </div>
+            </div>
+
+            <div className="premium-card" style={{ padding: '0', overflow: 'hidden' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                    <thead style={{ background: '#f8fafc', borderBottom: '1px solid var(--border)' }}>
+                        <tr>
+                            <th style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.875rem' }}>Customer Name</th>
+                            <th style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.875rem' }}>Contact Info</th>
+                            <th style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.875rem' }}>Service</th>
+                            <th style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.875rem' }}>Status</th>
+                            <th style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.875rem' }}>Date & Time</th>
+                            <th style={{ padding: '1rem 1.5rem', color: 'var(--text-muted)', fontWeight: '600', fontSize: '0.875rem' }}>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredLeads.map(lead => (
+                            <tr key={lead.lead_id} style={{ borderBottom: '1px solid var(--border)' }}>
+                                <td style={{ padding: '1.25rem 1.5rem' }}>
+                                    <div style={{ fontWeight: '600' }}>{lead.customer_name}</div>
+                                </td>
+                                <td style={{ padding: '1.25rem 1.5rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                                        <Mail size={14} /> {lead.email}
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: '4px' }}>
+                                        <Phone size={14} /> {lead.phone}
+                                    </div>
+                                </td>
+                                <td style={{ padding: '1.25rem 1.5rem' }}>
+                                    <span style={{ fontSize: '0.875rem' }}>{lead.service || 'N/A'}</span>
+                                </td>
+                                <td style={{ padding: '1.25rem 1.5rem' }}>
+                                    <span className={`status-badge ${getStatusClass(lead.status)}`}>
+                                        {lead.status}
+                                    </span>
+                                </td>
+                                <td style={{ padding: '1.25rem 1.5rem' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+                                        <Calendar size={14} /> {new Date(lead.created_at).toLocaleDateString()}
+                                    </div>
+                                </td>
+                                <td style={{ padding: '1.25rem 1.5rem' }}>
+                                    <select
+                                        style={{ padding: '0.4rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.875rem' }}
+                                        value={lead.status}
+                                        onChange={(e) => handleStatusChange(lead.lead_id, e.target.value)}
+                                    >
+                                        <option value="New">New</option>
+                                        <option value="Follow-Up">Follow-Up</option>
+                                        <option value="Contract">Contract</option>
+                                        <option value="Project Given">Project Given</option>
+                                        <option value="Finished">Finished</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+                {filteredLeads.length === 0 && (
+                    <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                        No leads found for the selected criteria.
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default LeadsPage;
