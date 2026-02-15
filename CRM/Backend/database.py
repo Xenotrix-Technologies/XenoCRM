@@ -70,3 +70,19 @@ def execute_query(query, params=(), fetch=False):
         if conn.is_connected():
             cursor.close()
             conn.close()
+
+def log_email(lead_id, sender, recipient, subject, body, direction):
+    query = """
+    INSERT INTO emails (lead_id, sender, recipient, subject, body, direction)
+    VALUES (%s, %s, %s, %s, %s, %s)
+    """
+    return execute_query(query, (lead_id, sender, recipient, subject, body, direction))
+
+def get_lead_emails(lead_id):
+    query = "SELECT * FROM emails WHERE lead_id = %s ORDER BY sent_at ASC"
+    return execute_query(query, (lead_id,), fetch=True)
+
+def get_lead_by_id(lead_id):
+    query = "SELECT * FROM leads WHERE lead_id = %s"
+    results = execute_query(query, (lead_id,), fetch=True)
+    return results[0] if results else None

@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Mail, Phone, Calendar, MessageSquare } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Search, Filter, Mail, Phone, Calendar, MessageSquare, Plus } from 'lucide-react';
+import { apiFetch } from '../api';
 
 const LeadsPage = () => {
     const [leads, setLeads] = useState([]);
     const [filter, setFilter] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
     const fetchLeads = async () => {
+        setIsLoading(true);
         try {
-            const res = await fetch(`http://localhost:8000/leads?status=${filter}`);
-            const data = await res.json();
+            const data = await apiFetch(`/leads?status=${filter}`);
             setLeads(data);
         } catch (e) {
-            console.error("Failed to fetch leads");
+            console.error("Failed to fetch leads", e);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -22,20 +27,20 @@ const LeadsPage = () => {
 
     const handleStatusChange = async (leadId, newStatus) => {
         try {
-            await fetch(`http://localhost:8000/leads/${leadId}/status`, {
+            await apiFetch(`/leads/${leadId}/status`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newStatus })
             });
             fetchLeads(); // Refresh list
         } catch (e) {
-            console.error("Failed to update status");
+            alert("Failed to update status: " + e.message);
         }
     };
 
     const filteredLeads = leads.filter(lead =>
-        lead.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lead.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (lead.customer_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        lead.phone?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     const getStatusClass = (status) => {
@@ -96,7 +101,11 @@ const LeadsPage = () => {
                         {filteredLeads.map(lead => (
                             <tr key={lead.lead_id} style={{ borderBottom: '1px solid var(--border)' }}>
                                 <td style={{ padding: '1.25rem 1.5rem' }}>
-                                    <div style={{ fontWeight: '600' }}>{lead.customer_name}</div>
+                                    <div style={{ fontWeight: '600' }}>
+                                        <Link to={`/leads/${lead.lead_id}`} style={{ color: 'inherit', textDecoration: 'none', cursor: 'pointer' }} onMouseOver={(e) => e.target.style.color = 'var(--primary)'} onMouseOut={(e) => e.target.style.color = 'inherit'}>
+                                            {lead.customer_name}
+                                        </Link>
+                                    </div>
                                 </td>
                                 <td style={{ padding: '1.25rem 1.5rem' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>

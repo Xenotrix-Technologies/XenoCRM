@@ -24,6 +24,11 @@ class Lead(BaseModel):
 class StatusUpdate(BaseModel):
     status: str
 
+class EmailSend(BaseModel):
+    to_email: str
+    subject: str
+    body: str
+
 @app.post("/webhook/meta")
 async def meta_webhook(lead: Lead):
     # Insert via stored procedure
@@ -44,6 +49,13 @@ async def meta_webhook(lead: Lead):
 async def get_leads(status: str = "All"):
     results = database.call_stored_procedure("FetchLeadsByStatus", (status,))
     return results if results is not None else []
+
+@app.get("/leads/{lead_id}")
+async def get_lead(lead_id: int):
+    lead = database.get_lead_by_id(lead_id)
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
+    return lead
 
 @app.put("/leads/{lead_id}/status")
 async def update_lead_status(lead_id: int, update: StatusUpdate):
@@ -81,6 +93,44 @@ async def mark_notification_read(notif_id: int):
 async def get_dashboard_stats():
     query = "SELECT status, COUNT(*) as count FROM leads GROUP BY status"
     return database.execute_query(query, fetch=True) or []
+
+@app.get("/leads/{lead_id}/emails")
+async def get_lead_emails(lead_id: int):
+    emails = database.get_lead_emails(lead_id)
+    return emails if emails else []
+
+@app.post("/emails/sync")
+async def sync_emails():
+    # Trigger manual sync
+    email_service.fetch_emails()
+    return {"message": "Email sync triggered"}
+
+@app.post("/emails/send")
+async def send_custom_email(email_data: EmailSend):
+    success = email_service.send_email(
+        email_data.to_email,
+        email_data.subject,
+        email_data.body
+    )
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to send email")
+    return {"message": "Email sent successfully"}
+
+import asyncio
+
+@app.on_event("startup")
+async def startup_event():
+    # Run email fetcher in background
+    async def periodic_fetch():
+        while True:
+            try:
+                print("Fetching emails...")
+                email_service.fetch_emails()
+            except Exception as e:
+                print(f"Error in background fetch: {e}")
+            await asyncio.sleep(60) # Fetch every minute
+
+    asyncio.create_task(periodic_fetch())
 
 if __name__ == "__main__":
     import uvicorn

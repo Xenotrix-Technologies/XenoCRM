@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Bell, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, Bell, LogOut, RefreshCw } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import LeadsPage from './pages/LeadsPage';
+import LeadDetails from './pages/LeadDetails';
+import NotificationsPage from './pages/NotificationsPage';
+import { apiFetch } from './api';
 import './index.css';
 
 const Navigation = ({ unreadCount }) => {
   const location = useLocation();
-  
+
   return (
     <nav>
       <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
@@ -17,17 +20,17 @@ const Navigation = ({ unreadCount }) => {
             <LayoutDashboard size={20} style={{ verticalAlign: 'middle', marginRight: '5px' }} />
             Dashboard
           </Link>
-          <Link to="/leads" className={location.pathname === '/leads' ? 'active' : ''}>
+          <Link to="/leads" className={location.pathname.startsWith('/leads') ? 'active' : ''}>
             <Users size={20} style={{ verticalAlign: 'middle', marginRight: '5px' }} />
             Leads
           </Link>
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-        <div style={{ position: 'relative', cursor: 'pointer' }}>
-          <Bell size={24} color="var(--secondary)" />
+        <Link to="/notifications" style={{ position: 'relative', cursor: 'pointer', color: 'inherit', textDecoration: 'none' }}>
+          <Bell size={24} color={location.pathname === '/notifications' ? 'var(--primary)' : 'var(--secondary)'} />
           {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
-        </div>
+        </Link>
         <LogOut size={24} color="var(--secondary)" style={{ cursor: 'pointer' }} />
       </div>
     </nav>
@@ -41,11 +44,10 @@ function App() {
   useEffect(() => {
     const fetchNotifs = async () => {
       try {
-        const res = await fetch('http://localhost:8000/notifications');
-        const data = await res.json();
+        const data = await apiFetch('/notifications');
         setUnreadCount(data.filter(n => !n.is_read).length);
       } catch (e) {
-        console.error("Failed to fetch notifications");
+        console.error("Failed to fetch notifications", e);
       }
     };
     fetchNotifs();
@@ -61,6 +63,8 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/leads" element={<LeadsPage />} />
+            <Route path="/leads/:id" element={<LeadDetails />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
           </Routes>
         </main>
       </div>
