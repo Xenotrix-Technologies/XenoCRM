@@ -85,6 +85,29 @@ const LeadsPage = () => {
                 </div>
             </div>
 
+            {/* Google Forms Integration Info Banner */}
+            <div style={{
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                color: 'white',
+                padding: '1rem 1.5rem',
+                borderRadius: '12px',
+                marginBottom: '1.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                boxShadow: '0 4px 6px rgba(102, 126, 234, 0.2)'
+            }}>
+                <MessageSquare size={24} />
+                <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>
+                        📋 Leads from Google Forms
+                    </div>
+                    <div style={{ fontSize: '0.875rem', opacity: 0.9 }}>
+                        New leads are automatically captured from your Google Form. Check the setup guide for integration instructions.
+                    </div>
+                </div>
+            </div>
+
             <div className="premium-card" style={{ padding: '0', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead style={{ background: '#f8fafc', borderBottom: '1px solid var(--border)' }}>

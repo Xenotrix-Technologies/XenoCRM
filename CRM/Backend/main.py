@@ -45,6 +45,27 @@ async def meta_webhook(lead: Lead):
     
     return {"message": "Lead captured successfully"}
 
+@app.post("/webhook/google-forms")
+async def google_forms_webhook(lead: Lead):
+    """Webhook endpoint for Google Forms submissions"""
+    # Insert via stored procedure
+    database.call_stored_procedure("InsertMetaLead", (
+        lead.customer_name,
+        lead.email,
+        lead.phone,
+        lead.service,
+        lead.message
+    ))
+    
+    # Trigger Welcome Email (status New)
+    email_service.trigger_status_email(lead.customer_name, lead.email, "New")
+    
+    # Create notification for new lead
+    notif_msg = f"New lead from Google Forms: {lead.customer_name}"
+    database.execute_query("INSERT INTO notifications (message, is_read) VALUES (%s, FALSE)", (notif_msg,))
+    
+    return {"message": "Lead captured successfully from Google Forms"}
+
 @app.get("/leads")
 async def get_leads(status: str = "All"):
     results = database.call_stored_procedure("FetchLeadsByStatus", (status,))
@@ -99,11 +120,12 @@ async def get_lead_emails(lead_id: int):
     emails = database.get_lead_emails(lead_id)
     return emails if emails else []
 
-@app.post("/emails/sync")
-async def sync_emails():
-    # Trigger manual sync
-    email_service.fetch_emails()
-    return {"message": "Email sync triggered"}
+# EMAIL SYNC DISABLED - Leads now come from Google Forms
+# @app.post("/emails/sync")
+# async def sync_emails():
+#     # Trigger manual sync
+#     email_service.fetch_emails()
+#     return {"message": "Email sync triggered"}
 
 @app.post("/emails/send")
 async def send_custom_email(email_data: EmailSend):
@@ -118,19 +140,20 @@ async def send_custom_email(email_data: EmailSend):
 
 import asyncio
 
-@app.on_event("startup")
-async def startup_event():
-    # Run email fetcher in background
-    async def periodic_fetch():
-        while True:
-            try:
-                print("Fetching emails...")
-                email_service.fetch_emails()
-            except Exception as e:
-                print(f"Error in background fetch: {e}")
-            await asyncio.sleep(60) # Fetch every minute
-
-    asyncio.create_task(periodic_fetch())
+# BACKGROUND EMAIL FETCHING DISABLED - Leads now come from Google Forms
+# @app.on_event("startup")
+# async def startup_event():
+#     # Run email fetcher in background
+#     async def periodic_fetch():
+#         while True:
+#             try:
+#                 print("Fetching emails...")
+#                 email_service.fetch_emails()
+#             except Exception as e:
+#                 print(f"Error in background fetch: {e}")
+#             await asyncio.sleep(60) # Fetch every minute
+#
+#     asyncio.create_task(periodic_fetch())
 
 if __name__ == "__main__":
     import uvicorn

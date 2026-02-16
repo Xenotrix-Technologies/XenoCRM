@@ -64,6 +64,9 @@ def trigger_status_email(customer_name, to_email, status):
     print(f"No email template found for status: {status}")
     return False
 
+# EMAIL FETCHING DISABLED - Leads now come from Google Forms
+# Uncomment this function if you need to re-enable email-based lead capture
+"""
 def fetch_emails():
     if not SMTP_USER or not SMTP_PASSWORD:
         return
@@ -110,4 +113,5 @@ def fetch_emails():
                         
     except Exception as e:
         print(f"Error fetching emails: {e}")
+"""
 
