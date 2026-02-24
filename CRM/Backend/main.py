@@ -21,6 +21,14 @@ class Lead(BaseModel):
     service: Optional[str] = None
     message: Optional[str] = None
 
+class GoogleFormLead(BaseModel):
+    name: str
+    email: str
+    phone: Optional[str] = None
+    company: Optional[str] = None
+    message: Optional[str] = None
+    service: Optional[str] = None
+
 class StatusUpdate(BaseModel):
     status: str
 
@@ -46,11 +54,11 @@ async def meta_webhook(lead: Lead):
     return {"message": "Lead captured successfully"}
 
 @app.post("/webhook/google-forms")
-async def google_forms_webhook(lead: Lead):
+async def google_forms_webhook(lead: GoogleFormLead):
     """Webhook endpoint for Google Forms submissions"""
     # Insert via stored procedure
     database.call_stored_procedure("InsertMetaLead", (
-        lead.customer_name,
+        lead.name,  # Map Google Form 'name' to DB 'customer_name'
         lead.email,
         lead.phone,
         lead.service,
@@ -58,10 +66,10 @@ async def google_forms_webhook(lead: Lead):
     ))
     
     # Trigger Welcome Email (status New)
-    email_service.trigger_status_email(lead.customer_name, lead.email, "New")
+    email_service.trigger_status_email(lead.name, lead.email, "New")
     
     # Create notification for new lead
-    notif_msg = f"New lead from Google Forms: {lead.customer_name}"
+    notif_msg = f"New lead from Google Forms: {lead.name}"
     database.execute_query("INSERT INTO notifications (message, is_read) VALUES (%s, FALSE)", (notif_msg,))
     
     return {"message": "Lead captured successfully from Google Forms"}

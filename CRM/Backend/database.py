@@ -86,3 +86,17 @@ def get_lead_by_id(lead_id):
     query = "SELECT * FROM leads WHERE lead_id = %s"
     results = execute_query(query, (lead_id,), fetch=True)
     return results[0] if results else None
+
+def check_lead_exists(email, phone):
+    """Checks if a lead already exists with the given email or phone."""
+    query = "SELECT lead_id FROM leads WHERE email = %s OR (phone IS NOT NULL AND phone = %s)"
+    results = execute_query(query, (email, phone), fetch=True)
+    return results[0] if results else None
+
+def insert_lead(customer_name, email, phone=None, service=None, message=None, source='Manual', company=None):
+    """Inserts a new lead into the database."""
+    query = """
+    INSERT INTO leads (customer_name, email, phone, service, message, source, company, status, created_at)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, 'New', NOW())
+    """
+    return execute_query(query, (customer_name, email, phone, service, message, source, company))

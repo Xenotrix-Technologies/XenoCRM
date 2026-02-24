@@ -14,7 +14,7 @@ const Navigation = ({ unreadCount }) => {
   return (
     <nav>
       <div style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
-        <h2 style={{ color: 'var(--primary)', fontWeight: 'bold' }}>CRM Pro</h2>
+        <h2 style={{ color: 'var(--primary)', fontWeight: 'bold' }}>Xeno CRM</h2>
         <div className="nav-links">
           <Link to="/" className={location.pathname === '/' ? 'active' : ''}>
             <LayoutDashboard size={20} style={{ verticalAlign: 'middle', marginRight: '5px' }} />
