@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Lead Management{% endblock %}
+
+{% block content %}
+<main class="pt-4 p-margin-edge min-h-screen flex flex-col bg-background">
+    <!-- Header & Action Bar -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Lead Management</h2>
+            <div class="flex items-center gap-2 text-body-sm text-secondary">
+                <span>{{ paginator.count }} Total Leads</span>
+                <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                <span class="text-success font-semibold">+12% from last month</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="alert('Import feature: Upload a CSV format to import leads.')" class="bg-surface-container-lowest border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-surface-container-low transition-all">
+                <span class="material-symbols-outlined text-[18px]">upload</span>
+                Import
+            </button>
+            <a href="?export=csv{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="bg-surface-container-lowest border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-surface-container-low transition-all">
+                <span class="material-symbols-outlined text-[18px]">download</span>
+                Export
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar Form -->
+    <form method="GET" action="{% url 'leads' %}" class="glass-panel rounded-2xl p-4 mb-6 flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-outline">filter_list</span>
+            <span class="font-label-md text-label-md text-outline">FILTERS:</span>
+        </div>
+        
+        <!-- Search query preservation -->
+        {% if q %}
+        <input type="hidden" name="q" value="{{ q }}"/>
+        {% endif %}
+
+        <select name="status" onchange="this.form.submit()" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
+            <option value="">All Statuses</option>
+            <option value="New" {% if status_filter == 'New' %}selected{% endif %}>New</option>
+            <option value="Contacted" {% if status_filter == 'Contacted' %}selected{% endif %}>Contacted</option>
+            <option value="Qualified" {% if status_filter == 'Qualified' %}selected{% endif %}>Qualified</option>
+            <option value="Cold Lead" {% if status_filter == 'Cold Lead' %}selected{% endif %}>Cold Lead</option>
+            <option value="Lost" {% if status_filter == 'Lost' %}selected{% endif %}>Lost</option>
+        </select>
+
+        <select name="owner" onchange="this.form.submit()" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
+            <option value="">All Owners</option>
+            {% for owner in owners %}
+            <option value="{{ owner.id }}" {% if owner_filter == owner.id|stringformat:"i" %}selected{% endif %}>{{ owner.user.get_full_name|default:owner.user.username }}</option>
+            {% endfor %}
+        </select>
+
+        <select name="sort" onchange="this.form.submit()" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
+            <option value="score_desc" {% if sort_by == 'score_desc' %}selected{% endif %}>Lead Score: High to Low</option>
+            <option value="score_asc" {% if sort_by == 'score_asc' %}selected{% endif %}>Lead Score: Low to High</option>
+            <option value="value_desc" {% if sort_by == 'value_desc' %}selected{% endif %}>Value: High to Low</option>
+            <option value="value_asc" {% if sort_by == 'value_asc' %}selected{% endif %}>Value: Low to High</option>
+        </select>
+        
+        <div class="h-6 w-px bg-outline-variant mx-2"></div>
+        <a href="{% url 'leads' %}" class="text-primary font-button text-button hover:underline">Clear all</a>
+        
+        <div class="ml-auto flex items-center gap-2">
+            <span class="text-body-sm text-secondary">Bulk Actions:</span>
+            <button type="submit" name="bulk_action" value="change_status_qualified" class="px-3 py-1.5 rounded-lg border border-outline-variant text-body-sm hover:bg-surface-container-low disabled:opacity-50 bulk-btn" disabled>Mark Qualified</button>
+            <button type="submit" name="bulk_action" value="delete" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-600 text-body-sm hover:bg-red-50 disabled:opacity-50 bulk-btn" disabled>Delete</button>
+        </div>
+    </form>
+
+    <!-- Data Table Card -->
+    <form method="POST" id="bulk-form" action="{% url 'leads' %}">
+        {% csrf_token %}
+        <input type="hidden" name="action_type" id="action-type-input" value=""/>
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant overflow-hidden mb-6">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-surface-container-low/50 border-b border-outline-variant">
+                            <th class="p-4 w-10">
+                                <input id="select-all" class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+                            </th>
+                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Lead Name</th>
+                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Company</th>
+                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider text-center">Score</th>
+                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Status</th>
+                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Owner</th>
+                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Last Activity</th>
+                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider text-right">Value</th>
+                            <th class="p-4 w-10"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant/30">
+                        {% for lead in leads %}
+                        <tr class="hover:bg-primary-container/5 transition-colors group">
+                            <td class="p-4">
+                                <input name="lead_ids" value="{{ lead.id }}" class="lead-checkbox rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+                            </td>
+                            <td class="p-4">
+                                <div class="flex items-center gap-3">
+                                    {% if lead.profile_image_url %}
+                                    <img class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="{{ lead.profile_image_url }}" alt=""/>
+                                    {% else %}
+                                    <div class="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xs border border-outline-variant">
+                                        {{ lead.name|slice:":2"|upper }}
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <div class="font-body-sm font-semibold text-on-surface hover:text-primary"><a href="{% url 'contact_detail' lead.id %}">{{ lead.name }}</a></div>
+                                        <div class="text-[12px] text-secondary">{{ lead.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-4 text-body-sm text-on-surface-variant">{{ lead.company }}</td>
+                            <td class="p-4 text-center">
+                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full border-2 {% if lead.score > 80 %}border-success text-success bg-success/5{% elif lead.score > 50 %}border-warning text-warning bg-warning/5{% else %}border-danger text-danger bg-danger/5{% endif %} font-label-md text-label-md">
+                                    {{ lead.score }}
+                                </span>
+                            </td>
+                            <td class="p-4">
+                                <span class="px-2.5 py-1 rounded-full text-[12px] font-bold uppercase tracking-tight 
+                                    {% if lead.status == 'Qualified' %}bg-primary-container/10 text-primary
+                                    {% elif lead.status == 'Contacted' %}bg-surface-variant text-on-surface-variant
+                                    {% elif lead.status == 'New' %}bg-tertiary-container/20 text-tertiary
+                                    {% elif lead.status == 'Cold Lead' %}bg-error-container/40 text-error
+                                    {% else %}bg-error/10 text-error{% endif %}">
+                                    {{ lead.status }}
+                                </span>
+                            </td>
+                            <td class="p-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-5 h-5 rounded-full bg-secondary-container text-[8px] flex items-center justify-center text-secondary font-bold">
+                                        {{ lead.owner.user.username|slice:":2"|upper }}
+                                    </div>
+                                    <span class="text-body-sm">{{ lead.owner.user.get_full_name|default:lead.owner.user.username }}</span>
+                                </div>
+                            </td>
+                            <td class="p-4 text-body-sm text-secondary">{{ lead.last_activity|timesince }} ago</td>
+                            <td class="p-4 text-body-sm font-semibold text-right">${{ lead.value|floatformat:0 }}</td>
+                            <td class="p-4 text-right">
+                                <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <a href="{% url 'contact_detail' lead.id %}" class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all">
+                                        <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="p-8 text-center text-outline">No leads found matching current filters.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination Footer -->
+            {% if is_paginated or leads.has_other_pages %}
+            <div class="p-4 bg-surface-container-low/30 border-t border-outline-variant flex items-center justify-between">
+                <span class="text-body-sm text-secondary">Showing {{ leads.start_index }}-{{ leads.end_index }} of {{ paginator.count }} leads</span>
+                <div class="flex items-center gap-2">
+                    {% if leads.has_previous %}
+                    <a href="?page={{ leads.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="p-2 rounded-lg hover:bg-surface-variant">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </a>
+                    {% else %}
+                    <button type="button" class="p-2 rounded-lg opacity-30 cursor-not-allowed" disabled>
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    {% endif %}
+                    
+                    {% for page_num in paginator.page_range %}
+                        {% if page_num == leads.number %}
+                        <button type="button" class="w-8 h-8 rounded-lg bg-primary text-on-primary text-body-sm font-semibold">{{ page_num }}</button>
+                        {% elif page_num > leads.number|add:"-3" and page_num < leads.number|add:"3" %}
+                        <a href="?page={{ page_num }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="w-8 h-8 rounded-lg hover:bg-surface-variant text-body-sm flex items-center justify-center">{{ page_num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if leads.has_next %}
+                    <a href="?page={{ leads.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="p-2 rounded-lg hover:bg-surface-variant">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </a>
+                    {% else %}
+                    <button type="button" class="p-2 rounded-lg opacity-30 cursor-not-allowed" disabled>
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </form>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Bulk action enablement logic
+    const selectAll = document.getElementById('select-all');
+    const checkboxes = document.querySelectorAll('.lead-checkbox');
+    const bulkBtns = document.querySelectorAll('.bulk-btn');
+    const bulkForm = document.getElementById('bulk-form');
+
+    function updateBulkState() {
+        const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+        bulkBtns.forEach(btn => {
+            btn.disabled = !anyChecked;
+            if (anyChecked) {
+                btn.classList.remove('opacity-50');
+            } else {
+                btn.classList.add('opacity-50');
+            }
+        });
+    }
+
+    selectAll.addEventListener('change', function() {
+        checkboxes.forEach(cb => {
+            cb.checked = selectAll.checked;
+        });
+        updateBulkState();
+    });
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkState);
+    });
+
+    // Intercept click on Mark Qualified and Delete buttons
+    bulkBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const action = this.getAttribute('value');
+            if (action === 'delete') {
+                if (!confirm("Are you sure you want to delete the selected leads?")) return;
+            }
+            
+            // Set action type and submit bulkForm
+            const actionTypeInput = document.getElementById('action-type-input');
+            actionTypeInput.name = "bulk_action";
+            actionTypeInput.value = action;
+            bulkForm.submit();
+        });
+    });
+</script>
+{% endblock %}

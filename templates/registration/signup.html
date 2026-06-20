@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Sign Up{% endblock %}
+
+{% block auth_content %}
+<div class="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <!-- Visual background blobs -->
+    <div class="absolute top-[-10%] right-[-10%] w-96 h-96 bg-primary-container/20 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-tertiary-container/10 rounded-full blur-3xl"></div>
+
+    <div class="w-full max-w-lg glass-card rounded-2xl p-8 border border-white/40 shadow-2xl relative z-10">
+        <div class="text-center mb-8">
+            <h1 class="font-headline-lg text-[32px] font-bold text-primary leading-tight">Create Account</h1>
+            <p class="text-sm text-secondary mt-1">Get started with XenoCRM Enterprise SaaS</p>
+        </div>
+
+        {% if messages %}
+            <div class="mb-4 space-y-2">
+                {% for message in messages %}
+                    <div class="p-3 text-sm rounded-lg {% if message.tags == 'error' %}bg-error-container text-on-error-container{% else %}bg-success/10 text-success{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'signup' %}">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Company / Organization Name</label>
+                    <input type="text" name="org_name" required placeholder="e.g. Acme Corporation" class="w-full bg-white/60 border border-outline-variant rounded-xl px-4 py-3 text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"/>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">First Name</label>
+                        <input type="text" name="first_name" required placeholder="John" class="w-full bg-white/60 border border-outline-variant rounded-xl px-4 py-3 text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Last Name</label>
+                        <input type="text" name="last_name" required placeholder="Doe" class="w-full bg-white/60 border border-outline-variant rounded-xl px-4 py-3 text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"/>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Username</label>
+                    <input type="text" name="username" required placeholder="Choose username" class="w-full bg-white/60 border border-outline-variant rounded-xl px-4 py-3 text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"/>
+                </div>
+
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Email Address</label>
+                    <input type="email" name="email" required placeholder="john.doe@company.com" class="w-full bg-white/60 border border-outline-variant rounded-xl px-4 py-3 text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"/>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Password</label>
+                        <input type="password" name="password" required placeholder="Password" class="w-full bg-white/60 border border-outline-variant rounded-xl px-4 py-3 text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Confirm Password</label>
+                        <input type="password" name="password_confirm" required placeholder="Repeat password" class="w-full bg-white/60 border border-outline-variant rounded-xl px-4 py-3 text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"/>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full mt-6 py-3 bg-primary text-on-primary font-button rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all">
+                Sign Up & Launch CRM
+            </button>
+        </form>
+
+        <div class="mt-8 text-center border-t border-outline-variant/30 pt-6">
+            <p class="text-body-sm text-secondary">
+                Already have an account? 
+                <a href="{% url 'login' %}" class="text-primary font-bold hover:underline">Sign in</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

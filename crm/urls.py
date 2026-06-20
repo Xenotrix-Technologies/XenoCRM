@@ -1,0 +1,36 @@
+from django.urls import path
+from django.shortcuts import redirect
+from . import views
+
+urlpatterns = [
+    path('', lambda r: redirect('dashboard'), name='root'),
+    path('login/', views.login_view, name='login'),
+    path('signup/', views.signup_view, name='signup'),
+    path('logout/', views.logout_view, name='logout'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('leads/', views.leads_view, name='leads'),
+    path('pipeline/', views.pipeline_view, name='pipeline'),
+    path('pipeline/update-stage/', views.update_lead_stage, name='update_lead_stage'),
+    path('leads/<int:lead_id>/', views.contact_detail_view, name='contact_detail'),
+    path('task/add/', views.add_task, name='add_task'),
+    path('task/complete/', views.complete_task, name='complete_task'),
+    path('activity/log/', views.log_activity, name='log_activity'),
+    path('lead/quick-create/', views.quick_create_lead, name='quick_create_lead'),
+    path('contacts/', views.contacts_view, name='contacts'),
+    path('accounts/', views.accounts_view, name='accounts'),
+    path('opportunities/', views.opportunities_view, name='opportunities'),
+    path('marketing/', views.marketing_view, name='marketing'),
+    path('customer-support/', views.customer_support_view, name='customer_support'),
+    path('projects/', views.projects_view, name='projects'),
+    path('reports/', views.reports_view, name='reports'),
+    path('ai-assistant/', views.ai_assistant_view, name='ai_assistant'),
+    path('business/', views.business_view, name='business'),
+    path('calendar/', views.calendar_view, name='calendar'),
+    path('calendar/create/', views.event_create_view, name='event_create'),
+    path('calendar/edit/<int:event_id>/', views.event_edit_view, name='event_edit'),
+    path('calendar/delete/<int:event_id>/', views.event_delete_view, name='event_delete'),
+    path('profile/edit/', views.profile_edit_view, name='profile_edit'),
+    path('campaign/', views.campaign_view, name='campaign'),
+    path('upgrade-plans/', views.upgrade_plans_view, name='upgrade_plans'),
+    path('upgrade-plans/subscribe/<int:plan_id>/', views.subscribe_plan_view, name='subscribe_plan'),
+    ]

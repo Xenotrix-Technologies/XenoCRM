@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>{% block title %}XenoCRM{% endblock %}</title>
+    <!-- Tailwind CSS with Forms and Container Queries -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Geist:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed-dim": "#4fdbc8",
+                        "surface-tint": "#0053db",
+                        "on-tertiary-container": "#b1fff1",
+                        "primary-fixed": "#dbe1ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "on-primary-fixed": "#00174b",
+                        "on-secondary-container": "#5c647a",
+                        "tertiary-container": "#007b6e",
+                        "on-tertiary-fixed": "#00201c",
+                        "surface-container-high": "#dce9ff",
+                        "surface-container": "#e5eeff",
+                        "inverse-surface": "#213145",
+                        "surface-container-low": "#eff4ff",
+                        "danger": "#EF4444",
+                        "tertiary": "#006056",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "warning": "#F59E0B",
+                        "primary-fixed-dim": "#b4c5ff",
+                        "background": "#f8f9ff",
+                        "outline": "#737686",
+                        "inverse-primary": "#b4c5ff",
+                        "on-background": "#0b1c30",
+                        "error": "#ba1a1a",
+                        "surface-glass": "rgba(255, 255, 255, 0.7)",
+                        "primary-container": "#2563eb",
+                        "on-tertiary-fixed-variant": "#005048",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-secondary-fixed": "#131b2e",
+                        "surface-bright": "#f8f9ff",
+                        "secondary": "#565e74",
+                        "surface-variant": "#d3e4fe",
+                        "secondary-container": "#dae2fd",
+                        "on-surface": "#0b1c30",
+                        "surface-container-highest": "#d3e4fe",
+                        "surface": "#f8f9ff",
+                        "outline-variant": "#c3c6d7",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#003ea8",
+                        "success": "#22C55E",
+                        "primary": "#004ac6",
+                        "on-surface-variant": "#434655",
+                        "on-primary-container": "#eeefff",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed": "#dae2fd",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#71f8e4",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#cbdbf5",
+                        "surface-glass-dark": "rgba(15, 23, 42, 0.8)"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "container-max": "1440px",
+                        "unit": "4px",
+                        "sidebar-collapsed": "72px",
+                        "sidebar-width": "260px",
+                        "gutter-md": "16px",
+                        "margin-edge": "24px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "button": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Geist"],
+                        "display-lg": ["Geist"],
+                        "label-md": ["JetBrains Mono"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Geist"]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f8f9ff;
+            color: #0b1c30;
+            overflow-x: hidden;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(195, 198, 215, 0.5);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #737686;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="font-body-md text-body-md text-on-surface">
+
+    {% if user.is_authenticated %}
+    <!-- SideNavBar Shell -->
+    <aside class="fixed left-0 top-0 h-full w-sidebar-width bg-secondary-fixed-dim dark:bg-on-secondary-fixed border-r border-outline-variant dark:border-outline shadow-sm z-50 flex flex-col h-full py-4">
+        <div class="px-6 mb-8">
+            <h1 class="font-headline-md text-headline-md font-bold text-on-secondary-fixed dark:text-primary-fixed-dim leading-none">XenoCRM</h1>
+            <p class="text-label-md font-label-md opacity-70 mt-1">Enterprise Edition</p>
+        </div>
+        <nav class="flex-1 overflow-y-auto px-3 space-y-1 custom-scrollbar">
+            <!-- Navigation Items with Active States -->
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'dashboard' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'dashboard' %}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="font-body-sm text-body-sm">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'leads' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'leads' %}">
+                <span class="material-symbols-outlined">leaderboard</span>
+                <span class="font-body-sm text-body-sm">Leads</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'calendar' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'calendar' %}">
+                <span class="material-symbols-outlined">event</span>
+                <span class="font-body-sm text-body-sm">Calendar</span>
+            </a>
+            <!-- Active navigation items mapped to Django URLs -->
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'contacts' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'contacts' %}">
+                <span class="material-symbols-outlined">contacts</span>
+                <span class="font-body-sm text-body-sm">Contacts</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'accounts' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'accounts' %}">
+                <span class="material-symbols-outlined">business</span>
+                <span class="font-body-sm text-body-sm">Accounts</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'opportunities' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'opportunities' %}">
+                <span class="material-symbols-outlined">monetization_on</span>
+                <span class="font-body-sm text-body-sm">Opportunities</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'marketing' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'marketing' %}">
+                <span class="material-symbols-outlined">campaign</span>
+                <span class="font-body-sm text-body-sm">Marketing</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'customer_support' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'customer_support' %}">
+                <span class="material-symbols-outlined">support_agent</span>
+                <span class="font-body-sm text-body-sm">Customer Support</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'projects' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'projects' %}">
+                <span class="material-symbols-outlined">assignment</span>
+                <span class="font-body-sm text-body-sm">Projects</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'reports' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'reports' %}">
+                <span class="material-symbols-outlined">assessment</span>
+                <span class="font-body-sm text-body-sm">Reports</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'ai_assistant' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'ai_assistant' %}">
+                <span class="material-symbols-outlined">smart_toy</span>
+                <span class="font-body-sm text-body-sm">AI Assistant</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'business' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'business' %}">
+                <span class="material-symbols-outlined">corporate_fare</span>
+                <span class="font-body-sm text-body-sm">Business</span>
+            </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'campaign' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'campaign' %}">
+                <span class="material-symbols-outlined">ads_click</span>
+                <span class="font-body-sm text-body-sm">Campaigns</span>
+            </a>
+        </nav>
+        
+        <div class="px-3 pt-4 mt-4 border-t border-outline-variant/30">
+            <a href="{% url 'upgrade_plans' %}" class="w-full py-3 bg-primary text-on-primary font-button rounded-xl shadow-lg active:scale-95 transition-all">Upgrade Plan</a>
+            <div class="mt-4 space-y-1">
+                <a class="flex items-center gap-3 px-4 py-2 text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50 rounded-lg transition-colors" href="#">
+                    <span class="material-symbols-outlined">help</span>
+                    <span class="font-body-sm text-body-sm">Help Center</span>
+                </a>
+                <a class="flex items-center gap-3 px-4 py-2 text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50 rounded-lg transition-colors" href="{% url 'logout' %}">
+                    <span class="material-symbols-outlined text-error">logout</span>
+                    <span class="font-body-sm text-body-sm">Log Out</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="ml-[260px] min-h-screen flex flex-col">
+        <!-- TopNavBar Shell -->
+        <header class="fixed top-0 right-0 w-[calc(100%-260px)] h-16 bg-surface-glass backdrop-blur-md border-b border-outline-variant dark:border-outline shadow-sm z-40 flex justify-between items-center px-margin-edge">
+            <div class="flex items-center gap-6 flex-1">
+                <form method="GET" action="{% url 'leads' %}" class="relative w-full max-w-md">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
+                    <input name="q" value="{{ request.GET.q|default:'' }}" class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-body-sm focus:ring-2 focus:ring-primary/20" placeholder="Search deals, contacts..." type="text"/>
+                </form>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <button onclick="document.getElementById('quick-create-modal').classList.remove('hidden')" class="flex items-center gap-2 px-4 py-2 bg-primary-container/10 text-primary font-button rounded-lg hover:bg-primary-container/20 transition-all">
+                    <span class="material-symbols-outlined text-[20px]">add</span>
+                    Quick Create
+                </button>
+                <div class="h-6 w-px bg-outline-variant"></div>
+                <div class="flex items-center gap-3">
+                    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors">
+                        <span class="material-symbols-outlined">notifications</span>
+                    </button>
+                    <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors">
+                        <span class="material-symbols-outlined">smart_toy</span>
+                    </button>
+                    
+                    <div class="flex items-center space-x-3 pl-2 pr-1 py-1 rounded-full hover:bg-surface-variant transition-colors">
+                        <div class="text-right hidden lg:block">
+                            <p class="text-xs font-bold text-on-surface">{{ user.get_full_name|default:user.username }}</p>
+                            <p class="text-[10px] text-outline font-label-md uppercase">{{ user.profile.role }}</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-primary-container">
+                            {% if user.profile.profile_image_url %}
+                            <img class="w-full h-full object-cover" src="{{ user.profile.profile_image_url }}" alt="Profile image"/>
+                            {% else %}
+                            <div class="w-full h-full bg-primary-container text-primary flex items-center justify-center font-bold">
+                                {{ user.username|slice:":2"|upper }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dynamic Content block -->
+        <div class="flex-1 flex flex-col mt-16">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Quick Create Modal -->
+    <div id="quick-create-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-outline-variant/30">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-headline-md text-headline-md font-bold">Quick Create Lead</h3>
+                <button onclick="document.getElementById('quick-create-modal').classList.add('hidden')" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+            </div>
+            <form method="POST" action="{% url 'quick_create_lead' %}">
+                {% csrf_token %}
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Lead Name</label>
+                        <input type="text" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Email</label>
+                        <input type="email" name="email" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Company</label>
+                        <input type="text" name="company" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Value ($)</label>
+                            <input type="number" name="value" value="0" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                        </div>
+                        <div>
+                            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Lead Score (0-100)</label>
+                            <input type="number" name="score" min="0" max="100" value="50" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button type="button" onclick="document.getElementById('quick-create-modal').classList.add('hidden')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Create Lead</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% else %}
+        <!-- Auth View Container -->
+        <div class="min-h-screen">
+            {% block auth_content %}{% endblock %}
+        </div>
+    {% endif %}
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

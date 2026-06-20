@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Opportunities{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    <!-- Header -->
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Sales Opportunities</h2>
+            <p class="text-secondary font-body-md">Track active deals, forecast pipeline progression, and monitor lead engagement levels.</p>
+        </div>
+        <button onclick="document.getElementById('quick-create-modal').classList.remove('hidden')" class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md hover:opacity-90 active:scale-95 transition-all">
+            <span class="material-symbols-outlined mr-2 text-sm">add_shopping_cart</span>
+            New Opportunity
+        </button>
+    </div>
+
+    <!-- Active Deals Pipeline Card -->
+    <div class="glass-card rounded-2xl border border-white/40 shadow-sm overflow-hidden flex-1 flex flex-col">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-outline-variant bg-surface-container/50 text-[11px] font-label-md uppercase tracking-wider text-secondary">
+                        <th class="px-6 py-4">Opportunity</th>
+                        <th class="px-6 py-4">Company</th>
+                        <th class="px-6 py-4">Deal Value</th>
+                        <th class="px-6 py-4">Sales Stage</th>
+                        <th class="px-6 py-4">Lead Score</th>
+                        <th class="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/30 text-body-sm text-on-surface">
+                    {% for op in opportunities %}
+                    <tr class="hover:bg-surface-container/30 transition-colors">
+                        <td class="px-6 py-4 font-bold flex items-center">
+                            <div class="w-8 h-8 rounded-full bg-primary-container/20 text-primary flex items-center justify-center font-bold mr-3 text-xs">
+                                {{ op.name|slice:":2"|upper }}
+                            </div>
+                            <a href="{% url 'contact_detail' op.id %}" class="hover:text-primary transition-colors">{{ op.name }}</a>
+                        </td>
+                        <td class="px-6 py-4">{{ op.company }}</td>
+                        <td class="px-6 py-4 font-mono font-bold text-primary">${{ op.value|floatformat:2 }}</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-2">
+                                <span class="w-2 h-2 rounded-full {% if op.stage == 'New' %}bg-blue-500{% elif op.stage == 'Qualified' %}bg-indigo-500{% elif op.stage == 'Proposal' %}bg-purple-500{% elif op.stage == 'Negotiation' %}bg-warning{% else %}bg-success{% endif %}"></span>
+                                <span class="text-xs font-bold">{{ op.stage }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold {% if op.score > 80 %}text-primary{% elif op.score > 50 %}text-warning{% else %}text-secondary{% endif %}">{{ op.score }}</span>
+                                <div class="w-16 h-1.5 bg-surface-variant rounded-full overflow-hidden">
+                                    <div class="h-full {% if op.score > 80 %}bg-primary{% elif op.score > 50 %}bg-warning{% else %}bg-secondary{% endif %}" style="width: {{ op.score }}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            <a href="{% url 'contact_detail' op.id %}" class="text-xs text-primary font-bold hover:underline">Manage Deal</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-secondary">
+                            <span class="material-symbols-outlined text-4xl mb-2 opacity-50">monetization_on</span>
+                            <p>No active opportunities. Start a new deal using the quick create option.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Calendar - XenoCRM{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" />
+{% endblock %}
+{% block content %}
+<div class="p-6">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-2xl font-bold text-primary">Calendar</h1>
+    <a href="{% url 'event_create' %}" class="px-4 py-2 bg-primary text-on-primary rounded-lg shadow hover:opacity-90">Add Event</a>
+  </div>
+  {% if events %}
+    <ul class="space-y-2">
+      {% for event in events %}
+        <li class="bg-surface-container p-4 rounded-lg shadow flex justify-between items-center">
+          <div>
+            <h2 class="font-medium text-primary">{{ event.title }}</h2>
+            <p class="text-sm text-outline">{{ event.start_time|date:'M d, Y H:i' }} – {{ event.end_time|date:'M d, Y H:i' }}</p>
+            {% if event.recurring %}<span class="text-xs bg-primary-container text-primary rounded px-1">Recurring</span>{% endif %}
+          </div>
+          <div class="space-x-2">
+            <a href="{% url 'event_edit' event.id %}" class="text-primary hover:underline">Edit</a>
+            <a href="{% url 'event_delete' event.id %}" class="text-danger hover:underline">Delete</a>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-outline">No events scheduled.</p>
+  {% endif %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+{% endblock %}

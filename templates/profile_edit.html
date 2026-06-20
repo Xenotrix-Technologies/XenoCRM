@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Edit Profile - XenoCRM{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto p-6 bg-surface-container-low rounded-lg shadow-lg">
+  <h2 class="text-2xl font-bold mb-4">Edit Profile</h2>
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div class="grid grid-cols-1 gap-4">
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Profile Image URL</label>
+        {{ form.profile_image_url }}
+        {{ form.profile_image_url.errors }}
+      </div>
+    </div>
+    <hr class="my-4" />
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Username</label>
+        <input type="text" name="username" value="{{ user.username }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary" />
+      </div>
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Email</label>
+        <input type="email" name="email" value="{{ user.email }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary" />
+      </div>
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">First Name</label>
+        <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary" />
+      </div>
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Last Name</label>
+        <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary" />
+      </div>
+    </div>
+    <div class="flex justify-end space-x-2 mt-4">
+      <a href="{% url 'dashboard' %}" class="px-4 py-2 bg-outline text-on-outline rounded">Cancel</a>
+      <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded hover:opacity-90">Save Changes</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+{% endblock %}

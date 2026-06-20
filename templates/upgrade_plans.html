@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Upgrade Plans - XenoCRM{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-p+1/0+K9G7E+1cV/6bZyL1u7x5+6bB9QF/2aG+3bV+W5Zb+8cGQ+9P+5W9n5Y+8z" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto p-6 bg-surface-container-low rounded-lg shadow-lg">
+  <h2 class="text-2xl font-bold mb-6 text-primary">Choose a Plan</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {% for plan in plans %}
+      <div class="border rounded-lg p-4 bg-surface-container hover:shadow-xl transition-shadow">
+        <h3 class="text-xl font-semibold text-primary mb-2">{{ plan.name }}</h3>
+        <p class="text-lg font-bold text-primary mb-4">${{ plan.price }}</p>
+        <p class="text-sm text-outline mb-4">{{ plan.description|default:"No description provided." }}</p>
+        {% if subscription and subscription.plan.id == plan.id %}
+          <button class="w-full px-4 py-2 bg-success text-on-success rounded disabled:opacity-50" disabled>Current Plan</button>
+        {% else %}
+          <a href="{% url 'subscribe_plan' plan.id %}" class="block w-full text-center px-4 py-2 bg-primary text-on-primary rounded hover:opacity-90">Subscribe</a>
+        {% endif %}
+      </div>
+    {% empty %}
+      <p class="col-span-3 text-outline">No plans available.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<!-- No additional JS needed -->
+{% endblock %}

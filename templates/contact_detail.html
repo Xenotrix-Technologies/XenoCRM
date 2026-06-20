@@ -1,0 +1,522 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Contact Details{% endblock %}
+
+{% block extra_css %}
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(195, 198, 215, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="pt-4 p-margin-edge min-h-screen">
+    <div class="max-w-container-max mx-auto">
+        <!-- Page Header / Breadcrumbs -->
+        <div class="flex items-center gap-2 mb-6 font-label-md text-outline">
+            <a href="{% url 'leads' %}" class="hover:underline">Leads</a>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span>Enterprise Portfolio</span>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span class="text-primary font-bold">Contact Profile</span>
+        </div>
+
+        <div class="grid grid-cols-12 gap-gutter-md">
+            <!-- Left Column: Main Profile & Content -->
+            <div class="col-span-12 lg:col-span-8 space-y-gutter-md">
+                <!-- Profile Header Card -->
+                <div class="glass-card rounded-xl p-8 flex flex-col md:flex-row gap-8 items-start shadow-sm border border-outline-variant/30">
+                    <div class="relative flex-shrink-0">
+                        {% if lead.profile_image_url %}
+                        <img class="w-32 h-32 rounded-3xl object-cover shadow-lg border-4 border-white" src="{{ lead.profile_image_url }}" alt="{{ lead.name }}"/>
+                        {% else %}
+                        <div class="w-32 h-32 rounded-3xl bg-primary text-on-primary flex items-center justify-center font-bold text-4xl shadow-lg border-4 border-white">
+                            {{ lead.name|slice:":2"|upper }}
+                        </div>
+                        {% endif %}
+                        <div class="absolute -bottom-2 -right-2 bg-success text-white w-8 h-8 rounded-full border-4 border-white flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[16px] font-bold">check</span>
+                        </div>
+                    </div>
+                    <div class="flex-1 space-y-4">
+                        <div>
+                            <div class="flex items-center gap-3 mb-1">
+                                <h2 class="font-headline-lg text-headline-lg text-on-surface">{{ lead.name }}</h2>
+                                <span class="bg-primary-fixed text-on-primary-fixed-variant px-3 py-1 rounded-full font-label-md">Key Account</span>
+                            </div>
+                            <p class="text-secondary flex items-center gap-2">
+                                Chief Technology Officer at <span class="font-bold text-surface-tint">{{ lead.company }}</span>
+                            </p>
+                        </div>
+                        <div class="flex flex-wrap gap-4 pt-2">
+                            <div class="flex items-center gap-2 text-outline">
+                                <span class="material-symbols-outlined text-[18px]">location_on</span>
+                                <span class="font-body-sm">San Francisco, CA</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-outline">
+                                <span class="material-symbols-outlined text-[18px]">schedule</span>
+                                <span class="font-body-sm">Local Time: 10:24 AM (PT)</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <a class="text-secondary hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">link</span></a>
+                                <a class="text-secondary hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">chat</span></a>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-3 pt-4">
+                            <button onclick="logInteraction('Email')" class="bg-primary text-on-primary flex items-center gap-2 px-6 py-2.5 rounded-xl font-button hover:shadow-lg transition-all active:scale-95">
+                                <span class="material-symbols-outlined">mail</span>
+                                Send Email
+                            </button>
+                            <button onclick="logInteraction('Call')" class="bg-secondary-container text-on-secondary-container flex items-center gap-2 px-6 py-2.5 rounded-xl font-button hover:bg-secondary-container/80 transition-all">
+                                <span class="material-symbols-outlined">call</span>
+                                Call
+                            </button>
+                            <button onclick="logInteraction('Meeting')" class="border border-outline-variant text-on-surface flex items-center gap-2 px-6 py-2.5 rounded-xl font-button hover:bg-surface-container-low transition-all">
+                                <span class="material-symbols-outlined">calendar_today</span>
+                                Schedule Meeting
+                            </button>
+                            <button class="p-2.5 rounded-xl border border-outline-variant text-outline hover:bg-surface-container-low">
+                                <span class="material-symbols-outlined">more_horiz</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabbed Navigation -->
+                <div class="border-b border-outline-variant">
+                    <nav class="flex gap-8">
+                        <a class="py-4 font-button border-b-2 border-primary text-primary transition-all active-tab-link" href="#" onclick="switchTab(event, 'tab-overview')">Overview</a>
+                        <a class="py-4 font-button border-b-2 border-transparent text-secondary hover:text-on-surface transition-all" href="#" onclick="switchTab(event, 'tab-timeline')">Activity Timeline</a>
+                    </nav>
+                </div>
+
+                <!-- Content Grid -->
+                <div id="tab-overview" class="grid grid-cols-2 gap-gutter-md tab-content">
+                    <!-- Summary Card -->
+                    <div class="col-span-2 glass-card rounded-xl p-6 border border-outline-variant/30">
+                        <h3 class="font-headline-md mb-4 text-[18px] font-bold">Account Overview</h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div class="space-y-1">
+                                <p class="font-label-md text-outline uppercase">Lifecycle Stage</p>
+                                <p class="font-body-md font-bold text-on-surface">{{ lead.lifecycle_stage }}</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="font-label-md text-outline uppercase">Annual Revenue</p>
+                                <p class="font-body-md font-bold text-on-surface">${{ lead.annual_revenue|floatformat:0 }} (ARR)</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="font-label-md text-outline uppercase">Last Interaction</p>
+                                <p class="font-body-md font-bold text-on-surface">{{ lead.last_activity|timesince }} ago</p>
+                            </div>
+                            <div class="space-y-1">
+                                <p class="font-label-md text-outline uppercase">Health Score</p>
+                                <div class="flex items-center gap-2">
+                                    <p class="font-body-md font-bold text-success">{{ lead.health_score }}/100</p>
+                                    <div class="w-12 h-1.5 bg-surface-container rounded-full overflow-hidden">
+                                        <div class="bg-success h-full" style="width: {{ lead.health_score }}%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Activity Timeline (Compact Preview) -->
+                    <div class="col-span-2 md:col-span-1 glass-card rounded-xl p-6 border border-outline-variant/30">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-headline-md text-[18px] font-bold">Recent Activity</h3>
+                            <button onclick="switchTab(null, 'tab-timeline')" class="text-primary font-button text-sm">View All</button>
+                        </div>
+                        <div id="activity-list-container" class="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[1px] before:bg-outline-variant/30">
+                            {% for activity in activities|slice:":3" %}
+                            <div class="relative pl-10">
+                                <div class="absolute left-0 top-0 w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary z-10">
+                                    <span class="material-symbols-outlined text-[18px]">
+                                        {% if activity.type == 'Email' %}mail{% elif activity.type == 'Call' %}call{% elif activity.type == 'Meeting' %}calendar_today{% else %}description{% endif %}
+                                    </span>
+                                </div>
+                                <div>
+                                    <p class="font-body-sm font-bold">{{ activity.type }} Logged</p>
+                                    <p class="text-sm text-secondary">{{ activity.description }}</p>
+                                    <p class="text-xs text-outline mt-1">{{ activity.timestamp|timesince }} ago</p>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <p class="text-xs text-outline text-center py-4">No recent activity.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Relationship Map -->
+                    <div class="col-span-2 md:col-span-1 glass-card rounded-xl p-6 border border-outline-variant/30 overflow-hidden relative">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-headline-md text-[18px] font-bold">Relationship Map</h3>
+                            <button class="material-symbols-outlined text-outline">fullscreen</button>
+                        </div>
+                        <div class="h-48 relative flex items-center justify-center">
+                            <!-- Node Visualization -->
+                            <div class="absolute w-12 h-12 rounded-full bg-primary-container border-2 border-primary z-20 flex items-center justify-center shadow-md">
+                                <span class="material-symbols-outlined text-primary">person</span>
+                            </div>
+                            <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-40">
+                                <line stroke="currentColor" stroke-width="1" x1="50%" x2="20%" y1="50%" y2="20%"></line>
+                                <line stroke="currentColor" stroke-width="1" x1="50%" x2="80%" y1="50%" y2="20%"></line>
+                                <line stroke="currentColor" stroke-width="1" x1="50%" x2="50%" y1="50%" y2="85%"></line>
+                            </svg>
+                            <div class="absolute left-[20%] top-[20%] w-8 h-8 rounded-full bg-surface-container border border-outline-variant text-[8px] flex items-center justify-center font-bold">CEO</div>
+                            <div class="absolute right-[20%] top-[20%] w-8 h-8 rounded-full bg-surface-container border border-outline-variant text-[8px] flex items-center justify-center font-bold">VPE</div>
+                            <div class="absolute bottom-[15%] left-[50%] -translate-x-1/2 w-8 h-8 rounded-full bg-surface-container border border-outline-variant text-[8px] flex items-center justify-center font-bold">PM</div>
+                        </div>
+                        <p class="text-center font-label-md text-outline">Sarah is connected to 3 key decision makers</p>
+                    </div>
+                </div>
+
+                <!-- Full Activity Timeline Tab -->
+                <div id="tab-timeline" class="glass-card rounded-xl p-6 border border-outline-variant/30 tab-content hidden">
+                    <h3 class="font-headline-md text-[18px] font-bold mb-6">Complete Activity Timeline</h3>
+                    <div class="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[1px] before:bg-outline-variant/30">
+                        {% for activity in activities %}
+                        <div class="relative pl-10">
+                            <div class="absolute left-0 top-0 w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary z-10">
+                                <span class="material-symbols-outlined text-[18px]">
+                                    {% if activity.type == 'Email' %}mail{% elif activity.type == 'Call' %}call{% elif activity.type == 'Meeting' %}calendar_today{% else %}description{% endif %}
+                                </span>
+                            </div>
+                            <div>
+                                <p class="font-body-sm font-bold">{{ activity.type }} Logged</p>
+                                <p class="text-sm text-secondary">{{ activity.description }}</p>
+                                <p class="text-xs text-outline mt-1">{{ activity.timestamp|date:"M d, Y h:i A" }}</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-xs text-outline text-center py-4">No logged activity.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Widgets -->
+            <div class="col-span-12 lg:col-span-4 space-y-gutter-md">
+                <!-- Lead Score Widget -->
+                <div class="bg-primary text-on-primary rounded-xl p-6 shadow-xl relative overflow-hidden">
+                    <div class="relative z-10">
+                        <h4 class="font-label-md text-primary-fixed uppercase tracking-widest mb-4">Lead Score Intelligence</h4>
+                        <div class="flex items-baseline gap-2 mb-2">
+                            <span class="text-5xl font-black">{{ lead.score }}</span>
+                            <span class="text-primary-fixed">/ 100</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-6">
+                            <span class="material-symbols-outlined text-success">trending_up</span>
+                            <span class="text-sm">+12 pts this month</span>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="flex justify-between text-sm">
+                                <span class="opacity-80">Profile Fit</span>
+                                <span class="font-bold">{% if lead.score > 80 %}Excellent{% elif lead.score > 50 %}Good{% else %}Fair{% endif %}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="opacity-80">Engagement</span>
+                                <span class="font-bold">{% if lead.score > 80 %}High{% elif lead.score > 50 %}Medium{% else %}Low{% endif %}</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="opacity-80">Intent Signal</span>
+                                <span class="font-bold">{% if lead.score > 80 %}Surging{% else %}Steady{% endif %}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Abstract background element -->
+                    <div class="absolute top-[-20%] right-[-10%] w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                    <div class="absolute bottom-[-10%] left-[-10%] w-24 h-24 bg-primary-fixed-dim/20 rounded-full blur-2xl"></div>
+                </div>
+
+                <!-- Upcoming Tasks Widget -->
+                <div class="glass-card rounded-xl p-6 border border-outline-variant/30">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-headline-md text-[18px] font-bold">Upcoming Tasks</h3>
+                        <button onclick="toggleAddTaskForm()" class="material-symbols-outlined p-1 bg-surface-container rounded-lg text-primary">add</button>
+                    </div>
+
+                    <!-- Inline Add Task Form -->
+                    <div id="add-task-form-container" class="hidden mb-4 p-3 bg-surface-container-low rounded-xl border border-outline-variant/30">
+                        <input type="text" id="new-task-desc" placeholder="Task description..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary mb-2"/>
+                        <div class="flex gap-2 mb-2">
+                            <input type="date" id="new-task-due" class="w-full bg-white border border-outline-variant rounded-lg px-2 py-1 text-[10px] focus:ring-1 focus:ring-primary"/>
+                            <select id="new-task-priority" class="w-full bg-white border border-outline-variant rounded-lg px-2 py-1 text-[10px] focus:ring-1 focus:ring-primary">
+                                <option value="High">High</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="Low">Low</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-end gap-2">
+                            <button onclick="toggleAddTaskForm()" class="px-2.5 py-1 text-[10px] border border-outline-variant rounded hover:bg-slate-50">Cancel</button>
+                            <button onclick="submitNewTask()" class="px-2.5 py-1 text-[10px] bg-primary text-on-primary rounded hover:opacity-90">Add</button>
+                        </div>
+                    </div>
+
+                    <div id="task-list-container" class="space-y-4">
+                        {% for task in tasks %}
+                        <div id="task-item-{{ task.id }}" class="flex gap-4 p-3 rounded-lg hover:bg-surface-container-low transition-colors group">
+                            <button onclick="completeTask('{{ task.id }}')" class="w-6 h-6 rounded border-2 {% if task.completed %}bg-success border-success text-white flex items-center justify-center{% else %}border-outline-variant group-hover:border-primary{% endif %} mt-1 transition-colors">
+                                {% if task.completed %}<span class="material-symbols-outlined text-[16px]">check</span>{% endif %}
+                            </button>
+                            <div>
+                                <p class="font-body-sm font-bold text-on-surface {% if task.completed %}line-through opacity-50{% endif %}">{{ task.description }}</p>
+                                <div class="flex items-center gap-3 mt-1">
+                                    <span class="font-label-md {% if task.priority == 'High' %}text-error{% else %}text-outline{% endif %} flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">event</span> {{ task.due_date|date:"M d" }}
+                                    </span>
+                                    <span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded font-label-md">{{ task.priority }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-xs text-outline text-center py-4" id="no-tasks-placeholder">No upcoming tasks.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Recent Emails -->
+                <div class="glass-card rounded-xl p-6 border border-outline-variant/30">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-headline-md text-[18px] font-bold">Recent Emails</h3>
+                        <button class="material-symbols-outlined text-outline">open_in_new</button>
+                    </div>
+                    <div class="space-y-1">
+                        <div class="p-3 rounded-lg hover:bg-surface-container-low cursor-pointer transition-all border-b border-outline-variant/10 last:border-0">
+                            <p class="font-body-sm font-bold truncate">Re: System Deployment Schedule</p>
+                            <p class="text-xs text-secondary line-clamp-1 mt-1">Thanks for the update, team. We'll proceed with...</p>
+                            <p class="text-[10px] text-outline mt-2">Received • 4h ago</p>
+                        </div>
+                        <div class="p-3 rounded-lg hover:bg-surface-container-low cursor-pointer transition-all border-b border-outline-variant/10 last:border-0">
+                            <p class="font-body-sm font-bold truncate">Intro: Sarah &lt;&gt; Mark Wilson</p>
+                            <p class="text-xs text-secondary line-clamp-1 mt-1">Connecting you both regarding the security audit...</p>
+                            <p class="text-[10px] text-outline mt-2">Sent • Yesterday</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Tab switching logic
+    function switchTab(e, tabId) {
+        if (e) e.preventDefault();
+        
+        // Hide all tabs
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        // Show selected tab
+        document.getElementById(tabId).classList.remove('hidden');
+        
+        // Update nav styling
+        document.querySelectorAll('nav a').forEach(a => {
+            if (a.closest('header') || a.closest('aside')) return;
+            a.classList.remove('text-primary', 'border-primary');
+            a.classList.add('text-secondary', 'border-transparent');
+        });
+        
+        if (e) {
+            e.currentTarget.classList.remove('text-secondary', 'border-transparent');
+            e.currentTarget.classList.add('text-primary', 'border-primary');
+        }
+    }
+
+    // Toggle Task Form
+    function toggleAddTaskForm() {
+        const container = document.getElementById('add-task-form-container');
+        container.classList.toggle('hidden');
+        document.getElementById('new-task-desc').focus();
+    }
+
+    // Complete Task AJAX
+    function completeTask(taskId) {
+        const url = "{% url 'complete_task' %}";
+        const csrfToken = "{{ csrf_token }}";
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrfToken
+            },
+            body: `task_id=${taskId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Refresh task list UI locally or reload
+                const taskBtn = document.querySelector(`#task-item-${taskId} button`);
+                const taskText = document.querySelector(`#task-item-${taskId} p`);
+                
+                if (data.completed) {
+                    taskBtn.className = "w-6 h-6 rounded border-2 bg-success border-success text-white flex items-center justify-center mt-1 transition-colors";
+                    taskBtn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check</span>';
+                    taskText.classList.add('line-through', 'opacity-50');
+                } else {
+                    taskBtn.className = "w-6 h-6 rounded border-2 border-outline-variant group-hover:border-primary mt-1 transition-colors";
+                    taskBtn.innerHTML = '';
+                    taskText.classList.remove('line-through', 'opacity-50');
+                }
+            } else {
+                alert("Failed to update task: " + data.error);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Network error.");
+        });
+    }
+
+    // Add Task AJAX
+    function submitNewTask() {
+        const desc = document.getElementById('new-task-desc').value;
+        const due = document.getElementById('new-task-due').value;
+        const priority = document.getElementById('new-task-priority').value;
+        
+        if (!desc || !due) {
+            alert("Please enter a description and due date.");
+            return;
+        }
+
+        const url = "{% url 'add_task' %}";
+        const csrfToken = "{{ csrf_token }}";
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrfToken
+            },
+            body: `lead_id={{ lead.id }}&description=${encodeURIComponent(desc)}&due_date=${due}&priority=${priority}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Hide form
+                toggleAddTaskForm();
+                // Clear fields
+                document.getElementById('new-task-desc').value = '';
+                document.getElementById('new-task-due').value = '';
+                
+                // Remove placeholder
+                const ph = document.getElementById('no-tasks-placeholder');
+                if (ph) ph.remove();
+
+                // Append new task element
+                const container = document.getElementById('task-list-container');
+                const completedClass = data.task.completed ? 'line-through opacity-50' : '';
+                const btnInner = data.task.completed ? '<span class="material-symbols-outlined text-[16px]">check</span>' : '';
+                const btnClass = data.task.completed ? 'bg-success border-success text-white flex items-center justify-center' : 'border-outline-variant group-hover:border-primary';
+                
+                const taskHtml = `
+                    <div id="task-item-${data.task.id}" class="flex gap-4 p-3 rounded-lg hover:bg-surface-container-low transition-colors group">
+                        <button onclick="completeTask('${data.task.id}')" class="w-6 h-6 rounded border-2 ${btnClass} mt-1 transition-colors">
+                            ${btnInner}
+                        </button>
+                        <div>
+                            <p class="font-body-sm font-bold text-on-surface ${completedClass}">${data.task.description}</p>
+                            <div class="flex items-center gap-3 mt-1">
+                                <span class="font-label-md ${data.task.priority === 'High' ? 'text-error' : 'text-outline'} flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[14px]">event</span> ${data.task.due_date_formatted}
+                                </span>
+                                <span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded font-label-md">${data.task.priority}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('afterbegin', taskHtml);
+            } else {
+                alert("Failed to add task: " + data.error);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Network error.");
+        });
+    }
+
+    // Log Interaction AJAX (Send Email / Call)
+    function logInteraction(type) {
+        const url = "{% url 'log_activity' %}";
+        const csrfToken = "{{ csrf_token }}";
+        
+        let desc = "";
+        if (type === 'Email') {
+            desc = prompt("Log Email sent to {{ lead.name }}. Description:", "Sent email regarding contract renewal quote.");
+        } else if (type === 'Call') {
+            desc = prompt("Log Phone Call with {{ lead.name }}. Description:", "Spoke about current timelines. Positive feedback.");
+        } else {
+            desc = prompt("Log Meeting with {{ lead.name }}. Description:", "Scheduled Q4 strategic planning session.");
+        }
+        
+        if (desc === null) return; // cancelled
+        if (!desc.trim()) {
+            alert("Please enter a description to log the activity.");
+            return;
+        }
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrfToken
+            },
+            body: `lead_id={{ lead.id }}&type=${type}&description=${encodeURIComponent(desc)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Prepend to overview timeline
+                const container = document.getElementById('activity-list-container');
+                const noAct = container.querySelector('.text-outline');
+                if (noAct) noAct.remove();
+
+                const icon = type === 'Email' ? 'mail' : (type === 'Call' ? 'call' : 'calendar_today');
+                
+                const actHtml = `
+                    <div class="relative pl-10">
+                        <div class="absolute left-0 top-0 w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary z-10">
+                            <span class="material-symbols-outlined text-[18px]">${icon}</span>
+                        </div>
+                        <div>
+                            <p class="font-body-sm font-bold">${type} Logged</p>
+                            <p class="text-sm text-secondary">${data.activity.description}</p>
+                            <p class="text-xs text-outline mt-1">Just now</p>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('afterbegin', actHtml);
+                
+                // Prepend to timeline tab if it exists
+                const tabTimeline = document.getElementById('tab-timeline').querySelector('.space-y-6');
+                if (tabTimeline) {
+                    const fullActHtml = `
+                        <div class="relative pl-10">
+                            <div class="absolute left-0 top-0 w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary z-10">
+                                <span class="material-symbols-outlined text-[18px]">${icon}</span>
+                            </div>
+                            <div>
+                                <p class="font-body-sm font-bold">${type} Logged</p>
+                                <p class="text-sm text-secondary">${data.activity.description}</p>
+                                <p class="text-xs text-outline mt-1">Just now</p>
+                            </div>
+                        </div>
+                    `;
+                    tabTimeline.insertAdjacentHTML('afterbegin', fullActHtml);
+                }
+            } else {
+                alert("Failed to log activity: " + data.error);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Network error.");
+        });
+    }
+</script>
+{% endblock %}

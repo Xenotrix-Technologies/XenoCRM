@@ -1,0 +1,304 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Executive Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-gradient {
+        background: linear-gradient(180deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0) 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    <!-- Dashboard Header -->
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Executive Dashboard</h2>
+            <p class="text-secondary font-body-md">Welcome back, {{ request.user.first_name|default:request.user.username }}. Here's what's happening with XenoCRM today.</p>
+        </div>
+        <div class="flex space-x-3">
+            <button class="flex items-center px-4 py-2 bg-white border border-outline-variant rounded-lg font-button text-button text-on-surface-variant hover:bg-surface transition-colors">
+                <span class="material-symbols-outlined mr-2 text-sm">calendar_today</span>
+                Calendar
+            </button>
+            <button onclick="document.getElementById('quick-create-modal').classList.remove('hidden')" class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
+                <span class="material-symbols-outlined mr-2 text-sm">add</span>
+                Quick Create
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Bento Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <!-- KPI: Revenue -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 bg-primary/10 rounded-lg">
+                    <span class="material-symbols-outlined text-primary">payments</span>
+                </div>
+                <span class="text-success text-xs font-bold flex items-center">
+                    <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
+                    +12.5%
+                </span>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Total Revenue</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">${{ total_revenue|floatformat:0 }}</h3>
+            <div class="w-full h-1 bg-surface-variant rounded-full mt-4 overflow-hidden">
+                <div class="h-full bg-primary w-[75%]"></div>
+            </div>
+        </div>
+        
+        <!-- KPI: Leads -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 bg-tertiary-container/20 rounded-lg">
+                    <span class="material-symbols-outlined text-tertiary">group_add</span>
+                </div>
+                <span class="text-success text-xs font-bold flex items-center">
+                    <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
+                    +8.2%
+                </span>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Total Leads</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">{{ total_leads }}</h3>
+            <div class="flex items-center mt-4 space-x-2">
+                <div class="flex -space-x-2">
+                    {% for lead in new_leads|slice:":3" %}
+                    <div class="w-6 h-6 rounded-full border-2 border-white overflow-hidden bg-primary text-white text-[8px] flex items-center justify-center font-bold">
+                        {% if lead.profile_image_url %}
+                        <img class="w-full h-full object-cover" src="{{ lead.profile_image_url }}" alt=""/>
+                        {% else %}
+                        {{ lead.name|slice:":1" }}
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                <span class="text-[10px] text-outline">+{{ new_leads.count }} new today</span>
+            </div>
+        </div>
+
+        <!-- KPI: Conversion -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 bg-warning/10 rounded-lg">
+                    <span class="material-symbols-outlined text-warning">analytics</span>
+                </div>
+                <span class="text-success text-xs font-bold flex items-center">
+                    <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
+                    +1.4%
+                </span>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Conversion Rate</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">{{ conversion_rate|floatformat:1 }}%</h3>
+            <p class="text-[10px] text-outline mt-4">Industry Avg: 10.2%</p>
+        </div>
+
+        <!-- KPI: Active Projects / Tasks -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 bg-on-secondary-fixed-variant/10 rounded-lg">
+                    <span class="material-symbols-outlined text-on-secondary-fixed-variant">rocket_launch</span>
+                </div>
+                <span class="bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold">{{ active_tasks_count }} ACTIVE</span>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Pending Tasks</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">{{ active_tasks_count }}</h3>
+            <div class="flex justify-between mt-4 text-[10px] text-outline">
+                <span>{{ completed_tasks_count }} Completed this month</span>
+                <span>{{ task_completion_rate|floatformat:0 }}% on track</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts & Main Insights Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <!-- Revenue Trend -->
+        <div class="lg:col-span-2 glass-card p-6 rounded-2xl border border-white">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h4 class="font-headline-md text-headline-md text-on-background">Revenue Trend</h4>
+                    <p class="text-xs text-secondary">Monthly performance compared to last year</p>
+                </div>
+                <select class="bg-surface-container border-none text-xs rounded-lg px-3 py-1.5 focus:ring-1 focus:ring-primary">
+                    <option>Last 6 Months</option>
+                    <option>Last Year</option>
+                </select>
+            </div>
+            <div class="h-64 relative w-full overflow-hidden rounded-xl">
+                <div class="absolute inset-0 chart-gradient opacity-30"></div>
+                <!-- Interactive SVG Trend Chart -->
+                <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300">
+                    <path d="M0,250 L100,220 L200,240 L300,180 L400,200 L500,140 L600,160 L700,90 L800,110 L900,40 L1000,60" fill="none" stroke="#2563EB" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
+                    <path d="M0,250 L100,220 L200,240 L300,180 L400,200 L500,140 L600,160 L700,90 L800,110 L900,40 L1000,60 V300 H0 Z" fill="url(#grad1)" opacity="0.1"></path>
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#2563EB;stop-opacity:1"></stop>
+                            <stop offset="100%" style="stop-color:#2563EB;stop-opacity:0"></stop>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="absolute bottom-0 left-0 right-0 flex justify-between px-2 text-[10px] text-outline font-label-md">
+                    <span>JAN</span><span>FEB</span><span>MAR</span><span>APR</span><span>MAY</span><span>JUN</span><span>JUL</span><span>AUG</span><span>SEP</span><span>OCT</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sales Funnel -->
+        <div class="glass-card p-6 rounded-2xl border border-white">
+            <h4 class="font-headline-md text-headline-md text-on-background mb-1">Sales Funnel</h4>
+            <p class="text-xs text-secondary mb-8">Lead to Deal conversion steps</p>
+            <div class="space-y-4">
+                <div class="relative">
+                    <div class="flex justify-between text-xs font-bold mb-1">
+                        <span>Prospects</span>
+                        <span>{{ funnel_data.New }}</span>
+                    </div>
+                    <div class="h-8 bg-primary/20 rounded-lg w-full flex items-center px-4 overflow-hidden relative">
+                        <div class="h-full bg-primary/80 absolute left-0" style="width: 100%"></div>
+                        <span class="relative z-10 text-[10px] text-white">100%</span>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="flex justify-between text-xs font-bold mb-1">
+                        <span>Qualified</span>
+                        <span>{{ funnel_data.Qualified }}</span>
+                    </div>
+                    <div class="h-8 bg-primary/20 rounded-lg w-[85%] flex items-center px-4 relative overflow-hidden">
+                        <div class="h-full bg-primary/70 absolute left-0" style="width: 100%"></div>
+                        <span class="relative z-10 text-[10px] text-white">{{ funnel_rates.Qualified|floatformat:0 }}%</span>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="flex justify-between text-xs font-bold mb-1">
+                        <span>Proposal</span>
+                        <span>{{ funnel_data.Proposal }}</span>
+                    </div>
+                    <div class="h-8 bg-primary/20 rounded-lg w-[65%] flex items-center px-4 relative overflow-hidden">
+                        <div class="h-full bg-primary/60 absolute left-0" style="width: 100%"></div>
+                        <span class="relative z-10 text-[10px] text-white">{{ funnel_rates.Proposal|floatformat:0 }}%</span>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="flex justify-between text-xs font-bold mb-1">
+                        <span>Negotiation</span>
+                        <span>{{ funnel_data.Negotiation }}</span>
+                    </div>
+                    <div class="h-8 bg-primary/20 rounded-lg w-[45%] flex items-center px-4 relative overflow-hidden">
+                        <div class="h-full bg-primary/50 absolute left-0" style="width: 100%"></div>
+                        <span class="relative z-10 text-[10px] text-white">{{ funnel_rates.Negotiation|floatformat:0 }}%</span>
+                    </div>
+                </div>
+                <div class="relative">
+                    <div class="flex justify-between text-xs font-bold mb-1">
+                        <span>Closed Won</span>
+                        <span>{{ funnel_data.Won }}</span>
+                    </div>
+                    <div class="h-8 bg-primary/20 rounded-lg w-[30%] flex items-center px-4 relative overflow-hidden">
+                        <div class="h-full bg-primary/40 absolute left-0" style="width: 100%"></div>
+                        <span class="relative z-10 text-[10px] text-white">{{ funnel_rates.Won|floatformat:0 }}%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Grid: Widgets -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+        <!-- XenoAI Insights -->
+        <div class="xl:col-span-1 glass-card p-6 rounded-2xl border border-primary/20 bg-primary-container/5">
+            <div class="flex items-center space-x-2 mb-6">
+                <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                <h4 class="font-bold text-on-surface">XenoAI Insights</h4>
+            </div>
+            <div class="space-y-4">
+                {% for insight in ai_insights %}
+                <div class="p-3 bg-white rounded-xl border border-outline-variant shadow-sm text-xs group hover:border-primary transition-all cursor-pointer">
+                    <div class="flex justify-between mb-1">
+                        <span class="font-bold {% if insight.type == 'HOT' %}text-primary{% elif insight.type == 'CHURN' %}text-warning{% else %}text-success{% endif %}">{{ insight.title }}</span>
+                        <span class="text-[10px] text-outline">{{ insight.time }}</span>
+                    </div>
+                    <p class="text-on-surface-variant leading-relaxed">{{ insight.description }}</p>
+                </div>
+                {% empty %}
+                <p class="text-xs text-outline text-center py-4">No AI insights available today.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="xl:col-span-1 glass-card p-6 rounded-2xl border border-white">
+            <h4 class="font-bold text-on-surface mb-6">Recent Activities</h4>
+            <div class="relative space-y-6 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant/30">
+                {% for activity in recent_activities %}
+                <div class="relative pl-8">
+                    <div class="absolute left-0 top-1 w-[24px] h-[24px] bg-white border-2 {% if activity.type == 'Email' %}border-primary{% elif activity.type == 'Call' %}border-warning{% elif activity.type == 'Meeting' %}border-tertiary{% else %}border-success{% endif %} rounded-full flex items-center justify-center z-10">
+                        <span class="material-symbols-outlined text-[14px] {% if activity.type == 'Email' %}text-primary{% elif activity.type == 'Call' %}text-warning{% elif activity.type == 'Meeting' %}text-tertiary{% else %}text-success{% endif %}">
+                            {% if activity.type == 'Email' %}mail{% elif activity.type == 'Call' %}call{% elif activity.type == 'Meeting' %}event{% else %}check_circle{% endif %}
+                        </span>
+                    </div>
+                    <p class="text-xs font-bold text-on-surface">{{ activity.description }}</p>
+                    <p class="text-[10px] text-outline">{{ activity.lead.name }} • {{ activity.timestamp|timesince }} ago</p>
+                </div>
+                {% empty %}
+                <p class="text-xs text-outline text-center py-4">No recent activity.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Upcoming Meetings -->
+        <div class="xl:col-span-1 glass-card p-6 rounded-2xl border border-white">
+            <h4 class="font-bold text-on-surface mb-6">Upcoming Meetings</h4>
+            <div class="space-y-4">
+                {% for meeting in upcoming_meetings %}
+                <div class="flex items-center p-3 hover:bg-surface-container-highest rounded-xl transition-colors cursor-pointer group">
+                    <div class="bg-primary/10 p-2 rounded-lg text-primary mr-4 text-center min-w-[44px]">
+                        <p class="text-[10px] font-bold uppercase leading-none">{{ meeting.date_time|date:"M" }}</p>
+                        <p class="text-lg font-black leading-none mt-1">{{ meeting.date_time|date:"d" }}</p>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs font-bold text-on-surface group-hover:text-primary transition-colors">{{ meeting.title }}</p>
+                        <p class="text-[10px] text-outline">{{ meeting.date_time|date:"h:i A" }} • {{ meeting.location }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-xs text-outline text-center py-4">No upcoming meetings scheduled.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- New Leads List -->
+        <div class="xl:col-span-1 glass-card p-6 rounded-2xl border border-white">
+            <div class="flex justify-between items-center mb-6">
+                <h4 class="font-bold text-on-surface">New Leads</h4>
+                <a href="{% url 'leads' %}" class="text-primary text-[10px] font-bold uppercase hover:underline">View All</a>
+            </div>
+            <div class="space-y-4">
+                {% for lead in new_leads|slice:":4" %}
+                <div class="flex items-center justify-between group">
+                    <div class="flex items-center">
+                        {% if lead.profile_image_url %}
+                        <img class="w-10 h-10 rounded-lg border border-outline-variant object-cover mr-3" src="{{ lead.profile_image_url }}" alt=""/>
+                        {% else %}
+                        <div class="w-10 h-10 rounded-lg border border-outline-variant bg-primary-container text-primary flex items-center justify-center mr-3 font-bold">
+                            {{ lead.name|slice:":2"|upper }}
+                        </div>
+                        {% endif %}
+                        <div>
+                            <a href="{% url 'contact_detail' lead.id %}" class="text-xs font-bold text-on-surface hover:text-primary transition-colors">{{ lead.name }}</a>
+                            <p class="text-[10px] text-outline">{{ lead.company }}</p>
+                        </div>
+                    </div>
+                    <span class="text-[9px] px-2 py-0.5 rounded-full font-bold {% if lead.score > 80 %}bg-primary/10 text-primary{% elif lead.score > 50 %}bg-warning/10 text-warning{% else %}bg-surface-container text-secondary{% endif %}">
+                        {% if lead.score > 80 %}HOT{% elif lead.score > 50 %}WARM{% else %}NEW{% endif %}
+                    </span>
+                </div>
+                {% empty %}
+                <p class="text-xs text-outline text-center py-4">No leads available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

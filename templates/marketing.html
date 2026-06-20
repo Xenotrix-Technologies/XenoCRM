@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Marketing{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    <!-- Header -->
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Marketing Automation</h2>
+            <p class="text-secondary font-body-md">Create and monitor automated email campaigns, outreach strategies, and templates.</p>
+        </div>
+        <a href="{% url 'campaign' %}" class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md hover:opacity-90 active:scale-95 transition-all">
+            <span class="material-symbols-outlined mr-2 text-sm">rocket_launch</span>
+            Campaigns Hub
+        </a>
+    </div>
+
+    <!-- Marketing Stats Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm">
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Avg Open Rate</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-2">{{ stats.email_open_rate }}%</h3>
+            <span class="text-success text-xs font-bold flex items-center mt-2">
+                <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
+                +2.4% vs last week
+            </span>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm">
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Click Through Rate (CTR)</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-2">{{ stats.click_through_rate }}%</h3>
+            <span class="text-success text-xs font-bold flex items-center mt-2">
+                <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
+                +0.8% vs last week
+            </span>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm">
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Marketing Subscribers</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-2">{{ stats.subscribers }}</h3>
+            <span class="text-secondary text-[10px] flex items-center mt-2">
+                12 unsubscribed this month
+            </span>
+        </div>
+        <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm">
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Campaigns Sent</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-2">{{ stats.campaigns_sent }}</h3>
+            <span class="text-primary text-[10px] font-bold flex items-center mt-2">
+                2 active right now
+            </span>
+        </div>
+    </div>
+
+    <!-- Email Templates Section -->
+    <div class="glass-card rounded-2xl border border-white/40 p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-xl font-bold font-headline-md">Outreach & Email Templates</h3>
+            <button class="text-xs text-primary font-bold hover:underline">Create Template</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for template in templates %}
+            <div class="border border-outline-variant/30 rounded-xl p-4 bg-white/50 hover:border-primary transition-colors flex flex-col justify-between">
+                <div>
+                    <h4 class="font-bold text-on-surface text-sm mb-1">{{ template.name }}</h4>
+                    <p class="text-xs text-outline font-mono mb-3">Subject: {{ template.subject }}</p>
+                    <div class="text-xs text-secondary bg-surface-container-low p-3 rounded-lg border border-outline-variant/20 line-clamp-3">
+                        {{ template.body_html|safe }}
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-outline-variant/10 flex justify-end">
+                    <button class="text-xs text-primary font-bold hover:underline">Edit Template</button>
+                </div>
+            </div>
+            {% empty %}
+            <!-- Default beautiful preloaded system templates -->
+            <div class="border border-outline-variant/30 rounded-xl p-5 bg-white/50 hover:border-primary transition-colors flex flex-col justify-between">
+                <div>
+                    <h4 class="font-bold text-on-surface text-sm mb-1">Cold Outreach - Initial Touch</h4>
+                    <p class="text-xs text-outline font-mono mb-3">Subject: Scaling your sales efficiency with XenoCRM</p>
+                    <div class="text-xs text-secondary bg-surface-container-low p-3 rounded-lg border border-outline-variant/20">
+                        Hi {Name}, I noticed your sales team at {Company} is scaling rapidly. XenoCRM can help you increase team conversions by 15% through our AI pipeline forecasting...
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-outline-variant/10 flex justify-end">
+                    <button class="text-xs text-primary font-bold hover:underline">Use Template</button>
+                </div>
+            </div>
+            
+            <div class="border border-outline-variant/30 rounded-xl p-5 bg-white/50 hover:border-primary transition-colors flex flex-col justify-between">
+                <div>
+                    <h4 class="font-bold text-on-surface text-sm mb-1">Product Demo Follow Up</h4>
+                    <p class="text-xs text-outline font-mono mb-3">Subject: XenoCRM trial and demo resources</p>
+                    <div class="text-xs text-secondary bg-surface-container-low p-3 rounded-lg border border-outline-variant/20">
+                        Hi {Name}, thank you for your time on the demonstration call today. Here is a link to configure your company workspace and sample billing data...
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 border-t border-outline-variant/10 flex justify-end">
+                    <button class="text-xs text-primary font-bold hover:underline">Use Template</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

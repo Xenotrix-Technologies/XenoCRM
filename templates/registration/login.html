@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Sign In{% endblock %}
+
+{% block auth_content %}
+<div class="min-h-screen bg-background flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <!-- Visual background blobs -->
+    <div class="absolute top-[-10%] right-[-10%] w-96 h-96 bg-primary-container/20 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-tertiary-container/10 rounded-full blur-3xl"></div>
+
+    <div class="w-full max-w-md glass-card rounded-2xl p-8 border border-white/40 shadow-2xl relative z-10">
+        <div class="text-center mb-8">
+            <h1 class="font-headline-lg text-[32px] font-bold text-primary leading-tight">XenoCRM</h1>
+            <p class="text-sm text-secondary mt-1">Enterprise Edition SaaS CRM</p>
+        </div>
+
+        {% if messages %}
+            <div class="mb-4 space-y-2">
+                {% for message in messages %}
+                    <div class="p-3 text-sm rounded-lg {% if message.tags == 'error' %}bg-error-container text-on-error-container{% else %}bg-success/10 text-success{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Username</label>
+                    <input type="text" name="username" required placeholder="Enter username" class="w-full bg-white/60 border border-outline-variant rounded-xl px-4 py-3 text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"/>
+                </div>
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Password</label>
+                    <input type="password" name="password" required placeholder="Enter password" class="w-full bg-white/60 border border-outline-variant rounded-xl px-4 py-3 text-body-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"/>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between mt-4 mb-6">
+                <label class="flex items-center gap-2 text-body-sm text-secondary cursor-pointer">
+                    <input type="checkbox" class="rounded border-outline-variant text-primary focus:ring-primary"/>
+                    Remember me
+                </label>
+                <a href="#" class="text-body-sm text-primary font-semibold hover:underline">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="w-full py-3 bg-primary text-on-primary font-button rounded-xl shadow-lg shadow-primary/20 active:scale-95 transition-all">
+                Sign In
+            </button>
+        </form>
+
+        <div class="mt-8 text-center border-t border-outline-variant/30 pt-6">
+            <p class="text-body-sm text-secondary">
+                Don't have an account? 
+                <a href="{% url 'signup' %}" class="text-primary font-bold hover:underline">Sign up now</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Sales Pipeline{% endblock %}
+
+{% block extra_css %}
+<style>
+    .kanban-column {
+        min-width: 320px;
+        max-width: 320px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-background overflow-x-hidden">
+    <!-- Forecast Summary Bar -->
+    <div class="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-outline-variant/30 glass-card">
+            <p class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Weighted Forecast</p>
+            <h3 class="text-headline-md font-headline-md font-bold mt-1 text-primary">${{ weighted_forecast|floatformat:0 }}</h3>
+            <div class="mt-2 flex items-center gap-1 text-success text-body-sm font-bold">
+                <span class="material-symbols-outlined text-[18px]">trending_up</span>
+                12% vs last month
+            </div>
+        </div>
+        <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-outline-variant/30 glass-card">
+            <p class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Total Pipeline</p>
+            <h3 class="text-headline-md font-headline-md font-bold mt-1">${{ total_pipeline|floatformat:0 }}</h3>
+            <p class="text-label-md font-label-md text-outline mt-2">{{ total_deals }} Active Deals</p>
+        </div>
+        <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-outline-variant/30 glass-card">
+            <p class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Win Rate</p>
+            <h3 class="text-headline-md font-headline-md font-bold mt-1 text-tertiary">{{ win_rate|floatformat:1 }}%</h3>
+            <div class="mt-2 w-full bg-surface-container rounded-full h-1.5">
+                <div class="bg-tertiary h-full rounded-full" style="width: {{ win_rate }}%"></div>
+            </div>
+        </div>
+        <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-outline-variant/30 glass-card">
+            <p class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Avg. Deal Cycle</p>
+            <h3 class="text-headline-md font-headline-md font-bold mt-1">42 Days</h3>
+            <p class="text-label-md font-label-md text-outline mt-2">-3 days improvement</p>
+        </div>
+    </div>
+
+    <!-- Kanban Toolbar -->
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+            <div class="flex bg-surface-container-low p-1 rounded-xl">
+                <button class="px-4 py-1.5 bg-white shadow-sm rounded-lg text-body-sm font-bold text-primary">Board</button>
+                <a href="{% url 'leads' %}" class="px-4 py-1.5 text-body-sm text-secondary hover:text-primary transition-colors flex items-center">List</a>
+            </div>
+            <button class="flex items-center gap-2 px-3 py-1.5 border border-outline-variant rounded-lg text-body-sm hover:bg-white transition-colors">
+                <span class="material-symbols-outlined text-[20px]">filter_list</span>
+                Filter
+            </button>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <div class="flex -space-x-2">
+                {% for owner in owners|slice:":3" %}
+                <div class="w-8 h-8 rounded-full border-2 border-background bg-secondary-container text-secondary flex items-center justify-center text-[10px] font-bold overflow-hidden" title="{{ owner.user.username }}">
+                    {{ owner.user.username|slice:":2"|upper }}
+                </div>
+                {% endfor %}
+                <div class="w-8 h-8 rounded-full border-2 border-background bg-secondary text-white flex items-center justify-center text-[10px] font-bold">+{{ owners.count }}</div>
+            </div>
+            <button onclick="document.getElementById('quick-create-modal').classList.remove('hidden')" class="px-4 py-2 bg-primary text-on-primary font-button rounded-xl shadow-lg active:scale-95 transition-all">
+                New Deal
+            </button>
+        </div>
+    </div>
+
+    <!-- Kanban Board Canvas -->
+    <div class="flex-1 overflow-x-auto pb-6 custom-scrollbar">
+        <div class="flex gap-6 h-full min-h-[600px]">
+            {% for stage_name, stage_info in pipeline_stages.items %}
+            <!-- Kanban Column for {{ stage_name }} -->
+            <div class="kanban-column flex flex-col drop-zone" data-stage="{{ stage_name }}">
+                <div class="flex items-center justify-between mb-4 px-2 {% if stage_name == 'Qualified' %}border-l-4 border-primary pl-2{% endif %}">
+                    <div>
+                        <h4 class="font-headline-md text-[16px] font-bold text-on-surface uppercase tracking-wide">{{ stage_name }}</h4>
+                        <span class="text-label-md font-label-md text-primary column-total" data-total="{{ stage_info.total_value }}">
+                            ${{ stage_info.total_value|floatformat:0 }} • <span class="column-count">{{ stage_info.leads|length }}</span> Deals
+                        </span>
+                    </div>
+                    <button class="material-symbols-outlined text-outline hover:text-primary">more_horiz</button>
+                </div>
+                
+                <div class="flex-1 space-y-4 rounded-2xl bg-surface-container-low/40 p-2 min-h-[450px] column-body transition-colors">
+                    {% for lead in stage_info.leads %}
+                    <!-- Card: {{ lead.name }} -->
+                    <div id="lead-card-{{ lead.id }}" draggable="true" data-lead-id="{{ lead.id }}" data-value="{{ lead.value }}" class="lead-card bg-white p-4 rounded-xl shadow-sm border border-outline-variant hover:shadow-md hover:border-primary/30 transition-all cursor-grab active:cursor-grabbing group">
+                        <div class="flex items-start justify-between mb-2">
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded uppercase 
+                                {% if lead.score > 80 %}bg-primary-container/10 text-primary
+                                {% elif lead.score > 50 %}bg-secondary-container text-on-secondary-container
+                                {% else %}bg-error-container/40 text-error{% endif %}">
+                                {% if lead.score > 80 %}High{% elif lead.score > 50 %}Medium{% else %}Low{% endif %}
+                            </span>
+                            <div class="flex items-center gap-1">
+                                <a href="{% url 'contact_detail' lead.id %}" class="opacity-0 group-hover:opacity-100 material-symbols-outlined text-outline text-[18px] hover:text-primary transition-all">edit</a>
+                                {% if lead.score > 80 %}
+                                <span class="material-symbols-outlined text-warning text-[18px]" style="font-variation-settings: 'FILL' 1;">flag</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <h5 class="font-body-md font-bold text-on-surface mb-1">{{ lead.name }}</h5>
+                        <p class="text-body-sm text-on-surface-variant mb-3">{{ lead.company }}</p>
+                        <div class="flex items-center justify-between mt-4">
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-6 h-6 rounded-full overflow-hidden bg-primary text-white text-[8px] flex items-center justify-center font-bold" title="Owner: {{ lead.owner.user.username }}">
+                                    {% if lead.profile_image_url %}
+                                    <img class="w-full h-full object-cover" src="{{ lead.profile_image_url }}" alt=""/>
+                                    {% else %}
+                                    {{ lead.owner.user.username|slice:":2"|upper }}
+                                    {% endif %}
+                                </div>
+                                <span class="text-label-md font-label-md font-bold">${{ lead.value|floatformat:0 }}</span>
+                            </div>
+                            <span class="text-[10px] font-label-md text-outline">{{ lead.created_at|date:"M d" }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // AJAX Drag & Drop logic
+    const cards = document.querySelectorAll('.lead-card');
+    const dropZones = document.querySelectorAll('.drop-zone');
+
+    cards.forEach(card => {
+        card.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', card.id);
+            card.classList.add('opacity-50');
+            
+            card.style.transform = 'scale(1.02) rotate(1deg)';
+            card.style.boxShadow = '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)';
+            card.style.zIndex = '100';
+        });
+
+        card.addEventListener('dragend', () => {
+            card.classList.remove('opacity-50');
+            card.style.transform = 'scale(1) rotate(0deg)';
+            card.style.boxShadow = '';
+            card.style.zIndex = '';
+        });
+    });
+
+    dropZones.forEach(zone => {
+        const body = zone.querySelector('.column-body');
+        
+        zone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            body.classList.add('bg-primary-container/5', 'border-primary/20');
+        });
+
+        zone.addEventListener('dragleave', () => {
+            body.classList.remove('bg-primary-container/5', 'border-primary/20');
+        });
+
+        zone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            body.classList.remove('bg-primary-container/5', 'border-primary/20');
+            
+            const cardId = e.dataTransfer.getData('text/plain');
+            const card = document.getElementById(cardId);
+            if (!card) return;
+
+            const originalColumn = card.closest('.drop-zone');
+            const targetStage = zone.getAttribute('data-stage');
+            const leadId = card.getAttribute('data-lead-id');
+
+            // If dropped in the same column, ignore
+            if (originalColumn === zone) return;
+
+            // Move card in DOM
+            body.appendChild(card);
+
+            // Trigger AJAX update
+            updateLeadStage(leadId, targetStage, card, originalColumn, zone);
+        });
+    });
+
+    function updateLeadStage(leadId, targetStage, card, originalColumn, targetColumn) {
+        const url = "{% url 'update_lead_stage' %}";
+        const csrfToken = "{{ csrf_token }}";
+
+        fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrfToken
+            },
+            body: `lead_id=${leadId}&stage=${targetStage}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Smoothly recalculate column stats
+                recalculateColumns();
+            } else {
+                alert("Failed to update deal stage: " + data.error);
+                // Rollback card placement
+                originalColumn.querySelector('.column-body').appendChild(card);
+                recalculateColumns();
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Network error: Stage update failed.");
+            originalColumn.querySelector('.column-body').appendChild(card);
+            recalculateColumns();
+        });
+    }
+
+    function recalculateColumns() {
+        dropZones.forEach(zone => {
+            const cardsInZone = zone.querySelectorAll('.lead-card');
+            let total = 0;
+            cardsInZone.forEach(c => {
+                total += parseFloat(c.getAttribute('data-value') || 0);
+            });
+
+            // Update header values
+            const countSpan = zone.querySelector('.column-count');
+            const totalSpan = zone.querySelector('.column-total');
+            
+            countSpan.textContent = cardsInZone.length;
+            totalSpan.childNodes[0].textContent = `$${total.toLocaleString('en-US', {maximumFractionDigits: 0})} • `;
+        });
+    }
+
+    // Hover visual feedback on stats
+    const stats = document.querySelectorAll('.glass-card');
+    stats.forEach(stat => {
+        stat.addEventListener('mouseenter', () => {
+            stat.classList.add('border-primary/20');
+            stat.style.transform = 'translateY(-2px)';
+            stat.style.transition = 'all 0.2s';
+        });
+        stat.addEventListener('mouseleave', () => {
+            stat.classList.remove('border-primary/20');
+            stat.style.transform = 'translateY(0)';
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Customer Support{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    <!-- Header -->
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Customer Support & SLA</h2>
+            <p class="text-secondary font-body-md">Resolve support queries, manage help desk articles, and review customer satisfaction metrics.</p>
+        </div>
+        <button class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md hover:opacity-90 active:scale-95 transition-all">
+            <span class="material-symbols-outlined mr-2 text-sm">confirmation_number</span>
+            Create Ticket
+        </button>
+    </div>
+
+    <!-- Ticket Queue and Help Articles Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Support Tickets List -->
+        <div class="lg:col-span-2 glass-card p-6 rounded-2xl border border-white/40 shadow-sm flex flex-col justify-between">
+            <div>
+                <h3 class="text-xl font-bold font-headline-md mb-6">Active Tickets Queue</h3>
+                <div class="space-y-4">
+                    {% for ticket in tickets %}
+                    <div class="p-4 bg-white border border-outline-variant/30 rounded-xl hover:border-primary transition-colors flex justify-between items-center">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-mono text-xs font-bold text-primary">{{ ticket.id }}</span>
+                                <span class="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase {% if ticket.priority == 'High' %}bg-error-container text-on-error-container{% elif ticket.priority == 'Medium' %}bg-warning/10 text-warning{% else %}bg-surface-variant text-secondary{% endif %}">
+                                    {{ ticket.priority }}
+                                </span>
+                            </div>
+                            <h4 class="font-bold text-on-surface text-sm">{{ ticket.subject }}</h4>
+                            <p class="text-[10px] text-outline mt-1">Submitted {{ ticket.created }}</p>
+                        </div>
+                        <span class="text-xs px-2.5 py-1 rounded-full font-bold {% if ticket.status == 'Open' %}bg-primary/10 text-primary{% elif ticket.status == 'Pending' %}bg-warning/10 text-warning{% else %}bg-success/10 text-success{% endif %}">
+                            {{ ticket.status }}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <p class="text-xs text-outline text-center py-6">No support tickets found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Center Sidebar -->
+        <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm">
+            <h3 class="text-xl font-bold font-headline-md mb-6">Knowledge Base</h3>
+            <div class="space-y-4">
+                {% for article in articles %}
+                <div class="p-3 bg-surface-container rounded-xl border border-outline-variant/20 hover:border-primary transition-colors cursor-pointer">
+                    <h4 class="font-bold text-xs text-on-surface">{{ article.title }}</h4>
+                    <p class="text-[10px] text-outline mt-1">Category: {{ article.category|default:"General" }}</p>
+                </div>
+                {% empty %}
+                <!-- System default help articles -->
+                <div class="p-3 bg-surface-container rounded-xl border border-outline-variant/20 hover:border-primary transition-colors cursor-pointer">
+                    <h4 class="font-bold text-xs text-on-surface">Integrating XenoCRM with Zapier</h4>
+                    <p class="text-[10px] text-outline mt-1">Category: Integration</p>
+                </div>
+                <div class="p-3 bg-surface-container rounded-xl border border-outline-variant/20 hover:border-primary transition-colors cursor-pointer">
+                    <h4 class="font-bold text-xs text-on-surface">Configuring Multi-Tenancy Roles</h4>
+                    <p class="text-[10px] text-outline mt-1">Category: Security</p>
+                </div>
+                <div class="p-3 bg-surface-container rounded-xl border border-outline-variant/20 hover:border-primary transition-colors cursor-pointer">
+                    <h4 class="font-bold text-xs text-on-surface">Importing Leads via CSV Guide</h4>
+                    <p class="text-[10px] text-outline mt-1">Category: Data Management</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | AI Assistant{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    <!-- Header -->
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">XenoAI CRM Assistant</h2>
+            <p class="text-secondary font-body-md">Leverage machine learning intelligence to identify pipeline risks and draft automated customer responses.</p>
+        </div>
+    </div>
+
+    <!-- AI Workspace Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 flex-1">
+        <!-- Interactive Chat Panel -->
+        <div class="lg:col-span-2 glass-card rounded-2xl border border-white/40 p-6 shadow-sm flex flex-col justify-between h-[500px]">
+            <div class="flex-1 overflow-y-auto space-y-4 custom-scrollbar mb-4 pr-2">
+                <!-- AI Message -->
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+                        <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                    </div>
+                    <div class="bg-surface-container p-3.5 rounded-2xl rounded-tl-none max-w-[80%] text-xs text-on-surface">
+                        <p class="font-bold mb-1 text-primary">XenoAI</p>
+                        <p>Hello! I have analyzed your CRM database. You have high-score opportunities that are ready for outreach. How can I assist you today?</p>
+                    </div>
+                </div>
+
+                <!-- User Message -->
+                <div class="flex items-start gap-3 justify-end">
+                    <div class="bg-primary text-on-primary p-3.5 rounded-2xl rounded-tr-none max-w-[80%] text-xs text-right">
+                        <p class="font-bold mb-1">You</p>
+                        <p>Show me recommended actions for today's sales pipeline.</p>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs uppercase">
+                        {{ request.user.username|slice:":2" }}
+                    </div>
+                </div>
+
+                <!-- AI Response -->
+                <div class="flex items-start gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+                        <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+                    </div>
+                    <div class="bg-surface-container p-3.5 rounded-2xl rounded-tl-none max-w-[80%] text-xs text-on-surface space-y-2">
+                        <p class="font-bold mb-1 text-primary">XenoAI</p>
+                        <p>Here are the recommended items based on your lead engagement scores:</p>
+                        <ul class="list-disc pl-4 space-y-1 mt-2">
+                            {% for suggestion in suggestions %}
+                            <li>{{ suggestion }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Input Box -->
+            <div class="relative border-t border-outline-variant/30 pt-4 flex gap-2">
+                <input class="flex-1 bg-surface-container-low border border-outline-variant rounded-full px-4 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Ask XenoAI to draft emails or analyze deals..." type="text"/>
+                <button class="w-10 h-10 bg-primary text-on-primary rounded-full flex items-center justify-center hover:opacity-90 active:scale-95 transition-all">
+                    <span class="material-symbols-outlined text-[18px]">send</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- AI Model Details -->
+        <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm h-fit">
+            <h3 class="text-xl font-bold font-headline-md mb-6 font-headline-lg">Intelligence Insights</h3>
+            <div class="space-y-4">
+                <div class="p-3 bg-primary-container/10 border border-primary/20 rounded-xl">
+                    <h4 class="font-bold text-xs text-primary mb-1">Deal Health Check</h4>
+                    <p class="text-[10px] text-secondary leading-relaxed">System scan suggests 2 deals in negotiation require follow-up emails because of no communication in the last 72 hours.</p>
+                </div>
+                <div class="p-3 bg-secondary-fixed/30 border border-outline-variant/20 rounded-xl">
+                    <h4 class="font-bold text-xs text-on-surface mb-1">Auto-Score Parameters</h4>
+                    <p class="text-[10px] text-secondary leading-relaxed">Lead score is automatically generated using customer size, annual revenue, and contact response velocity.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
