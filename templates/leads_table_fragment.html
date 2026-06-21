@@ -1,0 +1,139 @@
+<!-- Data Table Card -->
+<form method="POST" id="bulk-form" action="{% url 'leads' %}">
+    {% csrf_token %}
+    <input type="hidden" name="action_type" id="action-type-input" value=""/>
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant overflow-hidden mb-6">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-surface-container-low/50 border-b border-outline-variant">
+                        <th class="p-4 w-10">
+                            <input id="select-all" class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+                        </th>
+                        <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Lead Name</th>
+                        <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Company</th>
+                        <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Phone / Alt Phone</th>
+                        <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Date & Time</th>
+                        <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Status</th>
+                        <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Owner</th>
+                        <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Last Followup</th>
+                        <th class="p-4 w-10"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/30">
+                    {% for lead in leads %}
+                    <tr class="hover:bg-primary-container/5 transition-colors group" id="lead-row-{{ lead.id }}">
+                        <td class="p-4">
+                            <input name="lead_ids" value="{{ lead.id }}" class="lead-checkbox rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                {% if lead.profile_image_url %}
+                                <img class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="{{ lead.profile_image_url }}" alt=""/>
+                                {% else %}
+                                <div class="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xs border border-outline-variant">
+                                    {{ lead.name|slice:":2"|upper }}
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <div class="font-body-sm font-semibold text-on-surface hover:text-primary"><a href="{% url 'contact_detail' lead.id %}">{{ lead.name }}</a></div>
+                                    <div class="text-[12px] text-secondary">{{ lead.email }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 text-body-sm text-on-surface-variant">{{ lead.company }}</td>
+                        <td class="p-4 text-body-sm text-on-surface-variant">
+                            <div>{{ lead.phone_number|default:"-" }}</div>
+                            {% if lead.alt_phone_number %}
+                            <div class="text-[11px] text-secondary">{{ lead.alt_phone_number }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="p-4 text-body-sm text-on-surface-variant">
+                            {% if lead.date_time %}
+                            {{ lead.date_time|date:"Y-m-d H:i" }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-full text-[12px] font-bold uppercase tracking-tight 
+                                {% if lead.status == 'Qualified' %}bg-primary-container/10 text-primary
+                                {% elif lead.status == 'Contacted' %}bg-surface-variant text-on-surface-variant
+                                {% elif lead.status == 'New' %}bg-tertiary-container/20 text-tertiary
+                                {% elif lead.status == 'Cold Lead' %}bg-error-container/40 text-error
+                                {% else %}bg-error/10 text-error{% endif %}">
+                                {{ lead.status }}
+                            </span>
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-5 h-5 rounded-full bg-secondary-container text-[8px] flex items-center justify-center text-secondary font-bold" title="{{ lead.owner.user.username }}">
+                                    {{ lead.owner.user.username|slice:":2"|upper }}
+                                </div>
+                                <span class="text-body-sm">{{ lead.owner.user.get_full_name|default:lead.owner.user.username }}</span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-body-sm text-secondary">
+                            {% if lead.last_followup_date_time %}
+                            {{ lead.last_followup_date_time|date:"Y-m-d H:i" }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
+                        <td class="p-4 text-right">
+                            <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button type="button" onclick="openEditLeadModal('{{ lead.id }}')" class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all">
+                                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                                </button>
+                                <a href="{% url 'contact_detail' lead.id %}" class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all">
+                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="9" class="p-8 text-center text-outline">No leads found matching current filters.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination Footer -->
+        {% if is_paginated or leads.has_other_pages %}
+        <div class="p-4 bg-surface-container-low/30 border-t border-outline-variant flex items-center justify-between">
+            <span class="text-body-sm text-secondary">Showing {{ leads.start_index }}-{{ leads.end_index }} of {{ paginator.count }} leads</span>
+            <div class="flex items-center gap-2">
+                {% if leads.has_previous %}
+                <a href="?page={{ leads.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="p-2 rounded-lg hover:bg-surface-variant pagination-link">
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </a>
+                {% else %}
+                <button type="button" class="p-2 rounded-lg opacity-30 cursor-not-allowed" disabled>
+                    <span class="material-symbols-outlined">chevron_left</span>
+                </button>
+                {% endif %}
+                
+                {% for page_num in paginator.page_range %}
+                    {% if page_num == leads.number %}
+                    <button type="button" class="w-8 h-8 rounded-lg bg-primary text-on-primary text-body-sm font-semibold">{{ page_num }}</button>
+                    {% elif page_num > leads.number|add:"-3" and page_num < leads.number|add:"3" %}
+                    <a href="?page={{ page_num }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="w-8 h-8 rounded-lg hover:bg-surface-variant text-body-sm flex items-center justify-center pagination-link">{{ page_num }}</a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if leads.has_next %}
+                <a href="?page={{ leads.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="p-2 rounded-lg hover:bg-surface-variant pagination-link">
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </a>
+                {% else %}
+                <button type="button" class="p-2 rounded-lg opacity-30 cursor-not-allowed" disabled>
+                    <span class="material-symbols-outlined">chevron_right</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</form>

@@ -1,55 +1,107 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}{{ action }} Event - XenoCRM{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" />
+<style>
+  .flatpickr-calendar {
+    border-radius: 1rem !important;
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !important;
+    border: 1px solid rgba(195, 198, 215, 0.3) !important;
+  }
+</style>
 {% endblock %}
+
 {% block content %}
-<div class="max-w-2xl mx-auto p-6 bg-surface-container-low rounded-lg shadow-lg">
-  <h2 class="text-2xl font-bold mb-4">{{ action }} Event</h2>
-  <form method="post" class="space-y-4">
-    {% csrf_token %}
-    {{ form.non_field_errors }}
-    <div class="grid grid-cols-1 gap-4">
-      <div>
-        {{ form.title.label_tag }}
-        {{ form.title }}
-        {{ form.title.errors }}
-      </div>
-      <div>
-        {{ form.description.label_tag }}
-        {{ form.description }}
-        {{ form.description.errors }}
-      </div>
-      <div class="flex space-x-4">
-        <div class="flex-1">
-          {{ form.start_time.label_tag }}
-          {{ form.start_time }}
-          {{ form.start_time.errors }}
-        </div>
-        <div class="flex-1">
-          {{ form.end_time.label_tag }}
-          {{ form.end_time }}
-          {{ form.end_time.errors }}
-        </div>
-      </div>
-      <div>
-        {{ form.recurring.label_tag }} {{ form.recurring }}
-        {{ form.recurring.errors }}
-      </div>
+<main class="pt-8 p-margin-edge min-h-screen bg-background">
+  <div class="max-w-2xl mx-auto">
+    <!-- Breadcrumbs -->
+    <div class="flex items-center gap-2 mb-6 font-label-md text-outline">
+      <a href="{% url 'calendar' %}" class="hover:underline">Calendar</a>
+      <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+      <span class="text-primary font-bold">{{ action }} Event</span>
     </div>
-    <div class="flex justify-end space-x-2 mt-4">
-      <a href="{% url 'calendar' %}" class="px-4 py-2 bg-outline text-on-outline rounded">Cancel</a>
-      <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded hover:opacity-90">
-        {{ action }}
-      </button>
+
+    <!-- Form Card -->
+    <div class="glass-card rounded-2xl p-8 border border-outline-variant/30 shadow-xl bg-white space-y-6">
+      <div>
+        <h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">{{ action }} Event</h2>
+        <p class="text-secondary text-body-sm mt-1">Fill out the event details to sync with your organization.</p>
+      </div>
+
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="p-4 bg-error-container text-on-error-container text-body-sm rounded-xl">
+          {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Event Title</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+            <p class="text-error text-xs mt-1">{{ form.title.errors.as_text }}</p>
+            {% endif %}
+          </div>
+
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Description</label>
+            {{ form.description }}
+            {% if form.description.errors %}
+            <p class="text-error text-xs mt-1">{{ form.description.errors.as_text }}</p>
+            {% endif %}
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-label-md font-label-md text-outline uppercase mb-1">Start Time</label>
+              {{ form.start_time }}
+              {% if form.start_time.errors %}
+              <p class="text-error text-xs mt-1">{{ form.start_time.errors.as_text }}</p>
+              {% endif %}
+            </div>
+            <div>
+              <label class="block text-label-md font-label-md text-outline uppercase mb-1">End Time</label>
+              {{ form.end_time }}
+              {% if form.end_time.errors %}
+              <p class="text-error text-xs mt-1">{{ form.end_time.errors.as_text }}</p>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 py-2">
+            {{ form.recurring }}
+            <label for="id_recurring" class="text-body-sm text-secondary select-none font-semibold">Recurring Event</label>
+            {% if form.recurring.errors %}
+            <p class="text-error text-xs mt-1">{{ form.recurring.errors.as_text }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-6 border-t border-outline-variant/20 mt-8">
+          <a href="{% url 'calendar' %}" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50 transition-all">Cancel</a>
+          <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90 active:scale-95 transition-all">
+            {{ action }} Event
+          </button>
+        </div>
+      </form>
     </div>
-  </form>
-</div>
+  </div>
+</main>
 {% endblock %}
+
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-  flatpickr('input[type="datetime-local"]', {enableTime: true, dateFormat: "Y-m-d\TH:i"});
+  flatpickr('input[type="datetime-local"]', {
+    enableTime: true,
+    dateFormat: "Y-m-d\\TH:i",
+    altInput: true,
+    altFormat: "F j, Y - h:i K"
+  });
 </script>
 {% endblock %}

@@ -1,24 +1,24 @@
 {% extends 'base.html' %}
 
-{% block title %}XenoCRM | Accounts{% endblock %}
+{% block title %}XenoCRM | Clients{% endblock %}
 
 {% block content %}
 <div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
     <!-- Header -->
     <div class="flex justify-between items-end mb-8">
         <div>
-            <h2 class="font-headline-lg text-headline-lg text-on-background">Accounts Directory</h2>
-            <p class="text-secondary font-body-md">Manage your business accounts, corporate relationships, and grouped opportunity pipelines.</p>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Clients Directory</h2>
+            <p class="text-secondary font-body-md">Manage your clients, corporate relationships, and grouped opportunity pipelines.</p>
         </div>
         <button onclick="document.getElementById('quick-create-modal').classList.remove('hidden')" class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md hover:opacity-90 active:scale-95 transition-all">
             <span class="material-symbols-outlined mr-2 text-sm">domain_add</span>
-            Add Account
+            Add Client
         </button>
     </div>
 
-    <!-- Accounts Bento/List Grid -->
+    <!-- Clients Bento/List Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for account in accounts %}
+        {% for client in clients %}
         <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
             <div>
                 <div class="flex justify-between items-start mb-4">
@@ -26,37 +26,37 @@
                         <span class="material-symbols-outlined text-primary text-2xl">business</span>
                     </div>
                     <span class="bg-primary/10 text-primary text-xs px-2.5 py-1 rounded-full font-bold">
-                        {{ account.contacts_count }} Contact{{ account.contacts_count|pluralize }}
+                        {{ client.contacts_count }} Contact{{ client.contacts_count|pluralize }}
                     </span>
                 </div>
-                <h3 class="text-xl font-bold font-headline-md text-on-surface mb-1">{{ account.company }}</h3>
+                <h3 class="text-xl font-bold font-headline-md text-on-surface mb-1">{{ client.company }}</h3>
                 <div class="mt-4 space-y-3">
                     <div class="flex justify-between text-xs">
                         <span class="text-secondary font-label-md">Pipeline Value</span>
-                        <span class="font-bold text-on-surface">${{ account.total_value|floatformat:2 }}</span>
+                        <span class="font-bold text-on-surface">${{ client.total_value|floatformat:2 }}</span>
                     </div>
                     <div class="flex justify-between text-xs">
                         <span class="text-secondary font-label-md">Avg Account Score</span>
-                        <span class="font-bold text-on-surface">{{ account.avg_score }}/100</span>
+                        <span class="font-bold text-on-surface">{{ client.avg_score }}/100</span>
                     </div>
                     <div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
-                        <div class="h-full bg-primary" style="width: {{ account.avg_score }}%"></div>
+                        <div class="h-full bg-primary" style="width: {{ client.avg_score }}%"></div>
                     </div>
                 </div>
             </div>
             
             <div class="mt-6 pt-4 border-t border-outline-variant/30 flex justify-between items-center">
                 <div class="flex -space-x-2 overflow-hidden">
-                    {% for lead in account.leads|slice:":3" %}
+                    {% for lead in client.leads|slice:":3" %}
                     <div class="w-6 h-6 rounded-full border-2 border-white bg-primary text-white text-[8px] flex items-center justify-center font-bold" title="{{ lead.name }}">
                         {{ lead.name|slice:":1" }}
                     </div>
                     {% endfor %}
-                    {% if account.contacts_count > 3 %}
-                    <span class="text-[9px] text-outline pl-2 flex items-center font-bold">+{{ account.contacts_count|add:"-3" }} more</span>
+                    {% if client.contacts_count > 3 %}
+                    <span class="text-[9px] text-outline pl-2 flex items-center font-bold">+{{ client.contacts_count|add:"-3" }} more</span>
                     {% endif %}
                 </div>
-                <a href="{% url 'leads' %}?q={{ account.company|urlencode }}" class="text-xs text-primary font-bold hover:underline flex items-center">
+                <a href="{% url 'leads' %}?q={{ client.company|urlencode }}" class="text-xs text-primary font-bold hover:underline flex items-center">
                     View Deals
                     <span class="material-symbols-outlined text-sm ml-1">chevron_right</span>
                 </a>
@@ -65,8 +65,8 @@
         {% empty %}
         <div class="col-span-full glass-card p-12 rounded-2xl text-center text-secondary border border-dashed border-outline-variant">
             <span class="material-symbols-outlined text-5xl mb-2 opacity-50">business</span>
-            <p class="font-bold">No accounts found.</p>
-            <p class="text-xs mt-1">Add lead records with company details to automatically generate corporate accounts.</p>
+            <p class="font-bold">No clients found.</p>
+            <p class="text-xs mt-1">Add lead records with company details to automatically generate client entries.</p>
         </div>
         {% endfor %}
     </div>

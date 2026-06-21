@@ -1,35 +1,278 @@
 {% extends 'base.html' %}
 {% block title %}Calendar - XenoCRM{% endblock %}
+
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css" />
+<!-- FullCalendar styles are injected via JS globally in v6, but we'll use Tailwind for customization -->
+<style>
+  .fc .fc-button-primary {
+    background-color: #004ac6 !important;
+    border-color: #004ac6 !important;
+    border-radius: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: capitalize !important;
+    padding: 0.5rem 1rem !important;
+  }
+  .fc .fc-button-primary:hover {
+    background-color: #2563eb !important;
+    border-color: #2563eb !important;
+  }
+  .fc .fc-button-primary:disabled {
+    background-color: #cbd5e1 !important;
+    border-color: #cbd5e1 !important;
+    color: #64748b !important;
+  }
+  .fc .fc-toolbar-title {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: #0b1c30 !important;
+    font-family: 'Geist', sans-serif !important;
+  }
+  .fc-theme-standard td, .fc-theme-standard th {
+    border: 1px solid rgba(195, 198, 215, 0.3) !important;
+  }
+  .fc .fc-daygrid-day.fc-day-today {
+    background-color: rgba(0, 74, 198, 0.05) !important;
+  }
+  .fc-event {
+    background-color: #2563eb !important;
+    border: none !important;
+    border-radius: 6px !important;
+    padding: 2px 4px !important;
+    font-size: 11px !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+  }
+  .fc-event:hover {
+    transform: scale(1.02) !important;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+  }
+</style>
 {% endblock %}
+
 {% block content %}
-<div class="p-6">
-  <div class="flex justify-between items-center mb-4">
-    <h1 class="text-2xl font-bold text-primary">Calendar</h1>
-    <a href="{% url 'event_create' %}" class="px-4 py-2 bg-primary text-on-primary rounded-lg shadow hover:opacity-90">Add Event</a>
+<main class="pt-4 p-margin-edge min-h-screen bg-background">
+  <div class="max-w-container-max mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h1 class="text-headline-lg font-headline-lg font-bold text-on-background">Organization Calendar</h1>
+        <p class="text-secondary text-body-sm mt-1">Schedule and manage meetings, demos, and deadlines dynamically.</p>
+      </div>
+      <button onclick="openAddModal()" class="px-5 py-2.5 bg-primary text-on-primary font-button rounded-xl shadow-lg hover:shadow-primary/20 active:scale-95 transition-all flex items-center gap-2">
+        <span class="material-symbols-outlined">add</span>
+        Add Event
+      </button>
+    </div>
+
+    <!-- Calendar Card -->
+    <div class="glass-card rounded-2xl p-6 border border-outline-variant/30 shadow-sm bg-white">
+      <div id="calendar" class="min-h-[650px]"></div>
+    </div>
   </div>
-  {% if events %}
-    <ul class="space-y-2">
-      {% for event in events %}
-        <li class="bg-surface-container p-4 rounded-lg shadow flex justify-between items-center">
-          <div>
-            <h2 class="font-medium text-primary">{{ event.title }}</h2>
-            <p class="text-sm text-outline">{{ event.start_time|date:'M d, Y H:i' }} – {{ event.end_time|date:'M d, Y H:i' }}</p>
-            {% if event.recurring %}<span class="text-xs bg-primary-container text-primary rounded px-1">Recurring</span>{% endif %}
-          </div>
-          <div class="space-x-2">
-            <a href="{% url 'event_edit' event.id %}" class="text-primary hover:underline">Edit</a>
-            <a href="{% url 'event_delete' event.id %}" class="text-danger hover:underline">Delete</a>
-          </div>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="text-outline">No events scheduled.</p>
-  {% endif %}
+</main>
+
+<!-- Event Modal -->
+<div id="event-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+  <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-outline-variant/30 transform transition-all duration-300">
+    <div class="flex justify-between items-center mb-4 border-b border-outline-variant/20 pb-3">
+      <h3 id="modal-title" class="font-headline-md text-headline-md font-bold text-on-background">Event Details</h3>
+      <button onclick="closeModal()" type="button" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+    </div>
+    
+    <form id="event-modal-form" method="POST" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" id="event-id" name="event_id" value="" />
+      
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Event Title</label>
+        <input type="text" id="event-title" name="title" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" placeholder="e.g. Contract Sign-off with Acme"/>
+      </div>
+
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Description</label>
+        <textarea id="event-desc" name="description" rows="3" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Add discussion topics or links..."></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-label-md font-label-md text-outline uppercase mb-1">Start Time</label>
+          <input type="datetime-local" id="event-start" name="start_time" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+        </div>
+        <div>
+          <label class="block text-label-md font-label-md text-outline uppercase mb-1">End Time</label>
+          <input type="datetime-local" id="event-end" name="end_time" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 py-2">
+        <input type="checkbox" id="event-recurring" name="recurring" class="rounded border-outline-variant text-primary focus:ring-primary h-4 w-4"/>
+        <label for="event-recurring" class="text-body-sm text-secondary select-none">Recurring Event</label>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-outline-variant/20 flex justify-between items-center">
+        <!-- Delete Button (Only shown during edit) -->
+        <button type="button" id="delete-event-btn" onclick="deleteEvent()" class="px-4 py-2 border border-red-200 text-error rounded-lg hover:bg-red-50 transition-all hidden">
+          Delete Event
+        </button>
+        
+        <div class="ml-auto flex gap-3">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+          <button type="submit" id="save-event-btn" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Event</button>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script>
+  let calendar;
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+      },
+      events: "{% url 'calendar_events_json' %}",
+      selectable: true,
+      select: function(info) {
+        // Date format string matching local datetime-local format YYYY-MM-DDTHH:MM
+        const startStr = info.startStr.includes('T') ? info.startStr.slice(0, 16) : `${info.startStr}T09:00`;
+        const endStr = info.endStr.includes('T') ? info.endStr.slice(0, 16) : `${info.startStr}T10:00`;
+        openAddModal(startStr, endStr);
+      },
+      eventClick: function(info) {
+        openEditModal(info.event);
+      }
+    });
+    calendar.render();
+  });
+
+  const modal = document.getElementById('event-modal');
+  const eventIdInput = document.getElementById('event-id');
+  const titleInput = document.getElementById('event-title');
+  const descInput = document.getElementById('event-desc');
+  const startInput = document.getElementById('event-start');
+  const endInput = document.getElementById('event-end');
+  const recurringInput = document.getElementById('event-recurring');
+  const deleteBtn = document.getElementById('delete-event-btn');
+  const modalTitle = document.getElementById('modal-title');
+
+  function openAddModal(startVal = '', endVal = '') {
+    eventIdInput.value = '';
+    titleInput.value = '';
+    descInput.value = '';
+    startInput.value = startVal || getLocalDateTimeString(new Date());
+    endInput.value = endVal || getLocalDateTimeString(new Date(Date.now() + 3600000));
+    recurringInput.checked = false;
+    deleteBtn.classList.add('hidden');
+    modalTitle.textContent = 'Create Calendar Event';
+    modal.classList.remove('hidden');
+  }
+
+  function openEditModal(event) {
+    eventIdInput.value = event.id;
+    titleInput.value = event.title;
+    descInput.value = event.extendedProps.description || '';
+    
+    // Parse times
+    startInput.value = getLocalDateTimeString(event.start);
+    endInput.value = event.end ? getLocalDateTimeString(event.end) : getLocalDateTimeString(event.start);
+    
+    recurringInput.checked = event.extendedProps.recurring || false;
+    deleteBtn.classList.remove('hidden');
+    modalTitle.textContent = 'Edit Calendar Event';
+    modal.classList.remove('hidden');
+  }
+
+  function closeModal() {
+    modal.classList.add('hidden');
+  }
+
+  // Helper: Format JS Date to YYYY-MM-DDTHH:MM local string
+  function getLocalDateTimeString(date) {
+    const tzOffset = date.getTimezoneOffset() * 60000; // offset in milliseconds
+    const localISOTime = (new Date(date - tzOffset)).toISOString().slice(0, 16);
+    return localISOTime;
+  }
+
+  // Handle Event Submit (Add / Edit)
+  document.getElementById('event-modal-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const evId = eventIdInput.value;
+    const url = evId ? `/calendar/edit-ajax/${evId}/` : "{% url 'event_create_ajax' %}";
+    
+    const formData = new FormData(this);
+    
+    // Checkbox boolean handle for standard URL encoded form data
+    formData.set('recurring', recurringInput.checked ? 'true' : 'false');
+    
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+      },
+      body: new URLSearchParams(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        closeModal();
+        calendar.refetchEvents();
+        showToast(evId ? 'Event updated successfully.' : 'Event created successfully.', 'success');
+      } else {
+        // Collect errors
+        let errorMsg = 'Failed to save event.';
+        if (data.errors) {
+          errorMsg = Object.values(data.errors).map(errs => errs.map(e => e.message).join(', ')).join('. ');
+        }
+        showToast(errorMsg, 'error');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showToast('Network error occurred.', 'error');
+    });
+  });
+
+  // Handle Event Delete
+  function deleteEvent() {
+    const evId = eventIdInput.value;
+    if (!evId) return;
+    if (!confirm('Are you sure you want to delete this event?')) return;
+    
+    const url = `/calendar/delete-ajax/${evId}/`;
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': csrfToken
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        closeModal();
+        calendar.refetchEvents();
+        showToast('Event deleted successfully.', 'success');
+      } else {
+        showToast(data.error || 'Failed to delete event.', 'error');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showToast('Network error occurred.', 'error');
+    });
+  }
+</script>
 {% endblock %}

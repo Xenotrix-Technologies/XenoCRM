@@ -8,77 +8,59 @@ from django.db.models import Sum, Q
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib import messages
-from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, EmailTemplate, HelpArticle, Event, BillingPlan, Subscription
+from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event
 from .forms import EventForm, ProfileForm
 # Views for navigation pages with proper multi-tenant database queries
 
-@login_required
-def contacts_view(request):
-    org = request.user.profile.organization
-    leads = Lead.objects.filter(organization=org).order_by('-created_at')
-    return render(request, 'contacts.html', {'leads': leads})
+
 
 
 @login_required
-def accounts_view(request):
+def clients_view(request):
     org = request.user.profile.organization
     leads = Lead.objects.filter(organization=org)
     
-    accounts_dict = {}
+    clients_dict = {}
     for lead in leads:
         comp = lead.company
         if not comp:
             continue
-        if comp not in accounts_dict:
-            accounts_dict[comp] = {
+        if comp not in clients_dict:
+            clients_dict[comp] = {
                 'company': comp,
                 'contacts_count': 0,
                 'total_value': 0.0,
                 'avg_score': 0,
                 'leads': []
             }
-        accounts_dict[comp]['contacts_count'] += 1
-        accounts_dict[comp]['total_value'] += float(lead.value)
-        accounts_dict[comp]['avg_score'] += lead.score
-        accounts_dict[comp]['leads'].append(lead)
+        clients_dict[comp]['contacts_count'] += 1
+        clients_dict[comp]['total_value'] += float(lead.value)
+        clients_dict[comp]['avg_score'] += lead.score
+        clients_dict[comp]['leads'].append(lead)
     
-    accounts_list = []
-    for comp, data in accounts_dict.items():
+    clients_list = []
+    for comp, data in clients_dict.items():
         if data['contacts_count'] > 0:
             data['avg_score'] = int(data['avg_score'] / data['contacts_count'])
-        accounts_list.append(data)
+        clients_list.append(data)
         
-    return render(request, 'accounts.html', {'accounts': accounts_list})
+    return render(request, 'clients.html', {'clients': clients_list})
 
 
-@login_required
-def opportunities_view(request):
-    org = request.user.profile.organization
-    leads = Lead.objects.filter(organization=org).exclude(stage__in=['Won', 'Lost']).order_by('-value')
-    return render(request, 'opportunities.html', {'opportunities': leads})
 
 
-@login_required
-def marketing_view(request):
-    templates = EmailTemplate.objects.all()
-    stats = {
-        'email_open_rate': 24.8,
-        'click_through_rate': 3.2,
-        'subscribers': 1240,
-        'campaigns_sent': 18
-    }
-    return render(request, 'marketing.html', {'templates': templates, 'stats': stats})
+
+
 
 
 @login_required
 def customer_support_view(request):
-    articles = HelpArticle.objects.all()
     tickets = [
         {'id': 'TCK-102', 'subject': 'API Integration Error', 'status': 'Open', 'priority': 'High', 'created': '1h ago'},
         {'id': 'TCK-101', 'subject': 'Billing Query', 'status': 'Pending', 'priority': 'Medium', 'created': '3h ago'},
         {'id': 'TCK-099', 'subject': 'Password Reset Issue', 'status': 'Closed', 'priority': 'Low', 'created': '1d ago'}
     ]
-    return render(request, 'customer_support.html', {'articles': articles, 'tickets': tickets})
+    return render(request, 'customer_support.html', {'tickets': tickets})
 
 
 @login_required
@@ -107,35 +89,10 @@ def reports_view(request):
     return render(request, 'reports.html', {'metrics': metrics})
 
 
-@login_required
-def ai_assistant_view(request):
-    org = request.user.profile.organization
-    leads = Lead.objects.filter(organization=org)
-    hot_leads = leads.filter(score__gte=80).order_by('-score')
-    suggestions = []
-    for l in hot_leads[:3]:
-        suggestions.append(f"Outreach to {l.name} from {l.company} (Score: {l.score}). A high-value opportunity of ${l.value} is ready for Proposal.")
-    if not suggestions:
-        suggestions.append("No high-score leads found. Consider generating more prospects and scoring them using the Quick Create tool.")
-    return render(request, 'ai_assistant.html', {'suggestions': suggestions})
 
 
-@login_required
-def business_view(request):
-    org = request.user.profile.organization
-    leads = Lead.objects.filter(organization=org)
-    total_deals = leads.count()
-    won_deals = leads.filter(stage='Won').count()
-    win_rate = (won_deals / total_deals * 100) if total_deals > 0 else 0
-    avg_deal_value = sum(float(l.value) for l in leads) / total_deals if total_deals > 0 else 0
-    
-    business_stats = {
-        'win_rate': win_rate,
-        'avg_deal_value': avg_deal_value,
-        'active_deals': leads.exclude(stage__in=['Won', 'Lost']).count(),
-        'total_deals': total_deals
-    }
-    return render(request, 'business.html', {'stats': business_stats})
+
+
 
 
 @login_required
@@ -324,12 +281,19 @@ def leads_view(request):
         response['Content-Disposition'] = 'attachment; filename="leads_export.csv"'
         
         writer = csv.writer(response)
-        writer.writerow(['Name', 'Email', 'Company', 'Score', 'Status', 'Stage', 'Value', 'Owner', 'Lifecycle Stage', 'Annual Revenue', 'Health Score'])
+        writer.writerow(['Name', 'Email', 'Company', 'Phone Number', 'Alt Phone Number', 'Date and Time', 'Status', 'Stage', 'Value', 'Owner', 'Lifecycle Stage', 'Annual Revenue', 'Health Score', 'Last Followup Date and Time'])
         
         leads_export = Lead.objects.filter(organization=org)
         for lead in leads_export:
             owner_name = lead.owner.user.get_full_name() if lead.owner else 'None'
-            writer.writerow([lead.name, lead.email, lead.company, lead.score, lead.status, lead.stage, lead.value, owner_name, lead.lifecycle_stage, lead.annual_revenue, lead.health_score])
+            writer.writerow([
+                lead.name, lead.email, lead.company,
+                lead.phone_number or '', lead.alt_phone_number or '',
+                lead.date_time.strftime('%Y-%m-%d %H:%M') if lead.date_time else '',
+                lead.status, lead.stage, lead.value, owner_name, lead.lifecycle_stage,
+                lead.annual_revenue, lead.health_score,
+                lead.last_followup_date_time.strftime('%Y-%m-%d %H:%M') if lead.last_followup_date_time else ''
+            ])
         return response
         
     # Bulk actions POST handler
@@ -361,7 +325,9 @@ def leads_view(request):
         leads_qs = leads_qs.filter(
             Q(name__icontains=q) | 
             Q(company__icontains=q) | 
-            Q(email__icontains=q)
+            Q(email__icontains=q) |
+            Q(phone_number__icontains=q) |
+            Q(alt_phone_number__icontains=q)
         )
         
     # 2. Filters
@@ -374,15 +340,15 @@ def leads_view(request):
         leads_qs = leads_qs.filter(owner_id=owner_filter)
         
     # 3. Sorting
-    sort_by = request.GET.get('sort', 'score_desc').strip()
-    if sort_by == 'score_asc':
-        leads_qs = leads_qs.order_by('score')
-    elif sort_by == 'value_desc':
+    sort_by = request.GET.get('sort', 'value_desc').strip()  # default changed from score_desc to value_desc (score column commented out)
+    # if sort_by == 'score_asc':
+    #     leads_qs = leads_qs.order_by('score')
+    if sort_by == 'value_desc':
         leads_qs = leads_qs.order_by('-value')
     elif sort_by == 'value_asc':
         leads_qs = leads_qs.order_by('value')
-    else: # default score_desc
-        leads_qs = leads_qs.order_by('-score')
+    else: # default value_desc (was score_desc)
+        leads_qs = leads_qs.order_by('-value')
 
     # Owners lookup
     owners = UserProfile.objects.filter(organization=org)
@@ -402,6 +368,11 @@ def leads_view(request):
         'paginator': paginator
     }
     
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        from django.template.loader import render_to_string
+        html = render_to_string('leads_table_fragment.html', context, request=request)
+        return JsonResponse({'html': html})
+        
     return render(request, 'leads.html', context)
 
 @login_required
@@ -603,6 +574,8 @@ def quick_create_lead(request):
         org = request.user.profile.organization
         owner = request.user.profile
         
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        
         try:
             lead = Lead.objects.create(
                 organization=org,
@@ -623,8 +596,28 @@ def quick_create_lead(request):
                 type='Creation',
                 description="Lead added via quick create."
             )
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': f"Successfully created lead '{name}' for {company}.",
+                    'lead': {
+                        'id': lead.id,
+                        'name': lead.name,
+                        'email': lead.email,
+                        'company': lead.company,
+                        'value': float(lead.value),
+                        # 'score': lead.score,  # score column commented out
+                        'status': lead.status,
+                        'owner_name': lead.owner.user.get_full_name() or lead.owner.user.username if lead.owner else '',
+                        'owner_initials': (lead.owner.user.username[:2].upper() if lead.owner else 'UN'),
+                        'created_at_formatted': lead.created_at.strftime('%b %d') if lead.created_at else timezone.now().strftime('%b %d'),
+                        'profile_image_url': lead.profile_image_url or ''
+                    }
+                })
             messages.success(request, f"Successfully created lead '{name}' for {company}.")
         except Exception as e:
+            if is_ajax:
+                return JsonResponse({'success': False, 'error': str(e)})
             messages.error(request, f"Error creating lead: {str(e)}")
             
     return redirect(request.META.get('HTTP_REFERER', 'leads'))
@@ -706,24 +699,223 @@ def profile_edit_view(request):
         form = ProfileForm(instance=profile)
     return render(request, 'profile_edit.html', {'form': form, 'user': user})
 
-@login_required
-def upgrade_plans_view(request):
-    """Show available billing plans and current subscription."""
-    org = request.user.profile.organization
-    plans = BillingPlan.objects.all()
-    subscription = Subscription.objects.filter(user_profile=request.user.profile).first()
-    return render(request, 'upgrade_plans.html', {'plans': plans, 'subscription': subscription})
+
+
 
 @login_required
-def subscribe_plan_view(request, plan_id):
-    """Subscribe the user to a selected plan."""
+def calendar_events_json_view(request):
+    """Return JSON list of organization events for FullCalendar."""
     org = request.user.profile.organization
-    plan = get_object_or_404(BillingPlan, id=plan_id)
-    # Simple subscription creation – replace any existing one
-    Subscription.objects.update_or_create(
-        user_profile=request.user.profile,
-        defaults={'plan': plan, 'status': 'active'}
-    )
-    messages.success(request, f'Subscribed to {plan.name} plan.')
-    return redirect('upgrade_plans')
+    events = Event.objects.filter(organization=org)
+    events_data = []
+    for event in events:
+        events_data.append({
+            'id': event.id,
+            'title': event.title,
+            'start': event.start_time.isoformat(),
+            'end': event.end_time.isoformat(),
+            'description': event.description or '',
+            'recurring': event.recurring,
+            'owner': event.owner.get_full_name() or event.owner.username
+        })
+    return JsonResponse(events_data, safe=False)
+
+
+@login_required
+def event_create_ajax(request):
+    """Create a new event via AJAX and return JSON."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.owner = request.user
+            event.organization = org
+            event.save()
+            return JsonResponse({
+                'success': True,
+                'event': {
+                    'id': event.id,
+                    'title': event.title,
+                    'start': event.start_time.isoformat(),
+                    'end': event.end_time.isoformat(),
+                    'description': event.description or '',
+                    'recurring': event.recurring,
+                    'owner': event.owner.get_full_name() or event.owner.username
+                }
+            })
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors.get_json_data()})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def event_edit_ajax(request, event_id):
+    """Edit an event via AJAX and return JSON."""
+    org = request.user.profile.organization
+    event = get_object_or_404(Event, id=event_id, organization=org)
+    if request.method == 'POST':
+        form = EventForm(request.POST, instance=event)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({
+                'success': True,
+                'event': {
+                    'id': event.id,
+                    'title': event.title,
+                    'start': event.start_time.isoformat(),
+                    'end': event.end_time.isoformat(),
+                    'description': event.description or '',
+                    'recurring': event.recurring,
+                    'owner': event.owner.get_full_name() or event.owner.username
+                }
+            })
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors.get_json_data()})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def event_delete_ajax(request, event_id):
+    """Delete an event via AJAX and return JSON."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        event = get_object_or_404(Event, id=event_id, organization=org)
+        event.delete()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def add_lead(request):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        name = request.POST.get('name')
+        company = request.POST.get('company')
+        email = request.POST.get('email')
+        phone_number = request.POST.get('phone_number')
+        alt_phone_number = request.POST.get('alt_phone_number')
+        
+        date_time_val = request.POST.get('date_time')
+        date_time = date_time_val if date_time_val else None
+        
+        status = request.POST.get('status', 'New')
+        
+        owner_id = request.POST.get('owner')
+        owner = None
+        if owner_id:
+            try:
+                owner = UserProfile.objects.get(id=owner_id, organization=org)
+            except UserProfile.DoesNotExist:
+                pass
+                
+        last_followup_val = request.POST.get('last_followup_date_time')
+        last_followup_date_time = last_followup_val if last_followup_val else None
+        
+        try:
+            lead = Lead.objects.create(
+                organization=org,
+                name=name,
+                company=company,
+                email=email,
+                phone_number=phone_number,
+                alt_phone_number=alt_phone_number,
+                date_time=date_time,
+                status=status,
+                owner=owner,
+                last_followup_date_time=last_followup_date_time,
+                stage=status,
+                value=0.00,
+                score=50,
+                lifecycle_stage='Prospect',
+                health_score=80
+            )
+            
+            Activity.objects.create(
+                lead=lead,
+                type='Creation',
+                description="Lead added."
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': f"Successfully created lead '{name}'."
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def edit_lead(request, lead_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        try:
+            lead = Lead.objects.get(id=lead_id, organization=org)
+            lead.name = request.POST.get('name')
+            lead.company = request.POST.get('company')
+            lead.email = request.POST.get('email')
+            lead.phone_number = request.POST.get('phone_number')
+            lead.alt_phone_number = request.POST.get('alt_phone_number')
+            
+            date_time_val = request.POST.get('date_time')
+            lead.date_time = date_time_val if date_time_val else None
+            
+            lead.status = request.POST.get('status')
+            
+            owner_id = request.POST.get('owner')
+            if owner_id:
+                try:
+                    lead.owner = UserProfile.objects.get(id=owner_id, organization=org)
+                except UserProfile.DoesNotExist:
+                    lead.owner = None
+            else:
+                lead.owner = None
+                
+            last_followup_val = request.POST.get('last_followup_date_time')
+            lead.last_followup_date_time = last_followup_val if last_followup_val else None
+            
+            lead.save()
+            
+            # Log activity
+            Activity.objects.create(
+                lead=lead,
+                type='Stage Update',
+                description="Lead details updated."
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': f"Successfully updated lead '{lead.name}'."
+            })
+        except Lead.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Lead not found.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def lead_json_view(request, lead_id):
+    org = request.user.profile.organization
+    try:
+        lead = Lead.objects.get(id=lead_id, organization=org)
+        data = {
+            'id': lead.id,
+            'name': lead.name,
+            'company': lead.company,
+            'email': lead.email,
+            'phone_number': lead.phone_number or '',
+            'alt_phone_number': lead.alt_phone_number or '',
+            'date_time': lead.date_time.strftime('%Y-%m-%dT%H:%M') if lead.date_time else '',
+            'status': lead.status,
+            'owner_id': lead.owner.id if lead.owner else '',
+            'last_followup_date_time': lead.last_followup_date_time.strftime('%Y-%m-%dT%H:%M') if lead.last_followup_date_time else '',
+        }
+        return JsonResponse({'success': True, 'lead': data})
+    except Lead.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Lead not found.'})
+
 

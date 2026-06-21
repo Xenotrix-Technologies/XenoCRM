@@ -15,6 +15,10 @@
             </div>
         </div>
         <div class="flex items-center gap-3">
+            <button onclick="openAddLeadModal()" class="bg-primary text-on-primary px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:opacity-90 transition-all shadow-md">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Add Lead
+            </button>
             <button onclick="alert('Import feature: Upload a CSV format to import leads.')" class="bg-surface-container-lowest border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-surface-container-low transition-all">
                 <span class="material-symbols-outlined text-[18px]">upload</span>
                 Import
@@ -32,13 +36,8 @@
             <span class="material-symbols-outlined text-outline">filter_list</span>
             <span class="font-label-md text-label-md text-outline">FILTERS:</span>
         </div>
-        
-        <!-- Search query preservation -->
-        {% if q %}
-        <input type="hidden" name="q" value="{{ q }}"/>
-        {% endif %}
 
-        <select name="status" onchange="this.form.submit()" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
+        <select name="status" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
             <option value="">All Statuses</option>
             <option value="New" {% if status_filter == 'New' %}selected{% endif %}>New</option>
             <option value="Contacted" {% if status_filter == 'Contacted' %}selected{% endif %}>Contacted</option>
@@ -47,202 +46,466 @@
             <option value="Lost" {% if status_filter == 'Lost' %}selected{% endif %}>Lost</option>
         </select>
 
-        <select name="owner" onchange="this.form.submit()" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
+        <select name="owner" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
             <option value="">All Owners</option>
             {% for owner in owners %}
             <option value="{{ owner.id }}" {% if owner_filter == owner.id|stringformat:"i" %}selected{% endif %}>{{ owner.user.get_full_name|default:owner.user.username }}</option>
             {% endfor %}
         </select>
 
-        <select name="sort" onchange="this.form.submit()" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
-            <option value="score_desc" {% if sort_by == 'score_desc' %}selected{% endif %}>Lead Score: High to Low</option>
-            <option value="score_asc" {% if sort_by == 'score_asc' %}selected{% endif %}>Lead Score: Low to High</option>
+        <select name="sort" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
+            <!--<option value="score_desc" {% if sort_by == 'score_desc' %}selected{% endif %}>Lead Score: High to Low</option>-->
+            <!--<option value="score_asc" {% if sort_by == 'score_asc' %}selected{% endif %}>Lead Score: Low to High</option>-->
             <option value="value_desc" {% if sort_by == 'value_desc' %}selected{% endif %}>Value: High to Low</option>
             <option value="value_asc" {% if sort_by == 'value_asc' %}selected{% endif %}>Value: Low to High</option>
         </select>
         
         <div class="h-6 w-px bg-outline-variant mx-2"></div>
-        <a href="{% url 'leads' %}" class="text-primary font-button text-button hover:underline">Clear all</a>
+        <a href="{% url 'leads' %}" id="clear-filters-btn" class="text-primary font-button text-button hover:underline">Clear all</a>
         
         <div class="ml-auto flex items-center gap-2">
             <span class="text-body-sm text-secondary">Bulk Actions:</span>
-            <button type="submit" name="bulk_action" value="change_status_qualified" class="px-3 py-1.5 rounded-lg border border-outline-variant text-body-sm hover:bg-surface-container-low disabled:opacity-50 bulk-btn" disabled>Mark Qualified</button>
-            <button type="submit" name="bulk_action" value="delete" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-600 text-body-sm hover:bg-red-50 disabled:opacity-50 bulk-btn" disabled>Delete</button>
+            <button type="button" value="change_status_qualified" class="px-3 py-1.5 rounded-lg border border-outline-variant text-body-sm hover:bg-surface-container-low disabled:opacity-50 bulk-btn" disabled>Mark Qualified</button>
+            <button type="button" value="delete" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-600 text-body-sm hover:bg-red-50 disabled:opacity-50 bulk-btn" disabled>Delete</button>
         </div>
     </form>
 
-    <!-- Data Table Card -->
-    <form method="POST" id="bulk-form" action="{% url 'leads' %}">
-        {% csrf_token %}
-        <input type="hidden" name="action_type" id="action-type-input" value=""/>
-        <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant overflow-hidden mb-6">
-            <div class="overflow-x-auto custom-scrollbar">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-surface-container-low/50 border-b border-outline-variant">
-                            <th class="p-4 w-10">
-                                <input id="select-all" class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
-                            </th>
-                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Lead Name</th>
-                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Company</th>
-                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider text-center">Score</th>
-                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Status</th>
-                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Owner</th>
-                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider">Last Activity</th>
-                            <th class="p-4 font-label-md text-label-md text-secondary uppercase tracking-wider text-right">Value</th>
-                            <th class="p-4 w-10"></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-outline-variant/30">
-                        {% for lead in leads %}
-                        <tr class="hover:bg-primary-container/5 transition-colors group">
-                            <td class="p-4">
-                                <input name="lead_ids" value="{{ lead.id }}" class="lead-checkbox rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
-                            </td>
-                            <td class="p-4">
-                                <div class="flex items-center gap-3">
-                                    {% if lead.profile_image_url %}
-                                    <img class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="{{ lead.profile_image_url }}" alt=""/>
-                                    {% else %}
-                                    <div class="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xs border border-outline-variant">
-                                        {{ lead.name|slice:":2"|upper }}
-                                    </div>
-                                    {% endif %}
-                                    <div>
-                                        <div class="font-body-sm font-semibold text-on-surface hover:text-primary"><a href="{% url 'contact_detail' lead.id %}">{{ lead.name }}</a></div>
-                                        <div class="text-[12px] text-secondary">{{ lead.email }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-4 text-body-sm text-on-surface-variant">{{ lead.company }}</td>
-                            <td class="p-4 text-center">
-                                <span class="inline-flex items-center justify-center w-10 h-10 rounded-full border-2 {% if lead.score > 80 %}border-success text-success bg-success/5{% elif lead.score > 50 %}border-warning text-warning bg-warning/5{% else %}border-danger text-danger bg-danger/5{% endif %} font-label-md text-label-md">
-                                    {{ lead.score }}
-                                </span>
-                            </td>
-                            <td class="p-4">
-                                <span class="px-2.5 py-1 rounded-full text-[12px] font-bold uppercase tracking-tight 
-                                    {% if lead.status == 'Qualified' %}bg-primary-container/10 text-primary
-                                    {% elif lead.status == 'Contacted' %}bg-surface-variant text-on-surface-variant
-                                    {% elif lead.status == 'New' %}bg-tertiary-container/20 text-tertiary
-                                    {% elif lead.status == 'Cold Lead' %}bg-error-container/40 text-error
-                                    {% else %}bg-error/10 text-error{% endif %}">
-                                    {{ lead.status }}
-                                </span>
-                            </td>
-                            <td class="p-4">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-5 h-5 rounded-full bg-secondary-container text-[8px] flex items-center justify-center text-secondary font-bold">
-                                        {{ lead.owner.user.username|slice:":2"|upper }}
-                                    </div>
-                                    <span class="text-body-sm">{{ lead.owner.user.get_full_name|default:lead.owner.user.username }}</span>
-                                </div>
-                            </td>
-                            <td class="p-4 text-body-sm text-secondary">{{ lead.last_activity|timesince }} ago</td>
-                            <td class="p-4 text-body-sm font-semibold text-right">${{ lead.value|floatformat:0 }}</td>
-                            <td class="p-4 text-right">
-                                <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <a href="{% url 'contact_detail' lead.id %}" class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all">
-                                        <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="9" class="p-8 text-center text-outline">No leads found matching current filters.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+    </div>
+
+    <!-- Custom Add Lead Modal -->
+    <div id="add-lead-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl border border-outline-variant/30 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex justify-between items-center mb-6 pb-3 border-b border-outline-variant/20">
+                <h3 class="font-headline-md text-headline-md font-bold text-on-background">Add New Lead</h3>
+                <button onclick="closeAddLeadModal()" class="material-symbols-outlined text-outline hover:text-primary">close</button>
             </div>
-            
-            <!-- Pagination Footer -->
-            {% if is_paginated or leads.has_other_pages %}
-            <div class="p-4 bg-surface-container-low/30 border-t border-outline-variant flex items-center justify-between">
-                <span class="text-body-sm text-secondary">Showing {{ leads.start_index }}-{{ leads.end_index }} of {{ paginator.count }} leads</span>
-                <div class="flex items-center gap-2">
-                    {% if leads.has_previous %}
-                    <a href="?page={{ leads.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="p-2 rounded-lg hover:bg-surface-variant">
-                        <span class="material-symbols-outlined">chevron_left</span>
-                    </a>
-                    {% else %}
-                    <button type="button" class="p-2 rounded-lg opacity-30 cursor-not-allowed" disabled>
-                        <span class="material-symbols-outlined">chevron_left</span>
-                    </button>
-                    {% endif %}
-                    
-                    {% for page_num in paginator.page_range %}
-                        {% if page_num == leads.number %}
-                        <button type="button" class="w-8 h-8 rounded-lg bg-primary text-on-primary text-body-sm font-semibold">{{ page_num }}</button>
-                        {% elif page_num > leads.number|add:"-3" and page_num < leads.number|add:"3" %}
-                        <a href="?page={{ page_num }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="w-8 h-8 rounded-lg hover:bg-surface-variant text-body-sm flex items-center justify-center">{{ page_num }}</a>
-                        {% endif %}
-                    {% endfor %}
-                    
-                    {% if leads.has_next %}
-                    <a href="?page={{ leads.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="p-2 rounded-lg hover:bg-surface-variant">
-                        <span class="material-symbols-outlined">chevron_right</span>
-                    </a>
-                    {% else %}
-                    <button type="button" class="p-2 rounded-lg opacity-30 cursor-not-allowed" disabled>
-                        <span class="material-symbols-outlined">chevron_right</span>
-                    </button>
-                    {% endif %}
+            <form id="add-lead-form" method="POST" action="{% url 'add_lead' %}">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Lead Name *</label>
+                        <input type="text" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Company *</label>
+                        <input type="text" name="company" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Email *</label>
+                        <input type="email" name="email" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status</label>
+                        <select name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                            <option value="New">New</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="Qualified">Qualified</option>
+                            <option value="Cold Lead">Cold Lead</option>
+                            <option value="Lost">Lost</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Phone Number</label>
+                        <input type="text" name="phone_number" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Alt Phone Number</label>
+                        <input type="text" name="alt_phone_number" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Date and Time</label>
+                        <input type="datetime-local" name="date_time" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Assigned Employee (Owner)</label>
+                        <select name="owner" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                            <option value="">None</option>
+                            {% for owner in owners %}
+                            <option value="{{ owner.id }}">{{ owner.user.get_full_name|default:owner.user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Last Followup Date and Time</label>
+                        <input type="datetime-local" name="last_followup_date_time" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
                 </div>
-            </div>
-            {% endif %}
+                <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
+                    <button type="button" onclick="closeAddLeadModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Create Lead</button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
+
+    <!-- Custom Edit Lead Modal -->
+    <div id="edit-lead-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl border border-outline-variant/30 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex justify-between items-center mb-6 pb-3 border-b border-outline-variant/20">
+                <h3 class="font-headline-md text-headline-md font-bold text-on-background">Edit Lead Details</h3>
+                <button onclick="closeEditLeadModal()" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+            </div>
+            <form id="edit-lead-form" method="POST" action="">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Lead Name *</label>
+                        <input type="text" id="edit-lead-name" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Company *</label>
+                        <input type="text" id="edit-lead-company" name="company" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Email *</label>
+                        <input type="email" id="edit-lead-email" name="email" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status</label>
+                        <select id="edit-lead-status" name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                            <option value="New">New</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="Qualified">Qualified</option>
+                            <option value="Cold Lead">Cold Lead</option>
+                            <option value="Lost">Lost</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Phone Number</label>
+                        <input type="text" id="edit-lead-phone_number" name="phone_number" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Alt Phone Number</label>
+                        <input type="text" id="edit-lead-alt_phone_number" name="alt_phone_number" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Date and Time</label>
+                        <input type="datetime-local" id="edit-lead-date_time" name="date_time" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Assigned Employee (Owner)</label>
+                        <select id="edit-lead-owner" name="owner" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                            <option value="">None</option>
+                            {% for owner in owners %}
+                            <option value="{{ owner.id }}">{{ owner.user.get_full_name|default:owner.user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Last Followup Date and Time</label>
+                        <input type="datetime-local" id="edit-lead-last_followup_date_time" name="last_followup_date_time" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
+                    <button type="button" onclick="closeEditLeadModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </main>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Bulk action enablement logic
-    const selectAll = document.getElementById('select-all');
-    const checkboxes = document.querySelectorAll('.lead-checkbox');
-    const bulkBtns = document.querySelectorAll('.bulk-btn');
-    const bulkForm = document.getElementById('bulk-form');
+    // AJAX filtering and pagination logic
+    function fetchLeads(url) {
+        const tableContainer = document.getElementById('leads-table-container');
+        if (!tableContainer) return;
+        
+        tableContainer.style.opacity = '0.5';
+        tableContainer.style.pointerEvents = 'none';
 
-    function updateBulkState() {
-        const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+        fetch(url, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            tableContainer.innerHTML = data.html;
+            tableContainer.style.opacity = '1';
+            tableContainer.style.pointerEvents = 'auto';
+            bindTableEvents();
+        })
+        .catch(err => {
+            console.error("AJAX Error:", err);
+            tableContainer.style.opacity = '1';
+            tableContainer.style.pointerEvents = 'auto';
+        });
+    }
+
+    function updateFilters(page) {
+        const filterForm = document.querySelector('form[method="GET"]');
+        if (!filterForm) return;
+
+        const formData = new FormData(filterForm);
+        const searchInput = document.querySelector('header input[name="q"]');
+        if (searchInput) {
+            formData.set('q', searchInput.value);
+        }
+
+        const params = new URLSearchParams(formData);
+        if (page) {
+            params.set('page', page);
+        }
+        
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        window.history.pushState({}, '', newUrl);
+        fetchLeads(newUrl);
+    }
+
+    // Debounce function
+    let searchDebounceTimeout;
+    const globalSearch = document.querySelector('header input[name="q"]');
+    if (globalSearch) {
+        globalSearch.addEventListener('input', function() {
+            clearTimeout(searchDebounceTimeout);
+            searchDebounceTimeout = setTimeout(() => {
+                updateFilters();
+            }, 300);
+        });
+        
+        const globalSearchForm = globalSearch.closest('form');
+        if (globalSearchForm) {
+            globalSearchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                updateFilters();
+            });
+        }
+    }
+
+    // Bind event listeners to filter dropdowns
+    document.querySelectorAll('form[method="GET"] select').forEach(select => {
+        select.addEventListener('change', () => updateFilters());
+    });
+
+    document.querySelector('form[method="GET"]').addEventListener('submit', (e) => {
+        e.preventDefault();
+        updateFilters();
+    });
+
+    // Intercept pagination clicks
+    document.getElementById('leads-table-container').addEventListener('click', function(e) {
+        const link = e.target.closest('.pagination-link');
+        if (link) {
+            e.preventDefault();
+            const urlObj = new URL(link.href);
+            const page = urlObj.searchParams.get('page');
+            updateFilters(page);
+        }
+    });
+
+    // Bind table elements and checkbox logic
+    function bindTableEvents() {
+        const selectAll = document.getElementById('select-all');
+        const checkboxes = document.querySelectorAll('.lead-checkbox');
+        const bulkBtns = document.querySelectorAll('.bulk-btn');
+        const bulkForm = document.getElementById('bulk-form');
+        const actionTypeInput = document.getElementById('action-type-input');
+
+        if (!selectAll) return;
+
+        function updateBulkState() {
+            const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
+            bulkBtns.forEach(btn => {
+                btn.disabled = !anyChecked;
+                if (anyChecked) {
+                    btn.classList.remove('opacity-50');
+                } else {
+                    btn.classList.add('opacity-50');
+                }
+            });
+        }
+
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(cb => {
+                cb.checked = selectAll.checked;
+            });
+            updateBulkState();
+        });
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateBulkState);
+        });
+
         bulkBtns.forEach(btn => {
-            btn.disabled = !anyChecked;
-            if (anyChecked) {
-                btn.classList.remove('opacity-50');
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const action = this.getAttribute('value');
+                if (action === 'delete') {
+                    if (!confirm("Are you sure you want to delete the selected leads?")) return;
+                }
+                actionTypeInput.name = "bulk_action";
+                actionTypeInput.value = action;
+                bulkForm.submit();
+            });
+        });
+    }
+
+    // Add Lead Modal actions
+    function openAddLeadModal() {
+        document.getElementById('add-lead-modal').classList.remove('hidden');
+    }
+    function closeAddLeadModal() {
+        document.getElementById('add-lead-modal').classList.add('hidden');
+        document.getElementById('add-lead-form').reset();
+    }
+
+    // Edit Lead Modal actions
+    function openEditLeadModal(leadId) {
+        fetch(`/leads/${leadId}/json/`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const lead = data.lead;
+                document.getElementById('edit-lead-name').value = lead.name;
+                document.getElementById('edit-lead-company').value = lead.company;
+                document.getElementById('edit-lead-email').value = lead.email;
+                document.getElementById('edit-lead-status').value = lead.status;
+                document.getElementById('edit-lead-phone_number').value = lead.phone_number;
+                document.getElementById('edit-lead-alt_phone_number').value = lead.alt_phone_number;
+                document.getElementById('edit-lead-date_time').value = lead.date_time;
+                document.getElementById('edit-lead-owner').value = lead.owner_id;
+                document.getElementById('edit-lead-last_followup_date_time').value = lead.last_followup_date_time;
+
+                document.getElementById('edit-lead-form').action = `/leads/${leadId}/edit/`;
+                document.getElementById('edit-lead-modal').classList.remove('hidden');
             } else {
-                btn.classList.add('opacity-50');
+                if (typeof showToast === 'function') {
+                    showToast(data.error || "Failed to load lead details.", "error");
+                } else {
+                    alert(data.error || "Failed to load lead details.");
+                }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            if (typeof showToast === 'function') {
+                showToast("Failed to fetch lead details due to network issue.", "error");
+            } else {
+                alert("Network error.");
             }
         });
     }
 
-    selectAll.addEventListener('change', function() {
-        checkboxes.forEach(cb => {
-            cb.checked = selectAll.checked;
-        });
-        updateBulkState();
+    function closeEditLeadModal() {
+        document.getElementById('edit-lead-modal').classList.add('hidden');
+        document.getElementById('edit-lead-form').reset();
+    }
+
+    // Connect forms to AJAX handlers
+    document.addEventListener('DOMContentLoaded', () => {
+        const addLeadForm = document.getElementById('add-lead-form');
+        if (addLeadForm) {
+            addLeadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const submitBtn = addLeadForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+
+                const formData = new FormData(addLeadForm);
+                fetch(addLeadForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    if (data.success) {
+                        closeAddLeadModal();
+                        if (typeof showToast === 'function') {
+                            showToast(data.message, 'success');
+                        } else {
+                            alert(data.message);
+                        }
+                        updateFilters();
+                    } else {
+                        if (typeof showToast === 'function') {
+                            showToast(data.error || 'Failed to save lead.', 'error');
+                        } else {
+                            alert(data.error || 'Failed to save lead.');
+                        }
+                    }
+                })
+                .catch(err => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    console.error(err);
+                    if (typeof showToast === 'function') {
+                        showToast("Network error.", "error");
+                    } else {
+                        alert("Network error.");
+                    }
+                });
+            });
+        }
+
+        const editLeadForm = document.getElementById('edit-lead-form');
+        if (editLeadForm) {
+            editLeadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const submitBtn = editLeadForm.querySelector('button[type="submit"]');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Saving...';
+
+                const formData = new FormData(editLeadForm);
+                fetch(editLeadForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    if (data.success) {
+                        closeEditLeadModal();
+                        if (typeof showToast === 'function') {
+                            showToast(data.message, 'success');
+                        } else {
+                            alert(data.message);
+                        }
+                        updateFilters();
+                    } else {
+                        if (typeof showToast === 'function') {
+                            showToast(data.error || 'Failed to save lead.', 'error');
+                        } else {
+                            alert(data.error || 'Failed to save lead.');
+                        }
+                    }
+                })
+                .catch(err => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                    console.error(err);
+                    if (typeof showToast === 'function') {
+                        showToast("Network error.", "error");
+                    } else {
+                        alert("Network error.");
+                    }
+                });
+            });
+        }
     });
 
-    checkboxes.forEach(cb => {
-        cb.addEventListener('change', updateBulkState);
-    });
-
-    // Intercept click on Mark Qualified and Delete buttons
-    bulkBtns.forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const action = this.getAttribute('value');
-            if (action === 'delete') {
-                if (!confirm("Are you sure you want to delete the selected leads?")) return;
-            }
-            
-            // Set action type and submit bulkForm
-            const actionTypeInput = document.getElementById('action-type-input');
-            actionTypeInput.name = "bulk_action";
-            actionTypeInput.value = action;
-            bulkForm.submit();
-        });
-    });
+    // Run on initial load
+    bindTableEvents();
 </script>
 {% endblock %}

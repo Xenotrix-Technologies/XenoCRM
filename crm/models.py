@@ -38,6 +38,8 @@ class Lead(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='leads')
     name = models.CharField(max_length=255)
     email = models.EmailField()
+    phone_number = models.CharField(max_length=50, blank=True, null=True)
+    alt_phone_number = models.CharField(max_length=50, blank=True, null=True)
     company = models.CharField(max_length=255)
     score = models.IntegerField(default=50) # Lead score 0-100
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='New')
@@ -48,6 +50,8 @@ class Lead(models.Model):
     annual_revenue = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
     health_score = models.IntegerField(default=50)
     profile_image_url = models.URLField(max_length=1000, blank=True, null=True)
+    date_time = models.DateTimeField(blank=True, null=True)
+    last_followup_date_time = models.DateTimeField(blank=True, null=True)
     last_activity = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -111,41 +115,3 @@ class Event(models.Model):
     def __str__(self):
         return f"{self.title} ({self.start_time} - {self.end_time})"
 
-class BillingPlan(models.Model):
-    name = models.CharField(max_length=255)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    stripe_price_id = models.CharField(max_length=255, blank=True, null=True)
-    description = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-
-class Subscription(models.Model):
-    user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='subscriptions')
-    plan = models.ForeignKey(BillingPlan, on_delete=models.SET_NULL, null=True)
-    status = models.CharField(max_length=50, default='active')
-    start_date = models.DateField(auto_now_add=True)
-    end_date = models.DateField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.user_profile} - {self.plan.name} ({self.status})"
-
-class EmailTemplate(models.Model):
-    name = models.CharField(max_length=255)
-    subject = models.CharField(max_length=255)
-    body_html = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
-
-class HelpArticle(models.Model):
-    title = models.CharField(max_length=255)
-    content = models.TextField()
-    category = models.CharField(max_length=100, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.title

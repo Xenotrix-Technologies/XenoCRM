@@ -29,18 +29,6 @@
             <div class="col-span-12 lg:col-span-8 space-y-gutter-md">
                 <!-- Profile Header Card -->
                 <div class="glass-card rounded-xl p-8 flex flex-col md:flex-row gap-8 items-start shadow-sm border border-outline-variant/30">
-                    <div class="relative flex-shrink-0">
-                        {% if lead.profile_image_url %}
-                        <img class="w-32 h-32 rounded-3xl object-cover shadow-lg border-4 border-white" src="{{ lead.profile_image_url }}" alt="{{ lead.name }}"/>
-                        {% else %}
-                        <div class="w-32 h-32 rounded-3xl bg-primary text-on-primary flex items-center justify-center font-bold text-4xl shadow-lg border-4 border-white">
-                            {{ lead.name|slice:":2"|upper }}
-                        </div>
-                        {% endif %}
-                        <div class="absolute -bottom-2 -right-2 bg-success text-white w-8 h-8 rounded-full border-4 border-white flex items-center justify-center">
-                            <span class="material-symbols-outlined text-[16px] font-bold">check</span>
-                        </div>
-                    </div>
                     <div class="flex-1 space-y-4">
                         <div>
                             <div class="flex items-center gap-3 mb-1">
@@ -124,7 +112,7 @@
                     </div>
 
                     <!-- Activity Timeline (Compact Preview) -->
-                    <div class="col-span-2 md:col-span-1 glass-card rounded-xl p-6 border border-outline-variant/30">
+                    <div class="col-span-2 glass-card rounded-xl p-6 border border-outline-variant/30">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="font-headline-md text-[18px] font-bold">Recent Activity</h3>
                             <button onclick="switchTab(null, 'tab-timeline')" class="text-primary font-button text-sm">View All</button>
@@ -147,29 +135,6 @@
                             <p class="text-xs text-outline text-center py-4">No recent activity.</p>
                             {% endfor %}
                         </div>
-                    </div>
-
-                    <!-- Relationship Map -->
-                    <div class="col-span-2 md:col-span-1 glass-card rounded-xl p-6 border border-outline-variant/30 overflow-hidden relative">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-headline-md text-[18px] font-bold">Relationship Map</h3>
-                            <button class="material-symbols-outlined text-outline">fullscreen</button>
-                        </div>
-                        <div class="h-48 relative flex items-center justify-center">
-                            <!-- Node Visualization -->
-                            <div class="absolute w-12 h-12 rounded-full bg-primary-container border-2 border-primary z-20 flex items-center justify-center shadow-md">
-                                <span class="material-symbols-outlined text-primary">person</span>
-                            </div>
-                            <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-40">
-                                <line stroke="currentColor" stroke-width="1" x1="50%" x2="20%" y1="50%" y2="20%"></line>
-                                <line stroke="currentColor" stroke-width="1" x1="50%" x2="80%" y1="50%" y2="20%"></line>
-                                <line stroke="currentColor" stroke-width="1" x1="50%" x2="50%" y1="50%" y2="85%"></line>
-                            </svg>
-                            <div class="absolute left-[20%] top-[20%] w-8 h-8 rounded-full bg-surface-container border border-outline-variant text-[8px] flex items-center justify-center font-bold">CEO</div>
-                            <div class="absolute right-[20%] top-[20%] w-8 h-8 rounded-full bg-surface-container border border-outline-variant text-[8px] flex items-center justify-center font-bold">VPE</div>
-                            <div class="absolute bottom-[15%] left-[50%] -translate-x-1/2 w-8 h-8 rounded-full bg-surface-container border border-outline-variant text-[8px] flex items-center justify-center font-bold">PM</div>
-                        </div>
-                        <p class="text-center font-label-md text-outline">Sarah is connected to 3 key decision makers</p>
                     </div>
                 </div>
 
@@ -199,37 +164,7 @@
 
             <!-- Right Column: Widgets -->
             <div class="col-span-12 lg:col-span-4 space-y-gutter-md">
-                <!-- Lead Score Widget -->
-                <div class="bg-primary text-on-primary rounded-xl p-6 shadow-xl relative overflow-hidden">
-                    <div class="relative z-10">
-                        <h4 class="font-label-md text-primary-fixed uppercase tracking-widest mb-4">Lead Score Intelligence</h4>
-                        <div class="flex items-baseline gap-2 mb-2">
-                            <span class="text-5xl font-black">{{ lead.score }}</span>
-                            <span class="text-primary-fixed">/ 100</span>
-                        </div>
-                        <div class="flex items-center gap-2 mb-6">
-                            <span class="material-symbols-outlined text-success">trending_up</span>
-                            <span class="text-sm">+12 pts this month</span>
-                        </div>
-                        <div class="space-y-3">
-                            <div class="flex justify-between text-sm">
-                                <span class="opacity-80">Profile Fit</span>
-                                <span class="font-bold">{% if lead.score > 80 %}Excellent{% elif lead.score > 50 %}Good{% else %}Fair{% endif %}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="opacity-80">Engagement</span>
-                                <span class="font-bold">{% if lead.score > 80 %}High{% elif lead.score > 50 %}Medium{% else %}Low{% endif %}</span>
-                            </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="opacity-80">Intent Signal</span>
-                                <span class="font-bold">{% if lead.score > 80 %}Surging{% else %}Steady{% endif %}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Abstract background element -->
-                    <div class="absolute top-[-20%] right-[-10%] w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-                    <div class="absolute bottom-[-10%] left-[-10%] w-24 h-24 bg-primary-fixed-dim/20 rounded-full blur-2xl"></div>
-                </div>
+
 
                 <!-- Upcoming Tasks Widget -->
                 <div class="glass-card rounded-xl p-6 border border-outline-variant/30">
@@ -277,26 +212,41 @@
                     </div>
                 </div>
 
-                <!-- Recent Emails -->
-                <div class="glass-card rounded-xl p-6 border border-outline-variant/30">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="font-headline-md text-[18px] font-bold">Recent Emails</h3>
-                        <button class="material-symbols-outlined text-outline">open_in_new</button>
-                    </div>
-                    <div class="space-y-1">
-                        <div class="p-3 rounded-lg hover:bg-surface-container-low cursor-pointer transition-all border-b border-outline-variant/10 last:border-0">
-                            <p class="font-body-sm font-bold truncate">Re: System Deployment Schedule</p>
-                            <p class="text-xs text-secondary line-clamp-1 mt-1">Thanks for the update, team. We'll proceed with...</p>
-                            <p class="text-[10px] text-outline mt-2">Received • 4h ago</p>
-                        </div>
-                        <div class="p-3 rounded-lg hover:bg-surface-container-low cursor-pointer transition-all border-b border-outline-variant/10 last:border-0">
-                            <p class="font-body-sm font-bold truncate">Intro: Sarah &lt;&gt; Mark Wilson</p>
-                            <p class="text-xs text-secondary line-clamp-1 mt-1">Connecting you both regarding the security audit...</p>
-                            <p class="text-[10px] text-outline mt-2">Sent • Yesterday</p>
-                        </div>
-                    </div>
-                </div>
+
             </div>
+        </div>
+    </div>
+
+    <!-- Log Activity Modal -->
+    <div id="log-activity-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-outline-variant/30 transform transition-all duration-300">
+            <div class="flex justify-between items-center mb-4 border-b border-outline-variant/20 pb-3">
+                <h3 class="font-headline-md text-headline-md font-bold text-on-background">Log Interaction</h3>
+                <button onclick="closeLogActivityModal()" type="button" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+            </div>
+            
+            <form id="log-activity-form" method="POST" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Interaction Type</label>
+                    <select id="log-activity-type" name="type" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                        <option value="Email">Email</option>
+                        <option value="Call">Call</option>
+                        <option value="Meeting">Meeting</option>
+                        <option value="Task">Task</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Description / Notes</label>
+                    <textarea id="log-activity-desc" name="description" required rows="4" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Enter notes about this interaction..."></textarea>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-outline-variant/20 flex justify-end gap-3">
+                    <button type="button" onclick="closeLogActivityModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Log Activity</button>
+                </div>
+            </form>
         </div>
     </div>
 </main>
@@ -440,25 +390,43 @@
         });
     }
 
-    // Log Interaction AJAX (Send Email / Call)
+    // Log Interaction via Custom Modal
+    const logModal = document.getElementById('log-activity-modal');
+    const logTypeSelect = document.getElementById('log-activity-type');
+    const logDescTextarea = document.getElementById('log-activity-desc');
+
     function logInteraction(type) {
-        const url = "{% url 'log_activity' %}";
-        const csrfToken = "{{ csrf_token }}";
+        logTypeSelect.value = type;
         
-        let desc = "";
         if (type === 'Email') {
-            desc = prompt("Log Email sent to {{ lead.name }}. Description:", "Sent email regarding contract renewal quote.");
+            logDescTextarea.placeholder = "Sent email regarding contract renewal quote.";
         } else if (type === 'Call') {
-            desc = prompt("Log Phone Call with {{ lead.name }}. Description:", "Spoke about current timelines. Positive feedback.");
+            logDescTextarea.placeholder = "Spoke about current timelines. Positive feedback.";
         } else {
-            desc = prompt("Log Meeting with {{ lead.name }}. Description:", "Scheduled Q4 strategic planning session.");
+            logDescTextarea.placeholder = "Scheduled Q4 strategic planning session.";
         }
         
-        if (desc === null) return; // cancelled
+        logDescTextarea.value = '';
+        logModal.classList.remove('hidden');
+    }
+
+    function closeLogActivityModal() {
+        logModal.classList.add('hidden');
+    }
+
+    document.getElementById('log-activity-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const type = logTypeSelect.value;
+        const desc = logDescTextarea.value;
+        
         if (!desc.trim()) {
-            alert("Please enter a description to log the activity.");
+            alert("Please enter a description.");
             return;
         }
+
+        const url = "{% url 'log_activity' %}";
+        const csrfToken = "{{ csrf_token }}";
 
         fetch(url, {
             method: "POST",
@@ -471,6 +439,11 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                closeLogActivityModal();
+                if (typeof showToast === 'function') {
+                    showToast("Activity logged successfully.", "success");
+                }
+                
                 // Prepend to overview timeline
                 const container = document.getElementById('activity-list-container');
                 const noAct = container.querySelector('.text-outline');
@@ -510,13 +483,21 @@
                     tabTimeline.insertAdjacentHTML('afterbegin', fullActHtml);
                 }
             } else {
-                alert("Failed to log activity: " + data.error);
+                if (typeof showToast === 'function') {
+                    showToast("Failed to log activity: " + data.error, "error");
+                } else {
+                    alert("Failed to log activity: " + data.error);
+                }
             }
         })
         .catch(err => {
             console.error(err);
-            alert("Network error.");
+            if (typeof showToast === 'function') {
+                showToast("Network error occurred.", "error");
+            } else {
+                alert("Network error.");
+            }
         });
-    }
+    });
 </script>
 {% endblock %}

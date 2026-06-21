@@ -159,22 +159,12 @@
                 <span class="font-body-sm text-body-sm">Calendar</span>
             </a>
             <!-- Active navigation items mapped to Django URLs -->
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'contacts' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'contacts' %}">
-                <span class="material-symbols-outlined">contacts</span>
-                <span class="font-body-sm text-body-sm">Contacts</span>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'clients' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'clients' %}">
+                <span class="material-symbols-outlined">people</span>
+                <span class="font-body-sm text-body-sm">Clients</span>
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'accounts' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'accounts' %}">
-                <span class="material-symbols-outlined">business</span>
-                <span class="font-body-sm text-body-sm">Accounts</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'opportunities' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'opportunities' %}">
-                <span class="material-symbols-outlined">monetization_on</span>
-                <span class="font-body-sm text-body-sm">Opportunities</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'marketing' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'marketing' %}">
-                <span class="material-symbols-outlined">campaign</span>
-                <span class="font-body-sm text-body-sm">Marketing</span>
-            </a>
+
+
             <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'customer_support' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'customer_support' %}">
                 <span class="material-symbols-outlined">support_agent</span>
                 <span class="font-body-sm text-body-sm">Customer Support</span>
@@ -187,14 +177,8 @@
                 <span class="material-symbols-outlined">assessment</span>
                 <span class="font-body-sm text-body-sm">Reports</span>
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'ai_assistant' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'ai_assistant' %}">
-                <span class="material-symbols-outlined">smart_toy</span>
-                <span class="font-body-sm text-body-sm">AI Assistant</span>
-            </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'business' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'business' %}">
-                <span class="material-symbols-outlined">corporate_fare</span>
-                <span class="font-body-sm text-body-sm">Business</span>
-            </a>
+
+
             <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'campaign' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'campaign' %}">
                 <span class="material-symbols-outlined">ads_click</span>
                 <span class="font-body-sm text-body-sm">Campaigns</span>
@@ -202,7 +186,7 @@
         </nav>
         
         <div class="px-3 pt-4 mt-4 border-t border-outline-variant/30">
-            <a href="{% url 'upgrade_plans' %}" class="w-full py-3 bg-primary text-on-primary font-button rounded-xl shadow-lg active:scale-95 transition-all">Upgrade Plan</a>
+            <a href="#" class="w-full py-3 bg-primary text-on-primary font-button rounded-xl shadow-lg active:scale-95 transition-all">Upgrade Plan</a>
             <div class="mt-4 space-y-1">
                 <a class="flex items-center gap-3 px-4 py-2 text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50 rounded-lg transition-colors" href="#">
                     <span class="material-symbols-outlined">help</span>
@@ -311,6 +295,217 @@
         <div class="min-h-screen">
             {% block auth_content %}{% endblock %}
         </div>
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-[200] space-y-2 pointer-events-none"></div>
+
+    <script>
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+            
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-3 p-4 rounded-xl shadow-2xl border text-body-sm transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto max-w-sm ${
+                type === 'error' ? 'bg-error-container text-on-error-container border-error/20' : 'bg-white text-on-surface border-outline-variant/30'
+            }`;
+            
+            const icon = type === 'error' ? 'error' : 'check_circle';
+            const iconColor = type === 'error' ? 'text-error' : 'text-success';
+            
+            toast.innerHTML = `
+                <span class="material-symbols-outlined ${iconColor}">${icon}</span>
+                <div class="flex-1 font-semibold">${message}</div>
+                <button type="button" class="material-symbols-outlined text-outline hover:text-primary text-[18px]">close</button>
+            `;
+            
+            toast.querySelector('button').onclick = () => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            };
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+                toast.classList.add('translate-y-0', 'opacity-100');
+            }, 10);
+            
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.classList.remove('translate-y-0', 'opacity-100');
+                    toast.classList.add('translate-y-2', 'opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const quickCreateForm = document.querySelector('#quick-create-modal form');
+            if (quickCreateForm) {
+                quickCreateForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const submitBtn = quickCreateForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.textContent;
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Creating...';
+                    
+                    const formData = new FormData(quickCreateForm);
+                    const url = quickCreateForm.action;
+                    
+                    fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                        
+                        if (data.success) {
+                            // Close modal
+                            document.getElementById('quick-create-modal').classList.add('hidden');
+                            quickCreateForm.reset();
+                            
+                            showToast(data.message, 'success');
+                            
+                            // Dynamically append lead if leads table exists
+                            const tbody = document.querySelector('#leads-table-container tbody');
+                            if (tbody) {
+                                const emptyRow = tbody.querySelector('tr td[colspan]');
+                                if (emptyRow) emptyRow.closest('tr').remove();
+                                
+                                const lead = data.lead;
+                                const avatarHtml = lead.profile_image_url ? 
+                                    `<img class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="${lead.profile_image_url}" alt=""/>` :
+                                    `<div class="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xs border border-outline-variant">${lead.owner_initials}</div>`;
+                                    
+                                const scoreClass = lead.score > 80 ? 'border-success text-success bg-success/5' : (lead.score > 50 ? 'border-warning text-warning bg-warning/5' : 'border-danger text-danger bg-danger/5');
+                                const statusClass = lead.status === 'Qualified' ? 'bg-primary-container/10 text-primary' : (lead.status === 'Contacted' ? 'bg-surface-variant text-on-surface-variant' : (lead.status === 'New' ? 'bg-tertiary-container/20 text-tertiary' : 'bg-error-container/40 text-error'));
+                                
+                                const rowHtml = `
+                                    <tr class="hover:bg-primary-container/5 transition-colors group" id="lead-row-${lead.id}">
+                                        <td class="p-4">
+                                            <input name="lead_ids" value="${lead.id}" class="lead-checkbox rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="flex items-center gap-3">
+                                                ${avatarHtml}
+                                                <div>
+                                                    <div class="font-body-sm font-semibold text-on-surface hover:text-primary"><a href="/leads/${lead.id}/">${lead.name}</a></div>
+                                                    <div class="text-[12px] text-secondary">${lead.email}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="p-4 text-body-sm text-on-surface-variant">${lead.company}</td>
+                                        <td class="p-4 text-center">
+                                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-full border-2 ${scoreClass} font-label-md text-label-md">
+                                                ${lead.score}
+                                            </span>
+                                        </td>
+                                        <td class="p-4">
+                                            <span class="px-2.5 py-1 rounded-full text-[12px] font-bold uppercase tracking-tight ${statusClass}">
+                                                ${lead.status}
+                                            </span>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-5 h-5 rounded-full bg-secondary-container text-[8px] flex items-center justify-center text-secondary font-bold">
+                                                    ${lead.owner_initials}
+                                                </div>
+                                                <span class="text-body-sm">${lead.owner_name}</span>
+                                            </div>
+                                        </td>
+                                        <td class="p-4 text-body-sm text-secondary">0 minutes ago</td>
+                                        <td class="p-4 text-body-sm font-semibold text-right">$${lead.value.toLocaleString('en-US', {maximumFractionDigits:0})}</td>
+                                        <td class="p-4 text-right">
+                                            <div class="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <a href="/leads/${lead.id}/" class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all">
+                                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                                tbody.insertAdjacentHTML('afterbegin', rowHtml);
+                                if (typeof bindTableEvents === 'function') {
+                                    bindTableEvents();
+                                }
+                            }
+
+                            // Dynamically append card if Kanban columns exist
+                            const kColumn = document.querySelector('.drop-zone[data-stage="New"] .column-body');
+                            if (kColumn) {
+                                const lead = data.lead;
+                                const avatarHtml = lead.profile_image_url ? 
+                                    `<img class="w-full h-full object-cover" src="${lead.profile_image_url}" alt=""/>` :
+                                    lead.owner_initials;
+
+                                const flagHtml = lead.score > 80 ? `<span class="material-symbols-outlined text-warning text-[18px]" style="font-variation-settings: 'FILL' 1;">flag</span>` : '';
+                                const scoreClass = lead.score > 80 ? 'bg-primary-container/10 text-primary' : (lead.score > 50 ? 'bg-secondary-container text-on-secondary-container' : 'bg-error-container/40 text-error');
+                                const scoreLabel = lead.score > 80 ? 'High' : (lead.score > 50 ? 'Medium' : 'Low');
+
+                                const cardHtml = `
+                                    <div id="lead-card-${lead.id}" draggable="true" data-lead-id="${lead.id}" data-value="${lead.value}" class="lead-card bg-white p-4 rounded-xl shadow-sm border border-outline-variant hover:shadow-md hover:border-primary/30 transition-all cursor-grab active:cursor-grabbing group">
+                                        <div class="flex items-start justify-between mb-2">
+                                            <span class="px-2 py-0.5 text-[10px] font-bold rounded uppercase ${scoreClass}">
+                                                ${scoreLabel}
+                                            </span>
+                                            <div class="flex items-center gap-1">
+                                                <a href="/leads/${lead.id}/" class="opacity-0 group-hover:opacity-100 material-symbols-outlined text-outline text-[18px] hover:text-primary transition-all">edit</a>
+                                                ${flagHtml}
+                                            </div>
+                                        </div>
+                                        <h5 class="font-body-md font-bold text-on-surface mb-1">${lead.name}</h5>
+                                        <p class="text-body-sm text-on-surface-variant mb-3">${lead.company}</p>
+                                        <div class="flex items-center justify-between mt-4">
+                                            <div class="flex items-center gap-1.5">
+                                                <div class="w-6 h-6 rounded-full overflow-hidden bg-primary text-white text-[8px] flex items-center justify-center font-bold" title="Owner: ${lead.owner_name}">
+                                                    ${avatarHtml}
+                                                </div>
+                                                <span class="text-label-md font-label-md font-bold">$${lead.value.toLocaleString('en-US', {maximumFractionDigits:0})}</span>
+                                            </div>
+                                            <span class="text-[10px] font-label-md text-outline">${lead.created_at_formatted}</span>
+                                        </div>
+                                    </div>
+                                `;
+                                kColumn.insertAdjacentHTML('afterbegin', cardHtml);
+                                const cardEl = document.getElementById(`lead-card-${lead.id}`);
+                                cardEl.addEventListener('dragstart', (e) => {
+                                    e.dataTransfer.setData('text/plain', cardEl.id);
+                                    cardEl.classList.add('opacity-50');
+                                    cardEl.style.transform = 'scale(1.02) rotate(1deg)';
+                                    cardEl.style.boxShadow = '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)';
+                                    cardEl.style.zIndex = '100';
+                                });
+                                cardEl.addEventListener('dragend', () => {
+                                    cardEl.classList.remove('opacity-50');
+                                    cardEl.style.transform = 'scale(1) rotate(0deg)';
+                                    cardEl.style.boxShadow = '';
+                                    cardEl.style.zIndex = '';
+                                });
+                                if (typeof recalculateColumns === 'function') {
+                                    recalculateColumns();
+                                }
+                            }
+                        } else {
+                            showToast(data.error || 'Failed to create lead.', 'error');
+                        }
+                    })
+                    .catch(err => {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                        console.error(err);
+                        showToast('Network error.', 'error');
+                    });
+                });
+            }
+        });
+    </script>
     {% endif %}
 
     {% block extra_js %}{% endblock %}
