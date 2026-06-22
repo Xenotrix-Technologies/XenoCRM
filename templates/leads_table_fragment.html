@@ -66,12 +66,16 @@
                             </span>
                         </td>
                         <td class="p-4">
+                            {% if lead.owner %}
                             <div class="flex items-center gap-2">
                                 <div class="w-5 h-5 rounded-full bg-secondary-container text-[8px] flex items-center justify-center text-secondary font-bold" title="{{ lead.owner.user.username }}">
                                     {{ lead.owner.user.username|slice:":2"|upper }}
                                 </div>
                                 <span class="text-body-sm">{{ lead.owner.user.get_full_name|default:lead.owner.user.username }}</span>
                             </div>
+                            {% else %}
+                            <span class="text-body-sm text-secondary">-</span>
+                            {% endif %}
                         </td>
                         <td class="p-4 text-body-sm text-secondary">
                             {% if lead.last_followup_date_time %}
