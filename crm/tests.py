@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
-from crm.models import Organization, UserProfile, Lead, Task, Activity, Event
+from crm.models import Organization, UserProfile, Lead, Task, Activity, Event, LeadStatus
 
 class XenoCRMTests(TestCase):
     def setUp(self):
@@ -324,4 +324,100 @@ class XenoCRMTests(TestCase):
         self.assertTrue(data['success'])
         self.assertEqual(data['lead']['name'], 'John Doe')
         self.assertEqual(data['lead']['phone_number'], '555-555-5555')
+
+    def test_lead_statuses_view_authenticated(self):
+        self.client.login(username='user1', password='password123')
+        response = self.client.get(reverse('lead_statuses'))
+        self.assertEqual(response.status_code, 200)
+        # Check that default statuses are populated and returned
+        statuses = response.context['statuses']
+        self.assertTrue(statuses.exists())
+        self.assertEqual(statuses.count(), 5) # New, Contacted, Qualified, Cold Lead, Lost
+
+    def test_add_lead_status_ajax(self):
+        self.client.login(username='user1', password='password123')
+        response = self.client.post(reverse('add_lead_status'), {
+            'name': 'Negotiating',
+            'color': 'yellow'
+        }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        self.assertTrue(LeadStatus.objects.filter(organization=self.org1, name='Negotiating').exists())
+
+    def test_edit_lead_status_ajax(self):
+        self.client.login(username='user1', password='password123')
+        # Force default seed
+        response = self.client.get(reverse('lead_statuses'))
+        status_obj = LeadStatus.objects.filter(organization=self.org1, name='New').first()
+        self.assertIsNotNone(status_obj)
+        
+        # Associate lead1 with 'New' status
+        self.lead1.status = 'New'
+        self.lead1.save()
+
+        response = self.client.post(reverse('edit_lead_status', args=[status_obj.id]), {
+            'name': 'Brand New',
+            'color': 'blue'
+        }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        
+        status_obj.refresh_from_db()
+        self.assertEqual(status_obj.name, 'Brand New')
+        self.assertEqual(status_obj.color, 'blue')
+        
+        # Verify the lead's status is updated
+        self.lead1.refresh_from_db()
+        self.assertEqual(self.lead1.status, 'Brand New')
+
+    def test_delete_lead_status_ajax(self):
+        self.client.login(username='user1', password='password123')
+        # Force seed
+        self.client.get(reverse('lead_statuses'))
+        status_to_delete = LeadStatus.objects.filter(organization=self.org1, name='Cold Lead').first()
+        default_status = LeadStatus.objects.filter(organization=self.org1, is_default=True).first()
+        self.assertIsNotNone(status_to_delete)
+        self.assertIsNotNone(default_status)
+
+        # Assign lead1 to 'Cold Lead'
+        self.lead1.status = 'Cold Lead'
+        self.lead1.save()
+
+        response = self.client.post(reverse('delete_lead_status', args=[status_to_delete.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+        
+        # Verify it is deleted
+        self.assertFalse(LeadStatus.objects.filter(id=status_to_delete.id).exists())
+        
+        # Verify lead is reassigned to default
+        self.lead1.refresh_from_db()
+        self.assertEqual(self.lead1.status, default_status.name)
+
+    def test_reorder_lead_statuses_ajax(self):
+        self.client.login(username='user1', password='password123')
+        self.client.get(reverse('lead_statuses'))
+        statuses = list(LeadStatus.objects.filter(organization=self.org1).order_by('position'))
+        self.assertEqual(len(statuses), 5)
+
+        # Reverse the order
+        reversed_ids = [s.id for s in reversed(statuses)]
+        import json
+        response = self.client.post(
+            reverse('reorder_lead_statuses'),
+            data=json.dumps({'order': reversed_ids}),
+            content_type='application/json',
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertTrue(data['success'])
+
+        # Verify order in DB
+        new_ordered = list(LeadStatus.objects.filter(organization=self.org1).order_by('position'))
+        self.assertEqual(new_ordered[0].id, reversed_ids[0])
+        self.assertEqual(new_ordered[-1].id, reversed_ids[-1])
 

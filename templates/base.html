@@ -183,6 +183,10 @@
                 <span class="material-symbols-outlined">ads_click</span>
                 <span class="font-body-sm text-body-sm">Campaigns</span>
             </a>
+            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'lead_statuses' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'lead_statuses' %}">
+                <span class="material-symbols-outlined">tune</span>
+                <span class="font-body-sm text-body-sm">Lead Statuses</span>
+            </a>
         </nav>
         
         <div class="px-3 pt-4 mt-4 border-t border-outline-variant/30">
@@ -378,7 +382,7 @@
                                     `<div class="w-8 h-8 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-xs border border-outline-variant">${lead.owner_initials}</div>`;
                                     
                                 const scoreClass = lead.score > 80 ? 'border-success text-success bg-success/5' : (lead.score > 50 ? 'border-warning text-warning bg-warning/5' : 'border-danger text-danger bg-danger/5');
-                                const statusClass = lead.status === 'Qualified' ? 'bg-primary-container/10 text-primary' : (lead.status === 'Contacted' ? 'bg-surface-variant text-on-surface-variant' : (lead.status === 'New' ? 'bg-tertiary-container/20 text-tertiary' : 'bg-error-container/40 text-error'));
+                                const statusClass = lead.badge_class || 'bg-primary-container/10 text-primary border border-primary/20';
                                 
                                 const rowHtml = `
                                     <tr class="hover:bg-primary-container/5 transition-colors group" id="lead-row-${lead.id}">

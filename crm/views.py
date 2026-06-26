@@ -8,7 +8,7 @@ from django.db.models import Sum, Q
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib import messages
-from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event
+from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class
 from .forms import EventForm, ProfileForm
 # Views for navigation pages with proper multi-tenant database queries
 
@@ -358,6 +358,10 @@ def leads_view(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Initialize / fetch dynamic statuses
+    statuses = get_or_create_default_statuses(org)
+    annotate_lead_badges(page_obj, org)
+
     context = {
         'leads': page_obj,
         'owners': owners,
@@ -365,7 +369,8 @@ def leads_view(request):
         'owner_filter': owner_filter,
         'sort_by': sort_by,
         'q': q,
-        'paginator': paginator
+        'paginator': paginator,
+        'statuses': statuses,
     }
     
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -450,6 +455,7 @@ def contact_detail_view(request, lead_id):
     org = request.user.profile.organization
     try:
         lead = Lead.objects.get(id=lead_id, organization=org)
+        annotate_lead_badges(lead, org)
     except Lead.DoesNotExist:
         return redirect('leads')
         
@@ -577,6 +583,12 @@ def quick_create_lead(request):
         is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
         
         try:
+            # Get default status name
+            default_status = get_or_create_default_statuses(org).filter(is_default=True).first()
+            if not default_status:
+                default_status = get_or_create_default_statuses(org).first()
+            status_name = default_status.name if default_status else 'New'
+
             lead = Lead.objects.create(
                 organization=org,
                 name=name,
@@ -585,8 +597,8 @@ def quick_create_lead(request):
                 value=value,
                 score=score,
                 owner=owner,
-                status='New',
-                stage='New',
+                status=status_name,
+                stage=status_name,
                 lifecycle_stage='Prospect',
                 health_score=80,
                 annual_revenue=value
@@ -606,8 +618,8 @@ def quick_create_lead(request):
                         'email': lead.email,
                         'company': lead.company,
                         'value': float(lead.value),
-                        # 'score': lead.score,  # score column commented out
                         'status': lead.status,
+                        'badge_class': lead.status_badge_class,
                         'owner_name': lead.owner.user.get_full_name() or lead.owner.user.username if lead.owner else '',
                         'owner_initials': (lead.owner.user.username[:2].upper() if lead.owner else 'UN'),
                         'created_at_formatted': lead.created_at.strftime('%b %d') if lead.created_at else timezone.now().strftime('%b %d'),
@@ -799,7 +811,12 @@ def add_lead(request):
         date_time_val = request.POST.get('date_time')
         date_time = date_time_val if date_time_val else None
         
-        status = request.POST.get('status', 'New')
+        status = request.POST.get('status')
+        if not status:
+            default_status = get_or_create_default_statuses(org).filter(is_default=True).first()
+            if not default_status:
+                default_status = get_or_create_default_statuses(org).first()
+            status = default_status.name if default_status else 'New'
         
         owner_id = request.POST.get('owner')
         owner = None
@@ -919,3 +936,148 @@ def lead_json_view(request, lead_id):
         return JsonResponse({'success': False, 'error': 'Lead not found.'})
 
 
+# ── Helper functions for dynamic statuses ──────────────────────────────
+
+DEFAULT_STATUSES = [
+    {'name': 'New',       'color': 'green',  'position': 0, 'is_default': True},
+    {'name': 'Contacted', 'color': 'grey',   'position': 1, 'is_default': False},
+    {'name': 'Qualified', 'color': 'blue',   'position': 2, 'is_default': False},
+    {'name': 'Cold Lead', 'color': 'red',    'position': 3, 'is_default': False},
+    {'name': 'Lost',      'color': 'red',    'position': 4, 'is_default': False},
+]
+
+
+def get_or_create_default_statuses(org):
+    """Return the queryset of LeadStatus for `org`, seeding defaults if empty."""
+    qs = LeadStatus.objects.filter(organization=org)
+    if not qs.exists():
+        for s in DEFAULT_STATUSES:
+            LeadStatus.objects.create(organization=org, **s)
+        qs = LeadStatus.objects.filter(organization=org)
+    return qs
+
+
+def annotate_lead_badges(leads, org):
+    """Attach _badge_class to each lead object to avoid N+1 queries."""
+    statuses = {s.name: s.badge_class for s in get_or_create_default_statuses(org)}
+    iterable = leads if hasattr(leads, '__iter__') else [leads]
+    for lead in iterable:
+        badge = statuses.get(lead.status)
+        if badge is None:
+            badge = get_default_badge_class(lead.status)
+        lead._badge_class = badge
+
+
+# ── Lead Statuses management views ─────────────────────────────────────
+
+@login_required
+def lead_statuses_view(request):
+    """List all lead statuses for the current organisation."""
+    org = request.user.profile.organization
+    statuses = get_or_create_default_statuses(org)
+    return render(request, 'lead_statuses.html', {'statuses': statuses})
+
+
+@login_required
+def add_lead_status(request):
+    """Create a new lead status via AJAX POST."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        name = request.POST.get('name', '').strip()
+        color = request.POST.get('color', 'blue')
+
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Status name is required.'})
+
+        if LeadStatus.objects.filter(organization=org, name=name).exists():
+            return JsonResponse({'success': False, 'error': f"Status '{name}' already exists."})
+
+        max_pos = LeadStatus.objects.filter(organization=org).count()
+        LeadStatus.objects.create(organization=org, name=name, color=color, position=max_pos)
+        return JsonResponse({'success': True, 'message': f"Status '{name}' created."})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def edit_lead_status(request, status_id):
+    """Edit an existing lead status via AJAX POST."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        try:
+            status_obj = LeadStatus.objects.get(id=status_id, organization=org)
+        except LeadStatus.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Status not found.'})
+
+        new_name = request.POST.get('name', '').strip()
+        new_color = request.POST.get('color', status_obj.color)
+
+        if not new_name:
+            return JsonResponse({'success': False, 'error': 'Status name is required.'})
+
+        # Check uniqueness (excluding self)
+        if LeadStatus.objects.filter(organization=org, name=new_name).exclude(id=status_id).exists():
+            return JsonResponse({'success': False, 'error': f"Status '{new_name}' already exists."})
+
+        old_name = status_obj.name
+        status_obj.name = new_name
+        status_obj.color = new_color
+        status_obj.save()
+
+        # Rename on all leads that had the old name
+        if old_name != new_name:
+            Lead.objects.filter(organization=org, status=old_name).update(status=new_name)
+
+        return JsonResponse({'success': True, 'message': f"Status updated to '{new_name}'."})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def delete_lead_status(request, status_id):
+    """Delete a lead status via AJAX POST, reassigning leads to the default."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        try:
+            status_obj = LeadStatus.objects.get(id=status_id, organization=org)
+        except LeadStatus.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Status not found.'})
+
+        # Prevent deleting the last status
+        if LeadStatus.objects.filter(organization=org).count() <= 1:
+            return JsonResponse({'success': False, 'error': 'Cannot delete the last remaining status.'})
+
+        # Find fallback status
+        fallback = LeadStatus.objects.filter(organization=org, is_default=True).exclude(id=status_id).first()
+        if not fallback:
+            fallback = LeadStatus.objects.filter(organization=org).exclude(id=status_id).first()
+
+        # Reassign leads
+        Lead.objects.filter(organization=org, status=status_obj.name).update(status=fallback.name)
+
+        deleted_name = status_obj.name
+        status_obj.delete()
+
+        return JsonResponse({'success': True, 'message': f"Status '{deleted_name}' deleted. Leads reassigned to '{fallback.name}'."})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def reorder_lead_statuses(request):
+    """Reorder statuses via AJAX POST with a list of status IDs in order."""
+    if request.method == 'POST':
+        import json
+        org = request.user.profile.organization
+        try:
+            body = json.loads(request.body)
+            order = body.get('order', [])
+        except (json.JSONDecodeError, AttributeError):
+            order = request.POST.getlist('order[]')
+
+        for idx, sid in enumerate(order):
+            LeadStatus.objects.filter(id=sid, organization=org).update(position=idx)
+
+        return JsonResponse({'success': True, 'message': 'Statuses reordered.'})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})

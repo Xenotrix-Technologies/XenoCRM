@@ -36,4 +36,11 @@ urlpatterns = [
     path('calendar/delete-ajax/<int:event_id>/', views.event_delete_ajax, name='event_delete_ajax'),
     path('profile/edit/', views.profile_edit_view, name='profile_edit'),
     path('campaign/', views.campaign_view, name='campaign'),
+
+    # Lead Status Management
+    path('statuses/', views.lead_statuses_view, name='lead_statuses'),
+    path('statuses/add/', views.add_lead_status, name='add_lead_status'),
+    path('statuses/<int:status_id>/edit/', views.edit_lead_status, name='edit_lead_status'),
+    path('statuses/<int:status_id>/delete/', views.delete_lead_status, name='delete_lead_status'),
+    path('statuses/reorder/', views.reorder_lead_statuses, name='reorder_lead_statuses'),
     ]

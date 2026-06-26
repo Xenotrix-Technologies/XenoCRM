@@ -39,11 +39,9 @@
 
         <select name="status" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
             <option value="">All Statuses</option>
-            <option value="New" {% if status_filter == 'New' %}selected{% endif %}>New</option>
-            <option value="Contacted" {% if status_filter == 'Contacted' %}selected{% endif %}>Contacted</option>
-            <option value="Qualified" {% if status_filter == 'Qualified' %}selected{% endif %}>Qualified</option>
-            <option value="Cold Lead" {% if status_filter == 'Cold Lead' %}selected{% endif %}>Cold Lead</option>
-            <option value="Lost" {% if status_filter == 'Lost' %}selected{% endif %}>Lost</option>
+            {% for s in statuses %}
+            <option value="{{ s.name }}" {% if status_filter == s.name %}selected{% endif %}>{{ s.name }}</option>
+            {% endfor %}
         </select>
 
         <select name="owner" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
@@ -100,11 +98,9 @@
                     <div>
                         <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status</label>
                         <select name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-                            <option value="New">New</option>
-                            <option value="Contacted">Contacted</option>
-                            <option value="Qualified">Qualified</option>
-                            <option value="Cold Lead">Cold Lead</option>
-                            <option value="Lost">Lost</option>
+                            {% for s in statuses %}
+                            <option value="{{ s.name }}" {% if s.is_default %}selected{% endif %}>{{ s.name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div>
@@ -166,11 +162,9 @@
                     <div>
                         <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status</label>
                         <select id="edit-lead-status" name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-                            <option value="New">New</option>
-                            <option value="Contacted">Contacted</option>
-                            <option value="Qualified">Qualified</option>
-                            <option value="Cold Lead">Cold Lead</option>
-                            <option value="Lost">Lost</option>
+                            {% for s in statuses %}
+                            <option value="{{ s.name }}">{{ s.name }}</option>
+                            {% endfor %}
                         </select>
                     </div>
                     <div>

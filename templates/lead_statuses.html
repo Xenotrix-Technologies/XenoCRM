@@ -1,0 +1,424 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Lead Status Settings{% endblock %}
+
+{% block content %}
+<main class="pt-4 p-margin-edge min-h-screen flex flex-col bg-background">
+    <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Lead Status Management</h2>
+            <p class="text-body-sm text-secondary">Customize the statuses, order, and styling of lead badges for your organization.</p>
+        </div>
+        <a href="{% url 'leads' %}" class="flex items-center gap-2 text-primary font-button text-button hover:underline">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Back to Leads
+        </a>
+    </div>
+
+    <!-- Main Settings Panel -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Status List Area -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="glass-panel rounded-2xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+                    <h3 class="font-headline-md text-headline-md font-bold">Pipeline Order</h3>
+                    <span class="text-xs text-outline font-semibold uppercase tracking-wider">Drag to Reorder</span>
+                </div>
+                
+                <!-- Status Sortable List -->
+                <div id="status-sortable-list" class="space-y-3">
+                    {% for status in statuses %}
+                    <div draggable="true" data-id="{{ status.id }}" class="status-drag-item flex items-center justify-between p-4 bg-white rounded-xl border border-outline-variant hover:border-primary/30 shadow-sm cursor-grab active:cursor-grabbing group transition-all">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors cursor-move">drag_indicator</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight {{ status.badge_class }}">
+                                {{ status.name }}
+                            </span>
+                            {% if status.is_default %}
+                            <span class="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded font-bold uppercase">Default</span>
+                            {% endif %}
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="openEditStatusModal('{{ status.id }}', '{{ status.name }}', '{{ status.color }}', '{{ status.is_default|yesno:'true,false' }}')" class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all" title="Edit Status">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                            </button>
+                            {% if not status.is_default %}
+                            <button type="button" onclick="deleteStatus('{{ status.id }}', '{{ status.name }}')" class="p-2 rounded-lg hover:bg-red-50 text-outline hover:text-red-600 transition-all" title="Delete Status">
+                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-8 text-center text-outline">No statuses found. Set up initial statuses below.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Status Sidebar Form -->
+        <div class="space-y-6">
+            <div class="glass-panel rounded-2xl p-6 shadow-sm">
+                <h3 class="font-headline-md text-headline-md font-bold mb-4 border-b border-outline-variant/30 pb-3">Create New Status</h3>
+                
+                <form id="add-status-form" method="POST" action="{% url 'add_lead_status' %}" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status Name *</label>
+                        <input type="text" name="name" required placeholder="e.g. In Negotiation" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-2">Badge Color</label>
+                        <div class="flex items-center gap-3">
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="color" value="green" checked class="sr-only peer"/>
+                                <span class="w-8 h-8 rounded-full bg-green-500 block border-2 border-transparent peer-checked:border-slate-800 peer-checked:scale-110 shadow-sm transition-all" title="Green"></span>
+                            </label>
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="color" value="blue" class="sr-only peer"/>
+                                <span class="w-8 h-8 rounded-full bg-blue-500 block border-2 border-transparent peer-checked:border-slate-800 peer-checked:scale-110 shadow-sm transition-all" title="Blue"></span>
+                            </label>
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="color" value="yellow" class="sr-only peer"/>
+                                <span class="w-8 h-8 rounded-full bg-amber-400 block border-2 border-transparent peer-checked:border-slate-800 peer-checked:scale-110 shadow-sm transition-all" title="Yellow"></span>
+                            </label>
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="color" value="red" class="sr-only peer"/>
+                                <span class="w-8 h-8 rounded-full bg-red-500 block border-2 border-transparent peer-checked:border-slate-800 peer-checked:scale-110 shadow-sm transition-all" title="Red"></span>
+                            </label>
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="color" value="grey" class="sr-only peer"/>
+                                <span class="w-8 h-8 rounded-full bg-slate-400 block border-2 border-transparent peer-checked:border-slate-800 peer-checked:scale-110 shadow-sm transition-all" title="Grey"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-primary text-on-primary py-2.5 rounded-lg font-button hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2 mt-4">
+                        <span class="material-symbols-outlined text-[18px]">add</span>
+                        Add Status
+                    </button>
+                </form>
+            </div>
+
+            <!-- Helpful tips -->
+            <div class="bg-surface-container/30 border border-outline-variant/30 rounded-2xl p-5 text-body-sm text-secondary space-y-2">
+                <h4 class="font-bold text-on-surface">Did you know?</h4>
+                <p>Status order determines the default sequence in status selection forms. The status at the top will be used as the starting position.</p>
+                <p class="font-semibold text-primary">Deleting a status automatically converts any associated leads to the default status.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Status Modal -->
+    <div id="edit-status-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-outline-variant/30">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/20">
+                <h3 class="font-headline-md text-headline-md font-bold text-on-background">Edit Status Details</h3>
+                <button type="button" onclick="closeEditStatusModal()" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+            </div>
+            <form id="edit-status-form" method="POST" action="" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status Name *</label>
+                    <input type="text" id="edit-status-name" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                </div>
+                
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-2">Badge Color</label>
+                    <div class="flex items-center gap-3">
+                        <label class="cursor-pointer relative">
+                            <input type="radio" name="color" id="edit-color-green" value="green" class="sr-only peer"/>
+                            <span class="w-8 h-8 rounded-full bg-green-500 block border-2 border-transparent peer-checked:border-slate-800 peer-checked:scale-110 shadow-sm transition-all" title="Green"></span>
+                        </label>
+                        <label class="cursor-pointer relative">
+                            <input type="radio" name="color" id="edit-color-blue" value="blue" class="sr-only peer"/>
+                            <span class="w-8 h-8 rounded-full bg-blue-500 block border-2 border-transparent peer-checked:border-slate-800 peer-checked:scale-110 shadow-sm transition-all" title="Blue"></span>
+                        </label>
+                        <label class="cursor-pointer relative">
+                            <input type="radio" name="color" id="edit-color-yellow" value="yellow" class="sr-only peer"/>
+                            <span class="w-8 h-8 rounded-full bg-amber-400 block border-2 border-transparent peer-checked:border-slate-800 peer-checked:scale-110 shadow-sm transition-all" title="Yellow"></span>
+                        </label>
+                        <label class="cursor-pointer relative">
+                            <input type="radio" name="color" id="edit-color-red" value="red" class="sr-only peer"/>
+                            <span class="w-8 h-8 rounded-full bg-red-500 block border-2 border-transparent peer-checked:border-slate-800 peer-checked:scale-110 shadow-sm transition-all" title="Red"></span>
+                        </label>
+                        <label class="cursor-pointer relative">
+                            <input type="radio" name="color" id="edit-color-grey" value="grey" class="sr-only peer"/>
+                            <span class="w-8 h-8 rounded-full bg-slate-400 block border-2 border-transparent peer-checked:border-slate-800 peer-checked:scale-110 shadow-sm transition-all" title="Grey"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
+                    <button type="button" onclick="closeEditStatusModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // AJAX for adding status
+    const addStatusForm = document.getElementById('add-status-form');
+    if (addStatusForm) {
+        addStatusForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = addStatusForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Adding...';
+
+            const formData = new FormData(addStatusForm);
+            fetch(addStatusForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                if (data.success) {
+                    if (typeof showToast === 'function') {
+                        showToast(data.message, 'success');
+                    } else {
+                        alert(data.message);
+                    }
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast(data.error || 'Failed to add status.', 'error');
+                    } else {
+                        alert(data.error || 'Failed to add status.');
+                    }
+                }
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                console.error(err);
+                if (typeof showToast === 'function') {
+                    showToast('Network error.', 'error');
+                }
+            });
+        });
+    }
+
+    // Modal control for edit status
+    function openEditStatusModal(id, name, color, isDefault) {
+        document.getElementById('edit-status-name').value = name;
+        
+        // Select color radio
+        const colorRadio = document.getElementById(`edit-color-${color}`);
+        if (colorRadio) {
+            colorRadio.checked = true;
+        }
+
+        const editForm = document.getElementById('edit-status-form');
+        editForm.action = `/statuses/${id}/edit/`;
+
+        document.getElementById('edit-status-modal').classList.remove('hidden');
+    }
+
+    function closeEditStatusModal() {
+        document.getElementById('edit-status-modal').classList.add('hidden');
+        document.getElementById('edit-status-form').reset();
+    }
+
+    // AJAX for editing status
+    const editStatusForm = document.getElementById('edit-status-form');
+    if (editStatusForm) {
+        editStatusForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = editStatusForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            const formData = new FormData(editStatusForm);
+            fetch(editStatusForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                if (data.success) {
+                    closeEditStatusModal();
+                    if (typeof showToast === 'function') {
+                        showToast(data.message, 'success');
+                    } else {
+                        alert(data.message);
+                    }
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast(data.error || 'Failed to update status.', 'error');
+                    } else {
+                        alert(data.error || 'Failed to update status.');
+                    }
+                }
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                console.error(err);
+                if (typeof showToast === 'function') {
+                    showToast('Network error.', 'error');
+                }
+            });
+        });
+    }
+
+    // AJAX for deleting status
+    function deleteStatus(id, name) {
+        if (!confirm(`Are you sure you want to delete status "${name}"? Any leads assigned to "${name}" will be reassigned to the default status.`)) {
+            return;
+        }
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch(`/statuses/${id}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'success');
+                } else {
+                    alert(data.message);
+                }
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast(data.error || 'Failed to delete status.', 'error');
+                } else {
+                    alert(data.error || 'Failed to delete status.');
+                }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            if (typeof showToast === 'function') {
+                showToast('Network error.', 'error');
+            }
+        });
+    }
+
+    // Drag and Drop ordering logic
+    const dragList = document.getElementById('status-sortable-list');
+    let dragSrcEl = null;
+
+    function handleDragStart(e) {
+        this.classList.add('opacity-50');
+        dragSrcEl = this;
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.id);
+    }
+
+    function handleDragOver(e) {
+        if (e.preventDefault) {
+            e.preventDefault();
+        }
+        e.dataTransfer.dropEffect = 'move';
+        return false;
+    }
+
+    function handleDragEnter(e) {
+        this.classList.add('border-primary/50', 'bg-primary-container/5');
+    }
+
+    function handleDragLeave(e) {
+        this.classList.remove('border-primary/50', 'bg-primary-container/5');
+    }
+
+    function handleDrop(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        
+        if (dragSrcEl !== this) {
+            // Re-order the DOM nodes
+            const listItems = Array.from(dragList.querySelectorAll('.status-drag-item'));
+            const srcIdx = listItems.indexOf(dragSrcEl);
+            const targetIdx = listItems.indexOf(this);
+            
+            if (srcIdx < targetIdx) {
+                this.parentNode.insertBefore(dragSrcEl, this.nextSibling);
+            } else {
+                this.parentNode.insertBefore(dragSrcEl, this);
+            }
+            
+            // Post new order to backend
+            saveNewOrder();
+        }
+        return false;
+    }
+
+    function handleDragEnd(e) {
+        this.classList.remove('opacity-50');
+        const items = dragList.querySelectorAll('.status-drag-item');
+        items.forEach(function(item) {
+            item.classList.remove('border-primary/50', 'bg-primary-container/5');
+        });
+    }
+
+    function saveNewOrder() {
+        const items = Array.from(dragList.querySelectorAll('.status-drag-item'));
+        const order = items.map(item => item.dataset.id);
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch('{% url "reorder_lead_statuses" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ order: order })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') {
+                    showToast('Order saved successfully.', 'success');
+                }
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast(data.error || 'Failed to save order.', 'error');
+                }
+            }
+        })
+        .catch(err => {
+            console.error('Error saving order:', err);
+        });
+    }
+
+    // Attach drag events
+    const items = dragList.querySelectorAll('.status-drag-item');
+    items.forEach(function(item) {
+        item.addEventListener('dragstart', handleDragStart, false);
+        item.addEventListener('dragenter', handleDragEnter, false);
+        item.addEventListener('dragover', handleDragOver, false);
+        item.addEventListener('dragleave', handleDragLeave, false);
+        item.addEventListener('drop', handleDrop, false);
+        item.addEventListener('dragend', handleDragEnd, false);
+    });
+</script>
+{% endblock %}
