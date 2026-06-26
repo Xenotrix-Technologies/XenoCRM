@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
-from crm.models import Organization, UserProfile, Lead, Task, Activity, Event, LeadStatus
+from crm.models import Organization, UserProfile, Lead, Task, Activity, Event, LeadStatus, StaffRole, Service
 
 class XenoCRMTests(TestCase):
     def setUp(self):
@@ -95,6 +95,19 @@ class XenoCRMTests(TestCase):
         leads = response.context['leads']
         self.assertIn(self.lead1, [l for l in leads])
         self.assertNotIn(self.lead2, [l for l in leads])
+
+    def test_leads_view_excludes_qualified(self):
+        self.client.login(username='user1', password='password123')
+        
+        # Change lead1 status to Qualified
+        self.lead1.status = 'Qualified'
+        self.lead1.save()
+        
+        response = self.client.get(reverse('leads'))
+        self.assertEqual(response.status_code, 200)
+        
+        leads = response.context['leads']
+        self.assertNotIn(self.lead1, [l for l in leads])
 
     def test_update_lead_stage_ajax(self):
         self.client.login(username='user1', password='password123')
@@ -420,4 +433,244 @@ class XenoCRMTests(TestCase):
         new_ordered = list(LeadStatus.objects.filter(organization=self.org1).order_by('position'))
         self.assertEqual(new_ordered[0].id, reversed_ids[0])
         self.assertEqual(new_ordered[-1].id, reversed_ids[-1])
+
+    def test_staff_list_view(self):
+        self.client.login(username='user1', password='password123')
+        response = self.client.get(reverse('staff'))
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(self.profile1, response.context['staff_members'])
+        self.assertNotIn(self.profile2, response.context['staff_members'])
+
+    def test_add_staff_view(self):
+        self.client.login(username='user1', password='password123')
+        # GET
+        response = self.client.get(reverse('add_staff'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'staff_form.html')
+        self.assertIn('Add New Staff Member', response.content.decode())
+
+        # POST
+        response = self.client.post(reverse('add_staff'), {
+            'username': 'newstaff',
+            'email': 'newstaff@org1.com',
+            'first_name': 'New',
+            'last_name': 'Staff',
+            'role': 'Representative',
+            'password': 'StaffPassword123',
+            'profile_image_url': 'https://example.com/pic.jpg',
+            'phone_number': '123-456-7890',
+            'location': 'New York'
+        })
+        self.assertRedirects(response, reverse('staff'))
+        self.assertTrue(User.objects.filter(username='newstaff').exists())
+        profile = UserProfile.objects.get(user__username='newstaff')
+        self.assertEqual(profile.organization, self.org1)
+        self.assertEqual(profile.role, 'Representative')
+        self.assertEqual(profile.profile_image_url, 'https://example.com/pic.jpg')
+        self.assertEqual(profile.phone_number, '123-456-7890')
+        self.assertEqual(profile.location, 'New York')
+
+    def test_edit_staff_view_get_and_post(self):
+        self.client.login(username='user1', password='password123')
+        # Create a staff member under org1 first
+        u = User.objects.create_user(username='editstaff', email='edit@org1.com')
+        p = UserProfile.objects.create(user=u, organization=self.org1, role='Sales Executive')
+
+        # GET
+        response = self.client.get(reverse('edit_staff', args=[p.id]))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'staff_form.html')
+        self.assertIn('Edit Staff Member: editstaff', response.content.decode())
+
+        # POST
+        response = self.client.post(reverse('edit_staff', args=[p.id]), {
+            'username': 'updatedstaff',
+            'email': 'updated@org1.com',
+            'first_name': 'Updated',
+            'last_name': 'Name',
+            'role': 'Manager',
+            'profile_image_url': 'https://example.com/new.jpg',
+            'phone_number': '987-654-3210',
+            'location': 'London'
+        })
+        self.assertRedirects(response, reverse('staff'))
+        
+        p.refresh_from_db()
+        self.assertEqual(p.user.username, 'updatedstaff')
+        self.assertEqual(p.role, 'Manager')
+        self.assertEqual(p.profile_image_url, 'https://example.com/new.jpg')
+        self.assertEqual(p.phone_number, '987-654-3210')
+        self.assertEqual(p.location, 'London')
+
+    def test_delete_staff_ajax(self):
+        self.client.login(username='user1', password='password123')
+        u = User.objects.create_user(username='delstaff', email='del@org1.com')
+        p = UserProfile.objects.create(user=u, organization=self.org1, role='Representative')
+
+        response = self.client.post(reverse('delete_staff', args=[p.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['success'])
+        self.assertFalse(UserProfile.objects.filter(id=p.id).exists())
+        self.assertFalse(User.objects.filter(id=u.id).exists())
+
+    def test_staff_roles_list_view(self):
+        self.client.login(username='user1', password='password123')
+        response = self.client.get(reverse('staff_roles'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'staff_roles.html')
+        # Check seeding of default roles
+        self.assertEqual(StaffRole.objects.filter(organization=self.org1).count(), 4)
+        self.assertIn('Sales Executive', response.content.decode())
+
+    def test_add_staff_role_ajax(self):
+        self.client.login(username='user1', password='password123')
+        # Seed defaults first
+        self.client.get(reverse('staff_roles'))
+        
+        response = self.client.post(reverse('add_staff_role'), {
+            'name': 'Chief Executive Officer'
+        }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['success'])
+        self.assertTrue(StaffRole.objects.filter(organization=self.org1, name='Chief Executive Officer').exists())
+
+    def test_edit_staff_role_ajax(self):
+        self.client.login(username='user1', password='password123')
+        # Seed defaults
+        self.client.get(reverse('staff_roles'))
+        role = StaffRole.objects.get(organization=self.org1, name='Sales Executive')
+        
+        # Edit role
+        response = self.client.post(reverse('edit_staff_role', args=[role.id]), {
+            'name': 'Senior Account Executive'
+        }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['success'])
+        
+        role.refresh_from_db()
+        self.assertEqual(role.name, 'Senior Account Executive')
+
+    def test_delete_staff_role_ajax(self):
+        self.client.login(username='user1', password='password123')
+        # Seed defaults
+        self.client.get(reverse('staff_roles'))
+        role_to_del = StaffRole.objects.get(organization=self.org1, name='Sales Executive')
+        fallback = StaffRole.objects.filter(organization=self.org1).exclude(id=role_to_del.id).first()
+        
+        # Assign user1 to Sales Executive
+        self.profile1.role = 'Sales Executive'
+        self.profile1.save()
+        
+        # Delete role
+        response = self.client.post(reverse('delete_staff_role', args=[role_to_del.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['success'])
+        
+        self.assertFalse(StaffRole.objects.filter(id=role_to_del.id).exists())
+        self.profile1.refresh_from_db()
+        self.assertEqual(self.profile1.role, fallback.name)
+
+    def test_clients_view_qualified_leads_only(self):
+        self.client.login(username='user1', password='password123')
+        
+        # Create a qualified lead under org1
+        qualified_lead = Lead.objects.create(
+            organization=self.org1,
+            name="Qualified Lead",
+            email="qualified@lead.com",
+            company="Qualified Inc",
+            score=95,
+            status="Qualified",
+            stage="Proposal",
+            value=50000,
+            owner=self.profile1
+        )
+        
+        response = self.client.get(reverse('clients'))
+        self.assertEqual(response.status_code, 200)
+        
+        # Context should contain "Qualified Inc" but not "Doe Corp" (which has status "New")
+        clients = response.context['clients']
+        companies = [c['company'] for c in clients]
+        
+        self.assertIn("Qualified Inc", companies)
+        self.assertNotIn("Doe Corp", companies)
+
+    def test_services_view_and_crud(self):
+        self.client.login(username='user1', password='password123')
+
+        # List services
+        response = self.client.get(reverse('services'))
+        self.assertEqual(response.status_code, 200)
+
+        # Add service
+        response = self.client.post(reverse('add_service'), {
+            'name': 'Cloud Strategy',
+            'description': 'Strategy consulting for cloud platforms',
+            'price': '150.00'
+        }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['success'])
+        self.assertTrue(Service.objects.filter(name='Cloud Strategy', organization=self.org1).exists())
+        service_obj = Service.objects.get(name='Cloud Strategy', organization=self.org1)
+
+        # Edit service
+        response = self.client.post(reverse('edit_service', args=[service_obj.id]), {
+            'name': 'Cloud Strategy V2',
+            'description': 'Updated strategy',
+            'price': '200.00'
+        }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['success'])
+        service_obj.refresh_from_db()
+        self.assertEqual(service_obj.name, 'Cloud Strategy V2')
+        self.assertEqual(float(service_obj.price), 200.00)
+
+        # Delete service
+        response = self.client.post(reverse('delete_service', args=[service_obj.id]), HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()['success'])
+        self.assertFalse(Service.objects.filter(id=service_obj.id).exists())
+
+    def test_lead_service_assignment(self):
+        self.client.login(username='user1', password='password123')
+        service = Service.objects.create(organization=self.org1, name='Web Development', price=5000)
+
+        # Case 1: Status is 'Qualified' -> Service is assigned
+        response = self.client.post(reverse('add_lead'), {
+            'name': 'Bob Qualified',
+            'company': 'Bob Co',
+            'email': 'bob@qualified.com',
+            'status': 'Qualified',
+            'service': service.id
+        })
+        self.assertEqual(response.status_code, 302)
+        lead = Lead.objects.get(name='Bob Qualified')
+        self.assertEqual(lead.service, service)
+
+        # Case 2: Status is NOT 'Qualified' -> Service is NOT assigned (or cleared)
+        response = self.client.post(reverse('add_lead'), {
+            'name': 'Bob Unqualified',
+            'company': 'Bob Co',
+            'email': 'bob@unqualified.com',
+            'status': 'New',
+            'service': service.id
+        })
+        self.assertEqual(response.status_code, 302)
+        lead2 = Lead.objects.get(name='Bob Unqualified')
+        self.assertNil = self.assertIsNone(lead2.service)
+
+        # Case 3: Edit lead from Qualified to New -> Service is cleared
+        response = self.client.post(reverse('edit_lead', args=[lead.id]), {
+            'name': 'Bob Qualified',
+            'company': 'Bob Co',
+            'email': 'bob@qualified.com',
+            'status': 'New',
+            'service': service.id
+        })
+        self.assertEqual(response.status_code, 302)
+        lead.refresh_from_db()
+        self.assertIsNone(lead.service)
+
+
 

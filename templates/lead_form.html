@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ title }} - XenoCRM{% endblock %}
+
+{% block content %}
+<main class="pt-8 p-margin-edge min-h-screen bg-background">
+  <div class="max-w-3xl mx-auto">
+    <!-- Breadcrumbs -->
+    <div class="flex items-center gap-2 mb-6 font-label-md text-outline">
+      <a href="{% url 'leads' %}" class="hover:underline">Lead Management</a>
+      <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+      <span class="text-primary font-bold">{{ title }}</span>
+    </div>
+
+    <!-- Form Card -->
+    <div class="glass-card rounded-2xl p-8 border border-outline-variant/30 shadow-xl bg-white space-y-6 mb-8">
+      <div>
+        <h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">{{ title }}</h2>
+        <p class="text-secondary text-body-sm mt-1">
+          {% if lead %}Update lead details, adjust progress, or reassign owners.{% else %}Provide details below to create a new lead in your organization.{% endif %}
+        </p>
+      </div>
+
+      <form method="POST" action="{{ action_url }}" class="space-y-6">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Lead Name *</label>
+            <input type="text" name="name" value="{{ lead.name|default:'' }}" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+          </div>
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Company *</label>
+            <input type="text" name="company" value="{{ lead.company|default:'' }}" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+          </div>
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Email *</label>
+            <input type="email" name="email" value="{{ lead.email|default:'' }}" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+          </div>
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status</label>
+            <select id="lead-status-select" name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+              {% for s in statuses %}
+              <option value="{{ s.name }}" {% if lead and lead.status == s.name or not lead and s.is_default %}selected{% endif %}>{{ s.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Service</label>
+            <select id="lead-service-select" name="service" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+              <option value="">None</option>
+              {% for svc in services %}
+              <option value="{{ svc.id }}" {% if lead and lead.service.id == svc.id %}selected{% endif %}>{{ svc.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Phone Number</label>
+            <input type="text" name="phone_number" value="{{ lead.phone_number|default:'' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+          </div>
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Alt Phone Number</label>
+            <input type="text" name="alt_phone_number" value="{{ lead.alt_phone_number|default:'' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+          </div>
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Registered On</label>
+            <input type="datetime-local" name="date_time" value="{{ lead.date_time|date:'Y-m-d\TH:i' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+          </div>
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Assigned Employee (Owner)</label>
+            <select name="owner" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+              <option value="">None</option>
+              {% for owner in owners %}
+              <option value="{{ owner.id }}" {% if lead.owner.id == owner.id %}selected{% endif %}>{{ owner.user.get_full_name|default:owner.user.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Lead Value ($)</label>
+            <input type="number" step="0.01" name="value" value="{{ lead.value|default:'0.00' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+          </div>
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Location</label>
+            <input type="text" name="location" value="{{ lead.location|default:'' }}" placeholder="City, Country" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Profile Image URL</label>
+            <input type="url" name="profile_image_url" value="{{ lead.profile_image_url|default:'' }}" placeholder="https://example.com/image.png" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Last Followup Date and Time</label>
+            <input type="datetime-local" name="last_followup_date_time" value="{{ lead.last_followup_date_time|date:'Y-m-d\TH:i' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-between items-center border-t border-outline-variant/20 pt-6">
+          <div>
+            {% if lead %}
+            <button type="button" onclick="confirmDelete()" class="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">delete</span>
+              Delete Lead
+            </button>
+            {% endif %}
+          </div>
+          <div class="flex gap-3">
+            <a href="{% url 'leads' %}" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</a>
+            <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">
+              {% if lead %}Save Changes{% else %}Create Lead{% endif %}
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+{% if lead %}
+<!-- Delete Form Form (Hidden) -->
+<form id="delete-lead-form" method="POST" action="{% url 'delete_lead' lead.id %}" class="hidden">
+  {% csrf_token %}
+</form>
+
+<script>
+  function confirmDelete() {
+    if (confirm("Are you sure you want to permanently delete lead '{{ lead.name }}'? This action cannot be undone.")) {
+      document.getElementById('delete-lead-form').submit();
+    }
+  }
+</script>
+{% endif %}
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const statusSelect = document.getElementById('lead-status-select');
+    const serviceSelect = document.getElementById('lead-service-select');
+    
+    function toggleServiceSelect() {
+      if (statusSelect && serviceSelect) {
+        if (statusSelect.value === 'Qualified') {
+          serviceSelect.disabled = false;
+          serviceSelect.classList.remove('opacity-50', 'cursor-not-allowed');
+        } else {
+          serviceSelect.value = "";
+          serviceSelect.disabled = true;
+          serviceSelect.classList.add('opacity-50', 'cursor-not-allowed');
+        }
+      }
+    }
+    
+    if (statusSelect) {
+      statusSelect.addEventListener('change', toggleServiceSelect);
+      toggleServiceSelect();
+    }
+  });
+</script>
+{% endblock %}

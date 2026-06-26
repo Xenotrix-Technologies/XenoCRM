@@ -40,10 +40,12 @@
                             </p>
                         </div>
                         <div class="flex flex-wrap gap-4 pt-2">
+                            {% if lead.location %}
                             <div class="flex items-center gap-2 text-outline">
                                 <span class="material-symbols-outlined text-[18px]">location_on</span>
-                                <span class="font-body-sm">San Francisco, CA</span>
+                                <span class="font-body-sm">{{ lead.location }}</span>
                             </div>
+                            {% endif %}
                             <div class="flex items-center gap-2 text-outline">
                                 <span class="material-symbols-outlined text-[18px]">schedule</span>
                                 <span class="font-body-sm">Local Time: 10:24 AM (PT)</span>

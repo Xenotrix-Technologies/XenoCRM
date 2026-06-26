@@ -146,52 +146,60 @@
         </div>
         <nav class="flex-1 overflow-y-auto px-3 space-y-1 custom-scrollbar">
             <!-- Navigation Items with Active States -->
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'dashboard' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'dashboard' %}">
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'dashboard' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'dashboard' %}">
                 <span class="material-symbols-outlined">dashboard</span>
                 <span class="font-body-sm text-body-sm">Dashboard</span>
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'leads' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'leads' %}">
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'leads' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'leads' %}">
                 <span class="material-symbols-outlined">leaderboard</span>
                 <span class="font-body-sm text-body-sm">Leads</span>
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'calendar' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'calendar' %}">
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'calendar' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'calendar' %}">
                 <span class="material-symbols-outlined">event</span>
                 <span class="font-body-sm text-body-sm">Calendar</span>
             </a>
             <!-- Active navigation items mapped to Django URLs -->
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'clients' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'clients' %}">
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'clients' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'clients' %}">
                 <span class="material-symbols-outlined">people</span>
                 <span class="font-body-sm text-body-sm">Clients</span>
             </a>
 
 
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'customer_support' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'customer_support' %}">
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'customer_support' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'customer_support' %}">
                 <span class="material-symbols-outlined">support_agent</span>
                 <span class="font-body-sm text-body-sm">Customer Support</span>
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'projects' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'projects' %}">
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'projects' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'projects' %}">
                 <span class="material-symbols-outlined">assignment</span>
                 <span class="font-body-sm text-body-sm">Projects</span>
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'reports' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'reports' %}">
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'reports' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'reports' %}">
                 <span class="material-symbols-outlined">assessment</span>
                 <span class="font-body-sm text-body-sm">Reports</span>
             </a>
 
 
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'campaign' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'campaign' %}">
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'campaign' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'campaign' %}">
                 <span class="material-symbols-outlined">ads_click</span>
                 <span class="font-body-sm text-body-sm">Campaigns</span>
             </a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors {% if request.resolver_match.url_name == 'lead_statuses' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'lead_statuses' %}">
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'lead_statuses' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'lead_statuses' %}">
                 <span class="material-symbols-outlined">tune</span>
                 <span class="font-body-sm text-body-sm">Lead Statuses</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'staff' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'staff' %}">
+                <span class="material-symbols-outlined">badge</span>
+                <span class="font-body-sm text-body-sm">Staff</span>
+            </a>
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'services' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'services' %}">
+                <span class="material-symbols-outlined">design_services</span>
+                <span class="font-body-sm text-body-sm">Services</span>
             </a>
         </nav>
         
         <div class="px-3 pt-4 mt-4 border-t border-outline-variant/30">
             <div class="space-y-1">
-                <a class="flex items-center gap-3 px-4 py-2 text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50 rounded-lg transition-colors" href="{% url 'logout' %}">
+                <a class="flex items-center gap-3 px-3 py-2 text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50 rounded-lg transition-colors" href="{% url 'logout' %}">
                     <span class="material-symbols-outlined text-error">logout</span>
                     <span class="font-body-sm text-body-sm">Log Out</span>
                 </a>
@@ -269,15 +277,9 @@
                         <label class="block text-label-md font-label-md text-outline uppercase mb-1">Company</label>
                         <input type="text" name="company" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Value ($)</label>
-                            <input type="number" name="value" value="0" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
-                        </div>
-                        <div>
-                            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Lead Score (0-100)</label>
-                            <input type="number" name="score" min="0" max="100" value="50" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
-                        </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Value ($)</label>
+                        <input type="number" name="value" value="0" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end gap-3">

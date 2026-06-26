@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Staff Management{% endblock %}
+
+{% block content %}
+<main class="pt-4 p-margin-edge min-h-screen flex flex-col bg-background">
+    <!-- Header & Action Bar -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Staff Management</h2>
+            <div class="flex items-center gap-2 text-body-sm text-secondary">
+                <span>{{ staff_members.count }} Total Staff Members</span>
+                <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+                <span class="text-primary font-semibold">Active organization space</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'staff_roles' %}" class="border border-outline-variant text-secondary bg-white hover:bg-slate-50 px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:opacity-90 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">tune</span>
+                Manage Roles
+            </a>
+            <a href="{% url 'add_staff' %}" class="bg-primary text-on-primary px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:opacity-90 transition-all shadow-md">
+                <span class="material-symbols-outlined text-[18px]">person_add</span>
+                Add Staff Member
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6 space-y-2">
+        {% for message in messages %}
+        <div class="p-4 text-body-sm rounded-xl border {% if message.tags == 'error' %}bg-error-container text-on-error-container border-error/20{% else %}bg-success/10 text-success border-success/20{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="hidden">{% csrf_token %}</div>
+
+    <!-- Staff Table / List -->
+    <div class="bg-surface-container-lowest border border-outline-variant/30 rounded-2xl shadow-sm overflow-hidden mb-6">
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-outline-variant/30 bg-surface-container-low text-label-md font-label-md text-outline uppercase">
+                        <th class="p-4">Staff Member</th>
+                        <th class="p-4">Username</th>
+                        <th class="p-4">Email</th>
+                        <th class="p-4">Role</th>
+                        <th class="p-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/20">
+                    {% for profile in staff_members %}
+                    <tr class="hover:bg-primary-container/5 transition-colors group" id="staff-row-{{ profile.id }}">
+                        <td class="p-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant flex-shrink-0">
+                                    {% if profile.profile_image_url %}
+                                    <img class="w-full h-full object-cover" src="{{ profile.profile_image_url }}" alt="Profile image"/>
+                                    {% else %}
+                                    <div class="w-full h-full bg-primary-container/20 text-primary flex items-center justify-center font-bold text-sm">
+                                        {{ profile.user.username|slice:":2"|upper }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="font-body-sm font-semibold text-on-surface">
+                                        {{ profile.user.get_full_name|default:profile.user.username }}
+                                        {% if profile.user == request.user %}
+                                        <span class="ml-1 text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-bold">You</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-[12px] text-secondary">Joined {{ profile.user.date_joined|date:"M d, Y" }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 text-body-sm text-on-surface-variant font-label-md">{{ profile.user.username }}</td>
+                        <td class="p-4 text-body-sm text-on-surface-variant">{{ profile.user.email }}</td>
+                        <td class="p-4">
+                            <span class="px-2.5 py-1 rounded-full text-[12px] font-semibold border bg-surface-variant text-on-surface-variant border-outline-variant/40">
+                                {{ profile.role }}
+                            </span>
+                        </td>
+                        <td class="p-4 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{% url 'edit_staff' profile.id %}" class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all" title="Edit staff member">
+                                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                                </a>
+                                {% if profile.user != request.user %}
+                                <button onclick="deleteStaff({{ profile.id }}, '{{ profile.user.username }}')" class="p-2 rounded-lg hover:bg-red-50 text-outline hover:text-red-600 transition-all" title="Delete staff member">
+                                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="p-8 text-center text-secondary">
+                            <div class="flex flex-col items-center justify-center gap-3">
+                                <span class="material-symbols-outlined text-4xl text-outline">group_off</span>
+                                <p class="text-body-lg font-bold">No staff members found</p>
+                                <p class="text-body-sm">Add a new staff member to get started.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modals removed, delete action remains JS-based -->
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function deleteStaff(profileId, username) {
+        if (!confirm(`Are you sure you want to delete staff member "${username}"?`)) return;
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch(`/staff/${profileId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message || 'Staff member deleted.', 'success');
+                const row = document.getElementById(`staff-row-${profileId}`);
+                if (row) row.remove();
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showToast(data.error || 'Failed to delete staff member.', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Network error deleting staff member.', 'error');
+        });
+    }
+</script>
+{% endblock %}

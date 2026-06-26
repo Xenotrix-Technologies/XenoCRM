@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Staff Roles Settings{% endblock %}
+
+{% block content %}
+<main class="pt-4 p-margin-edge min-h-screen flex flex-col bg-background">
+    <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Staff Roles Management</h2>
+            <p class="text-body-sm text-secondary">Create and manage the staff roles for your organization.</p>
+        </div>
+        <a href="{% url 'staff' %}" class="flex items-center gap-2 text-primary font-button text-button hover:underline">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Back to Staff
+        </a>
+    </div>
+
+    <!-- Main Settings Panel -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Roles List Area -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="glass-panel rounded-2xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+                    <h3 class="font-headline-md text-headline-md font-bold">Organization Roles</h3>
+                    <span class="text-xs text-outline font-semibold uppercase tracking-wider">{{ roles.count }} Roles</span>
+                </div>
+                
+                <!-- Roles List -->
+                <div id="roles-list" class="space-y-3">
+                    {% for role in roles %}
+                    <div class="flex items-center justify-between p-4 bg-white rounded-xl border border-outline-variant hover:border-primary/30 shadow-sm transition-all">
+                        <div class="flex items-center gap-3">
+                            <span class="material-symbols-outlined text-outline">badge</span>
+                            <span class="text-body-md font-semibold text-on-surface">
+                                {{ role.name }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="openEditRoleModal('{{ role.id }}', '{{ role.name|escapejs }}')" class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all" title="Edit Role">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                            </button>
+                            {% if roles.count > 1 %}
+                            <button type="button" onclick="deleteRole('{{ role.id }}', '{{ role.name|escapejs }}')" class="p-2 rounded-lg hover:bg-red-50 text-outline hover:text-red-600 transition-all" title="Delete Role">
+                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-8 text-center text-outline">No roles found. Seed default roles first.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Role Sidebar Form -->
+        <div class="space-y-6">
+            <div class="glass-panel rounded-2xl p-6 shadow-sm">
+                <h3 class="font-headline-md text-headline-md font-bold mb-4 border-b border-outline-variant/30 pb-3">Create New Role</h3>
+                
+                <form id="add-role-form" method="POST" action="{% url 'add_staff_role' %}" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Role Name *</label>
+                        <input type="text" name="name" required placeholder="e.g. Lead Developer" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+
+                    <button type="submit" class="w-full bg-primary text-on-primary py-2.5 rounded-lg font-button hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2 mt-4">
+                        <span class="material-symbols-outlined text-[18px]">add</span>
+                        Add Role
+                    </button>
+                </form>
+            </div>
+
+            <!-- Helpful tips -->
+            <div class="bg-surface-container/30 border border-outline-variant/30 rounded-2xl p-5 text-body-sm text-secondary space-y-2">
+                <h4 class="font-bold text-on-surface">Staff Role Tips</h4>
+                <p>Staff roles allow you to categorise and filter team members on different CRM pipelines.</p>
+                <p class="font-semibold text-primary">Deleting a role automatically converts any associated staff members to another active role in the organization.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Role Modal -->
+    <div id="edit-role-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-outline-variant/30">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/20">
+                <h3 class="font-headline-md text-headline-md font-bold text-on-background">Edit Role Name</h3>
+                <button type="button" onclick="closeEditRoleModal()" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+            </div>
+            <form id="edit-role-form" method="POST" action="" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Role Name *</label>
+                    <input type="text" id="edit-role-name" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                </div>
+
+                <div class="mt-6 flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeEditRoleModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // AJAX for adding role
+    const addRoleForm = document.getElementById('add-role-form');
+    if (addRoleForm) {
+        addRoleForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = addRoleForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Adding...';
+
+            const formData = new FormData(addRoleForm);
+            fetch(addRoleForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                if (data.success) {
+                    addRoleForm.reset();
+                    showToast(data.message, 'success');
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    showToast(data.error || 'Failed to add role.', 'error');
+                }
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                console.error(err);
+                showToast('Network error.', 'error');
+            });
+        });
+    }
+
+    // Modal control for edit role
+    function openEditRoleModal(id, name) {
+        document.getElementById('edit-role-name').value = name;
+        const editForm = document.getElementById('edit-role-form');
+        editForm.action = `/staff/roles/${id}/edit/`;
+        document.getElementById('edit-role-modal').classList.remove('hidden');
+    }
+
+    function closeEditRoleModal() {
+        document.getElementById('edit-role-modal').classList.add('hidden');
+        document.getElementById('edit-role-form').reset();
+    }
+
+    // AJAX for editing role
+    const editRoleForm = document.getElementById('edit-role-form');
+    if (editRoleForm) {
+        editRoleForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = editRoleForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            const formData = new FormData(editRoleForm);
+            fetch(editRoleForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                if (data.success) {
+                    closeEditRoleModal();
+                    showToast(data.message, 'success');
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    showToast(data.error || 'Failed to update role.', 'error');
+                }
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                console.error(err);
+                showToast('Network error.', 'error');
+            });
+        });
+    }
+
+    // AJAX for deleting role
+    function deleteRole(id, name) {
+        if (!confirm(`Are you sure you want to delete staff role "${name}"? Any staff members assigned to "${name}" will be reassigned to a fallback role.`)) {
+            return;
+        }
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch(`/staff/roles/${id}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                showToast(data.error || 'Failed to delete role.', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showToast('Network error deleting role.', 'error');
+        });
+    }
+</script>
+{% endblock %}

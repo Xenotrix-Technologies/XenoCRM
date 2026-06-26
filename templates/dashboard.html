@@ -18,16 +18,6 @@
             <h2 class="font-headline-lg text-headline-lg text-on-background">Executive Dashboard</h2>
             <p class="text-secondary font-body-md">Welcome back, {{ request.user.first_name|default:request.user.username }}. Here's what's happening with XenoCRM today.</p>
         </div>
-        <div class="flex space-x-3">
-            <button class="flex items-center px-4 py-2 bg-white border border-outline-variant rounded-lg font-button text-button text-on-surface-variant hover:bg-surface transition-colors">
-                <span class="material-symbols-outlined mr-2 text-sm">calendar_today</span>
-                Calendar
-            </button>
-            <button onclick="document.getElementById('quick-create-modal').classList.remove('hidden')" class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md shadow-primary/20 hover:opacity-90 active:scale-95 transition-all">
-                <span class="material-symbols-outlined mr-2 text-sm">add</span>
-                Quick Create
-            </button>
-        </div>
     </div>
 
     <!-- KPI Bento Grid -->

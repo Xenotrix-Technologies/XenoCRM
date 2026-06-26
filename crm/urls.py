@@ -10,7 +10,9 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('leads/', views.leads_view, name='leads'),
     path('leads/add/', views.add_lead, name='add_lead'),
+    path('leads/import/', views.import_leads, name='import_leads'),
     path('leads/<int:lead_id>/edit/', views.edit_lead, name='edit_lead'),
+    path('leads/<int:lead_id>/delete/', views.delete_lead, name='delete_lead'),
     path('leads/<int:lead_id>/json/', views.lead_json_view, name='lead_json'),
     path('pipeline/', views.pipeline_view, name='pipeline'),
     path('pipeline/update-stage/', views.update_lead_stage, name='update_lead_stage'),
@@ -43,4 +45,22 @@ urlpatterns = [
     path('statuses/<int:status_id>/edit/', views.edit_lead_status, name='edit_lead_status'),
     path('statuses/<int:status_id>/delete/', views.delete_lead_status, name='delete_lead_status'),
     path('statuses/reorder/', views.reorder_lead_statuses, name='reorder_lead_statuses'),
-    ]
+
+    # Staff Management
+    path('staff/', views.staff_list_view, name='staff'),
+    path('staff/add/', views.add_staff_view, name='add_staff'),
+    path('staff/<int:profile_id>/edit/', views.edit_staff_view, name='edit_staff'),
+    path('staff/<int:profile_id>/delete/', views.delete_staff_ajax, name='delete_staff'),
+
+    # Staff Roles Management
+    path('staff/roles/', views.staff_roles_view, name='staff_roles'),
+    path('staff/roles/add/', views.add_staff_role, name='add_staff_role'),
+    path('staff/roles/<int:role_id>/edit/', views.edit_staff_role, name='edit_staff_role'),
+    path('staff/roles/<int:role_id>/delete/', views.delete_staff_role, name='delete_staff_role'),
+
+    # Service Management
+    path('services/', views.services_view, name='services'),
+    path('services/add/', views.add_service, name='add_service'),
+    path('services/<int:service_id>/edit/', views.edit_service, name='edit_service'),
+    path('services/<int:service_id>/delete/', views.delete_service, name='delete_service'),
+]

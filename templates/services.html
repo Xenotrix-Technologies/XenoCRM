@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Services Management{% endblock %}
+
+{% block content %}
+<main class="pt-4 p-margin-edge min-h-screen flex flex-col bg-background">
+    <!-- Header -->
+    <div class="mb-8 flex items-center justify-between">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Services Management</h2>
+            <p class="text-body-sm text-secondary">Manage the services provided by your organization that can be assigned to qualified leads.</p>
+        </div>
+        <a href="{% url 'leads' %}" class="flex items-center gap-2 text-primary font-button text-button hover:underline">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Back to Leads
+        </a>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Services List Area -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="glass-panel rounded-2xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+                    <h3 class="font-headline-md text-headline-md font-bold">Services List</h3>
+                    <span class="text-xs text-outline font-semibold uppercase tracking-wider">Active Services</span>
+                </div>
+                
+                <div class="space-y-3">
+                    {% for service in services %}
+                    <div class="flex items-start justify-between p-4 bg-white rounded-xl border border-outline-variant hover:border-primary/30 shadow-sm transition-all">
+                        <div class="space-y-1">
+                            <h4 class="font-semibold text-on-surface text-body-lg">{{ service.name }}</h4>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="openEditServiceModal('{{ service.id }}', '{{ service.name|escapejs }}')" class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all" title="Edit Service">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                            </button>
+                            <button type="button" onclick="deleteService('{{ service.id }}', '{{ service.name|escapejs }}')" class="p-2 rounded-lg hover:bg-red-50 text-outline hover:text-red-600 transition-all" title="Delete Service">
+                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="p-8 text-center text-outline">No services found. Add a service below to get started.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Service Sidebar Form -->
+        <div class="space-y-6">
+            <div class="glass-panel rounded-2xl p-6 shadow-sm">
+                <h3 class="font-headline-md text-headline-md font-bold mb-4 border-b border-outline-variant/30 pb-3">Create New Service</h3>
+                
+                <form id="add-service-form" method="POST" action="{% url 'add_service' %}" class="space-y-4">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Service Name *</label>
+                        <input type="text" name="name" required placeholder="e.g. Premium Support" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+
+
+                    <button type="submit" class="w-full bg-primary text-on-primary py-2.5 rounded-lg font-button hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2 mt-4">
+                        <span class="material-symbols-outlined text-[18px]">add</span>
+                        Add Service
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Edit Service Modal -->
+<div id="edit-service-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-outline-variant/30">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-headline-md text-headline-md font-bold">Edit Service</h3>
+            <button onclick="closeEditServiceModal()" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+        </div>
+        <form id="edit-service-form" method="POST" action="">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Service Name *</label>
+                    <input type="text" id="edit-service-name" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" onclick="closeEditServiceModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // AJAX for adding service
+    const addForm = document.getElementById('add-service-form');
+    if (addForm) {
+        addForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = addForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Adding...';
+
+            const formData = new FormData(addForm);
+            fetch(addForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                if (data.success) {
+                    addForm.reset();
+                    if (typeof showToast === 'function') {
+                        showToast(data.message, 'success');
+                    } else {
+                        alert(data.message);
+                    }
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast(data.error || 'Failed to add service.', 'error');
+                    } else {
+                        alert(data.error || 'Failed to add service.');
+                    }
+                }
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                console.error(err);
+                if (typeof showToast === 'function') {
+                    showToast('Network error.', 'error');
+                }
+            });
+        });
+    }
+
+    // Modal control for edit service
+    function openEditServiceModal(id, name) {
+        document.getElementById('edit-service-name').value = name;
+
+        const editForm = document.getElementById('edit-service-form');
+        editForm.action = `/services/${id}/edit/`;
+
+        document.getElementById('edit-service-modal').classList.remove('hidden');
+    }
+
+    function closeEditServiceModal() {
+        document.getElementById('edit-service-modal').classList.add('hidden');
+        document.getElementById('edit-service-form').reset();
+    }
+
+    // AJAX for editing service
+    const editForm = document.getElementById('edit-service-form');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = editForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+
+            const formData = new FormData(editForm);
+            fetch(editForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                if (data.success) {
+                    closeEditServiceModal();
+                    if (typeof showToast === 'function') {
+                        showToast(data.message, 'success');
+                    } else {
+                        alert(data.message);
+                    }
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    if (typeof showToast === 'function') {
+                        showToast(data.error || 'Failed to update service.', 'error');
+                    } else {
+                        alert(data.error || 'Failed to update service.');
+                    }
+                }
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+                console.error(err);
+                if (typeof showToast === 'function') {
+                    showToast('Network error.', 'error');
+                }
+            });
+        });
+    }
+
+    // AJAX for deleting service
+    function deleteService(id, name) {
+        if (!confirm(`Are you sure you want to delete service "${name}"?`)) {
+            return;
+        }
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch(`/services/${id}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') {
+                    showToast(data.message, 'success');
+                } else {
+                    alert(data.message);
+                }
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                if (typeof showToast === 'function') {
+                    showToast(data.error || 'Failed to delete service.', 'error');
+                } else {
+                    alert(data.error || 'Failed to delete service.');
+                }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            if (typeof showToast === 'function') {
+                showToast('Network error.', 'error');
+            }
+        });
+    }
+</script>
+{% endblock %}

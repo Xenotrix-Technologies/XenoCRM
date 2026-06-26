@@ -8,7 +8,7 @@ from django.db.models import Sum, Q
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib import messages
-from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class
+from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service
 from .forms import EventForm, ProfileForm
 # Views for navigation pages with proper multi-tenant database queries
 
@@ -18,7 +18,7 @@ from .forms import EventForm, ProfileForm
 @login_required
 def clients_view(request):
     org = request.user.profile.organization
-    leads = Lead.objects.filter(organization=org)
+    leads = Lead.objects.filter(organization=org, status='Qualified')
     
     clients_dict = {}
     for lead in leads:
@@ -283,7 +283,7 @@ def leads_view(request):
         writer = csv.writer(response)
         writer.writerow(['Name', 'Email', 'Company', 'Phone Number', 'Alt Phone Number', 'Date and Time', 'Status', 'Stage', 'Value', 'Owner', 'Lifecycle Stage', 'Annual Revenue', 'Health Score', 'Last Followup Date and Time'])
         
-        leads_export = Lead.objects.filter(organization=org)
+        leads_export = Lead.objects.filter(organization=org).exclude(status='Qualified')
         for lead in leads_export:
             owner_name = lead.owner.user.get_full_name() if lead.owner else 'None'
             writer.writerow([
@@ -317,7 +317,7 @@ def leads_view(request):
                 messages.success(request, f"Successfully updated {count} leads to Qualified.")
         return redirect('leads')
 
-    leads_qs = Lead.objects.filter(organization=org)
+    leads_qs = Lead.objects.filter(organization=org).exclude(status='Qualified')
     
     # 1. Search Query
     q = request.GET.get('q', '').strip()
@@ -800,8 +800,12 @@ def event_delete_ajax(request, event_id):
 
 @login_required
 def add_lead(request):
+    org = request.user.profile.organization
+    owners = UserProfile.objects.filter(organization=org)
+    statuses = get_or_create_default_statuses(org)
+    services = Service.objects.filter(organization=org)
+    
     if request.method == 'POST':
-        org = request.user.profile.organization
         name = request.POST.get('name')
         company = request.POST.get('company')
         email = request.POST.get('email')
@@ -828,7 +832,22 @@ def add_lead(request):
                 
         last_followup_val = request.POST.get('last_followup_date_time')
         last_followup_date_time = last_followup_val if last_followup_val else None
+
+        value_val = request.POST.get('value', '0.00')
+        value = safe_parse_decimal(value_val, 0.00)
+
+        location = request.POST.get('location', '')
+
+        profile_image_url = request.POST.get('profile_image_url', '')
         
+        service = None
+        service_id = request.POST.get('service')
+        if status == 'Qualified' and service_id:
+            try:
+                service = Service.objects.get(id=service_id, organization=org)
+            except Service.DoesNotExist:
+                pass
+
         try:
             lead = Lead.objects.create(
                 organization=org,
@@ -840,11 +859,12 @@ def add_lead(request):
                 date_time=date_time,
                 status=status,
                 owner=owner,
+                service=service,
                 last_followup_date_time=last_followup_date_time,
                 stage=status,
-                value=0.00,
-                score=50,
-                lifecycle_stage='Prospect',
+                value=value,
+                location=location if location else None,
+                profile_image_url=profile_image_url if profile_image_url else None,
                 health_score=80
             )
             
@@ -854,22 +874,39 @@ def add_lead(request):
                 description="Lead added."
             )
             
-            return JsonResponse({
-                'success': True,
-                'message': f"Successfully created lead '{name}'."
-            })
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': f"Successfully created lead '{name}'."
+                })
+            messages.success(request, f"Successfully created lead '{name}'.")
+            return redirect('leads')
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, f"Error creating lead: {str(e)}")
             
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+    # GET or fallthrough
+    context = {
+        'title': 'Add New Lead',
+        'owners': owners,
+        'statuses': statuses,
+        'services': services,
+        'action_url': request.path,
+    }
+    return render(request, 'lead_form.html', context)
 
 
 @login_required
 def edit_lead(request, lead_id):
+    org = request.user.profile.organization
+    lead = get_object_or_404(Lead, id=lead_id, organization=org)
+    owners = UserProfile.objects.filter(organization=org)
+    statuses = get_or_create_default_statuses(org)
+    services = Service.objects.filter(organization=org)
+    
     if request.method == 'POST':
-        org = request.user.profile.organization
         try:
-            lead = Lead.objects.get(id=lead_id, organization=org)
             lead.name = request.POST.get('name')
             lead.company = request.POST.get('company')
             lead.email = request.POST.get('email')
@@ -892,26 +929,69 @@ def edit_lead(request, lead_id):
                 
             last_followup_val = request.POST.get('last_followup_date_time')
             lead.last_followup_date_time = last_followup_val if last_followup_val else None
+
+            lead.value = safe_parse_decimal(request.POST.get('value', '0.00'), 0.00)
+            lead.location = request.POST.get('location', '') or None
+            lead.profile_image_url = request.POST.get('profile_image_url', '') or None
             
+            service_id = request.POST.get('service')
+            if lead.status == 'Qualified' and service_id:
+                try:
+                    lead.service = Service.objects.get(id=service_id, organization=org)
+                except Service.DoesNotExist:
+                    lead.service = None
+            else:
+                lead.service = None
+                
             lead.save()
             
-            # Log activity
             Activity.objects.create(
                 lead=lead,
                 type='Stage Update',
                 description="Lead details updated."
             )
             
-            return JsonResponse({
-                'success': True,
-                'message': f"Successfully updated lead '{lead.name}'."
-            })
-        except Lead.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Lead not found.'})
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': f"Successfully updated lead '{lead.name}'."
+                })
+            messages.success(request, f"Successfully updated lead '{lead.name}'.")
+            return redirect('leads')
         except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, f"Error updating lead: {str(e)}")
             
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+    # GET or fallthrough
+    context = {
+        'title': f'Edit Lead: {lead.name}',
+        'lead': lead,
+        'owners': owners,
+        'statuses': statuses,
+        'services': services,
+        'action_url': request.path,
+    }
+    return render(request, 'lead_form.html', context)
+
+
+@login_required
+def delete_lead(request, lead_id):
+    org = request.user.profile.organization
+    lead = get_object_or_404(Lead, id=lead_id, organization=org)
+    
+    if request.method == 'POST':
+        name = lead.name
+        lead.delete()
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'message': f"Successfully deleted lead '{name}'."})
+        messages.success(request, f"Successfully deleted lead '{name}'.")
+        return redirect('leads')
+        
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+    messages.error(request, "Invalid request method for deletion.")
+    return redirect('leads')
 
 
 @login_required
@@ -1081,3 +1161,676 @@ def reorder_lead_statuses(request):
         return JsonResponse({'success': True, 'message': 'Statuses reordered.'})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+# ── CSV Import helpers and view ────────────────────────────────────────
+
+def map_headers(headers):
+    # Map lowercase versions of headers to normalized internal fields
+    field_mappings = {
+        'name': ['name', 'lead name', 'full name', 'contact name'],
+        'email': ['email', 'email address'],
+        'company': ['company', 'company name'],
+        'phone_number': ['phone', 'phone number', 'contact phone'],
+        'alt_phone_number': ['alt phone', 'alt phone number'],
+        'value': ['value', 'deal value', 'lead value'],
+        'score': ['score', 'lead score', 'health score'],
+        'status': ['status', 'lead status'],
+        'stage': ['stage', 'lead stage'],
+        'owner': ['owner', 'assigned owner', 'assigned to'],
+        'annual_revenue': ['annual revenue', 'revenue'],
+        'lifecycle_stage': ['lifecycle stage', 'lifecycle'],
+        'last_followup': ['last followup', 'last followup date and time', 'last followup date/time', 'last followup datetime'],
+        'date_time': ['date and time', 'date/time', 'date', 'datetime', 'date time']
+    }
+    
+    mapped = {}
+    for header in headers:
+        if not header:
+            continue
+        header_lower = header.lower().strip()
+        for field, aliases in field_mappings.items():
+            if header_lower in aliases:
+                mapped[field] = header
+                break
+                
+    # Fallback to substring matching for required fields
+    if 'name' not in mapped:
+        for h in headers:
+            if h and 'name' in h.lower():
+                mapped['name'] = h
+                break
+    if 'email' not in mapped:
+        for h in headers:
+            if h and 'email' in h.lower():
+                mapped['email'] = h
+                break
+    if 'company' not in mapped:
+        for h in headers:
+            if h and 'company' in h.lower():
+                mapped['company'] = h
+                break
+                
+    return mapped
+
+def is_valid_email(email_str):
+    from django.core.validators import validate_email
+    from django.core.exceptions import ValidationError
+    try:
+        validate_email(email_str)
+        return True
+    except ValidationError:
+        return False
+
+def safe_parse_decimal(val, default=0.00):
+    from decimal import Decimal, InvalidOperation
+    if not val:
+        return Decimal(str(default))
+    val = val.strip().replace('$', '').replace(',', '')
+    try:
+        return Decimal(val)
+    except (InvalidOperation, ValueError):
+        return Decimal(str(default))
+
+def safe_parse_int(val, default=50):
+    if not val:
+        return default
+    val = val.strip()
+    try:
+        return int(float(val))
+    except ValueError:
+        return default
+
+def safe_parse_datetime(val):
+    from django.utils.dateparse import parse_datetime
+    from django.utils import timezone
+    from datetime import datetime
+    if not val:
+        return None
+    val = val.strip()
+    if not val:
+        return None
+    dt = parse_datetime(val)
+    if dt:
+        try:
+            return timezone.make_aware(dt) if timezone.is_naive(dt) else dt
+        except Exception:
+            return dt
+    formats = [
+        '%Y-%m-%d %H:%M:%S',
+        '%Y-%m-%d %H:%M',
+        '%Y-%m-%d',
+        '%m/%d/%Y %H:%M:%S',
+        '%m/%d/%Y %H:%M',
+        '%m/%d/%Y',
+        '%d/%m/%Y %H:%M:%S',
+        '%d/%m/%Y %H:%M',
+        '%d/%m/%Y',
+    ]
+    for fmt in formats:
+        try:
+            dt = datetime.strptime(val, fmt)
+            try:
+                return timezone.make_aware(dt)
+            except Exception:
+                return dt
+        except ValueError:
+            continue
+    return None
+
+@login_required
+def import_leads(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+        
+    csv_file = request.FILES.get('file')
+    if not csv_file:
+        return JsonResponse({'success': False, 'error': 'No file uploaded.'})
+        
+    if not csv_file.name.endswith('.csv'):
+        return JsonResponse({'success': False, 'error': 'Uploaded file is not a CSV.'})
+        
+    import io
+    try:
+        file_data = csv_file.read().decode('utf-8-sig')
+    except Exception as e:
+        try:
+            csv_file.seek(0)
+            file_data = csv_file.read().decode('latin-1')
+        except Exception as e2:
+            return JsonResponse({'success': False, 'error': f'Failed to decode file: {str(e)}'})
+
+    io_string = io.StringIO(file_data)
+    reader = csv.DictReader(io_string)
+    
+    if not reader.fieldnames:
+        return JsonResponse({'success': False, 'error': 'CSV file is empty or headers are missing.'})
+        
+    headers = reader.fieldnames
+    mapped = map_headers(headers)
+    
+    required_fields = ['name', 'email', 'company']
+    missing_fields = [f for f in required_fields if f not in mapped]
+    if missing_fields:
+        return JsonResponse({
+            'success': False, 
+            'error': f'Missing required columns: {", ".join([f.capitalize() for f in missing_fields])}. Please ensure your CSV has Name, Email, and Company columns.'
+        })
+        
+    org = request.user.profile.organization
+    imported_count = 0
+    failed_rows = []
+    
+    from django.db import transaction
+    
+    for row_idx, row in enumerate(reader, start=2):
+        name = row.get(mapped['name'], '')
+        email = row.get(mapped['email'], '')
+        company = row.get(mapped['company'], '')
+        
+        name = name.strip() if name else ''
+        email = email.strip() if email else ''
+        company = company.strip() if company else ''
+        
+        errors = []
+        if not name:
+            errors.append('Name is required')
+        if not email:
+            errors.append('Email is required')
+        elif not is_valid_email(email):
+            errors.append(f'Invalid email format: {email}')
+        if not company:
+            errors.append('Company is required')
+            
+        if errors:
+            failed_rows.append({'row': row_idx, 'errors': errors, 'data': f'{name or "N/A"} ({email or "N/A"})'})
+            continue
+            
+        phone_number = row.get(mapped.get('phone_number', ''), '')
+        phone_number = phone_number.strip() if phone_number else None
+        
+        alt_phone_number = row.get(mapped.get('alt_phone_number', ''), '')
+        alt_phone_number = alt_phone_number.strip() if alt_phone_number else None
+        
+        raw_val = row.get(mapped.get('value', ''), '0')
+        value = safe_parse_decimal(raw_val)
+        
+        raw_score = row.get(mapped.get('score', ''), '50')
+        score = safe_parse_int(raw_score, default=50)
+        
+        raw_rev = row.get(mapped.get('annual_revenue', ''), '0')
+        annual_revenue = safe_parse_decimal(raw_rev)
+        
+        raw_health = row.get(mapped.get('health_score', ''), '50')
+        health_score = safe_parse_int(raw_health, default=50)
+        
+        lifecycle_stage = row.get(mapped.get('lifecycle_stage', ''), 'Prospect')
+        lifecycle_stage = lifecycle_stage.strip() if lifecycle_stage else 'Prospect'
+        
+        raw_date_time = row.get(mapped.get('date_time', ''), '')
+        date_time = safe_parse_datetime(raw_date_time)
+        
+        raw_followup = row.get(mapped.get('last_followup', ''), '')
+        last_followup_date_time = safe_parse_datetime(raw_followup)
+        
+        owner = None
+        raw_owner = row.get(mapped.get('owner', ''), '')
+        raw_owner = raw_owner.strip() if raw_owner else ''
+        if raw_owner:
+            owner = UserProfile.objects.filter(organization=org).filter(
+                Q(user__email__iexact=raw_owner) |
+                Q(user__username__iexact=raw_owner)
+            ).first()
+            if not owner:
+                for profile in UserProfile.objects.filter(organization=org):
+                    full_name = profile.user.get_full_name().strip()
+                    if full_name.lower() == raw_owner.lower():
+                        owner = profile
+                        break
+        
+        raw_status = row.get(mapped.get('status', ''), '')
+        raw_status = raw_status.strip() if raw_status else ''
+        if not raw_status:
+            default_status = get_or_create_default_statuses(org).filter(is_default=True).first()
+            if not default_status:
+                default_status = get_or_create_default_statuses(org).first()
+            status = default_status.name if default_status else 'New'
+        else:
+            status = raw_status
+            if not LeadStatus.objects.filter(organization=org, name__iexact=status).exists():
+                max_pos = LeadStatus.objects.filter(organization=org).count()
+                LeadStatus.objects.create(organization=org, name=status, color='blue', position=max_pos)
+                
+        raw_stage = row.get(mapped.get('stage', ''), '')
+        raw_stage = raw_stage.strip() if raw_stage else ''
+        if not raw_stage:
+            stage = status
+        else:
+            stage = raw_stage
+            
+        valid_stages = [choice[0] for choice in Lead.STAGE_CHOICES]
+        if stage not in valid_stages:
+            matched = False
+            for vs in valid_stages:
+                if vs.lower() == stage.lower():
+                    stage = vs
+                    matched = True
+                    break
+            if not matched:
+                stage = 'New'
+                
+        try:
+            with transaction.atomic():
+                lead = Lead.objects.create(
+                    organization=org,
+                    name=name,
+                    email=email,
+                    company=company,
+                    phone_number=phone_number,
+                    alt_phone_number=alt_phone_number,
+                    score=score,
+                    status=status,
+                    stage=stage,
+                    value=value,
+                    owner=owner,
+                    lifecycle_stage=lifecycle_stage,
+                    annual_revenue=annual_revenue,
+                    health_score=health_score,
+                    date_time=date_time,
+                    last_followup_date_time=last_followup_date_time
+                )
+                Activity.objects.create(
+                    lead=lead,
+                    type='Creation',
+                    description="Lead imported via CSV."
+                )
+                imported_count += 1
+        except Exception as ex:
+            failed_rows.append({'row': row_idx, 'errors': [f'Database error: {str(ex)}'], 'data': f'{name} ({email})'})
+            
+    return JsonResponse({
+        'success': True,
+        'imported': imported_count,
+        'failed': len(failed_rows),
+        'errors': failed_rows
+    })
+
+
+@login_required
+def staff_list_view(request):
+    """List all user profiles in the current organization."""
+    org = request.user.profile.organization
+    staff_members = UserProfile.objects.filter(organization=org).select_related('user')
+    return render(request, 'staff.html', {'staff_members': staff_members})
+
+
+DEFAULT_ROLES = ['Sales Executive', 'Manager', 'Administrator', 'Representative']
+
+def get_or_create_default_roles(org):
+    """Return the queryset of StaffRole for `org`, seeding defaults if empty."""
+    qs = StaffRole.objects.filter(organization=org)
+    if not qs.exists():
+        for role_name in DEFAULT_ROLES:
+            StaffRole.objects.create(organization=org, name=role_name)
+        qs = StaffRole.objects.filter(organization=org)
+    return qs
+
+
+@login_required
+def add_staff_view(request):
+    """View to add a new staff member."""
+    org = request.user.profile.organization
+    roles = get_or_create_default_roles(org)
+    
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        role = request.POST.get('role', 'Sales Executive').strip()
+        password = request.POST.get('password', '').strip()
+        profile_image_url = request.POST.get('profile_image_url', '').strip()
+        phone_number = request.POST.get('phone_number', '').strip()
+        location = request.POST.get('location', '').strip()
+
+        # Gather form data to populate back in case of error
+        form_data = {
+            'username': username,
+            'email': email,
+            'first_name': first_name,
+            'last_name': last_name,
+            'role': role,
+            'profile_image_url': profile_image_url,
+            'phone_number': phone_number,
+            'location': location
+        }
+
+        if not username or not email or not password:
+            messages.error(request, 'Username, email and password are required.')
+        elif User.objects.filter(username=username).exists():
+            messages.error(request, f"Username '{username}' already exists.")
+        else:
+            try:
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password,
+                    first_name=first_name,
+                    last_name=last_name
+                )
+                UserProfile.objects.create(
+                    user=user,
+                    organization=org,
+                    role=role,
+                    profile_image_url=profile_image_url or None,
+                    phone_number=phone_number or None,
+                    location=location or None
+                )
+                messages.success(request, f"Staff member '{first_name or username}' created successfully.")
+                return redirect('staff')
+            except Exception as e:
+                messages.error(request, str(e))
+                
+        context = {
+            'title': 'Add New Staff Member',
+            'action_url': request.path,
+            'form_data': form_data,
+            'profile': None,
+            'roles': roles,
+        }
+        return render(request, 'staff_form.html', context)
+
+    # GET request
+    context = {
+        'title': 'Add New Staff Member',
+        'action_url': request.path,
+        'form_data': {
+            'phone_number': '',
+            'location': ''
+        },
+        'profile': None,
+        'roles': roles,
+    }
+    return render(request, 'staff_form.html', context)
+
+
+@login_required
+def edit_staff_view(request, profile_id):
+    """View to update a staff member."""
+    org = request.user.profile.organization
+    roles = get_or_create_default_roles(org)
+    try:
+        profile = UserProfile.objects.get(id=profile_id, organization=org)
+    except UserProfile.DoesNotExist:
+        messages.error(request, 'Staff member not found.')
+        return redirect('staff')
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        role = request.POST.get('role', '').strip()
+        password = request.POST.get('password', '').strip()
+        profile_image_url = request.POST.get('profile_image_url', '').strip()
+        phone_number = request.POST.get('phone_number', '').strip()
+        location = request.POST.get('location', '').strip()
+
+        # Gather form data to populate back in case of error
+        form_data = {
+            'username': username,
+            'email': email,
+            'first_name': first_name,
+            'last_name': last_name,
+            'role': role,
+            'profile_image_url': profile_image_url,
+            'phone_number': phone_number,
+            'location': location
+        }
+
+        if not username or not email:
+            messages.error(request, 'Username and email are required.')
+        elif User.objects.filter(username=username).exclude(id=profile.user.id).exists():
+            messages.error(request, f"Username '{username}' already exists.")
+        else:
+            try:
+                user = profile.user
+                user.username = username
+                user.email = email
+                user.first_name = first_name
+                user.last_name = last_name
+                if password:
+                    user.set_password(password)
+                user.save()
+
+                profile.role = role
+                profile.profile_image_url = profile_image_url or None
+                profile.phone_number = phone_number or None
+                profile.location = location or None
+                profile.save()
+
+                messages.success(request, f"Staff member '{first_name or username}' updated successfully.")
+                return redirect('staff')
+            except Exception as e:
+                messages.error(request, str(e))
+
+        context = {
+            'title': f'Edit Staff Member: {profile.user.username}',
+            'profile': profile,
+            'action_url': request.path,
+            'form_data': form_data,
+            'roles': roles,
+        }
+        return render(request, 'staff_form.html', context)
+
+    # GET request
+    form_data = {
+        'username': profile.user.username,
+        'email': profile.user.email,
+        'first_name': profile.user.first_name,
+        'last_name': profile.user.last_name,
+        'role': profile.role,
+        'profile_image_url': profile.profile_image_url or '',
+        'phone_number': profile.phone_number or '',
+        'location': profile.location or ''
+    }
+    context = {
+        'title': f'Edit Staff Member: {profile.user.username}',
+        'profile': profile,
+        'action_url': request.path,
+        'form_data': form_data,
+        'roles': roles,
+    }
+    return render(request, 'staff_form.html', context)
+
+
+@login_required
+def delete_staff_ajax(request, profile_id):
+    """AJAX endpoint to delete a staff member."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        try:
+            profile = UserProfile.objects.get(id=profile_id, organization=org)
+            if profile.user == request.user:
+                return JsonResponse({'success': False, 'error': 'You cannot delete your own profile.'})
+
+            user = profile.user
+            profile.delete()
+            user.delete()
+            return JsonResponse({'success': True, 'message': 'Staff member deleted successfully.'})
+        except UserProfile.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Staff member not found.'})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+# ── Staff Roles management views ───────────────────────────────────────
+
+@login_required
+def staff_roles_view(request):
+    """List all staff roles for the current organization."""
+    org = request.user.profile.organization
+    roles = get_or_create_default_roles(org)
+    return render(request, 'staff_roles.html', {'roles': roles})
+
+
+@login_required
+def add_staff_role(request):
+    """Create a new staff role via AJAX POST."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        name = request.POST.get('name', '').strip()
+
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Role name is required.'})
+
+        if StaffRole.objects.filter(organization=org, name=name).exists():
+            return JsonResponse({'success': False, 'error': f"Role '{name}' already exists."})
+
+        StaffRole.objects.create(organization=org, name=name)
+        return JsonResponse({'success': True, 'message': f"Role '{name}' created."})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def edit_staff_role(request, role_id):
+    """Edit an existing staff role via AJAX POST."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        try:
+            role_obj = StaffRole.objects.get(id=role_id, organization=org)
+        except StaffRole.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Role not found.'})
+
+        new_name = request.POST.get('name', '').strip()
+
+        if not new_name:
+            return JsonResponse({'success': False, 'error': 'Role name is required.'})
+
+        # Check uniqueness (excluding self)
+        if StaffRole.objects.filter(organization=org, name=new_name).exclude(id=role_id).exists():
+            return JsonResponse({'success': False, 'error': f"Role '{new_name}' already exists."})
+
+        old_name = role_obj.name
+        role_obj.name = new_name
+        role_obj.save()
+
+        # Update all UserProfiles that had the old role name
+        if old_name != new_name:
+            UserProfile.objects.filter(organization=org, role=old_name).update(role=new_name)
+
+        return JsonResponse({'success': True, 'message': f"Role updated to '{new_name}'."})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def delete_staff_role(request, role_id):
+    """Delete a staff role via AJAX POST, reassigning users to a fallback role."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        try:
+            role_obj = StaffRole.objects.get(id=role_id, organization=org)
+        except StaffRole.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Role not found.'})
+
+        # Prevent deleting the last role
+        if StaffRole.objects.filter(organization=org).count() <= 1:
+            return JsonResponse({'success': False, 'error': 'Cannot delete the last remaining role.'})
+
+        # Find fallback role (the first one that's not this one)
+        fallback = StaffRole.objects.filter(organization=org).exclude(id=role_id).first()
+
+        # Reassign users
+        UserProfile.objects.filter(organization=org, role=role_obj.name).update(role=fallback.name)
+
+        deleted_name = role_obj.name
+        role_obj.delete()
+
+        return JsonResponse({'success': True, 'message': f"Role '{deleted_name}' deleted. Users reassigned to '{fallback.name}'."})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+# ── Service Management views ─────────────────────────────────────
+
+@login_required
+def services_view(request):
+    """List all services for the current organization."""
+    org = request.user.profile.organization
+    services = Service.objects.filter(organization=org)
+    return render(request, 'services.html', {'services': services})
+
+
+@login_required
+def add_service(request):
+    """Create a new service via AJAX POST."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        price_val = request.POST.get('price', '0.00').strip()
+        price = safe_parse_decimal(price_val, 0.00)
+
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Service name is required.'})
+
+        if Service.objects.filter(organization=org, name=name).exists():
+            return JsonResponse({'success': False, 'error': f"Service '{name}' already exists."})
+
+        Service.objects.create(organization=org, name=name, description=description, price=price)
+        return JsonResponse({'success': True, 'message': f"Service '{name}' created."})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def edit_service(request, service_id):
+    """Edit an existing service via AJAX POST."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        try:
+            service_obj = Service.objects.get(id=service_id, organization=org)
+        except Service.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Service not found.'})
+
+        new_name = request.POST.get('name', '').strip()
+        new_description = request.POST.get('description', '').strip()
+        new_price_val = request.POST.get('price', '').strip()
+        new_price = safe_parse_decimal(new_price_val, service_obj.price)
+
+        if not new_name:
+            return JsonResponse({'success': False, 'error': 'Service name is required.'})
+
+        # Check uniqueness (excluding self)
+        if Service.objects.filter(organization=org, name=new_name).exclude(id=service_id).exists():
+            return JsonResponse({'success': False, 'error': f"Service '{new_name}' already exists."})
+
+        service_obj.name = new_name
+        service_obj.description = new_description
+        service_obj.price = new_price
+        service_obj.save()
+
+        return JsonResponse({'success': True, 'message': f"Service updated to '{new_name}'."})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def delete_service(request, service_id):
+    """Delete a service via AJAX POST."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        try:
+            service_obj = Service.objects.get(id=service_id, organization=org)
+        except Service.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Service not found.'})
+
+        deleted_name = service_obj.name
+        service_obj.delete()
+
+        return JsonResponse({'success': True, 'message': f"Service '{deleted_name}' deleted."})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+

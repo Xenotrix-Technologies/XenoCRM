@@ -5,6 +5,9 @@ class Organization(models.Model):
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = 'organizations'
+
     def __str__(self):
         return self.name
 
@@ -13,6 +16,11 @@ class UserProfile(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='members')
     role = models.CharField(max_length=100, default='Sales Executive')
     profile_image_url = models.URLField(max_length=1000, blank=True, null=True)
+    phone_number = models.CharField(max_length=50, blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+
+    class Meta:
+        db_table = 'user_profiles'
 
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.username} ({self.role})"
@@ -35,6 +43,7 @@ class LeadStatus(models.Model):
     class Meta:
         unique_together = ('organization', 'name')
         ordering = ['position', 'id']
+        db_table = 'lead_statuses'
 
     def __str__(self):
         return self.name
@@ -95,14 +104,19 @@ class Lead(models.Model):
     stage = models.CharField(max_length=50, choices=STAGE_CHOICES, default='New')
     value = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     owner = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='owned_leads')
+    service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True, blank=True, related_name='leads')
     lifecycle_stage = models.CharField(max_length=100, default='Prospect')
     annual_revenue = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
     health_score = models.IntegerField(default=50)
     profile_image_url = models.URLField(max_length=1000, blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
     date_time = models.DateTimeField(blank=True, null=True)
     last_followup_date_time = models.DateTimeField(blank=True, null=True)
     last_activity = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'leads'
 
     @property
     def status_badge_class(self):
@@ -135,6 +149,9 @@ class Activity(models.Model):
     description = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = 'activities'
+
     def __str__(self):
         return f"{self.type} on {self.lead.name} at {self.timestamp}"
 
@@ -152,6 +169,9 @@ class Task(models.Model):
     completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = 'tasks'
+
     def __str__(self):
         return f"{self.description} ({'Completed' if self.completed else 'Pending'})"
 
@@ -161,6 +181,9 @@ class Meeting(models.Model):
     title = models.CharField(max_length=255)
     date_time = models.DateTimeField()
     location = models.CharField(max_length=255, default='Zoom')
+
+    class Meta:
+        db_table = 'meetings'
 
     def __str__(self):
         return f"{self.title} at {self.date_time}"
@@ -174,6 +197,37 @@ class Event(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='events')
 
+    class Meta:
+        db_table = 'events'
+
     def __str__(self):
         return f"{self.title} ({self.start_time} - {self.end_time})"
+
+
+class StaffRole(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='staff_roles')
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ('organization', 'name')
+        db_table = 'staff_roles'
+
+    def __str__(self):
+        return self.name
+
+
+class Service(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='services')
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'services'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
+
 
