@@ -11,6 +11,18 @@ class Organization(models.Model):
     def __str__(self):
         return self.name
 
+class Department(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='departments')
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('organization', 'name')
+        db_table = 'departments'
+
+    def __str__(self):
+        return self.name
+
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='members')
@@ -18,12 +30,134 @@ class UserProfile(models.Model):
     profile_image_url = models.URLField(max_length=1000, blank=True, null=True)
     phone_number = models.CharField(max_length=50, blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name='members')
 
     class Meta:
         db_table = 'user_profiles'
 
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.username} ({self.role})"
+
+    SETTINGS_SUBPAGES = [
+        'content_settings',
+        'lead_statuses',
+        'services',
+        'staff_roles',
+        'notification_settings',
+        'role_permissions',
+        'departments',
+    ]
+
+    def check_page_permission(self, page_name):
+        from crm.models import StaffRole
+        import json
+        try:
+            role_obj = StaffRole.objects.get(organization=self.organization, name=self.role)
+            perms = json.loads(role_obj.permissions_json)
+            settings_val = perms.get(f"{self.role.lower()}_settings")
+            if page_name in self.SETTINGS_SUBPAGES and settings_val == True or settings_val == "true" or settings_val is True:
+                return True
+            val = perms.get(f"{self.role.lower()}_{page_name}")
+            if val is not None:
+                return val == True or val == "true" or val is True
+            if page_name in self.SETTINGS_SUBPAGES and settings_val is not None:
+                return False
+        except Exception:
+            pass
+        # Defaults fallback logic
+        role_lower = self.role.lower()
+        if 'admin' in role_lower:
+            return True
+        elif 'manager' in role_lower:
+            return page_name not in ['settings', 'staff'] and page_name not in self.SETTINGS_SUBPAGES and page_name != 'content_tracker'
+        else:
+            return page_name in ['dashboard', 'leads', 'calendar', 'clients', 'support']
+
+    @property
+    def has_access_dashboard(self):
+        return self.check_page_permission('dashboard')
+
+    @property
+    def has_access_leads(self):
+        return self.check_page_permission('leads')
+
+    @property
+    def has_access_calendar(self):
+        return self.check_page_permission('calendar')
+
+    @property
+    def has_access_clients(self):
+        return self.check_page_permission('clients')
+
+    @property
+    def has_access_support(self):
+        return self.check_page_permission('support')
+
+    @property
+    def has_access_projects(self):
+        return self.check_page_permission('projects')
+
+    @property
+    def has_access_agreements(self):
+        return self.check_page_permission('agreements')
+
+    @property
+    def has_access_campaigns(self):
+        return self.check_page_permission('campaigns')
+
+    @property
+    def has_access_staff(self):
+        return self.check_page_permission('staff')
+
+    @property
+    def has_access_content_tracker(self):
+        return self.check_page_permission('content_tracker')
+
+    @property
+    def has_access_settings(self):
+        return self.check_page_permission('settings')
+
+    @property
+    def has_access_content_settings(self):
+        return self.check_page_permission('content_settings')
+
+    @property
+    def has_access_lead_statuses(self):
+        return self.check_page_permission('lead_statuses')
+
+    @property
+    def has_access_services(self):
+        return self.check_page_permission('services')
+
+    @property
+    def has_access_staff_roles(self):
+        return self.check_page_permission('staff_roles')
+
+    @property
+    def has_access_notification_settings(self):
+        return self.check_page_permission('notification_settings')
+
+    @property
+    def has_access_role_permissions(self):
+        return self.check_page_permission('role_permissions')
+
+    @property
+    def has_access_departments(self):
+        return self.check_page_permission('departments')
+
+    @property
+    def has_any_settings_access(self):
+        return (
+            self.has_access_settings or
+            self.has_access_content_settings or
+            self.has_access_lead_statuses or
+            self.has_access_services or
+            self.has_access_staff_roles or
+            self.has_access_notification_settings or
+            self.has_access_role_permissions or
+            self.has_access_departments
+        )
+
 
 class LeadStatus(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='lead_statuses')
@@ -221,6 +355,7 @@ class Event(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     recurring = models.BooleanField(default=False)
+    color = models.CharField(max_length=50, default='#004ac6')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='events')
 
@@ -234,6 +369,8 @@ class Event(models.Model):
 class StaffRole(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='staff_roles')
     name = models.CharField(max_length=100)
+
+    permissions_json = models.TextField(default='{}')
 
     class Meta:
         unique_together = ('organization', 'name')
@@ -344,3 +481,101 @@ class Deliverable(models.Model):
         return self.title
 
 
+class Campaign(models.Model):
+    STATUS_CHOICES = [
+        ('Planning', 'Planning'),
+        ('Active', 'Active'),
+        ('Completed', 'Completed'),
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='campaigns')
+    name = models.CharField(max_length=255)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Planning')
+    leads_generated = models.IntegerField(default=0)
+    spend = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    budget = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'campaigns'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.name
+
+
+class ContentItem(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Editing', 'Editing'),
+        ('Review', 'Review'),
+        ('Approved', 'Approved'),
+        ('Published', 'Published'),
+        ('Rejected', 'Rejected'),
+        ('Scheduled', 'Scheduled'),
+    ]
+
+    CAMPAIGN_STATUS_CHOICES = [
+        ('Not Started', 'Not Started'),
+        ('Planning', 'Planning'),
+        ('In Progress', 'In Progress'),
+        ('Paused', 'Paused'),
+        ('Completed', 'Completed'),
+        ('Cancelled', 'Cancelled'),
+    ]
+
+    PRIORITY_CHOICES = [
+        ('Low', 'Low'),
+        ('Medium', 'Medium'),
+        ('High', 'High'),
+        ('Urgent', 'Urgent'),
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='content_items')
+    client = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='content_items')
+    video_title = models.CharField(max_length=255)
+    editor = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='edited_content')
+    date_received = models.DateField(null=True, blank=True)
+    due_date = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
+    platform = models.CharField(max_length=50)
+    upload_date = models.DateField(null=True, blank=True)
+    post_type = models.CharField(max_length=50)
+    campaign_status = models.CharField(max_length=50, choices=CAMPAIGN_STATUS_CHOICES, default='Not Started')
+    video_link = models.URLField(max_length=1000, blank=True, null=True)
+    priority = models.CharField(max_length=50, choices=PRIORITY_CHOICES, default='Medium')
+    notes = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'content_items'
+        ordering = ['-due_date', '-created_at']
+
+    def __str__(self):
+        return f"{self.video_title} ({self.client.name})"
+
+
+class ContentDropdownOption(models.Model):
+    """Dynamic dropdown options for the Content Tracker (platforms, post types, statuses, etc.)."""
+    CATEGORY_CHOICES = [
+        ('platform', 'Platform'),
+        ('post_type', 'Post Type'),
+        ('status', 'Status'),
+        ('campaign_status', 'Campaign Status'),
+        ('priority', 'Priority'),
+    ]
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='content_dropdown_options')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    value = models.CharField(max_length=100)
+    display_order = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'content_dropdown_options'
+        ordering = ['category', 'display_order', 'value']
+        unique_together = ('organization', 'category', 'value')
+
+    def __str__(self):
+        return f"{self.get_category_display()}: {self.value}"

@@ -6,7 +6,7 @@ from .models import Event, UserProfile
 class EventForm(forms.ModelForm):
     class Meta:
         model = Event
-        fields = ['title', 'description', 'start_time', 'end_time', 'recurring']
+        fields = ['title', 'description', 'start_time', 'end_time', 'recurring', 'color']
         widgets = {
             'title': forms.TextInput(attrs={
                 'class': 'w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary',
@@ -34,17 +34,41 @@ class EventForm(forms.ModelForm):
             'recurring': forms.CheckboxInput(attrs={
                 'class': 'rounded border-outline-variant text-primary focus:ring-primary h-4 w-4'
             }),
+            'color': forms.Select(
+                choices=[
+                    ('#004ac6', 'Meeting (Blue)'),
+                    ('#10b981', 'Demo (Green)'),
+                    ('#ef4444', 'Deadline (Red)'),
+                    ('#8b5cf6', 'Follow-up (Purple)'),
+                    ('#f97316', 'Personal (Orange)'),
+                ],
+                attrs={
+                    'class': 'w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary'
+                }
+            )
         }
 
 
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ['profile_image_url']
+        fields = ['profile_image_url', 'phone_number', 'location', 'role']
         widgets = {
             'profile_image_url': forms.URLInput(attrs={
                 'class': 'w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary',
                 'placeholder': 'https://example.com/avatar.jpg'
+            }),
+            'phone_number': forms.TextInput(attrs={
+                'class': 'w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary',
+                'placeholder': '+1 (555) 000-0000'
+            }),
+            'location': forms.TextInput(attrs={
+                'class': 'w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary',
+                'placeholder': 'e.g. New York, USA'
+            }),
+            'role': forms.TextInput(attrs={
+                'class': 'w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary',
+                'placeholder': 'e.g. Sales Director'
             })
         }
 

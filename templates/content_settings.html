@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block title %}Content Settings - XenoCRM{% endblock %}
+
+{% block content %}
+<main class="pt-8 p-margin-edge min-h-screen bg-background">
+  <div class="max-w-5xl mx-auto space-y-6">
+
+    <!-- Breadcrumb & Title -->
+    <div class="flex items-center gap-2 text-xs text-outline font-semibold mb-1">
+      {% if request.user.profile.has_access_content_tracker %}
+      <a href="{% url 'content_tracker' %}" class="hover:text-primary transition-colors">Content Tracker</a>
+      {% else %}
+      <span>Settings</span>
+      {% endif %}
+      <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+      <span class="text-primary">Content Settings</span>
+    </div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h2 class="font-headline-lg text-headline-lg font-bold text-on-background">Content Settings</h2>
+        <p class="text-secondary text-body-sm mt-1">Manage the dropdown options used across the Content Tracker — platforms, post types, statuses, campaign statuses, and priorities.</p>
+      </div>
+      {% if request.user.profile.has_access_content_tracker %}
+      <a href="{% url 'content_tracker' %}" class="bg-surface-container border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-slate-50 transition-all self-start">
+        <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+        Back to Tracker
+      </a>
+      {% endif %}
+    </div>
+
+    <!-- Django Messages -->
+    {% if messages %}
+    <div class="space-y-2">
+      {% for message in messages %}
+      <div class="px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 {% if message.tags == 'success' %}bg-emerald-50 text-emerald-700 border border-emerald-200{% elif message.tags == 'error' %}bg-rose-50 text-rose-700 border border-rose-200{% else %}bg-blue-50 text-blue-700 border border-blue-200{% endif %}">
+        <span class="material-symbols-outlined text-[16px]">{% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}</span>
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Categories Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for cat_key, cat_data in all_options.items %}
+      <div class="glass-card rounded-2xl border border-outline-variant/30 shadow-sm bg-white overflow-hidden flex flex-col">
+        <!-- Category Header -->
+        <div class="px-5 py-4 bg-slate-50 border-b border-outline-variant/20 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center
+              {% if cat_key == 'platform' %}bg-blue-100 text-blue-600
+              {% elif cat_key == 'post_type' %}bg-purple-100 text-purple-600
+              {% elif cat_key == 'status' %}bg-amber-100 text-amber-600
+              {% elif cat_key == 'campaign_status' %}bg-emerald-100 text-emerald-600
+              {% elif cat_key == 'priority' %}bg-rose-100 text-rose-600
+              {% endif %}">
+              <span class="material-symbols-outlined text-[18px]">
+                {% if cat_key == 'platform' %}devices
+                {% elif cat_key == 'post_type' %}video_library
+                {% elif cat_key == 'status' %}assignment
+                {% elif cat_key == 'campaign_status' %}campaign
+                {% elif cat_key == 'priority' %}flag
+                {% endif %}
+              </span>
+            </div>
+            <h3 class="font-bold text-sm text-on-surface uppercase tracking-wider">{{ cat_data.label }}</h3>
+          </div>
+          <span class="text-[10px] font-bold text-outline bg-slate-200 rounded-full px-2 py-0.5">{{ cat_data.items.count }}</span>
+        </div>
+
+        <!-- Options List -->
+        <div class="flex-1 divide-y divide-outline-variant/10">
+          {% for option in cat_data.items %}
+          <div class="group flex items-center justify-between px-5 py-3 hover:bg-slate-50/50 transition-colors">
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <span class="w-2 h-2 rounded-full {% if option.is_active %}bg-emerald-400{% else %}bg-slate-300{% endif %} flex-shrink-0"></span>
+              <span class="text-sm text-on-surface truncate {% if not option.is_active %}line-through text-outline/60{% endif %}">{{ option.value }}</span>
+              {% if not option.is_active %}
+              <span class="text-[9px] font-bold text-outline bg-slate-100 rounded px-1.5 py-0.5 flex-shrink-0">DISABLED</span>
+              {% endif %}
+            </div>
+            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <!-- Edit Button -->
+              <button onclick="openEditOptionModal('{{ option.id }}', '{{ option.value|escapejs }}', {{ option.is_active|yesno:'true,false' }})" class="p-1 rounded-lg text-outline hover:bg-blue-50 hover:text-blue-600 transition-all" title="Edit">
+                <span class="material-symbols-outlined text-[16px]">edit</span>
+              </button>
+              <!-- Delete Button -->
+              <form method="POST" action="{% url 'delete_content_option' option.id %}" class="inline" onsubmit="return confirm('Delete this option?')">
+                {% csrf_token %}
+                <button type="submit" class="p-1 rounded-lg text-outline hover:bg-rose-50 hover:text-rose-600 transition-all" title="Delete">
+                  <span class="material-symbols-outlined text-[16px]">delete</span>
+                </button>
+              </form>
+            </div>
+          </div>
+          {% empty %}
+          <div class="p-5 text-center text-outline/60 text-sm italic">No options yet.</div>
+          {% endfor %}
+        </div>
+
+        <!-- Add New Option -->
+        <div class="px-5 py-3 border-t border-outline-variant/20 bg-slate-50/50">
+          <form method="POST" action="{% url 'add_content_option' %}" class="flex gap-2">
+            {% csrf_token %}
+            <input type="hidden" name="category" value="{{ cat_key }}"/>
+            <input type="text" name="value" required placeholder="Add new {{ cat_data.label|lower }}..." class="flex-1 bg-white border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary text-sm"/>
+            <button type="submit" class="bg-primary text-on-primary px-3 py-2 rounded-lg hover:opacity-90 transition-all flex items-center gap-1 text-xs font-bold">
+              <span class="material-symbols-outlined text-[16px]">add</span>
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+</main>
+
+<!-- Edit Option Modal -->
+<div id="edit-option-modal" class="fixed inset-0 z-[100] hidden">
+  <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeEditOptionModal()"></div>
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-xl border border-outline-variant/30 w-full max-w-md p-6 animate-fade-in">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="font-bold text-lg text-on-surface">Edit Option</h3>
+      <button onclick="closeEditOptionModal()" class="p-1 rounded-lg hover:bg-slate-100 text-outline transition-all">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <form id="edit-option-form" method="POST" class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Value</label>
+        <input type="text" name="value" id="edit-option-value" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+      </div>
+      <div class="flex items-center gap-2">
+        <input type="checkbox" name="is_active" id="edit-option-active" class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary"/>
+        <label for="edit-option-active" class="text-sm text-on-surface font-medium">Active</label>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" onclick="closeEditOptionModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50 transition-all text-sm">Cancel</button>
+        <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90 active:scale-95 transition-all text-sm">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openEditOptionModal(optionId, value, isActive) {
+  document.getElementById('edit-option-form').action = '/settings/content-settings/' + optionId + '/edit/';
+  document.getElementById('edit-option-value').value = value;
+  document.getElementById('edit-option-active').checked = isActive;
+  document.getElementById('edit-option-modal').classList.remove('hidden');
+}
+function closeEditOptionModal() {
+  document.getElementById('edit-option-modal').classList.add('hidden');
+}
+// Close on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeEditOptionModal();
+});
+</script>
+{% endblock %}

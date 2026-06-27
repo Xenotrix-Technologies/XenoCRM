@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Events List{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    <!-- Header -->
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">
+                {% if filter_date %}Events on {{ filter_date }}{% else %}Organization Events{% endif %}
+            </h2>
+            <p class="text-secondary font-body-md">View and manage all meetings, calls, demos, and deadlines in a structured list.</p>
+            {% if filter_date %}
+            <div class="mt-2 flex items-center gap-2">
+                <span class="text-xs bg-primary/10 text-primary border border-primary/20 px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-xs">calendar_today</span>
+                    {{ filter_date }}
+                </span>
+                <a href="{% url 'calendar_list' %}" class="text-xs text-secondary hover:text-primary hover:underline flex items-center gap-0.5">
+                    Clear Filter
+                </a>
+            </div>
+            {% endif %}
+        </div>
+        <div class="flex items-center">
+            <a href="{% url 'calendar' %}" class="flex items-center px-4 py-2 border border-outline-variant text-secondary rounded-lg font-button text-button hover:bg-surface-variant transition-all bg-white">
+                <span class="material-symbols-outlined mr-2 text-sm">calendar_month</span>
+                Calendar View
+            </a>
+            <button onclick="openAddModal()" class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md hover:opacity-90 active:scale-95 transition-all ml-3">
+                <span class="material-symbols-outlined mr-2 text-sm">add</span>
+                Add Event
+            </button>
+        </div>
+    </div>
+
+    <!-- Events List Table -->
+    <div class="glass-card rounded-2xl border border-white/40 shadow-sm overflow-hidden flex-1 flex flex-col bg-white">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-outline-variant bg-surface-container/50 text-[11px] font-label-md uppercase tracking-wider text-secondary">
+                        <th class="px-6 py-4">Event Details</th>
+                        <th class="px-6 py-4">Category</th>
+                        <th class="px-6 py-4">Start Time</th>
+                        <th class="px-6 py-4">End Time</th>
+                        <th class="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/30 text-body-sm text-on-surface">
+                    {% for ev in events %}
+                    <tr class="hover:bg-surface-container/30 transition-colors" id="event-row-{{ ev.id }}">
+                        <td class="px-6 py-4">
+                            <div>
+                                <button onclick="triggerEdit('{{ ev.id }}', '{{ ev.title|escapejs }}', '{{ ev.description|default:""|escapejs }}', '{{ ev.start_time|date:"Y-m-d\TH:i" }}', '{{ ev.end_time|date:"Y-m-d\TH:i" }}', '{{ ev.color }}', {{ ev.recurring|yesno:"true,false" }})" class="font-bold text-primary hover:underline text-left block">
+                                    {{ ev.title }}
+                                </button>
+                                {% if ev.description %}
+                                <p class="text-xs text-secondary mt-1 max-w-md truncate">{{ ev.description }}</p>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full" style="background-color: {{ ev.color }};"></span>
+                                <span class="text-xs text-secondary font-medium">
+                                    {% if ev.color == '#004ac6' %}Meeting
+                                    {% elif ev.color == '#10b981' %}Call / Demo
+                                    {% elif ev.color == '#ef4444' %}Deadline
+                                    {% elif ev.color == '#8b5cf6' %}Follow-up
+                                    {% elif ev.color == '#f97316' %}Personal
+                                    {% else %}General
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-xs font-mono text-secondary">
+                            {{ ev.start_time|date:"M d, Y - h:i A" }}
+                        </td>
+                        <td class="px-6 py-4 text-xs font-mono text-secondary">
+                            {{ ev.end_time|date:"M d, Y - h:i A" }}
+                        </td>
+
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex items-center justify-end space-x-2">
+                                <button onclick="triggerDelete('{{ ev.id }}', '{{ ev.title|escapejs }}')" class="p-1.5 text-secondary hover:text-error hover:bg-error/5 rounded-lg transition-all" title="Delete Event">
+                                    <span class="material-symbols-outlined text-lg">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-secondary">
+                            <span class="material-symbols-outlined text-4xl opacity-40">calendar_today</span>
+                            <p class="font-bold mt-2">No organization events found.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add / Edit Modal -->
+<div id="event-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+  <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl border border-outline-variant/30 transform scale-95 transition-transform duration-300">
+    <div class="flex justify-between items-center mb-4 border-b border-outline-variant/20 pb-3">
+      <h3 id="modal-title" class="font-headline-md text-headline-md font-bold text-on-background">Event Details</h3>
+      <button onclick="closeModal()" type="button" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+    </div>
+    
+    <form id="event-modal-form" method="POST" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" id="event-id" name="event_id" value="" />
+      
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Event Title</label>
+        <input type="text" id="event-title" name="title" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" placeholder="e.g. Contract Sign-off with Acme"/>
+      </div>
+
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Description</label>
+        <textarea id="event-desc" name="description" rows="3" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" placeholder="Add discussion topics or links..."></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-label-md font-label-md text-outline uppercase mb-1">Start Time</label>
+          <input type="datetime-local" id="event-start" name="start_time" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+        </div>
+        <div>
+          <label class="block text-label-md font-label-md text-outline uppercase mb-1">End Time</label>
+          <input type="datetime-local" id="event-end" name="end_time" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Category / Color</label>
+        <select id="event-color" name="color" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+          <!-- Dynamically populated -->
+        </select>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-outline-variant/20 flex justify-between items-center">
+        <button type="button" id="delete-event-btn" onclick="deleteEvent()" class="px-4 py-2 border border-red-200 text-error rounded-lg hover:bg-red-50 transition-all hidden">
+          Delete Event
+        </button>
+        
+        <div class="ml-auto flex gap-3">
+          <button type="button" onclick="closeModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+          <button type="submit" id="save-event-btn" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Event</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  const modal = document.getElementById('event-modal');
+  const eventIdInput = document.getElementById('event-id');
+  const titleInput = document.getElementById('event-title');
+  const descInput = document.getElementById('event-desc');
+  const startInput = document.getElementById('event-start');
+  const endInput = document.getElementById('event-end');
+  const colorSelect = document.getElementById('event-color');
+  const deleteBtn = document.getElementById('delete-event-btn');
+  const modalTitle = document.getElementById('modal-title');
+
+  function renderCategoryDropdown() {
+      const defaultStatuses = [
+          { name: 'Meetings', color: '#004ac6' },
+          { name: 'Calls', color: '#10b981' },
+          { name: 'Deadlines', color: '#ef4444' },
+          { name: 'Follow-ups', color: '#8b5cf6' },
+          { name: 'Personal', color: '#f97316' }
+      ];
+      let list = defaultStatuses;
+      try {
+          const stored = localStorage.getItem('status_list_calendar');
+          if (stored) list = JSON.parse(stored);
+      } catch(e){}
+
+      if (colorSelect) {
+          colorSelect.innerHTML = '';
+          list.forEach(status => {
+              const opt = document.createElement('option');
+              opt.value = status.color;
+              opt.textContent = status.name;
+              colorSelect.appendChild(opt);
+          });
+      }
+  }
+
+  function showModal() {
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modal.classList.remove('opacity-0');
+      modal.querySelector('div').classList.remove('scale-95');
+    }, 10);
+  }
+
+  function hideModal() {
+    modal.classList.add('opacity-0');
+    modal.querySelector('div').classList.add('scale-95');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 300);
+  }
+
+  function openAddModal() {
+    renderCategoryDropdown();
+    eventIdInput.value = '';
+    titleInput.value = '';
+    descInput.value = '';
+    
+    // Set current date/times
+    const now = new Date();
+    const tzOffset = now.getTimezoneOffset() * 60000;
+    const nowStr = (new Date(now - tzOffset)).toISOString().slice(0, 16);
+    const endStr = (new Date(now - tzOffset + 3600000)).toISOString().slice(0, 16);
+    startInput.value = nowStr;
+    endInput.value = endStr;
+    
+    deleteBtn.classList.add('hidden');
+    modalTitle.textContent = 'Create Calendar Event';
+    showModal();
+  }
+
+  function triggerEdit(id, title, description, startStr, endStr, color, recurring) {
+    renderCategoryDropdown();
+    eventIdInput.value = id;
+    titleInput.value = title;
+    descInput.value = description;
+    startInput.value = startStr;
+    endInput.value = endStr;
+    colorSelect.value = color || '#004ac6';
+    deleteBtn.classList.remove('hidden');
+    modalTitle.textContent = 'Edit Calendar Event';
+    showModal();
+  }
+
+  function triggerDelete(id, name) {
+      if (!confirm(`Are you sure you want to delete event "${name}"?`)) return;
+      
+      const url = `/calendar/delete-ajax/${id}/`;
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': csrfToken
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showToast('Event deleted successfully.', 'success');
+          location.reload();
+        } else {
+          showToast(data.error || 'Failed to delete event.', 'error');
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('Network error occurred.', 'error');
+      });
+  }
+
+  function deleteEvent() {
+      const id = eventIdInput.value;
+      if (id) triggerDelete(id, titleInput.value);
+  }
+
+  function closeModal() {
+    hideModal();
+  }
+
+  // Handle Event Submit (Add / Edit)
+  document.getElementById('event-modal-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const evId = eventIdInput.value;
+    const url = evId ? `/calendar/edit-ajax/${evId}/` : "{% url 'event_create_ajax' %}";
+    
+    const formData = new FormData(this);
+    formData.set('recurring', 'false');
+    
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+      },
+      body: new URLSearchParams(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        closeModal();
+        showToast(evId ? 'Event updated successfully.' : 'Event created successfully.', 'success');
+        setTimeout(() => location.reload(), 500);
+      } else {
+        let errorMsg = 'Failed to save event.';
+        if (data.errors) {
+          errorMsg = Object.values(data.errors).map(errs => errs.map(e => e.message).join(', ')).join('. ');
+        }
+        showToast(errorMsg, 'error');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      showToast('Network error occurred.', 'error');
+    });
+  });
+
+  // Close modal when clicking outside
+  window.onclick = function(event) {
+    if (event.target === modal) {
+      closeModal();
+    }
+  }
+</script>
+{% endblock %}

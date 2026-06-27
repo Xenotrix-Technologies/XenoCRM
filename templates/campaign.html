@@ -10,7 +10,7 @@
             <h2 class="font-headline-lg text-headline-lg text-on-background">Campaigns Hub</h2>
             <p class="text-secondary font-body-md">Monitor and scale your outreach marketing campaigns, budget allocations, and performance trends.</p>
         </div>
-        <button class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md hover:opacity-90 active:scale-95 transition-all">
+        <button onclick="openAddModal()" class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md hover:opacity-90 active:scale-95 transition-all">
             <span class="material-symbols-outlined mr-2 text-sm">campaign</span>
             Launch Campaign
         </button>
@@ -19,7 +19,7 @@
     <!-- Campaigns Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         {% for camp in campaigns %}
-        <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+        <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between" id="campaign-card-{{ camp.id }}">
             <div>
                 <div class="flex justify-between items-start mb-4">
                     <span class="text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider {% if camp.status == 'Active' %}bg-primary/10 text-primary{% elif camp.status == 'Completed' %}bg-success/10 text-success{% else %}bg-surface-variant text-secondary{% endif %}">
@@ -49,8 +49,15 @@
                 </div>
             </div>
             
-            <div class="mt-6 pt-4 border-t border-outline-variant/30 flex justify-end">
-                <button class="text-xs text-primary font-bold hover:underline">Campaign Analytics</button>
+            <div class="mt-6 pt-4 border-t border-outline-variant/30 flex justify-end items-center">
+                <div class="flex items-center space-x-2">
+                    <button onclick="openEditModal('{{ camp.id }}', '{{ camp.name|escapejs }}', '{{ camp.status|escapejs }}', '{{ camp.leads_generated }}', '{{ camp.spend }}', '{{ camp.budget }}')" class="p-1.5 text-secondary hover:text-primary hover:bg-primary/5 rounded-lg transition-all" title="Edit Campaign">
+                        <span class="material-symbols-outlined text-lg">edit</span>
+                    </button>
+                    <button onclick="openDeleteModal('{{ camp.id }}', '{{ camp.name|escapejs }}')" class="p-1.5 text-secondary hover:text-error hover:bg-error/5 rounded-lg transition-all" title="Delete Campaign">
+                        <span class="material-symbols-outlined text-lg">delete</span>
+                    </button>
+                </div>
             </div>
         </div>
         {% empty %}
@@ -61,4 +68,240 @@
         {% endfor %}
     </div>
 </div>
+
+<!-- Launch Campaign Modal -->
+<div id="addCampaignModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-surface-container rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl border border-outline-variant transform scale-95 transition-transform duration-300">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold text-on-surface flex items-center">
+                <span class="material-symbols-outlined mr-2 text-primary">campaign</span>
+                Launch New Campaign
+            </h3>
+            <button onclick="closeAddModal()" class="text-secondary hover:text-on-surface p-1 rounded-full hover:bg-surface-variant">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form action="{% url 'add_campaign' %}" method="POST" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-bold text-secondary mb-1">Campaign Name</label>
+                <input type="text" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface" placeholder="e.g. Winter Sale Email Outreach">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-secondary mb-1">Status</label>
+                <select id="add_status" name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                    <option value="Planning">Planning</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Budget ($)</label>
+                    <input type="number" name="budget" step="0.01" min="0" value="0.00" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Spend to Date ($)</label>
+                    <input type="number" name="spend" step="0.01" min="0" value="0.00" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-secondary mb-1">Leads Generated</label>
+                <input type="number" name="leads_generated" min="0" value="0" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t border-outline-variant/30">
+                <button type="button" onclick="closeAddModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg text-sm font-medium hover:bg-surface-variant transition-all">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-medium hover:opacity-90 transition-all">Launch</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Campaign Modal -->
+<div id="editCampaignModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-surface-container rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl border border-outline-variant transform scale-95 transition-transform duration-300">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-bold text-on-surface flex items-center">
+                <span class="material-symbols-outlined mr-2 text-primary">edit</span>
+                Update Campaign
+            </h3>
+            <button onclick="closeEditModal()" class="text-secondary hover:text-on-surface p-1 rounded-full hover:bg-surface-variant">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="editCampaignForm" method="POST" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-xs font-bold text-secondary mb-1">Campaign Name</label>
+                <input type="text" id="edit_name" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-secondary mb-1">Status</label>
+                <select id="edit_status" name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                    <option value="Planning">Planning</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Budget ($)</label>
+                    <input type="number" id="edit_budget" name="budget" step="0.01" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Spend to Date ($)</label>
+                    <input type="number" id="edit_spend" name="spend" step="0.01" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-secondary mb-1">Leads Generated</label>
+                <input type="number" id="edit_leads" name="leads_generated" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t border-outline-variant/30">
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg text-sm font-medium hover:bg-surface-variant transition-all">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-medium hover:opacity-90 transition-all">Update</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteCampaignModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-surface-container rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl border border-outline-variant transform scale-95 transition-transform duration-300 text-center">
+        <div class="w-12 h-12 rounded-full bg-error/10 text-error flex items-center justify-center mx-auto mb-4">
+            <span class="material-symbols-outlined text-2xl">delete</span>
+        </div>
+        <h3 class="text-lg font-bold text-on-surface mb-2">Delete Campaign?</h3>
+        <p class="text-secondary text-sm mb-6">Are you sure you want to delete <span id="deleteCampaignName" class="font-bold text-on-surface"></span>? This action cannot be undone.</p>
+        <form id="deleteCampaignForm" method="POST" class="flex justify-center space-x-3">
+            {% csrf_token %}
+            <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg text-sm font-medium hover:bg-surface-variant transition-all">Cancel</button>
+            <button type="submit" class="px-4 py-2 bg-error text-on-error rounded-lg text-sm font-medium hover:opacity-90 transition-all">Delete</button>
+        </form>
+    </div>
+</div>
+
+<script>
+// Dynamic Status population from localStorage
+function initStatusOptions() {
+    const defaultStatuses = [
+        { name: 'Planning' },
+        { name: 'Active' },
+        { name: 'Completed' }
+    ];
+    let customStatuses = defaultStatuses;
+    try {
+        const stored = localStorage.getItem('status_list_campaigns');
+        if (stored) {
+            customStatuses = JSON.parse(stored);
+        } else {
+            // Seed local storage with defaults so it aligns with Status Page
+            localStorage.setItem('status_list_campaigns', JSON.stringify([
+                { name: 'Planning', color: '#64748b' },
+                { name: 'Active', color: '#0053db' },
+                { name: 'Completed', color: '#22c55e' }
+            ]));
+        }
+    } catch(e) {
+        console.error(e);
+    }
+
+    const addSelect = document.getElementById('add_status');
+    const editSelect = document.getElementById('edit_status');
+
+    if (addSelect && editSelect) {
+        addSelect.innerHTML = '';
+        editSelect.innerHTML = '';
+        customStatuses.forEach(status => {
+            const opt1 = document.createElement('option');
+            opt1.value = status.name;
+            opt1.textContent = status.name;
+            addSelect.appendChild(opt1);
+
+            const opt2 = document.createElement('option');
+            opt2.value = status.name;
+            opt2.textContent = status.name;
+            editSelect.appendChild(opt2);
+        });
+    }
+}
+
+// Call on load
+document.addEventListener('DOMContentLoaded', initStatusOptions);
+
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('div').classList.remove('scale-95');
+    }, 10);
+}
+
+function hideModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.add('opacity-0');
+    modal.querySelector('div').classList.add('scale-95');
+    setTimeout(() => {
+        modal.classList.add('hidden');
+    }, 300);
+}
+
+function openAddModal() {
+    initStatusOptions();
+    showModal('addCampaignModal');
+}
+
+function closeAddModal() {
+    hideModal('addCampaignModal');
+}
+
+function openEditModal(id, name, status, leads, spend, budget) {
+    initStatusOptions();
+    document.getElementById('edit_name').value = name;
+    document.getElementById('edit_status').value = status;
+    document.getElementById('edit_leads').value = leads;
+    document.getElementById('edit_spend').value = spend;
+    document.getElementById('edit_budget').value = budget;
+    
+    // Set form action URL dynamically
+    const form = document.getElementById('editCampaignForm');
+    form.action = `/campaign/${id}/edit/`;
+    
+    showModal('editCampaignModal');
+}
+
+function closeEditModal() {
+    hideModal('editCampaignModal');
+}
+
+function openDeleteModal(id, name) {
+    document.getElementById('deleteCampaignName').textContent = name;
+    
+    // Set form action URL dynamically
+    const form = document.getElementById('deleteCampaignForm');
+    form.action = `/campaign/${id}/delete/`;
+    
+    showModal('deleteCampaignModal');
+}
+
+function closeDeleteModal() {
+    hideModal('deleteCampaignModal');
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    const addModal = document.getElementById('addCampaignModal');
+    const editModal = document.getElementById('editCampaignModal');
+    const deleteModal = document.getElementById('deleteCampaignModal');
+    
+    if (event.target === addModal) {
+        closeAddModal();
+    } else if (event.target === editModal) {
+        closeEditModal();
+    } else if (event.target === deleteModal) {
+        closeDeleteModal();
+    }
+}
+</script>
 {% endblock %}

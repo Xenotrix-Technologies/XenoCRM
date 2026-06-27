@@ -119,9 +119,9 @@
             <div class="h-64 relative w-full overflow-hidden rounded-xl">
                 <div class="absolute inset-0 chart-gradient opacity-30"></div>
                 <!-- Interactive SVG Trend Chart -->
-                <svg class="w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300">
-                    <path d="M0,250 L100,220 L200,240 L300,180 L400,200 L500,140 L600,160 L700,90 L800,110 L900,40 L1000,60" fill="none" stroke="#2563EB" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
-                    <path d="M0,250 L100,220 L200,240 L300,180 L400,200 L500,140 L600,160 L700,90 L800,110 L900,40 L1000,60 V300 H0 Z" fill="url(#grad1)" opacity="0.1"></path>
+                <svg class="w-full h-full" id="revenue-trend-svg" preserveAspectRatio="none" viewBox="0 0 1000 300">
+                    <path id="chart-stroke-path" d="" fill="none" stroke="#2563EB" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
+                    <path id="chart-fill-path" d="" fill="url(#grad1)" opacity="0.1"></path>
                     <defs>
                         <linearGradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
                             <stop offset="0%" style="stop-color:#2563EB;stop-opacity:1"></stop>
@@ -129,14 +129,14 @@
                         </linearGradient>
                     </defs>
                 </svg>
-                <div class="absolute bottom-0 left-0 right-0 flex justify-between px-2 text-[10px] text-outline font-label-md">
-                    <span>JAN</span><span>FEB</span><span>MAR</span><span>APR</span><span>MAY</span><span>JUN</span><span>JUL</span><span>AUG</span><span>SEP</span><span>OCT</span>
+                <div class="absolute bottom-0 left-0 right-0 flex justify-between px-2 text-[10px] text-outline font-label-md" id="chart-labels-container">
+                    <!-- Populated dynamically -->
                 </div>
             </div>
         </div>
 
         <!-- Sales Funnel -->
-        <div class="glass-card p-6 rounded-2xl border border-white">
+        <div class="glass-card p-6 rounded-2xl border border-white bg-white">
             <h4 class="font-headline-md text-headline-md text-on-background mb-1">Sales Funnel</h4>
             <p class="text-xs text-secondary mb-8">Lead to Deal conversion steps</p>
             <div class="space-y-4">
@@ -145,9 +145,9 @@
                         <span>Prospects</span>
                         <span>{{ funnel_data.New }}</span>
                     </div>
-                    <div class="h-8 bg-primary/20 rounded-lg w-full flex items-center px-4 overflow-hidden relative">
+                    <div class="h-8 bg-primary/10 rounded-lg w-full flex items-center px-4 overflow-hidden relative">
                         <div class="h-full bg-primary/80 absolute left-0" style="width: 100%"></div>
-                        <span class="relative z-10 text-[10px] text-white">100%</span>
+                        <span class="relative z-10 text-[10px] text-white font-bold">100%</span>
                     </div>
                 </div>
                 <div class="relative">
@@ -155,9 +155,11 @@
                         <span>Qualified</span>
                         <span>{{ funnel_data.Qualified }}</span>
                     </div>
-                    <div class="h-8 bg-primary/20 rounded-lg w-[85%] flex items-center px-4 relative overflow-hidden">
-                        <div class="h-full bg-primary/70 absolute left-0" style="width: 100%"></div>
-                        <span class="relative z-10 text-[10px] text-white">{{ funnel_rates.Qualified|floatformat:0 }}%</span>
+                    <div class="h-8 bg-primary/10 rounded-lg w-full flex items-center relative overflow-hidden">
+                        <div class="h-full bg-primary/70 absolute left-0" style="width: {{ funnel_rates.Qualified|default:0|floatformat:0 }}%"></div>
+                        <span class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Qualified > 15 %}text-white{% else %}text-primary{% endif %}">
+                            {{ funnel_rates.Qualified|floatformat:0 }}%
+                        </span>
                     </div>
                 </div>
                 <div class="relative">
@@ -165,9 +167,11 @@
                         <span>Proposal</span>
                         <span>{{ funnel_data.Proposal }}</span>
                     </div>
-                    <div class="h-8 bg-primary/20 rounded-lg w-[65%] flex items-center px-4 relative overflow-hidden">
-                        <div class="h-full bg-primary/60 absolute left-0" style="width: 100%"></div>
-                        <span class="relative z-10 text-[10px] text-white">{{ funnel_rates.Proposal|floatformat:0 }}%</span>
+                    <div class="h-8 bg-primary/10 rounded-lg w-full flex items-center relative overflow-hidden">
+                        <div class="h-full bg-primary/60 absolute left-0" style="width: {{ funnel_rates.Proposal|default:0|floatformat:0 }}%"></div>
+                        <span class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Proposal > 15 %}text-white{% else %}text-primary{% endif %}">
+                            {{ funnel_rates.Proposal|floatformat:0 }}%
+                        </span>
                     </div>
                 </div>
                 <div class="relative">
@@ -175,9 +179,11 @@
                         <span>Negotiation</span>
                         <span>{{ funnel_data.Negotiation }}</span>
                     </div>
-                    <div class="h-8 bg-primary/20 rounded-lg w-[45%] flex items-center px-4 relative overflow-hidden">
-                        <div class="h-full bg-primary/50 absolute left-0" style="width: 100%"></div>
-                        <span class="relative z-10 text-[10px] text-white">{{ funnel_rates.Negotiation|floatformat:0 }}%</span>
+                    <div class="h-8 bg-primary/10 rounded-lg w-full flex items-center relative overflow-hidden">
+                        <div class="h-full bg-primary/50 absolute left-0" style="width: {{ funnel_rates.Negotiation|default:0|floatformat:0 }}%"></div>
+                        <span class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Negotiation > 15 %}text-white{% else %}text-primary{% endif %}">
+                            {{ funnel_rates.Negotiation|floatformat:0 }}%
+                        </span>
                     </div>
                 </div>
                 <div class="relative">
@@ -185,9 +191,11 @@
                         <span>Closed Won</span>
                         <span>{{ funnel_data.Won }}</span>
                     </div>
-                    <div class="h-8 bg-primary/20 rounded-lg w-[30%] flex items-center px-4 relative overflow-hidden">
-                        <div class="h-full bg-primary/40 absolute left-0" style="width: 100%"></div>
-                        <span class="relative z-10 text-[10px] text-white">{{ funnel_rates.Won|floatformat:0 }}%</span>
+                    <div class="h-8 bg-primary/10 rounded-lg w-full flex items-center relative overflow-hidden">
+                        <div class="h-full bg-primary/40 absolute left-0" style="width: {{ funnel_rates.Won|default:0|floatformat:0 }}%"></div>
+                        <span class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Won > 15 %}text-white{% else %}text-primary{% endif %}">
+                            {{ funnel_rates.Won|floatformat:0 }}%
+                        </span>
                     </div>
                 </div>
             </div>
@@ -195,27 +203,7 @@
     </div>
 
     <!-- Bottom Grid: Widgets -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
-        <!-- XenoAI Insights -->
-        <div class="xl:col-span-1 glass-card p-6 rounded-2xl border border-primary/20 bg-primary-container/5">
-            <div class="flex items-center space-x-2 mb-6">
-                <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
-                <h4 class="font-bold text-on-surface">XenoAI Insights</h4>
-            </div>
-            <div class="space-y-4">
-                {% for insight in ai_insights %}
-                <div class="p-3 bg-white rounded-xl border border-outline-variant shadow-sm text-xs group hover:border-primary transition-all cursor-pointer">
-                    <div class="flex justify-between mb-1">
-                        <span class="font-bold {% if insight.type == 'HOT' %}text-primary{% elif insight.type == 'CHURN' %}text-warning{% else %}text-success{% endif %}">{{ insight.title }}</span>
-                        <span class="text-[10px] text-outline">{{ insight.time }}</span>
-                    </div>
-                    <p class="text-on-surface-variant leading-relaxed">{{ insight.description }}</p>
-                </div>
-                {% empty %}
-                <p class="text-xs text-outline text-center py-4">No AI insights available today.</p>
-                {% endfor %}
-            </div>
-        </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
 
         <!-- Recent Activities -->
         <div class="xl:col-span-1 glass-card p-6 rounded-2xl border border-white">
@@ -291,4 +279,47 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const values = {{ trend_values|safe|default:"[]" }};
+      const labels = {{ trend_labels|safe|default:"[]" }};
+      
+      const svg = document.getElementById('revenue-trend-svg');
+      const labelContainer = document.getElementById('chart-labels-container');
+      
+      if (values.length && svg && labelContainer) {
+          // Render labels
+          labelContainer.innerHTML = '';
+          labels.forEach(l => {
+              const span = document.createElement('span');
+              span.className = 'w-12 text-center';
+              span.textContent = l;
+              labelContainer.appendChild(span);
+          });
+          
+          // Render SVG paths
+          const maxVal = Math.max(...values, 1000);
+          const minVal = Math.min(...values, 0);
+          const valRange = maxVal - minVal || 1;
+          
+          const points = [];
+          const stepX = 1000 / (values.length - 1);
+          
+          values.forEach((v, idx) => {
+              const x = idx * stepX;
+              const y = 250 - ((v - minVal) / valRange) * 200;
+              points.push(`${x},${y}`);
+          });
+          
+          const pathD = "M" + points.join(" L");
+          const fillD = pathD + ` L1000,300 L0,300 Z`;
+          
+          document.getElementById('chart-stroke-path').setAttribute('d', pathD);
+          document.getElementById('chart-fill-path').setAttribute('d', fillD);
+      }
+  });
+</script>
 {% endblock %}

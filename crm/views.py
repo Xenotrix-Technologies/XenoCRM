@@ -1,16 +1,37 @@
 import csv
+from functools import wraps
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.db.models import Sum, Q
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib import messages
-from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable
+from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable, Campaign, ContentDropdownOption
 from .forms import EventForm, ProfileForm
 # Views for navigation pages with proper multi-tenant database queries
+
+
+def page_permission_required(permission_name):
+    """Require a UserProfile permission property such as has_access_content_settings."""
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            profile = getattr(request.user, 'profile', None)
+            if profile and getattr(profile, f'has_access_{permission_name}', False):
+                return view_func(request, *args, **kwargs)
+
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': 'You do not have permission to access this page.'}, status=403)
+
+            messages.error(request, 'You do not have permission to access this page.')
+            return redirect('dashboard')
+        return wrapper
+    return decorator
+
 
 
 
@@ -581,13 +602,96 @@ def agreement_print_view(request, agreement_id):
 
 @login_required
 def campaign_view(request):
-    campaigns = [
-        {'name': 'Summer Solstice Email Blast', 'status': 'Active', 'leads_generated': 42, 'spend': 450.00, 'budget': 1000.00},
-        {'name': 'Q2 LinkedIn Lead Gen', 'status': 'Completed', 'leads_generated': 128, 'spend': 1200.00, 'budget': 1200.00},
-        {'name': 'AdWords CRM Search Retargeting', 'status': 'Active', 'leads_generated': 19, 'spend': 280.00, 'budget': 800.00},
-        {'name': 'Autumn Product Demo Invite', 'status': 'Planning', 'leads_generated': 0, 'spend': 0.00, 'budget': 500.00}
-    ]
+    org = request.user.profile.organization
+    campaigns = Campaign.objects.filter(organization=org)
+    if not campaigns.exists():
+        Campaign.objects.create(organization=org, name='Summer Solstice Email Blast', status='Active', leads_generated=42, spend=450.00, budget=1000.00)
+        Campaign.objects.create(organization=org, name='Q2 LinkedIn Lead Gen', status='Completed', leads_generated=128, spend=1200.00, budget=1200.00)
+        Campaign.objects.create(organization=org, name='AdWords CRM Search Retargeting', status='Active', leads_generated=19, spend=280.00, budget=800.00)
+        Campaign.objects.create(organization=org, name='Autumn Product Demo Invite', status='Planning', leads_generated=0, spend=0.00, budget=500.00)
+        campaigns = Campaign.objects.filter(organization=org)
+    
     return render(request, 'campaign.html', {'campaigns': campaigns})
+
+
+@login_required
+@require_POST
+def add_campaign(request):
+    org = request.user.profile.organization
+    name = request.POST.get('name')
+    status = request.POST.get('status', 'Planning')
+    leads_generated = int(request.POST.get('leads_generated') or 0)
+    spend = float(request.POST.get('spend') or 0)
+    budget = float(request.POST.get('budget') or 0)
+    
+    try:
+        Campaign.objects.create(
+            organization=org,
+            name=name,
+            status=status,
+            leads_generated=leads_generated,
+            spend=spend,
+            budget=budget
+        )
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'message': 'Campaign launched successfully.'})
+        messages.success(request, 'Campaign launched successfully.')
+    except Exception as e:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': str(e)})
+        messages.error(request, f'Error launching campaign: {str(e)}')
+    
+    return redirect('campaign')
+
+
+@login_required
+@require_POST
+def edit_campaign(request, campaign_id):
+    org = request.user.profile.organization
+    campaign = get_object_or_404(Campaign, id=campaign_id, organization=org)
+    
+    name = request.POST.get('name')
+    status = request.POST.get('status')
+    leads_generated = int(request.POST.get('leads_generated') or 0)
+    spend = float(request.POST.get('spend') or 0)
+    budget = float(request.POST.get('budget') or 0)
+    
+    try:
+        campaign.name = name
+        campaign.status = status
+        campaign.leads_generated = leads_generated
+        campaign.spend = spend
+        campaign.budget = budget
+        campaign.save()
+        
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'message': 'Campaign updated successfully.'})
+        messages.success(request, 'Campaign updated successfully.')
+    except Exception as e:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': str(e)})
+        messages.error(request, f'Error updating campaign: {str(e)}')
+        
+    return redirect('campaign')
+
+
+@login_required
+@require_POST
+def delete_campaign(request, campaign_id):
+    org = request.user.profile.organization
+    campaign = get_object_or_404(Campaign, id=campaign_id, organization=org)
+    
+    try:
+        campaign.delete()
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'message': 'Campaign deleted successfully.'})
+        messages.success(request, 'Campaign deleted successfully.')
+    except Exception as e:
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': str(e)})
+        messages.error(request, f'Error deleting campaign: {str(e)}')
+        
+    return redirect('campaign')
 
 def signup_view(request):
     return redirect('login')
@@ -687,6 +791,33 @@ def dashboard_view(request):
             'description': "Ensure all New leads have an assigned owner and a scheduled initial activity."
         })
 
+    # 10. Revenue Trend data (value of won leads grouped by month for the last 6 months)
+    from django.db.models.functions import TruncMonth
+    from datetime import timedelta
+    
+    six_months_ago = timezone.now() - timedelta(days=180)
+    monthly_revenue_qs = leads_qs.filter(stage='Won', created_at__gte=six_months_ago)\
+        .annotate(month=TruncMonth('created_at'))\
+        .values('month')\
+        .annotate(revenue=Sum('value'))\
+        .order_by('month')
+        
+    trend_labels = []
+    trend_values = []
+    
+    current_date = timezone.now()
+    for i in range(5, -1, -1):
+        m_date = current_date - timedelta(days=i*30)
+        m_label = m_date.strftime('%b').upper()
+        trend_labels.append(m_label)
+        
+        rev_val = 0
+        for item in monthly_revenue_qs:
+            if item['month'] and item['month'].year == m_date.year and item['month'].month == m_date.month:
+                rev_val = float(item['revenue'] or 0)
+                break
+        trend_values.append(rev_val)
+
     context = {
         'total_revenue': total_revenue,
         'total_leads': total_leads,
@@ -700,6 +831,8 @@ def dashboard_view(request):
         'funnel_data': funnel_data,
         'funnel_rates': funnel_rates,
         'ai_insights': ai_insights,
+        'trend_labels': trend_labels,
+        'trend_values': trend_values,
     }
     
     return render(request, 'dashboard.html', context)
@@ -1165,6 +1298,30 @@ def calendar_view(request):
     events = Event.objects.filter(organization=org).order_by('start_time')
     return render(request, 'calendar.html', {'events': events})
 
+
+@login_required
+def calendar_list_view(request):
+    """Display list of organization events in tabular format, optionally filtered by date."""
+    org = request.user.profile.organization
+    date_str = request.GET.get('date')
+    
+    events = Event.objects.filter(organization=org)
+    
+    if date_str:
+        try:
+            from datetime import datetime
+            dt = datetime.strptime(date_str, "%Y-%m-%d")
+            events = events.filter(start_time__date=dt.date())
+        except ValueError:
+            pass
+            
+    events = events.order_by('-start_time')
+    return render(request, 'calendar_list.html', {
+        'events': events,
+        'filter_date': date_str
+    })
+
+
 @login_required
 def event_create_view(request):
     """Create a new calendar event via modal form."""
@@ -1212,23 +1369,46 @@ def profile_edit_view(request):
     user = request.user
     profile = user.profile
     if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=profile)
-        # Handle built‑in User fields separately
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        # Handle builtâ€‘in User fields separately
         username = request.POST.get('username')
         first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
         email = request.POST.get('email')
+        password = request.POST.get('password')
+        
         if username:
             user.username = username
-        if first_name:
+        if first_name is not None:
             user.first_name = first_name
-        if last_name:
+        if last_name is not None:
             user.last_name = last_name
         if email:
             user.email = email
+            
+        if password and password.strip():
+            user.set_password(password.strip())
+            
         user.save()
+        
+        if password and password.strip():
+            from django.contrib.auth import update_session_auth_hash
+            update_session_auth_hash(request, user)
+            
         if form.is_valid():
-            form.save()
+            profile_obj = form.save(commit=False)
+            
+            # Handle profile image file upload
+            profile_file = request.FILES.get('profile_image_file')
+            if profile_file:
+                from django.core.files.storage import default_storage
+                from django.core.files.base import ContentFile
+                from django.conf import settings
+                import os
+                path = default_storage.save(os.path.join('avatars', f"user_{user.id}_{profile_file.name}"), ContentFile(profile_file.read()))
+                profile_obj.profile_image_url = settings.MEDIA_URL + path
+                
+            profile_obj.save()
             messages.success(request, 'Profile updated successfully.')
             return redirect('profile_edit')
     else:
@@ -1252,6 +1432,7 @@ def calendar_events_json_view(request):
             'end': event.end_time.isoformat(),
             'description': event.description or '',
             'recurring': event.recurring,
+            'color': event.color,
             'owner': event.owner.get_full_name() or event.owner.username
         })
     return JsonResponse(events_data, safe=False)
@@ -1277,6 +1458,7 @@ def event_create_ajax(request):
                     'end': event.end_time.isoformat(),
                     'description': event.description or '',
                     'recurring': event.recurring,
+                    'color': event.color,
                     'owner': event.owner.get_full_name() or event.owner.username
                 }
             })
@@ -1303,6 +1485,7 @@ def event_edit_ajax(request, event_id):
                     'end': event.end_time.isoformat(),
                     'description': event.description or '',
                     'recurring': event.recurring,
+                    'color': event.color,
                     'owner': event.owner.get_full_name() or event.owner.username
                 }
             })
@@ -1548,7 +1731,7 @@ def lead_json_view(request, lead_id):
         return JsonResponse({'success': False, 'error': 'Lead not found.'})
 
 
-# ── Helper functions for dynamic statuses ──────────────────────────────
+# â”€â”€ Helper functions for dynamic statuses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 DEFAULT_STATUSES = [
     {'name': 'New',       'color': 'green',  'position': 0, 'is_default': True},
@@ -1580,9 +1763,10 @@ def annotate_lead_badges(leads, org):
         lead._badge_class = badge
 
 
-# ── Lead Statuses management views ─────────────────────────────────────
+# â”€â”€ Lead Statuses management views â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
+@page_permission_required('lead_statuses')
 def lead_statuses_view(request):
     """List all lead statuses for the current organisation."""
     org = request.user.profile.organization
@@ -1591,6 +1775,7 @@ def lead_statuses_view(request):
 
 
 @login_required
+@page_permission_required('lead_statuses')
 def add_lead_status(request):
     """Create a new lead status via AJAX POST."""
     if request.method == 'POST':
@@ -1612,6 +1797,7 @@ def add_lead_status(request):
 
 
 @login_required
+@page_permission_required('lead_statuses')
 def edit_lead_status(request, status_id):
     """Edit an existing lead status via AJAX POST."""
     if request.method == 'POST':
@@ -1646,6 +1832,7 @@ def edit_lead_status(request, status_id):
 
 
 @login_required
+@page_permission_required('lead_statuses')
 def delete_lead_status(request, status_id):
     """Delete a lead status via AJAX POST, reassigning leads to the default."""
     if request.method == 'POST':
@@ -1695,7 +1882,7 @@ def reorder_lead_statuses(request):
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 
-# ── CSV Import helpers and view ────────────────────────────────────────
+# â”€â”€ CSV Import helpers and view â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 def map_headers(headers):
     # Map lowercase versions of headers to normalized internal fields
@@ -2022,10 +2209,19 @@ def add_staff_view(request):
         role = request.POST.get('role', 'Sales Executive').strip()
         password = request.POST.get('password', '').strip()
         profile_image_url = request.POST.get('profile_image_url', '').strip()
+        profile_file = request.FILES.get('profile_image_file')
+        if profile_file:
+            from django.core.files.storage import default_storage
+            from django.core.files.base import ContentFile
+            from django.conf import settings
+            import os
+            path = default_storage.save(os.path.join('avatars', f"staff_{username}_{profile_file.name}"), ContentFile(profile_file.read()))
+            profile_image_url = settings.MEDIA_URL + path
         phone_number = request.POST.get('phone_number', '').strip()
         location = request.POST.get('location', '').strip()
 
         # Gather form data to populate back in case of error
+        department_id = request.POST.get('department_id', '').strip()
         form_data = {
             'username': username,
             'email': email,
@@ -2034,7 +2230,8 @@ def add_staff_view(request):
             'role': role,
             'profile_image_url': profile_image_url,
             'phone_number': phone_number,
-            'location': location
+            'location': location,
+            'department_id': department_id
         }
 
         if not username or not email or not password:
@@ -2050,13 +2247,18 @@ def add_staff_view(request):
                     first_name=first_name,
                     last_name=last_name
                 )
+                from crm.models import Department
+                dept = None
+                if department_id:
+                    dept = Department.objects.filter(id=department_id, organization=org).first()
                 UserProfile.objects.create(
                     user=user,
                     organization=org,
                     role=role,
                     profile_image_url=profile_image_url or None,
                     phone_number=phone_number or None,
-                    location=location or None
+                    location=location or None,
+                    department=dept
                 )
                 messages.success(request, f"Staff member '{first_name or username}' created successfully.")
                 return redirect('staff')
@@ -2069,6 +2271,7 @@ def add_staff_view(request):
             'form_data': form_data,
             'profile': None,
             'roles': roles,
+            'departments': org.departments.all(),
         }
         return render(request, 'staff_form.html', context)
 
@@ -2078,10 +2281,12 @@ def add_staff_view(request):
         'action_url': request.path,
         'form_data': {
             'phone_number': '',
-            'location': ''
+            'location': '',
+            'department_id': ''
         },
         'profile': None,
         'roles': roles,
+        'departments': org.departments.all(),
     }
     return render(request, 'staff_form.html', context)
 
@@ -2105,10 +2310,19 @@ def edit_staff_view(request, profile_id):
         role = request.POST.get('role', '').strip()
         password = request.POST.get('password', '').strip()
         profile_image_url = request.POST.get('profile_image_url', '').strip()
+        profile_file = request.FILES.get('profile_image_file')
+        if profile_file:
+            from django.core.files.storage import default_storage
+            from django.core.files.base import ContentFile
+            from django.conf import settings
+            import os
+            path = default_storage.save(os.path.join('avatars', f"staff_{username}_{profile_file.name}"), ContentFile(profile_file.read()))
+            profile_image_url = settings.MEDIA_URL + path
         phone_number = request.POST.get('phone_number', '').strip()
         location = request.POST.get('location', '').strip()
 
         # Gather form data to populate back in case of error
+        department_id = request.POST.get('department_id', '').strip()
         form_data = {
             'username': username,
             'email': email,
@@ -2117,7 +2331,8 @@ def edit_staff_view(request, profile_id):
             'role': role,
             'profile_image_url': profile_image_url,
             'phone_number': phone_number,
-            'location': location
+            'location': location,
+            'department_id': department_id
         }
 
         if not username or not email:
@@ -2135,10 +2350,15 @@ def edit_staff_view(request, profile_id):
                     user.set_password(password)
                 user.save()
 
+                from crm.models import Department
+                dept = None
+                if department_id:
+                    dept = Department.objects.filter(id=department_id, organization=org).first()
                 profile.role = role
                 profile.profile_image_url = profile_image_url or None
                 profile.phone_number = phone_number or None
                 profile.location = location or None
+                profile.department = dept
                 profile.save()
 
                 messages.success(request, f"Staff member '{first_name or username}' updated successfully.")
@@ -2164,7 +2384,8 @@ def edit_staff_view(request, profile_id):
         'role': profile.role,
         'profile_image_url': profile.profile_image_url or '',
         'phone_number': profile.phone_number or '',
-        'location': profile.location or ''
+        'location': profile.location or '',
+        'department_id': profile.department.id if profile.department else ''
     }
     context = {
         'title': f'Edit Staff Member: {profile.user.username}',
@@ -2172,6 +2393,7 @@ def edit_staff_view(request, profile_id):
         'action_url': request.path,
         'form_data': form_data,
         'roles': roles,
+        'departments': org.departments.all(),
     }
     return render(request, 'staff_form.html', context)
 
@@ -2196,9 +2418,10 @@ def delete_staff_ajax(request, profile_id):
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 
-# ── Staff Roles management views ───────────────────────────────────────
+# â”€â”€ Staff Roles management views â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
+@page_permission_required('staff_roles')
 def staff_roles_view(request):
     """List all staff roles for the current organization."""
     org = request.user.profile.organization
@@ -2207,6 +2430,7 @@ def staff_roles_view(request):
 
 
 @login_required
+@page_permission_required('staff_roles')
 def add_staff_role(request):
     """Create a new staff role via AJAX POST."""
     if request.method == 'POST':
@@ -2226,6 +2450,7 @@ def add_staff_role(request):
 
 
 @login_required
+@page_permission_required('staff_roles')
 def edit_staff_role(request, role_id):
     """Edit an existing staff role via AJAX POST."""
     if request.method == 'POST':
@@ -2258,6 +2483,7 @@ def edit_staff_role(request, role_id):
 
 
 @login_required
+@page_permission_required('staff_roles')
 def delete_staff_role(request, role_id):
     """Delete a staff role via AJAX POST, reassigning users to a fallback role."""
     if request.method == 'POST':
@@ -2285,9 +2511,10 @@ def delete_staff_role(request, role_id):
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 
-# ── Service Management views ─────────────────────────────────────
+# â”€â”€ Service Management views â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 @login_required
+@page_permission_required('services')
 def services_view(request):
     """List all services for the current organization."""
     org = request.user.profile.organization
@@ -2296,6 +2523,7 @@ def services_view(request):
 
 
 @login_required
+@page_permission_required('services')
 def add_service(request):
     """Create a new service via AJAX POST."""
     if request.method == 'POST':
@@ -2318,6 +2546,7 @@ def add_service(request):
 
 
 @login_required
+@page_permission_required('services')
 def edit_service(request, service_id):
     """Edit an existing service via AJAX POST."""
     if request.method == 'POST':
@@ -2350,6 +2579,7 @@ def edit_service(request, service_id):
 
 
 @login_required
+@page_permission_required('services')
 def delete_service(request, service_id):
     """Delete a service via AJAX POST."""
     if request.method == 'POST':
@@ -2366,3 +2596,910 @@ def delete_service(request, service_id):
 
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
+
+@login_required
+def notifications_view(request):
+    org = request.user.profile.organization
+    import datetime
+    now = timezone.now()
+    one_week_later = now + datetime.timedelta(days=7)
+    
+    calendar_events = Event.objects.filter(
+        organization=org,
+        start_time__gte=now,
+        start_time__lte=one_week_later
+    ).order_by('start_time')
+    
+    pending_tasks = Task.objects.filter(
+        lead__organization=org,
+        completed=False
+    ).order_by('due_date')
+    
+    thirty_days_later = now.date() + datetime.timedelta(days=30)
+    expiring_agreements = Agreement.objects.filter(
+        organization=org,
+        end_date__lte=thirty_days_later
+    ).order_by('end_date')
+    
+    open_tickets = Ticket.objects.filter(
+        organization=org,
+        status__in=['Open', 'In Progress']
+    ).order_by('-created_at')
+    
+    context = {
+        'calendar_events': calendar_events,
+        'pending_tasks': pending_tasks,
+        'expiring_agreements': expiring_agreements,
+        'open_tickets': open_tickets,
+    }
+    return render(request, 'notifications.html', context)
+
+
+@login_required
+@page_permission_required('notification_settings')
+def notification_settings_view(request):
+    """Render notification configuration controls."""
+    return render(request, 'notification_settings.html')
+
+
+@login_required
+@page_permission_required('role_permissions')
+def role_permissions_view(request):
+    """Render and manage role based page permissions matrix."""
+    org = request.user.profile.organization
+    from crm.views import get_or_create_default_roles
+    roles = get_or_create_default_roles(org)
+    
+    import json
+    from django.http import JsonResponse
+    from crm.models import StaffRole
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            role_name = data.get('role')
+            perms = data.get('permissions')
+            if role_name:
+                role_obj = StaffRole.objects.get(organization=org, name=role_name)
+                role_obj.permissions_json = json.dumps(perms)
+                role_obj.save()
+                return JsonResponse({'success': True, 'message': f"Permissions for role '{role_name}' updated successfully."})
+            return JsonResponse({'success': False, 'error': 'Role name is missing.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    # GET request: Serialize current database permissions
+    role_permissions_map = {}
+    for role in roles:
+        try:
+            role_permissions_map[role.name] = json.loads(role.permissions_json or '{}')
+        except Exception:
+            role_permissions_map[role.name] = {}
+
+    context = {
+        'roles': roles,
+        'role_permissions_json': json.dumps(role_permissions_map),
+    }
+    return render(request, 'role_permissions.html', context)
+
+
+@login_required
+@page_permission_required('departments')
+def departments_view(request):
+    """View to list and manage departments and assigned staff members."""
+    org = request.user.profile.organization
+    depts = org.departments.all().prefetch_related('members__user')
+    all_staff = org.members.all().select_related('user')
+    return render(request, 'departments.html', {
+        'departments': depts,
+        'all_staff': all_staff
+    })
+
+
+@login_required
+@page_permission_required('departments')
+def add_department(request):
+    """Create a new department via AJAX POST."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        name = request.POST.get('name', '').strip()
+        description = request.POST.get('description', '').strip()
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Name is required.'})
+        from crm.models import Department
+        try:
+            dept = Department.objects.create(organization=org, name=name, description=description)
+            return JsonResponse({'success': True, 'message': f"Department '{dept.name}' created successfully."})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+@page_permission_required('departments')
+def edit_department(request, department_id):
+    """Edit a department's details via AJAX POST."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        from crm.models import Department
+        try:
+            dept = Department.objects.get(id=department_id, organization=org)
+            name = request.POST.get('name', '').strip()
+            description = request.POST.get('description', '').strip()
+            if not name:
+                return JsonResponse({'success': False, 'error': 'Name is required.'})
+            dept.name = name
+            dept.description = description
+            dept.save()
+            return JsonResponse({'success': True, 'message': f"Department '{dept.name}' updated successfully."})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+@page_permission_required('departments')
+def delete_department(request, department_id):
+    """Delete a department via AJAX POST."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        from crm.models import Department
+        try:
+            dept = Department.objects.get(id=department_id, organization=org)
+            dept.delete()
+            return JsonResponse({'success': True, 'message': 'Department deleted successfully.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+@page_permission_required('departments')
+def assign_staff_to_department(request):
+    """Assign an existing staff profile to a department via AJAX POST."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        dept_id = request.POST.get('department_id')
+        profile_id = request.POST.get('profile_id')
+        
+        from crm.models import Department, UserProfile
+        try:
+            dept = Department.objects.get(id=dept_id, organization=org)
+            profile = UserProfile.objects.get(id=profile_id, organization=org)
+            profile.department = dept
+            profile.save()
+            return JsonResponse({
+                'success': True, 
+                'message': f"Assigned '{profile.user.get_full_name() or profile.user.username}' to '{dept.name}' successfully."
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+from django.db.models import Q
+from django.core.paginator import Paginator
+from datetime import date, timedelta
+
+@login_required
+@page_permission_required('content_tracker')
+def content_tracker_view(request):
+    """Render the central Content Tracker dashboard page with filters, sorting, and pagination."""
+    org = request.user.profile.organization
+    clients = Lead.objects.filter(organization=org, status='Qualified')
+    editors = org.members.filter(role__iexact='Editor').select_related('user')
+    
+    # Base Query
+    from crm.models import ContentItem
+    items = ContentItem.objects.filter(organization=org)
+    
+    # Search
+    q = request.GET.get('q', '').strip()
+    if q:
+        items = items.filter(
+            Q(video_title__icontains=q) | 
+            Q(notes__icontains=q) | 
+            Q(client__name__icontains=q)
+        )
+        
+    # Filters
+    client_filter = request.GET.get('client_filter', '').strip()
+    if client_filter:
+        items = items.filter(client_id=client_filter)
+        
+    editor_filter = request.GET.get('editor_filter', '').strip()
+    if editor_filter:
+        items = items.filter(editor_id=editor_filter)
+        
+    status_filter = request.GET.get('status_filter', '').strip()
+    if status_filter:
+        items = items.filter(status=status_filter)
+        
+    platform_filter = request.GET.get('platform_filter', '').strip()
+    if platform_filter:
+        items = items.filter(platform=platform_filter)
+        
+    priority_filter = request.GET.get('priority_filter', '').strip()
+    if priority_filter:
+        items = items.filter(priority=priority_filter)
+        
+    campaign_filter = request.GET.get('campaign_filter', '').strip()
+    if campaign_filter:
+        items = items.filter(campaign_status=campaign_filter)
+        
+    date_filter = request.GET.get('date_filter', '').strip()
+    if date_filter:
+        today = date.today()
+        if date_filter == 'today':
+            items = items.filter(due_date=today)
+        elif date_filter == 'week':
+            start_week = today - timedelta(days=today.weekday())
+            end_week = start_week + timedelta(days=6)
+            items = items.filter(due_date__range=[start_week, end_week])
+        elif date_filter == 'month':
+            items = items.filter(due_date__year=today.year, due_date__month=today.month)
+            
+    # Sorting
+    sort_by = request.GET.get('sort', '-due_date')
+    allowed_sort_fields = [
+        'id', '-id', 'client__name', '-client__name', 'video_title', '-video_title',
+        'editor__user__username', '-editor__user__username', 'date_received', '-date_received',
+        'due_date', '-due_date', 'status', '-status', 'platform', '-platform',
+        'priority', '-priority', 'campaign_status', '-campaign_status'
+    ]
+    if sort_by not in allowed_sort_fields:
+        sort_by = '-due_date'
+    items = items.order_by(sort_by)
+    
+    # Stats counts
+    total_count = items.count()
+    pending_count = items.filter(status='Pending').count()
+    editing_count = items.filter(status='Editing').count()
+    published_count = items.filter(status='Published').count()
+    scheduled_count = items.filter(status='Scheduled').count()
+    
+    # Pagination
+    limit = request.GET.get('limit', '25')
+    try:
+        limit_val = int(limit)
+    except ValueError:
+        limit_val = 25
+    paginator = Paginator(items, limit_val)
+    page_num = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_num)
+    
+    platforms = _get_content_options(org, 'platform')
+    post_types = _get_content_options(org, 'post_type')
+    
+    context = {
+        'page_obj': page_obj,
+        'clients': clients,
+        'editors': editors,
+        'total_count': total_count,
+        'pending_count': pending_count,
+        'editing_count': editing_count,
+        'published_count': published_count,
+        'scheduled_count': scheduled_count,
+        'platforms': platforms,
+        'post_types': post_types,
+        'q': q,
+        'client_filter': client_filter,
+        'editor_filter': editor_filter,
+        'status_filter': status_filter,
+        'platform_filter': platform_filter,
+        'priority_filter': priority_filter,
+        'campaign_filter': campaign_filter,
+        'date_filter': date_filter,
+        'sort_by': sort_by,
+        'limit': limit_val,
+    }
+    return render(request, 'content_tracker.html', context)
+
+
+@login_required
+@page_permission_required('content_tracker')
+def add_content_item(request):
+    """Add a new client video content item via dedicated form page."""
+    org = request.user.profile.organization
+    clients = Lead.objects.filter(organization=org, status='Qualified')
+    editors = org.members.filter(role__iexact='Editor').select_related('user')
+    platforms = _get_content_options(org, 'platform')
+    post_types = _get_content_options(org, 'post_type')
+
+    if request.method == 'POST':
+        from crm.models import ContentItem
+        client_id = request.POST.get('client_id')
+        editor_id = request.POST.get('editor_id')
+        video_title = request.POST.get('video_title', '').strip()
+        date_received = request.POST.get('date_received') or None
+        due_date = request.POST.get('due_date') or None
+        upload_date = request.POST.get('upload_date') or None
+        status = request.POST.get('status', 'Pending')
+        platform = request.POST.get('platform', 'YouTube')
+        post_type = request.POST.get('post_type', 'Reel')
+        campaign_status = request.POST.get('campaign_status', 'Not Started')
+        video_link = request.POST.get('video_link', '').strip()
+        priority = request.POST.get('priority', 'Medium')
+        notes = request.POST.get('notes', '').strip()
+
+        form_data = {
+            'client_id': client_id, 'video_title': video_title, 'editor_id': editor_id,
+            'date_received': date_received or '', 'due_date': due_date or '', 'upload_date': upload_date or '',
+            'status': status, 'platform': platform, 'post_type': post_type,
+            'campaign_status': campaign_status, 'video_link': video_link,
+            'priority': priority, 'notes': notes,
+        }
+
+        if not client_id or not video_title:
+            messages.error(request, 'Client and Video Title are required.')
+            return render(request, 'content_item_form.html', {
+                'title': 'Add Content Item', 'form_data': form_data,
+                'clients': clients, 'editors': editors, 'platforms': platforms, 'post_types': post_types,
+            })
+
+        try:
+            client_obj = Lead.objects.get(id=client_id, organization=org)
+            editor_obj = None
+            if editor_id:
+                editor_obj = UserProfile.objects.get(id=editor_id, organization=org)
+
+            ContentItem.objects.create(
+                organization=org, client=client_obj, video_title=video_title,
+                editor=editor_obj, date_received=date_received, due_date=due_date,
+                status=status, platform=platform, upload_date=upload_date,
+                post_type=post_type, campaign_status=campaign_status,
+                video_link=video_link or None, priority=priority, notes=notes,
+            )
+            messages.success(request, f"Content item '{video_title}' created successfully.")
+            return redirect('content_tracker')
+        except Exception as e:
+            messages.error(request, str(e))
+            return render(request, 'content_item_form.html', {
+                'title': 'Add Content Item', 'form_data': form_data,
+                'clients': clients, 'editors': editors, 'platforms': platforms, 'post_types': post_types,
+            })
+
+    # GET request
+    context = {
+        'title': 'Add Content Item',
+        'form_data': {},
+        'clients': clients,
+        'editors': editors,
+        'platforms': platforms,
+        'post_types': post_types,
+    }
+    return render(request, 'content_item_form.html', context)
+
+
+@login_required
+@page_permission_required('content_tracker')
+def edit_content_item(request, item_id):
+    """Edit a content item via dedicated form page."""
+    org = request.user.profile.organization
+    from crm.models import ContentItem
+    clients = Lead.objects.filter(organization=org, status='Qualified')
+    editors = org.members.filter(role__iexact='Editor').select_related('user')
+    platforms = _get_content_options(org, 'platform')
+    post_types = _get_content_options(org, 'post_type')
+
+    try:
+        item = ContentItem.objects.get(id=item_id, organization=org)
+    except ContentItem.DoesNotExist:
+        messages.error(request, 'Content item not found.')
+        return redirect('content_tracker')
+
+    if request.method == 'POST':
+        client_id = request.POST.get('client_id')
+        editor_id = request.POST.get('editor_id')
+        video_title = request.POST.get('video_title', '').strip()
+        date_received = request.POST.get('date_received') or None
+        due_date = request.POST.get('due_date') or None
+        upload_date = request.POST.get('upload_date') or None
+        status = request.POST.get('status', 'Pending')
+        platform = request.POST.get('platform', 'YouTube')
+        post_type = request.POST.get('post_type', 'Reel')
+        campaign_status = request.POST.get('campaign_status', 'Not Started')
+        video_link = request.POST.get('video_link', '').strip()
+        priority = request.POST.get('priority', 'Medium')
+        notes = request.POST.get('notes', '').strip()
+
+        form_data = {
+            'client_id': client_id, 'video_title': video_title, 'editor_id': editor_id,
+            'date_received': date_received or '', 'due_date': due_date or '', 'upload_date': upload_date or '',
+            'status': status, 'platform': platform, 'post_type': post_type,
+            'campaign_status': campaign_status, 'video_link': video_link,
+            'priority': priority, 'notes': notes,
+        }
+
+        if not client_id or not video_title:
+            messages.error(request, 'Client and Video Title are required.')
+            return render(request, 'content_item_form.html', {
+                'title': f'Edit: {item.video_title}', 'form_data': form_data,
+                'clients': clients, 'editors': editors, 'platforms': platforms, 'post_types': post_types,
+            })
+
+        try:
+            client_obj = Lead.objects.get(id=client_id, organization=org)
+            editor_obj = None
+            if editor_id:
+                editor_obj = UserProfile.objects.get(id=editor_id, organization=org)
+
+            item.client = client_obj
+            item.editor = editor_obj
+            item.video_title = video_title
+            item.date_received = date_received
+            item.due_date = due_date
+            item.status = status
+            item.platform = platform
+            item.upload_date = upload_date
+            item.post_type = post_type
+            item.campaign_status = campaign_status
+            item.video_link = video_link or None
+            item.priority = priority
+            item.notes = notes
+            item.save()
+            messages.success(request, f"Content item '{video_title}' updated successfully.")
+            return redirect('content_tracker')
+        except Exception as e:
+            messages.error(request, str(e))
+            return render(request, 'content_item_form.html', {
+                'title': f'Edit: {item.video_title}', 'form_data': form_data,
+                'clients': clients, 'editors': editors, 'platforms': platforms, 'post_types': post_types,
+            })
+
+    # GET request â€” populate from existing item
+    form_data = {
+        'client_id': str(item.client_id),
+        'video_title': item.video_title,
+        'editor_id': str(item.editor_id) if item.editor_id else '',
+        'date_received': str(item.date_received) if item.date_received else '',
+        'due_date': str(item.due_date) if item.due_date else '',
+        'upload_date': str(item.upload_date) if item.upload_date else '',
+        'status': item.status,
+        'platform': item.platform,
+        'post_type': item.post_type,
+        'campaign_status': item.campaign_status,
+        'video_link': item.video_link or '',
+        'priority': item.priority,
+        'notes': item.notes or '',
+    }
+    context = {
+        'title': f'Edit: {item.video_title}',
+        'form_data': form_data,
+        'clients': clients,
+        'editors': editors,
+        'platforms': platforms,
+        'post_types': post_types,
+    }
+    return render(request, 'content_item_form.html', context)
+
+
+@login_required
+@page_permission_required('content_tracker')
+def delete_content_item(request, item_id):
+    """Remove a content item."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        from crm.models import ContentItem
+        try:
+            item = ContentItem.objects.get(id=item_id, organization=org)
+            item.delete()
+            return JsonResponse({'success': True, 'message': 'Content item deleted successfully.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+@page_permission_required('content_tracker')
+def duplicate_content_item(request, item_id):
+    """Create a duplicated content item entry."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        from crm.models import ContentItem
+        try:
+            item = ContentItem.objects.get(id=item_id, organization=org)
+            item.id = None
+            item.video_title = f"[Copy] {item.video_title}"
+            item.save()
+            return JsonResponse({'success': True, 'message': 'Content item duplicated successfully.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+@page_permission_required('content_tracker')
+def mark_content_complete(request, item_id):
+    """Quick completion action for a video."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        from crm.models import ContentItem
+        try:
+            item = ContentItem.objects.get(id=item_id, organization=org)
+            item.status = 'Published'
+            item.save()
+            return JsonResponse({'success': True, 'message': f"Content Item '{item.video_title}' marked as Published."})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+@page_permission_required('content_tracker')
+def bulk_delete_content_items(request):
+    """Batch deletion of multiple content items."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        from crm.models import ContentItem
+        import json
+        try:
+            data = json.loads(request.body)
+            ids = data.get('ids', [])
+            if ids:
+                ContentItem.objects.filter(id__in=ids, organization=org).delete()
+                return JsonResponse({'success': True, 'message': f"Successfully deleted {len(ids)} items."})
+            return JsonResponse({'success': False, 'error': 'No items selected.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+@page_permission_required('content_tracker')
+def import_content_items(request):
+    """Import content tracker items from a CSV file."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+    csv_file = request.FILES.get('file')
+    if not csv_file:
+        return JsonResponse({'success': False, 'error': 'No file uploaded.'})
+
+    if not csv_file.name.endswith('.csv'):
+        return JsonResponse({'success': False, 'error': 'Uploaded file is not a CSV.'})
+
+    import io
+    try:
+        file_data = csv_file.read().decode('utf-8-sig')
+    except Exception:
+        try:
+            csv_file.seek(0)
+            file_data = csv_file.read().decode('latin-1')
+        except Exception as e2:
+            return JsonResponse({'success': False, 'error': f'Failed to decode file: {str(e2)}'})
+
+    io_string = io.StringIO(file_data)
+    reader = csv.DictReader(io_string)
+
+    if not reader.fieldnames:
+        return JsonResponse({'success': False, 'error': 'CSV file is empty or headers are missing.'})
+
+    # Build flexible header mapping
+    headers = reader.fieldnames
+    mapped = {}
+    header_aliases = {
+        'client': ['client', 'client name', 'client_name', 'account', 'company'],
+        'video_title': ['video title', 'video_title', 'title', 'content title', 'content_title', 'name'],
+        'editor': ['editor', 'editor name', 'editor_name', 'assigned to', 'assigned_to', 'assignee'],
+        'date_received': ['date received', 'date_received', 'received date', 'received_date', 'received'],
+        'due_date': ['due date', 'due_date', 'deadline', 'due'],
+        'status': ['status', 'content status', 'content_status'],
+        'platform': ['platform', 'channel', 'social platform'],
+        'upload_date': ['upload date', 'upload_date', 'publish date', 'publish_date', 'uploaded'],
+        'post_type': ['post type', 'post_type', 'type', 'content type', 'content_type', 'format'],
+        'campaign_status': ['campaign status', 'campaign_status', 'campaign'],
+        'video_link': ['video link', 'video_link', 'link', 'url', 'video url', 'video_url'],
+        'priority': ['priority', 'urgency', 'importance'],
+        'notes': ['notes', 'note', 'comments', 'comment', 'description', 'remarks'],
+    }
+
+    for field, aliases in header_aliases.items():
+        for h in headers:
+            if h and h.strip().lower() in aliases:
+                mapped[field] = h
+                break
+
+    # client and video_title are required
+    if 'client' not in mapped:
+        return JsonResponse({
+            'success': False,
+            'error': 'Missing required column: Client. Please ensure your CSV has a Client (or Client Name) column.'
+        })
+    if 'video_title' not in mapped:
+        return JsonResponse({
+            'success': False,
+            'error': 'Missing required column: Video Title. Please ensure your CSV has a Video Title (or Title) column.'
+        })
+
+    org = request.user.profile.organization
+    from crm.models import ContentItem
+    from django.db import transaction
+
+    # Pre-fetch clients and editors for matching
+    clients_qs = Lead.objects.filter(organization=org)
+    client_map = {}
+    for c in clients_qs:
+        client_map[c.name.strip().lower()] = c
+
+    editors_qs = org.members.select_related('user')
+    editor_map = {}
+    for e in editors_qs:
+        full_name = e.user.get_full_name().strip().lower()
+        username = e.user.username.strip().lower()
+        if full_name:
+            editor_map[full_name] = e
+        editor_map[username] = e
+
+    # Valid choices
+    valid_statuses = [c[0] for c in ContentItem.STATUS_CHOICES]
+    valid_campaign_statuses = [c[0] for c in ContentItem.CAMPAIGN_STATUS_CHOICES]
+    valid_priorities = [c[0] for c in ContentItem.PRIORITY_CHOICES]
+    platforms = _get_content_options(org, 'platform')
+    post_types = _get_content_options(org, 'post_type')
+
+    imported_count = 0
+    failed_rows = []
+
+    def safe_parse_date(val):
+        """Parse a date string in multiple formats, return None on failure."""
+        if not val:
+            return None
+        val = val.strip()
+        if not val:
+            return None
+        from datetime import datetime as dt_cls
+        formats = [
+            '%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y',
+            '%Y-%m-%d %H:%M:%S', '%m/%d/%Y %H:%M:%S', '%d/%m/%Y %H:%M:%S',
+            '%Y-%m-%d %H:%M', '%m/%d/%Y %H:%M', '%d/%m/%Y %H:%M',
+            '%d-%m-%Y', '%m-%d-%Y',
+        ]
+        for fmt in formats:
+            try:
+                return dt_cls.strptime(val, fmt).date()
+            except ValueError:
+                continue
+        return None
+
+    def match_choice(val, valid_choices):
+        """Case-insensitive match against valid choices."""
+        if not val:
+            return None
+        val_lower = val.strip().lower()
+        for choice in valid_choices:
+            if choice.lower() == val_lower:
+                return choice
+        return None
+
+    for row_idx, row in enumerate(reader, start=2):
+        # Required fields
+        raw_client = row.get(mapped['client'], '').strip()
+        raw_title = row.get(mapped['video_title'], '').strip()
+
+        errors = []
+        if not raw_client:
+            errors.append('Client is required')
+        if not raw_title:
+            errors.append('Video Title is required')
+
+        if errors:
+            failed_rows.append({
+                'row': row_idx,
+                'errors': errors,
+                'data': f'{raw_client or "N/A"} - {raw_title or "N/A"}'
+            })
+            continue
+
+        # Match client
+        client_obj = client_map.get(raw_client.lower())
+        if not client_obj:
+            failed_rows.append({
+                'row': row_idx,
+                'errors': [f'Client not found: "{raw_client}". Make sure the client exists in your CRM.'],
+                'data': f'{raw_client} - {raw_title}'
+            })
+            continue
+
+        # Match editor (optional)
+        editor_obj = None
+        raw_editor = row.get(mapped.get('editor', ''), '').strip()
+        if raw_editor:
+            editor_obj = editor_map.get(raw_editor.lower())
+
+        # Parse dates (optional)
+        date_received = safe_parse_date(row.get(mapped.get('date_received', ''), ''))
+        due_date = safe_parse_date(row.get(mapped.get('due_date', ''), ''))
+        upload_date = safe_parse_date(row.get(mapped.get('upload_date', ''), ''))
+
+        # Match choice fields with defaults
+        raw_status = row.get(mapped.get('status', ''), '').strip()
+        status = match_choice(raw_status, valid_statuses) or 'Pending'
+
+        raw_platform = row.get(mapped.get('platform', ''), '').strip()
+        platform = None
+        if raw_platform:
+            for p in platforms:
+                if p.lower() == raw_platform.lower():
+                    platform = p
+                    break
+        if not platform:
+            platform = platforms[0] if platforms else 'YouTube'
+
+        raw_post_type = row.get(mapped.get('post_type', ''), '').strip()
+        post_type = None
+        if raw_post_type:
+            for pt in post_types:
+                if pt.lower() == raw_post_type.lower():
+                    post_type = pt
+                    break
+        if not post_type:
+            post_type = post_types[0] if post_types else 'Reel'
+
+        raw_campaign = row.get(mapped.get('campaign_status', ''), '').strip()
+        campaign_status = match_choice(raw_campaign, valid_campaign_statuses) or 'Not Started'
+
+        raw_priority = row.get(mapped.get('priority', ''), '').strip()
+        priority = match_choice(raw_priority, valid_priorities) or 'Medium'
+
+        video_link = row.get(mapped.get('video_link', ''), '').strip() or None
+        notes = row.get(mapped.get('notes', ''), '').strip() or None
+
+        try:
+            with transaction.atomic():
+                ContentItem.objects.create(
+                    organization=org,
+                    client=client_obj,
+                    video_title=raw_title,
+                    editor=editor_obj,
+                    date_received=date_received,
+                    due_date=due_date,
+                    status=status,
+                    platform=platform,
+                    upload_date=upload_date,
+                    post_type=post_type,
+                    campaign_status=campaign_status,
+                    video_link=video_link,
+                    priority=priority,
+                    notes=notes,
+                )
+                imported_count += 1
+        except Exception as ex:
+            failed_rows.append({
+                'row': row_idx,
+                'errors': [f'Database error: {str(ex)}'],
+                'data': f'{raw_client} - {raw_title}'
+            })
+
+    return JsonResponse({
+        'success': True,
+        'imported': imported_count,
+        'failed': len(failed_rows),
+        'errors': failed_rows
+    })
+
+
+# â”€â”€â”€ Content Settings (Manage Dropdown Options) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+DEFAULT_CONTENT_OPTIONS = {
+    'platform': ['YouTube', 'TikTok', 'Instagram', 'LinkedIn', 'Facebook', 'Twitter'],
+    'post_type': ['Reel', 'Short', 'Long-form', 'TikTok Video', 'Carousel', 'Post'],
+    'status': ['Pending', 'Editing', 'Review', 'Approved', 'Published', 'Rejected', 'Scheduled'],
+    'campaign_status': ['Not Started', 'Planning', 'In Progress', 'Paused', 'Completed', 'Cancelled'],
+    'priority': ['Low', 'Medium', 'High', 'Urgent'],
+}
+
+
+def _seed_content_defaults(org):
+    """Populate default dropdown options for an organization if none exist."""
+    for category, values in DEFAULT_CONTENT_OPTIONS.items():
+        if not ContentDropdownOption.objects.filter(organization=org, category=category).exists():
+            for i, val in enumerate(values):
+                ContentDropdownOption.objects.create(
+                    organization=org, category=category, value=val, display_order=i
+                )
+
+
+def _get_content_options(org, category):
+    """Return list of active option values for a category (with fallback defaults)."""
+    options = list(
+        ContentDropdownOption.objects.filter(
+            organization=org, category=category, is_active=True
+        ).values_list('value', flat=True)
+    )
+    if not options:
+        return DEFAULT_CONTENT_OPTIONS.get(category, [])
+    return options
+
+
+@login_required
+@page_permission_required('content_settings')
+def content_settings_view(request):
+    """Manage Content Tracker dropdown options."""
+    org = request.user.profile.organization
+    _seed_content_defaults(org)
+
+    categories = ContentDropdownOption.CATEGORY_CHOICES
+    all_options = {}
+    for cat_key, cat_label in categories:
+        all_options[cat_key] = {
+            'label': cat_label,
+            'items': ContentDropdownOption.objects.filter(organization=org, category=cat_key).order_by('display_order', 'value'),
+        }
+
+    context = {
+        'all_options': all_options,
+        'categories': categories,
+    }
+    return render(request, 'content_settings.html', context)
+
+
+@login_required
+@page_permission_required('content_settings')
+def add_content_option(request):
+    """Add a new dropdown option."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        category = request.POST.get('category', '').strip()
+        value = request.POST.get('value', '').strip()
+        if not category or not value:
+            messages.error(request, 'Category and value are required.')
+            return redirect('content_settings')
+        # Check for duplicate
+        if ContentDropdownOption.objects.filter(organization=org, category=category, value=value).exists():
+            messages.error(request, f'"{value}" already exists in {category}.')
+            return redirect('content_settings')
+        # Get next display order
+        max_order = ContentDropdownOption.objects.filter(organization=org, category=category).count()
+        ContentDropdownOption.objects.create(
+            organization=org, category=category, value=value, display_order=max_order
+        )
+        messages.success(request, f'"{value}" added successfully.')
+        return redirect('content_settings')
+    return redirect('content_settings')
+
+
+@login_required
+@page_permission_required('content_settings')
+def edit_content_option(request, option_id):
+    """Edit an existing dropdown option."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        try:
+            option = ContentDropdownOption.objects.get(id=option_id, organization=org)
+            new_value = request.POST.get('value', '').strip()
+            is_active = request.POST.get('is_active') == 'on'
+            if not new_value:
+                messages.error(request, 'Value cannot be empty.')
+                return redirect('content_settings')
+            # Check for duplicate (different id, same category+value)
+            dup = ContentDropdownOption.objects.filter(
+                organization=org, category=option.category, value=new_value
+            ).exclude(id=option.id).exists()
+            if dup:
+                messages.error(request, f'"{new_value}" already exists.')
+                return redirect('content_settings')
+            option.value = new_value
+            option.is_active = is_active
+            option.save()
+            messages.success(request, f'Option updated to "{new_value}".')
+        except ContentDropdownOption.DoesNotExist:
+            messages.error(request, 'Option not found.')
+        return redirect('content_settings')
+    return redirect('content_settings')
+
+
+@login_required
+@page_permission_required('content_settings')
+def delete_content_option(request, option_id):
+    """Delete a dropdown option."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        try:
+            option = ContentDropdownOption.objects.get(id=option_id, organization=org)
+            option.delete()
+            messages.success(request, 'Option deleted.')
+        except ContentDropdownOption.DoesNotExist:
+            messages.error(request, 'Option not found.')
+        return redirect('content_settings')
+    return redirect('content_settings')

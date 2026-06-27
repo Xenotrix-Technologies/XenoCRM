@@ -40,11 +40,15 @@
             <button onclick="switchCategoryTab('projects')" id="tab-btn-projects"
                 class="tab-btn py-4 font-button border-b-2 border-transparent text-secondary hover:text-on-surface transition-all">Projects
                 Status</button>
+            <button onclick="switchCategoryTab('campaigns')" id="tab-btn-campaigns"
+                class="tab-btn py-4 font-button border-b-2 border-transparent text-secondary hover:text-on-surface transition-all">Campaigns
+                Status</button>
+            <button onclick="switchCategoryTab('calendar')" id="tab-btn-calendar"
+                class="tab-btn py-4 font-button border-b-2 border-transparent text-secondary hover:text-on-surface transition-all">Calendar
+                Status</button>
             <button onclick="switchCategoryTab('tickets')" id="tab-btn-tickets"
                 class="tab-btn py-4 font-button border-b-2 border-transparent text-secondary hover:text-on-surface transition-all">Ticket
                 Status</button>
-            <button onclick="switchCategoryTab('priority')" id="tab-btn-priority"
-                class="tab-btn py-4 font-button border-b-2 border-transparent text-secondary hover:text-on-surface transition-all">Priority</button>
         </nav>
     </div>
 
@@ -53,7 +57,8 @@
 
         <!-- Left: Status List Container -->
         <div class="lg:col-span-2 space-y-4">
-            <div class="glass-panel rounded-2xl p-6 shadow-sm">
+            <div id="calendar-layout-container">
+                <div class="glass-panel rounded-2xl p-6 shadow-sm" id="status-order-card">
                 <div class="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
                     <h3 id="panel-title" class="font-headline-md text-headline-md font-bold">Pipeline Order</h3>
                     <span class="text-xs text-outline font-semibold uppercase tracking-wider">Drag to Reorder</span>
@@ -109,6 +114,32 @@
                 </div>
 
             </div>
+
+            <!-- Quick Add Templates Manager Card (Only visible when category is calendar) -->
+            <div id="quick-templates-manager-card" class="glass-panel rounded-2xl p-6 shadow-sm hidden">
+                <h3 class="font-headline-md text-headline-md font-bold mb-4 border-b border-outline-variant/30 pb-3">
+                    Manage Quick Add Templates
+                </h3>
+                
+                <!-- List of current templates -->
+                <div id="quick-templates-list" class="space-y-3 mb-6">
+                    <!-- Rendered dynamically -->
+                </div>
+            </div>
+
+            <!-- Priority Manager Card (Only visible when category is projects) -->
+            <div id="priority-manager-card" class="glass-panel rounded-2xl p-6 shadow-sm hidden">
+                <div class="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+                    <h3 class="font-headline-md text-headline-md font-bold font-sans">Priority Order</h3>
+                    <span class="text-xs text-outline font-semibold uppercase tracking-wider">Drag to Reorder</span>
+                </div>
+                
+                <!-- Priority List (localStorage Backed) -->
+                <div id="priority-status-list" class="space-y-3">
+                    <!-- Rendered dynamically -->
+                </div>
+            </div>
+        </div>
         </div>
 
         <!-- Right: Actions/Sidebar Form -->
@@ -216,6 +247,80 @@
                         class="w-full bg-primary text-on-primary py-2.5 rounded-lg font-button hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2 mt-4">
                         <span class="material-symbols-outlined text-[18px]">add</span>
                         Add Status
+                    </button>
+                </form>
+            </div>
+
+            <!-- Add Template Card (Only visible when category is calendar) -->
+            <div id="quick-template-add-card" class="glass-panel rounded-2xl p-6 shadow-sm hidden">
+                <h3 class="font-headline-md text-headline-md font-bold mb-4 border-b border-outline-variant/30 pb-3">
+                    Add Quick Template
+                </h3>
+                <form id="quick-template-form" onsubmit="addQuickTemplate(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Template Title *</label>
+                        <input type="text" id="template-title-input" required placeholder="e.g. Weekly Sync"
+                            class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Description</label>
+                        <input type="text" id="template-desc-input" placeholder="e.g. Team updates and alignment"
+                            class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Associated Category Color</label>
+                        <select id="template-color-input" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                            <!-- Populated dynamically from localStorage calendar statuses -->
+                        </select>
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-primary text-on-primary py-2.5 rounded-lg font-button hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2 mt-4">
+                        <span class="material-symbols-outlined text-[18px]">add</span>
+                        Add Template
+                    </button>
+                </form>
+            </div>
+
+            <!-- Create Priority Card (Only visible when category is projects) -->
+            <div id="priority-add-card" class="glass-panel rounded-2xl p-6 shadow-sm hidden">
+                <h3 class="font-headline-md text-headline-md font-bold mb-4 border-b border-outline-variant/30 pb-3">
+                    Create Priority
+                </h3>
+                <form id="priority-add-form" onsubmit="submitPriorityAddForm(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Priority Name *</label>
+                        <input type="text" id="priority-new-name" required placeholder="e.g. HIGH"
+                            class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-label-md font-label-md text-outline uppercase">Badge Color</label>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button type="button" onclick="setPriorityFormColor(this, '#10b981')"
+                                class="w-8 h-8 rounded-full bg-[#10b981] border-2 border-transparent hover:scale-110 transition-all shadow-sm color-preset-btn active-preset"
+                                title="Green"></button>
+                            <button type="button" onclick="setPriorityFormColor(this, '#3b82f6')"
+                                class="w-8 h-8 rounded-full bg-[#3b82f6] border-2 border-transparent hover:scale-110 transition-all shadow-sm color-preset-btn"
+                                title="Blue"></button>
+                            <button type="button" onclick="setPriorityFormColor(this, '#f59e0b')"
+                                class="w-8 h-8 rounded-full bg-[#f59e0b] border-2 border-transparent hover:scale-110 transition-all shadow-sm color-preset-btn"
+                                title="Yellow"></button>
+                            <button type="button" onclick="setPriorityFormColor(this, '#ef4444')"
+                                class="w-8 h-8 rounded-full bg-[#ef4444] border-2 border-transparent hover:scale-110 transition-all shadow-sm color-preset-btn"
+                                title="Red"></button>
+                            <button type="button" onclick="setPriorityFormColor(this, '#8b5cf6')"
+                                class="w-8 h-8 rounded-full bg-[#8b5cf6] border-2 border-transparent hover:scale-110 transition-all shadow-sm color-preset-btn"
+                                title="Purple"></button>
+                            <button type="button" onclick="setPriorityFormColor(this, '#f97316')"
+                                class="w-8 h-8 rounded-full bg-[#f97316] border-2 border-transparent hover:scale-110 transition-all shadow-sm color-preset-btn"
+                                title="Orange"></button>
+                            
+                            <input type="hidden" id="priority-new-color" value="#10b981" />
+                        </div>
+                    </div>
+                    <button type="submit"
+                        class="w-full bg-primary text-on-primary py-2.5 rounded-lg font-button hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2 mt-4">
+                        <span class="material-symbols-outlined text-[18px]">add</span>
+                        Add Priority
                     </button>
                 </form>
             </div>
@@ -373,6 +478,18 @@
             { name: 'Completed', color: '#10b981' },
             { name: 'Cancelled', color: '#ef4444' }
         ],
+        campaigns: [
+            { name: 'Planning', color: '#64748b' },
+            { name: 'Active', color: '#0053db' },
+            { name: 'Completed', color: '#22c55e' }
+        ],
+        calendar: [
+            { name: 'Meetings', color: '#004ac6' },
+            { name: 'Calls', color: '#10b981' },
+            { name: 'Deadlines', color: '#ef4444' },
+            { name: 'Follow-ups', color: '#8b5cf6' },
+            { name: 'Personal', color: '#f97316' }
+        ],
         tickets: [
             { name: 'Open', color: '#ef4444' },
             { name: 'Pending', color: '#f59e0b' },
@@ -397,6 +514,9 @@
         'purple': '#a855f7',
         'pink': '#ec4899',
         'teal': '#14b8a6',
+        'success': '#22c55e',
+        'primary': '#0053db',
+        'secondary': '#64748b'
     };
 
     function getBadgeStyle(color) {
@@ -460,7 +580,7 @@
     }
 
     function initCategoryData() {
-        ['clients', 'projects', 'tickets', 'priority'].forEach(cat => {
+        ['clients', 'projects', 'campaigns', 'calendar', 'tickets', 'priority'].forEach(cat => {
             if (!localStorage.getItem(`status_list_${cat}`)) {
                 localStorage.setItem(`status_list_${cat}`, JSON.stringify(DEFAULT_STATUSES[cat]));
             }
@@ -524,6 +644,37 @@
         const formTitle = document.getElementById('form-title');
         const tipText = document.getElementById('helpful-tip');
 
+        // Toggle templates and priorities containers dynamically
+        const qManager = document.getElementById('quick-templates-manager-card');
+        const qAddCard = document.getElementById('quick-template-add-card');
+        const pManager = document.getElementById('priority-manager-card');
+        const pAddCard = document.getElementById('priority-add-card');
+        const layoutContainer = document.getElementById('calendar-layout-container');
+
+        if (layoutContainer) {
+            if (cat === 'calendar') {
+                layoutContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-6";
+                if (qManager) qManager.classList.remove('hidden');
+                if (qAddCard) qAddCard.classList.remove('hidden');
+                if (pManager) pManager.classList.add('hidden');
+                if (pAddCard) pAddCard.classList.add('hidden');
+                renderQuickTemplates();
+            } else if (cat === 'projects') {
+                layoutContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-6";
+                if (qManager) qManager.classList.add('hidden');
+                if (qAddCard) qAddCard.classList.add('hidden');
+                if (pManager) pManager.classList.remove('hidden');
+                if (pAddCard) pAddCard.classList.remove('hidden');
+                renderPriorities();
+            } else {
+                layoutContainer.className = "";
+                if (qManager) qManager.classList.add('hidden');
+                if (qAddCard) qAddCard.classList.add('hidden');
+                if (pManager) pManager.classList.add('hidden');
+                if (pAddCard) pAddCard.classList.add('hidden');
+            }
+        }
+
         if (cat === 'leads') {
             leadsPanel.classList.remove('hidden');
             othersPanel.classList.add('hidden');
@@ -549,6 +700,210 @@
             loadCategoryData(cat);
         }
     }
+
+    // Quick Templates Management helpers
+    function renderQuickTemplates() {
+        const defaultTemplates = [
+            { title: 'Client Call', description: 'Calls', color: '#10b981' },
+            { title: 'Weekly Sync', description: 'Meeting', color: '#004ac6' },
+            { title: 'Proposal Deadline', description: 'Deadline', color: '#ef4444' },
+            { title: 'Post Follow-up', description: 'Follow-up', color: '#8b5cf6' }
+        ];
+        
+        let templates = [];
+        try {
+            const stored = localStorage.getItem('calendar_quick_templates');
+            if (stored) {
+                templates = JSON.parse(stored);
+            } else {
+                templates = defaultTemplates;
+                localStorage.setItem('calendar_quick_templates', JSON.stringify(defaultTemplates));
+            }
+        } catch(e) {
+            templates = defaultTemplates;
+        }
+
+        // Render list
+        const container = document.getElementById('quick-templates-list');
+        if (container) {
+            container.innerHTML = '';
+            templates.forEach((tpl, idx) => {
+                const item = document.createElement('div');
+                item.className = 'flex items-center justify-between p-3 bg-surface-container/30 border border-outline-variant/50 rounded-xl hover:border-primary/20 transition-all';
+                item.innerHTML = `
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${tpl.color};"></span>
+                        <div class="min-w-0">
+                            <span class="text-xs font-bold text-on-surface block truncate">${tpl.title}</span>
+                            <span class="text-[9px] text-secondary font-medium block truncate">${tpl.description || 'No description'}</span>
+                        </div>
+                    </div>
+                    <button type="button" onclick="deleteQuickTemplate(${idx})" class="p-1 text-secondary hover:text-red-600 hover:bg-red-50 rounded transition-all" title="Delete Template">
+                        <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Populate associated category color dropdown
+        const colorSelect = document.getElementById('template-color-input');
+        if (colorSelect) {
+            colorSelect.innerHTML = '';
+            let calStatuses = [];
+            try {
+                calStatuses = JSON.parse(localStorage.getItem('status_list_calendar')) || [];
+            } catch(e){}
+            if (calStatuses.length === 0) {
+                calStatuses = [
+                    { name: 'Meetings', color: '#004ac6' },
+                    { name: 'Calls', color: '#10b981' },
+                    { name: 'Deadlines', color: '#ef4444' },
+                    { name: 'Follow-ups', color: '#8b5cf6' },
+                    { name: 'Personal', color: '#f97316' }
+                ];
+            }
+            calStatuses.forEach(status => {
+                const opt = document.createElement('option');
+                opt.value = status.color;
+                opt.textContent = status.name;
+                colorSelect.appendChild(opt);
+            });
+        }
+    }
+
+    function addQuickTemplate(event) {
+        event.preventDefault();
+        const titleEl = document.getElementById('template-title-input');
+        const descEl = document.getElementById('template-desc-input');
+        const colorEl = document.getElementById('template-color-input');
+        
+        let templates = [];
+        try {
+            templates = JSON.parse(localStorage.getItem('calendar_quick_templates')) || [];
+        } catch(e){}
+        
+        templates.push({
+            title: titleEl.value.trim(),
+            description: descEl.value.trim(),
+            color: colorEl.value
+        });
+        
+        localStorage.setItem('calendar_quick_templates', JSON.stringify(templates));
+        titleEl.value = '';
+        descEl.value = '';
+        renderQuickTemplates();
+        if (typeof showToast === 'function') {
+            showToast('Quick Add Template added.', 'success');
+        }
+    }
+
+    function deleteQuickTemplate(idx) {
+        if (!confirm('Are you sure you want to delete this template?')) return;
+        let templates = [];
+        try {
+            templates = JSON.parse(localStorage.getItem('calendar_quick_templates')) || [];
+        } catch(e){}
+        templates.splice(idx, 1);
+        localStorage.setItem('calendar_quick_templates', JSON.stringify(templates));
+        renderQuickTemplates();
+        if (typeof showToast === 'function') {
+            showToast('Quick Add Template deleted.', 'success');
+        }
+    }
+
+    // Priority Session management helpers
+    let isEditingPriority = false;
+    let priorityDragSrcIdx = null;
+
+    function renderPriorities() {
+        const listContainer = document.getElementById('priority-status-list');
+        if (!listContainer) return;
+        listContainer.innerHTML = '';
+
+        const data = JSON.parse(localStorage.getItem('status_list_priority') || '[]');
+        data.forEach((status, idx) => {
+            const badgeStyle = getBadgeStyle(status.color);
+            const itemHtml = `
+                <div draggable="true" data-index="${idx}" ondragstart="priorityDragStart(event)" ondragover="event.preventDefault()" ondrop="priorityDrop(event, ${idx})" class="priority-drag-item flex items-center justify-between p-4 bg-white rounded-xl border border-outline-variant hover:border-primary/30 shadow-sm cursor-grab active:cursor-grabbing group transition-all">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors cursor-move">drag_indicator</span>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight" style="${badgeStyle}">
+                            ${status.name}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="openPriorityEditModal(${idx}, '${status.name}', '${status.color}')" class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all" title="Edit Priority">
+                            <span class="material-symbols-outlined text-[18px]">edit</span>
+                        </button>
+                        <button type="button" onclick="deletePriorityStatus(${idx})" class="p-2 rounded-lg hover:bg-red-50 text-outline hover:text-red-600 transition-all" title="Delete Priority">
+                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            listContainer.insertAdjacentHTML('beforeend', itemHtml);
+        });
+    }
+
+    function priorityDragStart(e) {
+        priorityDragSrcIdx = parseInt(e.target.getAttribute('data-index'));
+        e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function priorityDrop(e, destIdx) {
+        e.preventDefault();
+        if (priorityDragSrcIdx === null || priorityDragSrcIdx === destIdx) return;
+        const list = JSON.parse(localStorage.getItem('status_list_priority') || '[]');
+        const [removed] = list.splice(priorityDragSrcIdx, 1);
+        list.splice(destIdx, 0, removed);
+        localStorage.setItem('status_list_priority', JSON.stringify(list));
+        renderPriorities();
+    }
+
+    function setPriorityFormColor(btn, color) {
+        btn.parentElement.querySelectorAll('.color-preset-btn').forEach(el => {
+            el.classList.remove('active-preset', 'border-primary');
+        });
+        btn.classList.add('active-preset', 'border-primary');
+        document.getElementById('priority-new-color').value = color;
+    }
+
+    function submitPriorityAddForm(e) {
+        e.preventDefault();
+        const nameInput = document.getElementById('priority-new-name');
+        const colorInput = document.getElementById('priority-new-color');
+
+        const list = JSON.parse(localStorage.getItem('status_list_priority') || '[]');
+        list.push({
+            name: nameInput.value.trim().toUpperCase(),
+            color: colorInput.value
+        });
+        localStorage.setItem('status_list_priority', JSON.stringify(list));
+        nameInput.value = '';
+        renderPriorities();
+        if (typeof showToast === 'function') {
+            showToast('Priority status created successfully.', 'success');
+        }
+    }
+
+    function deletePriorityStatus(idx) {
+        if (!confirm('Are you sure you want to delete this priority?')) return;
+        const list = JSON.parse(localStorage.getItem('status_list_priority') || '[]');
+        list.splice(idx, 1);
+        localStorage.setItem('status_list_priority', JSON.stringify(list));
+        renderPriorities();
+        if (typeof showToast === 'function') {
+            showToast('Priority status deleted.', 'success');
+        }
+    }
+
+    function openPriorityEditModal(idx, name, color) {
+        isEditingPriority = true;
+        currentCategory = 'priority';
+        openDynamicEditModal(idx, name, color);
+    }
+
 
     // Dynamic operations (localStorage)
     function submitDynamicAddForm(e) {
@@ -625,7 +980,13 @@
             list[index].color = color;
             localStorage.setItem(`status_list_${currentCategory}`, JSON.stringify(list));
             closeDynamicEditModal();
-            loadCategoryData(currentCategory);
+            if (isEditingPriority) {
+                renderPriorities();
+                currentCategory = 'projects';
+                isEditingPriority = false;
+            } else {
+                loadCategoryData(currentCategory);
+            }
             if (typeof showToast === 'function') {
                 showToast('Status details updated.', 'success');
             }
@@ -683,6 +1044,13 @@
 
     // Init local storage values
     initCategoryData();
+
+    // Check URL parameters to switch tab automatically
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam && ['leads', 'clients', 'projects', 'campaigns', 'calendar', 'tickets', 'priority'].includes(tabParam)) {
+        setTimeout(() => switchCategoryTab(tabParam), 50);
+    }
 
     // Server-backed AJAX for adding lead status
     const addStatusForm = document.getElementById('add-status-form');

@@ -1,0 +1,908 @@
+{% extends 'base.html' %}
+{% block title %}Content Tracker - XenoCRM{% endblock %}
+
+{% block content %}
+<main class="pt-8 p-margin-edge min-h-screen bg-background">
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- Breadcrumb & Title -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-outline font-semibold mb-1">
+          <span>Settings</span>
+          <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+          <span class="text-primary">Content Tracker</span>
+        </div>
+        <h2 class="font-headline-lg text-headline-lg font-bold text-on-background">Content Tracker</h2>
+        <p class="text-secondary text-body-sm max-w-2xl mt-1">Manage and monitor all client video content, editing workflow, publishing schedule, and campaign progress from one centralized dashboard.</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <a href="{% url 'add_content_item' %}" class="bg-primary text-on-primary px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:opacity-90 transition-all shadow-md">
+          <span class="material-symbols-outlined text-[18px]">add_circle</span>
+          Add Content
+        </a>
+        <button onclick="importContent()" class="bg-surface-container border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-slate-50 transition-all">
+          <span class="material-symbols-outlined text-[18px]">file_upload</span>
+          Import
+        </button>
+        <button onclick="exportToCSV()" class="bg-surface-container border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-slate-50 transition-all">
+          <span class="material-symbols-outlined text-[18px]">file_download</span>
+          Export
+        </button>
+        <button onclick="window.location.reload()" class="bg-surface-container border border-outline-variant text-on-surface p-2 rounded-xl hover:bg-slate-50 transition-all" title="Refresh">
+          <span class="material-symbols-outlined text-[18px]">refresh</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <!-- Total Videos -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Total Videos</span>
+          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-[18px]">video_library</span>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="block text-2xl font-bold text-on-surface">{{ total_count }}</span>
+          <span class="text-[10px] text-success font-semibold flex items-center gap-0.5 mt-0.5">
+            <span class="material-symbols-outlined text-[12px]">trending_up</span> All platforms
+          </span>
+        </div>
+      </div>
+      <!-- Pending -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Pending</span>
+          <div class="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
+            <span class="material-symbols-outlined text-[18px]">pending_actions</span>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="block text-2xl font-bold text-on-surface">{{ pending_count }}</span>
+          <span class="text-[10px] text-outline font-semibold flex items-center gap-0.5 mt-0.5">
+            <span class="material-symbols-outlined text-[12px]">hourglass_empty</span> Awaiting edit
+          </span>
+        </div>
+      </div>
+      <!-- In Editing -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">In Editing</span>
+          <div class="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center text-info">
+            <span class="material-symbols-outlined text-[18px]">video_settings</span>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="block text-2xl font-bold text-on-surface">{{ editing_count }}</span>
+          <span class="text-[10px] text-info font-semibold flex items-center gap-0.5 mt-0.5">
+            <span class="material-symbols-outlined text-[12px]">sync</span> In progress
+          </span>
+        </div>
+      </div>
+      <!-- Published -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Published</span>
+          <div class="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center text-success">
+            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="block text-2xl font-bold text-on-surface">{{ published_count }}</span>
+          <span class="text-[10px] text-success font-semibold flex items-center gap-0.5 mt-0.5">
+            <span class="material-symbols-outlined text-[12px]">done_all</span> Live content
+          </span>
+        </div>
+      </div>
+      <!-- Scheduled -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Scheduled</span>
+          <div class="w-8 h-8 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary">
+            <span class="material-symbols-outlined text-[18px]">schedule</span>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="block text-2xl font-bold text-on-surface">{{ scheduled_count }}</span>
+          <span class="text-[10px] text-tertiary font-semibold flex items-center gap-0.5 mt-0.5">
+            <span class="material-symbols-outlined text-[12px]">calendar_today</span> Queue set
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="glass-card p-5 rounded-2xl border border-outline-variant/30 bg-white shadow-sm space-y-4">
+      <form method="GET" id="filter-form" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <!-- Search -->
+        <div class="lg:col-span-2 relative">
+          <span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-[18px]">search</span>
+          <input type="text" name="q" value="{{ q }}" placeholder="Search videos or clients..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg pl-9 pr-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary"/>
+        </div>
+
+        <!-- Client Filter -->
+        <div>
+          <select name="client_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
+            <option value="">All Clients</option>
+            {% for client in clients %}
+            <option value="{{ client.id }}" {% if client_filter == client.id|stringformat:"i" %}selected{% endif %}>{{ client.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Editor Filter -->
+        <div>
+          <select name="editor_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
+            <option value="">All Editors</option>
+            {% for editor in editors %}
+            <option value="{{ editor.id }}" {% if editor_filter == editor.id|stringformat:"i" %}selected{% endif %}>{{ editor.user.get_full_name|default:editor.user.username }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Status Filter -->
+        <div>
+          <select name="status_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
+            <option value="">All Statuses</option>
+            <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+            <option value="Editing" {% if status_filter == 'Editing' %}selected{% endif %}>Editing</option>
+            <option value="Review" {% if status_filter == 'Review' %}selected{% endif %}>Review</option>
+            <option value="Approved" {% if status_filter == 'Approved' %}selected{% endif %}>Approved</option>
+            <option value="Published" {% if status_filter == 'Published' %}selected{% endif %}>Published</option>
+            <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
+            <option value="Scheduled" {% if status_filter == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+          </select>
+        </div>
+
+        <!-- Platform Filter -->
+        <div>
+          <select name="platform_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
+            <option value="">All Platforms</option>
+            {% for platform in platforms %}
+            <option value="{{ platform }}" {% if platform_filter == platform %}selected{% endif %}>{{ platform }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Priority Filter -->
+        <div>
+          <select name="priority_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
+            <option value="">All Priorities</option>
+            <option value="Low" {% if priority_filter == 'Low' %}selected{% endif %}>Low</option>
+            <option value="Medium" {% if priority_filter == 'Medium' %}selected{% endif %}>Medium</option>
+            <option value="High" {% if priority_filter == 'High' %}selected{% endif %}>High</option>
+            <option value="Urgent" {% if priority_filter == 'Urgent' %}selected{% endif %}>Urgent</option>
+          </select>
+        </div>
+
+        <!-- Campaign Filter -->
+        <div>
+          <select name="campaign_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
+            <option value="">All Campaign Status</option>
+            <option value="Not Started" {% if campaign_filter == 'Not Started' %}selected{% endif %}>Not Started</option>
+            <option value="Planning" {% if campaign_filter == 'Planning' %}selected{% endif %}>Planning</option>
+            <option value="In Progress" {% if campaign_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
+            <option value="Paused" {% if campaign_filter == 'Paused' %}selected{% endif %}>Paused</option>
+            <option value="Completed" {% if campaign_filter == 'Completed' %}selected{% endif %}>Completed</option>
+            <option value="Cancelled" {% if campaign_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+          </select>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div>
+          <select name="date_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
+            <option value="">All Dates</option>
+            <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Due Today</option>
+            <option value="week" {% if date_filter == 'week' %}selected{% endif %}>Due This Week</option>
+            <option value="month" {% if date_filter == 'month' %}selected{% endif %}>Due This Month</option>
+          </select>
+        </div>
+
+        <!-- Limit / Rows -->
+        <input type="hidden" name="limit" value="{{ limit }}" />
+        <input type="hidden" name="sort" value="{{ sort_by }}" />
+
+        <!-- Actions -->
+        <div class="lg:col-span-2 flex gap-2">
+          <button type="submit" class="flex-1 bg-primary text-on-primary rounded-lg py-2 text-xs font-bold shadow hover:opacity-95 transition-all text-center">Apply Filters</button>
+          <a href="{% url 'content_tracker' %}" class="flex-1 border border-outline-variant text-secondary rounded-lg py-2 text-xs font-bold hover:bg-slate-50 transition-all text-center">Reset</a>
+        </div>
+      </form>
+    </div>
+
+    <!-- Bulk Actions (Hidden by default, shown when items checked) -->
+    <div id="bulk-actions-bar" class="hidden p-4 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-between text-sm animate-fade-in">
+      <span class="font-bold text-primary" id="checked-count-text">0 items selected</span>
+      <button onclick="triggerBulkDelete()" class="bg-error text-white px-3.5 py-1.5 rounded-lg text-xs font-bold hover:opacity-90 flex items-center gap-1.5 transition-all">
+        <span class="material-symbols-outlined text-[16px]">delete</span>
+        Bulk Delete Selected
+      </button>
+    </div>
+
+    <!-- Main Table Card -->
+    <div class="glass-card rounded-2xl border border-outline-variant/30 bg-white shadow-sm overflow-hidden flex flex-col justify-between">
+      
+      <div class="overflow-x-auto custom-scrollbar min-h-[350px]">
+        <table class="w-full text-left border-collapse" id="content-items-table">
+          <thead>
+            <tr class="bg-slate-50 border-b border-outline-variant/30 text-xs font-bold text-outline select-none sticky top-0 z-10">
+              <th class="p-4 w-12 text-center">
+                <input type="checkbox" id="check-all" class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer" onclick="toggleSelectAll(this)"/>
+              </th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('id')">ID</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('client__name')">Client</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('video_title')">Video Title</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('editor__user__username')">Editor</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('date_received')">Date Recd</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('due_date')">Due Date</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('status')">Status</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('platform')">Platform</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('due_date')">Upload Date</th>
+              <th class="p-4">Post Type</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('campaign_status')">Campaign</th>
+              <th class="p-4">Link</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('priority')">Priority</th>
+              <th class="p-4">Notes</th>
+              <th class="p-4 text-center w-20">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-outline-variant/15 text-xs text-on-surface">
+            {% for item in page_obj %}
+            <tr class="hover:bg-slate-50/50 transition-colors" id="row-{{ item.id }}">
+              <td class="p-4 text-center">
+                <input type="checkbox" name="item_ids" value="{{ item.id }}" class="row-checkbox w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer" onclick="updateBulkBar()"/>
+              </td>
+              <td class="p-4 font-mono font-bold text-outline">#{{ item.id }}</td>
+              <td class="p-4 font-bold text-on-surface">{{ item.client.name }}</td>
+              <td class="p-4 font-semibold text-primary max-w-[160px] truncate" title="{{ item.video_title }}">{{ item.video_title }}</td>
+              <td class="p-4 font-medium">
+                {% if item.editor %}
+                  {{ item.editor.user.get_full_name|default:item.editor.user.username }}
+                {% else %}
+                  <span class="text-outline/60 italic">Unassigned</span>
+                {% endif %}
+              </td>
+              <td class="p-4 text-secondary">{{ item.date_received|date:"Y-m-d"|default:"-" }}</td>
+              <td class="p-4 text-secondary font-bold">{{ item.due_date|date:"Y-m-d"|default:"-" }}</td>
+              <td class="p-4">
+                {% if item.status == 'Pending' %}
+                  <span class="px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200/50 font-bold text-[10px] uppercase">Pending</span>
+                {% elif item.status == 'Editing' %}
+                  <span class="px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200/50 font-bold text-[10px] uppercase">Editing</span>
+                {% elif item.status == 'Review' %}
+                  <span class="px-2 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50 font-bold text-[10px] uppercase">Review</span>
+                {% elif item.status == 'Approved' %}
+                  <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50 font-bold text-[10px] uppercase">Approved</span>
+                {% elif item.status == 'Published' %}
+                  <span class="px-2 py-1 rounded-full bg-green-100 text-green-800 border border-green-300 font-bold text-[10px] uppercase">Published</span>
+                {% elif item.status == 'Rejected' %}
+                  <span class="px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200/50 font-bold text-[10px] uppercase">Rejected</span>
+                {% elif item.status == 'Scheduled' %}
+                  <span class="px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/50 font-bold text-[10px] uppercase">Scheduled</span>
+                {% endif %}
+              </td>
+              <td class="p-4 font-semibold text-secondary">{{ item.platform }}</td>
+              <td class="p-4 text-secondary">{{ item.upload_date|date:"Y-m-d"|default:"-" }}</td>
+              <td class="p-4 text-secondary">{{ item.post_type }}</td>
+              <td class="p-4">
+                {% if item.campaign_status == 'Not Started' %}
+                  <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 text-[9px] font-bold">Not Started</span>
+                {% elif item.campaign_status == 'Planning' %}
+                  <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-150 text-[9px] font-bold">Planning</span>
+                {% elif item.campaign_status == 'In Progress' %}
+                  <span class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-150 text-[9px] font-bold">In Progress</span>
+                {% elif item.campaign_status == 'Paused' %}
+                  <span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-150 text-[9px] font-bold">Paused</span>
+                {% elif item.campaign_status == 'Completed' %}
+                  <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-150 text-[9px] font-bold">Completed</span>
+                {% elif item.campaign_status == 'Cancelled' %}
+                  <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 border border-slate-200 text-[9px] font-bold">Cancelled</span>
+                {% endif %}
+              </td>
+              <td class="p-4">
+                {% if item.video_link %}
+                <a href="{{ item.video_link }}" target="_blank" class="text-primary hover:underline font-bold flex items-center gap-0.5">
+                  <span class="material-symbols-outlined text-[14px]">play_circle</span> View
+                </a>
+                {% else %}
+                <span class="text-outline/40">-</span>
+                {% endif %}
+              </td>
+              <td class="p-4">
+                {% if item.priority == 'Low' %}
+                  <span class="text-slate-500 font-semibold">• Low</span>
+                {% elif item.priority == 'Medium' %}
+                  <span class="text-blue-500 font-semibold">• Medium</span>
+                {% elif item.priority == 'High' %}
+                  <span class="text-amber-500 font-bold">• High</span>
+                {% elif item.priority == 'Urgent' %}
+                  <span class="text-rose-600 font-extrabold animate-pulse">• Urgent</span>
+                {% endif %}
+              </td>
+              <td class="p-4 max-w-[120px] truncate text-secondary cursor-help relative group" title="{{ item.notes }}">
+                {{ item.notes|default:"-" }}
+              </td>
+              <td class="p-4 text-center">
+                <!-- Dropdown Menu -->
+                <div class="relative inline-block text-left" id="dropdown-parent-{{ item.id }}">
+                  <button onclick="toggleActionDropdown(event, {{ item.id }})" class="p-1 rounded-lg text-outline hover:bg-slate-100 transition-all">
+                    <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                  </button>
+                  <div id="dropdown-menu-{{ item.id }}" class="hidden absolute right-0 mt-1 w-36 rounded-lg bg-white border border-outline-variant/30 shadow-lg z-[40] divide-y divide-outline-variant/10 text-xs">
+                    <div class="py-1">
+                      <a href="{% url 'edit_content_item' item.id %}" class="w-full text-left px-3 py-2 text-on-surface hover:bg-slate-50 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[14px]">edit</span> Edit
+                      </a>
+                      <button onclick="duplicateItem({{ item.id }})" class="w-full text-left px-3 py-2 text-on-surface hover:bg-slate-50 flex items-center gap-2">
+                        <span class="material-symbols-outlined text-[14px]">content_copy</span> Duplicate
+                      </button>
+                    </div>
+                    <div class="py-1">
+                      <button onclick="quickMarkComplete({{ item.id }})" class="w-full text-left px-3 py-2 text-success hover:bg-slate-50 flex items-center gap-2 font-semibold">
+                        <span class="material-symbols-outlined text-[14px]">done_all</span> Mark Complete
+                      </button>
+                      <button onclick="deleteItem({{ item.id }})" class="w-full text-left px-3 py-2 text-error hover:bg-slate-50 flex items-center gap-2 font-semibold">
+                        <span class="material-symbols-outlined text-[14px]">delete</span> Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="16" class="py-16 text-center">
+                <div class="flex flex-col items-center justify-center">
+                  <span class="material-symbols-outlined text-outline/40 text-[48px] mb-2">video_library</span>
+                  <h4 class="font-bold text-on-surface text-sm">No Content Items Found</h4>
+                  <p class="text-secondary text-xs mt-1">Try resetting filters or adding new content records.</p>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination Block -->
+      <div class="p-4 border-t border-outline-variant/30 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-secondary font-medium select-none">
+        
+        <div class="flex items-center gap-4">
+          <span>Showing {{ page_obj.start_index }}–{{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries</span>
+          
+          <!-- Rows per page selector -->
+          <div class="flex items-center gap-1.5">
+            <span>Rows per page:</span>
+            <select onchange="changeLimit(this.value)" class="bg-white border border-outline-variant rounded px-1.5 py-0.5 text-xs focus:ring-primary focus:border-primary">
+              <option value="10" {% if limit == 10 %}selected{% endif %}>10</option>
+              <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
+              <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
+              <option value="100" {% if limit == 100 %}selected{% endif %}>100</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-1">
+          {% if page_obj.has_previous %}
+          <button onclick="changePage({{ page_obj.previous_page_number }})" class="p-1 rounded border border-outline-variant bg-white hover:bg-slate-50 transition-all">
+            <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+          </button>
+          {% else %}
+          <button disabled class="p-1 rounded border border-outline-variant/30 bg-slate-100 text-outline/35 cursor-not-allowed">
+            <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+          </button>
+          {% endif %}
+
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="px-2.5 py-1 rounded bg-primary text-on-primary font-bold shadow-sm">{{ num }}</span>
+            {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+            <button onclick="changePage({{ num }})" class="px-2.5 py-1 rounded border border-outline-variant bg-white hover:bg-slate-50 transition-all">{{ num }}</button>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+          <button onclick="changePage({{ page_obj.next_page_number }})" class="p-1 rounded border border-outline-variant bg-white hover:bg-slate-50 transition-all">
+            <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+          </button>
+          {% else %}
+          <button disabled class="p-1 rounded border border-outline-variant/30 bg-slate-100 text-outline/35 cursor-not-allowed">
+            <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+          </button>
+          {% endif %}
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- Add / Edit Modal -->
+<div id="content-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl border border-outline-variant/30 shadow-2xl w-full max-w-lg p-6 animate-fade-in space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+    <div class="flex items-center justify-between border-b border-outline-variant/20 pb-3 sticky top-0 bg-white z-10">
+      <h3 class="font-headline-md text-[18px] font-bold text-on-surface" id="modal-title">Add Content Item</h3>
+      <button onclick="closeModal()" class="material-symbols-outlined text-outline hover:text-primary transition-all">close</button>
+    </div>
+    
+    <form id="content-form" onsubmit="submitContentForm(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {% csrf_token %}
+      <input type="hidden" name="item_id" id="form-item-id" />
+      
+      <!-- Client (Required) -->
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Client *</label>
+        <select name="client_id" id="form-client-id" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+          <option value="" disabled selected>Select Client...</option>
+          {% for client in clients %}
+          <option value="{{ client.id }}">{{ client.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Title (Required) -->
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Video Title *</label>
+        <input type="text" name="video_title" id="form-video-title" required placeholder="e.g. 5 Productivity Tips Reel" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+      </div>
+
+      <!-- Editor -->
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Editor</label>
+        <select name="editor_id" id="form-editor-id" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+          <option value="">Unassigned</option>
+          {% for editor in editors %}
+          <option value="{{ editor.id }}">{{ editor.user.get_full_name|default:editor.user.username }} ({{ editor.role }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Platform -->
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Platform</label>
+        <select name="platform" id="form-platform" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+          {% for platform in platforms %}
+          <option value="{{ platform }}">{{ platform }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Post Type -->
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Post Type</label>
+        <select name="post_type" id="form-post-type" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+          {% for post in post_types %}
+          <option value="{{ post }}">{{ post }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Status -->
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status</label>
+        <select name="status" id="form-status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+          <option value="Pending">Pending</option>
+          <option value="Editing">Editing</option>
+          <option value="Review">Review</option>
+          <option value="Approved">Approved</option>
+          <option value="Published">Published</option>
+          <option value="Rejected">Rejected</option>
+          <option value="Scheduled">Scheduled</option>
+        </select>
+      </div>
+
+      <!-- Campaign Status -->
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Campaign Status</label>
+        <select name="campaign_status" id="form-campaign-status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+          <option value="Not Started">Not Started</option>
+          <option value="Planning">Planning</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Paused">Paused</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <!-- Priority -->
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Priority</label>
+        <select name="priority" id="form-priority" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+          <option value="Low">Low</option>
+          <option value="Medium" selected>Medium</option>
+          <option value="High">High</option>
+          <option value="Urgent">Urgent</option>
+        </select>
+      </div>
+
+      <!-- Dates -->
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Date Received</label>
+        <input type="date" name="date_received" id="form-date-received" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+      </div>
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Due Date</label>
+        <input type="date" name="due_date" id="form-due-date" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+      </div>
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Upload Date</label>
+        <input type="date" name="upload_date" id="form-upload-date" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+      </div>
+
+      <!-- Video Link -->
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Video Link (URL)</label>
+        <input type="url" name="video_link" id="form-video-link" placeholder="e.g. https://youtube.com/watch?v=..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+      </div>
+
+      <!-- Notes -->
+      <div class="md:col-span-2">
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Notes</label>
+        <textarea name="notes" id="form-notes" rows="3" placeholder="Add specific editing, transitions, or copy instructions..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"></textarea>
+      </div>
+
+      <div class="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-outline-variant/20 sticky bottom-0 bg-white">
+        <button type="button" onclick="closeModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+        <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let openDropdownId = null;
+
+  // Toggle Dropdown Action Menu
+  function toggleActionDropdown(event, itemId) {
+      event.stopPropagation();
+      const menu = document.getElementById(`dropdown-menu-${itemId}`);
+      
+      // Close currently open dropdown if different
+      if (openDropdownId && openDropdownId !== itemId) {
+          const currentMenu = document.getElementById(`dropdown-menu-${openDropdownId}`);
+          if (currentMenu) currentMenu.classList.add('hidden');
+      }
+
+      if (menu.classList.contains('hidden')) {
+          menu.classList.remove('hidden');
+          openDropdownId = itemId;
+      } else {
+          menu.classList.add('hidden');
+          openDropdownId = null;
+      }
+  }
+
+  // Click outside to close dropdowns
+  document.addEventListener('click', function() {
+      if (openDropdownId) {
+          const menu = document.getElementById(`dropdown-menu-${openDropdownId}`);
+          if (menu) menu.classList.add('hidden');
+          openDropdownId = null;
+      }
+  });
+
+  // Modal Actions
+  function openAddModal() {
+      document.getElementById('form-item-id').value = '';
+      document.getElementById('content-form').reset();
+      document.getElementById('modal-title').innerText = 'Add Content Item';
+      document.getElementById('content-modal').classList.remove('hidden');
+  }
+
+  function openEditModal(id, clientId, title, editorId, dateRecd, dueDate, status, platform, uploadDate, postType, campaignStatus, videoLink, priority, notes) {
+      document.getElementById('form-item-id').value = id;
+      document.getElementById('form-client-id').value = clientId;
+      document.getElementById('form-video-title').value = title;
+      document.getElementById('form-editor-id').value = editorId || '';
+      document.getElementById('form-date-received').value = dateRecd || '';
+      document.getElementById('form-due-date').value = dueDate || '';
+      document.getElementById('form-status').value = status;
+      document.getElementById('form-platform').value = platform;
+      document.getElementById('form-upload-date').value = uploadDate || '';
+      document.getElementById('form-post-type').value = postType;
+      document.getElementById('form-campaign-status').value = campaignStatus;
+      document.getElementById('form-video-link').value = videoLink || '';
+      document.getElementById('form-priority').value = priority;
+      document.getElementById('form-notes').value = notes || '';
+      
+      document.getElementById('modal-title').innerText = 'Edit Content Item';
+      document.getElementById('content-modal').classList.remove('hidden');
+  }
+
+  function closeModal() {
+      document.getElementById('content-modal').classList.add('hidden');
+      document.getElementById('content-form').reset();
+  }
+
+  // Submit Content Form (Add or Edit)
+  function submitContentForm(event) {
+      event.preventDefault();
+      const form = document.getElementById('content-form');
+      const id = document.getElementById('form-item-id').value;
+      const formData = new FormData(form);
+      
+      let url = "{% url 'add_content_item' %}";
+      if (id) {
+          url = `{% url 'add_content_item' %}`.replace('add/', `${id}/edit/`);
+      }
+
+      fetch(url, {
+          method: 'POST',
+          body: formData,
+          headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+          }
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              closeModal();
+              if (typeof showToast === 'function') showToast(data.message, 'success');
+              setTimeout(() => window.location.reload(), 800);
+          } else {
+              if (typeof showToast === 'function') showToast(data.error || 'Failed to save item.', 'error');
+          }
+      })
+      .catch(err => {
+          console.error(err);
+          if (typeof showToast === 'function') showToast('Network error occurred.', 'error');
+      });
+  }
+
+  // Duplicate Item
+  function duplicateItem(id) {
+      const url = `{% url 'add_content_item' %}`.replace('add/', `${id}/duplicate/`);
+      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+
+      fetch(url, {
+          method: 'POST',
+          headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': csrftoken || "{{ csrf_token }}"
+          }
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              if (typeof showToast === 'function') showToast(data.message, 'success');
+              setTimeout(() => window.location.reload(), 850);
+          } else {
+              if (typeof showToast === 'function') showToast(data.error || 'Failed to duplicate item.', 'error');
+          }
+      })
+      .catch(err => console.error(err));
+  }
+
+  // Quick Mark Complete
+  function quickMarkComplete(id) {
+      const url = `{% url 'add_content_item' %}`.replace('add/', `${id}/mark-complete/`);
+      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+
+      fetch(url, {
+          method: 'POST',
+          headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': csrftoken || "{{ csrf_token }}"
+          }
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              if (typeof showToast === 'function') showToast(data.message, 'success');
+              setTimeout(() => window.location.reload(), 800);
+          } else {
+              if (typeof showToast === 'function') showToast(data.error || 'Failed to complete item.', 'error');
+          }
+      })
+      .catch(err => console.error(err));
+  }
+
+  // Delete Item
+  function deleteItem(id) {
+      if (!confirm("Are you sure you want to delete this content tracker item?")) return;
+      
+      const url = `{% url 'add_content_item' %}`.replace('add/', `${id}/delete/`);
+      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+
+      fetch(url, {
+          method: 'POST',
+          headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': csrftoken || "{{ csrf_token }}"
+          }
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              document.getElementById(`row-${id}`).remove();
+              if (typeof showToast === 'function') showToast(data.message, 'success');
+          } else {
+              if (typeof showToast === 'function') showToast(data.error || 'Failed to delete item.', 'error');
+          }
+      })
+      .catch(err => console.error(err));
+  }
+
+  // Checkbox & Bulk Actions
+  function toggleSelectAll(masterCb) {
+      const checkboxes = document.querySelectorAll('.row-checkbox');
+      checkboxes.forEach(cb => cb.checked = masterCb.checked);
+      updateBulkBar();
+  }
+
+  function updateBulkBar() {
+      const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+      const bar = document.getElementById('bulk-actions-bar');
+      const text = document.getElementById('checked-count-text');
+      
+      if (checkedBoxes.length > 0) {
+          bar.classList.remove('hidden');
+          text.innerText = `${checkedBoxes.length} items selected`;
+      } else {
+          bar.classList.add('hidden');
+      }
+  }
+
+  function triggerBulkDelete() {
+      if (!confirm("Are you sure you want to bulk delete the selected content tracker items?")) return;
+      
+      const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+      const ids = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+
+      fetch("{% url 'bulk_delete_content_items' %}", {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-CSRFToken': csrftoken || "{{ csrf_token }}"
+          },
+          body: JSON.stringify({ ids: ids })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              if (typeof showToast === 'function') showToast(data.message, 'success');
+              setTimeout(() => window.location.reload(), 800);
+          } else {
+              if (typeof showToast === 'function') showToast(data.error || 'Failed to delete items.', 'error');
+          }
+      })
+      .catch(err => console.error(err));
+  }
+
+  // Sort helper
+  function sortByColumn(field) {
+      const urlParams = new URLSearchParams(window.location.search);
+      let currentSort = urlParams.get('sort') || '';
+      
+      if (currentSort === field) {
+          urlParams.set('sort', `-${field}`);
+      } else {
+          urlParams.set('sort', field);
+      }
+      window.location.search = urlParams.toString();
+  }
+
+  // Pagination helper
+  function changePage(pageNum) {
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('page', pageNum);
+      window.location.search = urlParams.toString();
+  }
+
+  function changeLimit(limitVal) {
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('limit', limitVal);
+      urlParams.set('page', '1');
+      window.location.search = urlParams.toString();
+  }
+
+  // Client-side CSV export
+  function exportToCSV() {
+      const table = document.getElementById("content-items-table");
+      let csv = [];
+      const rows = table.querySelectorAll("tr");
+      
+      for (let i = 0; i < rows.length; i++) {
+          const row = [], cols = rows[i].querySelectorAll("td, th");
+          // Skip first column (checkbox) and last column (actions dropdown)
+          for (let j = 1; j < cols.length - 1; j++) {
+              let text = cols[j].innerText.replace(/"/g, '""').trim();
+              row.push('"' + text + '"');
+          }
+          csv.push(row.join(","));
+      }
+      
+      const csvFile = new Blob([csv.join("\n")], { type: "text/csv" });
+      const downloadLink = document.createElement("a");
+      downloadLink.download = "ContentTracker_Export.csv";
+      downloadLink.href = window.URL.createObjectURL(csvFile);
+      downloadLink.style.display = "none";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+  }
+
+  // Import Content from CSV
+  function importContent() {
+      // Create a hidden file input and trigger it
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.accept = '.csv';
+      fileInput.style.display = 'none';
+      document.body.appendChild(fileInput);
+
+      fileInput.addEventListener('change', function() {
+          const file = fileInput.files[0];
+          if (!file) {
+              document.body.removeChild(fileInput);
+              return;
+          }
+
+          if (!file.name.endsWith('.csv')) {
+              if (typeof showToast === 'function') showToast('Please select a valid CSV file.', 'error');
+              document.body.removeChild(fileInput);
+              return;
+          }
+
+          const formData = new FormData();
+          formData.append('file', file);
+
+          const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]')
+              ? document.querySelector('[name=csrfmiddlewaretoken]').value
+              : '{{ csrf_token }}';
+
+          if (typeof showToast === 'function') showToast('Importing CSV file... Please wait.', 'info');
+
+          fetch("{% url 'import_content_items' %}", {
+              method: 'POST',
+              body: formData,
+              headers: {
+                  'X-Requested-With': 'XMLHttpRequest',
+                  'X-CSRFToken': csrftoken
+              }
+          })
+          .then(response => response.json())
+          .then(data => {
+              if (data.success) {
+                  let msg = `Successfully imported ${data.imported} content item(s).`;
+                  if (data.failed > 0) {
+                      msg += ` ${data.failed} row(s) failed.`;
+                  }
+                  if (typeof showToast === 'function') showToast(msg, data.failed > 0 ? 'warning' : 'success');
+
+                  // Log failed rows to console for debugging
+                  if (data.errors && data.errors.length > 0) {
+                      console.warn('Import errors:', data.errors);
+                  }
+
+                  if (data.imported > 0) {
+                      setTimeout(() => window.location.reload(), 1200);
+                  }
+              } else {
+                  if (typeof showToast === 'function') showToast(data.error || 'Import failed.', 'error');
+              }
+          })
+          .catch(err => {
+              console.error('Import error:', err);
+              if (typeof showToast === 'function') showToast('Network error during import.', 'error');
+          })
+          .finally(() => {
+              document.body.removeChild(fileInput);
+          });
+      });
+
+      fileInput.click();
+  }
+</script>
+{% endblock %}

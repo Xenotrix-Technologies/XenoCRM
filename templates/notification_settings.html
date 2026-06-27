@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}Notification Settings - XenoCRM{% endblock %}
+
+{% block content %}
+<main class="pt-8 p-margin-edge min-h-screen bg-background">
+  <div class="max-w-3xl mx-auto">
+    <!-- Breadcrumbs -->
+    <div class="flex items-center gap-2 mb-6 font-label-md text-outline">
+      <a href="{% url 'dashboard' %}" class="hover:underline">Dashboard</a>
+      <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+      <span class="text-primary font-bold">Notification Settings</span>
+    </div>
+
+    <!-- Notification Settings Form Card -->
+    <div class="glass-card rounded-2xl p-8 border border-outline-variant/30 shadow-xl bg-white space-y-6">
+      <div>
+        <h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Notification Preferences</h2>
+        <p class="text-secondary text-body-sm mt-1">Configure your personal rules for email digests and real-time in-app dashboard alerts.</p>
+      </div>
+
+      <form id="notif-settings-form" onsubmit="saveNotifSettings(event)" class="space-y-8">
+        
+        <!-- Category: Calendar -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-outline-variant/30 pb-2">
+            <span class="material-symbols-outlined text-primary">calendar_month</span>
+            <h3 class="font-headline-md text-[16px] font-bold text-on-surface">Calendar Meetings</h3>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-body-sm font-semibold text-on-surface">Email Digests</label>
+                <p class="text-[11px] text-secondary">Receive daily briefings of upcoming meetings in your inbox.</p>
+              </div>
+              <input type="checkbox" id="email-meetings" class="w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-body-sm font-semibold text-on-surface">In-App Dashboard Alerts</label>
+                <p class="text-[11px] text-secondary">Show real-time dashboard banner alerts for meeting reminders.</p>
+              </div>
+              <input type="checkbox" id="app-meetings" class="w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Category: Projects -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-outline-variant/30 pb-2">
+            <span class="material-symbols-outlined text-warning">rocket_launch</span>
+            <h3 class="font-headline-md text-[16px] font-bold text-on-surface">Project Tasks & Contracts</h3>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-body-sm font-semibold text-on-surface">Email Notifications</label>
+                <p class="text-[11px] text-secondary">Email me when tasks become overdue or agreements are near expiration.</p>
+              </div>
+              <input type="checkbox" id="email-projects" class="w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-body-sm font-semibold text-on-surface">In-App Dashboard Alerts</label>
+                <p class="text-[11px] text-secondary">Display push notifications when milestones or task targets are assigned.</p>
+              </div>
+              <input type="checkbox" id="app-projects" class="w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Category: Customer Support -->
+        <div class="space-y-4">
+          <div class="flex items-center gap-2 border-b border-outline-variant/30 pb-2">
+            <span class="material-symbols-outlined text-tertiary">support_agent</span>
+            <h3 class="font-headline-md text-[16px] font-bold text-on-surface">Customer Support</h3>
+          </div>
+          
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-body-sm font-semibold text-on-surface">Email Digests</label>
+                <p class="text-[11px] text-secondary">Send daily reports of unresolved tickets assigned to my department.</p>
+              </div>
+              <input type="checkbox" id="email-support" class="w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+            <div class="flex items-center justify-between">
+              <div>
+                <label class="block text-body-sm font-semibold text-on-surface">In-App Push Alerts</label>
+                <p class="text-[11px] text-secondary">Pop up real-time badges when client support tickets are escalated.</p>
+              </div>
+              <input type="checkbox" id="app-support" class="w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-6 border-t border-outline-variant/20 mt-8">
+          <a href="{% url 'dashboard' %}" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50 transition-all">Cancel</a>
+          <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90 active:scale-95 transition-all">Save Preferences</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Load settings on load
+  document.addEventListener('DOMContentLoaded', function() {
+      let settings = {};
+      try {
+          settings = JSON.parse(localStorage.getItem('notification_preferences')) || {};
+      } catch(e){}
+      
+      const fields = ['email-meetings', 'app-meetings', 'email-projects', 'app-projects', 'email-support', 'app-support'];
+      fields.forEach(f => {
+          const el = document.getElementById(f);
+          if (el) {
+              el.checked = settings[f] !== false; // Default to true if not set
+          }
+      });
+  });
+
+  // Save settings on submit
+  function saveNotifSettings(event) {
+      event.preventDefault();
+      const settings = {};
+      const fields = ['email-meetings', 'app-meetings', 'email-projects', 'app-projects', 'email-support', 'app-support'];
+      fields.forEach(f => {
+          const el = document.getElementById(f);
+          if (el) {
+              settings[f] = el.checked;
+          }
+      });
+      localStorage.setItem('notification_preferences', JSON.stringify(settings));
+      if (typeof showToast === 'function') {
+          showToast('Notification preferences saved successfully.', 'success');
+      }
+  }
+</script>
+<style>
+  /* Custom toggle switches using Tailwind margins */
+  .checked\:before\:left-4\.5:checked::before {
+      left: 1.125rem;
+  }
+</style>
+{% endblock %}

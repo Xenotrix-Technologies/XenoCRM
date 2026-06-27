@@ -3,7 +3,7 @@
 
 {% block content %}
 <main class="pt-8 p-margin-edge min-h-screen bg-background">
-  <div class="max-w-2xl mx-auto">
+  <div class="max-w-3xl mx-auto">
     <!-- Breadcrumbs -->
     <div class="flex items-center gap-2 mb-6 font-label-md text-outline">
       <a href="{% url 'dashboard' %}" class="hover:underline">Dashboard</a>
@@ -25,44 +25,76 @@
     <div class="glass-card rounded-2xl p-8 border border-outline-variant/30 shadow-xl bg-white space-y-6">
       <div>
         <h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Account Settings</h2>
-        <p class="text-secondary text-body-sm mt-1">Manage your administrator profile details and avatar.</p>
+        <p class="text-secondary text-body-sm mt-1">Manage your professional profile details, security, and avatar.</p>
       </div>
 
-      <form method="post" class="space-y-6">
+      <form method="post" enctype="multipart/form-data" class="space-y-6">
         {% csrf_token %}
         {{ form.non_field_errors }}
         
         <!-- Avatar Preview / Selection Section -->
-        <div class="flex items-center gap-6 pb-6 border-b border-outline-variant/20">
-          <div class="w-20 h-20 rounded-full overflow-hidden border-4 border-white shadow-lg bg-primary-container text-primary flex items-center justify-center font-bold text-2xl" id="avatar-preview-container">
+        <div class="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-outline-variant/20">
+          <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-white shadow-lg bg-primary-container text-primary flex items-center justify-center font-bold text-3xl flex-shrink-0" id="avatar-preview-container">
             {% if user.profile.profile_image_url %}
             <img class="w-full h-full object-cover" id="avatar-preview-img" src="{{ user.profile.profile_image_url }}" alt="Profile Avatar" onerror="showInitialsPlaceholder()"/>
             {% else %}
             <span id="avatar-preview-initials">{{ user.username|slice:":2"|upper }}</span>
             {% endif %}
           </div>
-          <div class="flex-1 space-y-1">
-            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Profile Image URL</label>
-            {{ form.profile_image_url }}
-            {% if form.profile_image_url.errors %}
-            <p class="text-error text-xs mt-1">{{ form.profile_image_url.errors.as_text }}</p>
-            {% endif %}
-            <p class="text-[11px] text-outline">Enter a URL to an image hosted on the web to update your avatar.</p>
+          
+          <div class="flex-1 w-full space-y-3">
+            <div>
+              <label class="block text-label-md font-label-md text-outline uppercase mb-1">Profile Photo Upload</label>
+              <input type="file" name="profile_image_file" id="profile-image-file-input" accept="image/*"
+                class="w-full text-xs text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 transition-all cursor-pointer" />
+            </div>
+            
+            <div class="relative flex py-1 items-center">
+              <div class="flex-grow border-t border-outline-variant/30"></div>
+              <span class="flex-shrink mx-4 text-outline text-[10px] font-bold uppercase">Or Use Image URL</span>
+              <div class="flex-grow border-t border-outline-variant/30"></div>
+            </div>
+
+            <div>
+              {{ form.profile_image_url }}
+              {% if form.profile_image_url.errors %}
+              <p class="text-error text-xs mt-1">{{ form.profile_image_url.errors.as_text }}</p>
+              {% endif %}
+              <p class="text-[10px] text-outline mt-1">Provide a URL hosted on the web or upload a file directly.</p>
+            </div>
           </div>
         </div>
 
         <!-- Personal Details -->
         <div>
-          <h3 class="font-headline-md text-[16px] font-bold text-on-surface mb-4">Personal Details</h3>
+          <h3 class="font-headline-md text-[16px] font-bold text-on-surface mb-4">Account Credentials</h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-label-md font-label-md text-outline uppercase mb-1">Username</label>
+              <label class="block text-label-md font-label-md text-outline uppercase mb-1">Username *</label>
               <input type="text" name="username" value="{{ user.username }}" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white transition-all" />
             </div>
             <div>
-              <label class="block text-label-md font-label-md text-outline uppercase mb-1">Email Address</label>
+              <label class="block text-label-md font-label-md text-outline uppercase mb-1">Email Address *</label>
               <input type="email" name="email" value="{{ user.email }}" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white transition-all" />
             </div>
+            <div>
+              <label class="block text-label-md font-label-md text-outline uppercase mb-1">New Password (Optional)</label>
+              <input type="password" name="password" placeholder="Leave blank to keep current" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white transition-all" />
+            </div>
+            <div>
+              <label class="block text-label-md font-label-md text-outline uppercase mb-1">Assigned Role</label>
+              {{ form.role }}
+              {% if form.role.errors %}
+              <p class="text-error text-xs mt-1">{{ form.role.errors.as_text }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Profile Details -->
+        <div>
+          <h3 class="font-headline-md text-[16px] font-bold text-on-surface mb-4">Profile Info</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-label-md font-label-md text-outline uppercase mb-1">First Name</label>
               <input type="text" name="first_name" value="{{ user.first_name }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white transition-all" />
@@ -70,6 +102,20 @@
             <div>
               <label class="block text-label-md font-label-md text-outline uppercase mb-1">Last Name</label>
               <input type="text" name="last_name" value="{{ user.last_name }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary focus:bg-white transition-all" />
+            </div>
+            <div>
+              <label class="block text-label-md font-label-md text-outline uppercase mb-1">Phone Number</label>
+              {{ form.phone_number }}
+              {% if form.phone_number.errors %}
+              <p class="text-error text-xs mt-1">{{ form.phone_number.errors.as_text }}</p>
+              {% endif %}
+            </div>
+            <div>
+              <label class="block text-label-md font-label-md text-outline uppercase mb-1">Location</label>
+              {{ form.location }}
+              {% if form.location.errors %}
+              <p class="text-error text-xs mt-1">{{ form.location.errors.as_text }}</p>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -87,6 +133,7 @@
 {% block extra_js %}
 <script>
   const urlInput = document.getElementById('id_profile_image_url');
+  const fileInput = document.getElementById('profile-image-file-input');
   
   if (urlInput) {
     urlInput.addEventListener('input', function() {
@@ -109,6 +156,31 @@
         img.src = url;
       } else {
         showInitialsPlaceholder();
+      }
+    });
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const previewContainer = document.getElementById('avatar-preview-container');
+          let img = document.getElementById('avatar-preview-img');
+          if (!img) {
+            img = document.createElement('img');
+            img.id = 'avatar-preview-img';
+            img.className = 'w-full h-full object-cover';
+            
+            const initials = document.getElementById('avatar-preview-initials');
+            if (initials) initials.remove();
+            
+            previewContainer.appendChild(img);
+          }
+          img.src = e.target.result;
+        }
+        reader.readAsDataURL(file);
       }
     });
   }

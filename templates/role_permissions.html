@@ -1,0 +1,453 @@
+{% extends 'base.html' %}
+{% block title %}Role-Based Permissions - XenoCRM{% endblock %}
+
+{% block content %}
+<main class="pt-8 p-margin-edge min-h-screen bg-background">
+  <div class="max-w-6xl mx-auto">
+    <!-- Breadcrumbs -->
+    <div class="flex items-center gap-2 mb-6 font-label-md text-outline">
+      <a href="{% url 'dashboard' %}" class="hover:underline">Dashboard</a>
+      <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+      <span class="text-primary font-bold">Role-Based Page Permissions</span>
+    </div>
+
+    <!-- Header Section -->
+    <div class="mb-8">
+      <h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">Role-Based Page Permissions</h2>
+      <p class="text-secondary text-body-sm mt-1">Select a role from the left pane to view and customize which pages and navigation links are accessible for that role.</p>
+    </div>
+
+    <!-- Two-Pane Layout -->
+    <div class="grid grid-cols-12 gap-6">
+      
+      <!-- Left Pane: Roles Selector (Vertical Tabs) -->
+      <div class="col-span-12 md:col-span-4 space-y-2">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-outline mb-3 pl-2">System Roles</h3>
+        <div class="space-y-1 bg-white/50 p-2 rounded-2xl border border-outline-variant/30" id="roles-tabs-container">
+          {% for role in roles %}
+          <button type="button" 
+                  onclick="selectRole('{{ role.name|escapejs }}')"
+                  id="role-tab-{{ role.name|slugify }}" 
+                  class="role-tab w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all text-left font-semibold text-sm hover:bg-slate-100/70 text-secondary">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-outline">badge</span>
+              <span>{{ role.name }}</span>
+            </div>
+            <span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity">chevron_right</span>
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Right Pane: Permissions for Selected Role -->
+      <div class="col-span-12 md:col-span-8">
+        <div class="glass-card rounded-2xl p-8 border border-outline-variant/30 shadow-xl bg-white space-y-6">
+          <div class="border-b border-outline-variant/20 pb-4">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-primary text-[28px]">shield_person</span>
+              <div>
+                <h3 class="font-headline-md text-[18px] font-bold text-on-surface" id="selected-role-title">Select a Role</h3>
+                <p class="text-xs text-secondary mt-0.5">Toggle the switches to configure page access for this role.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Feature Access Switches -->
+          <div class="space-y-1.5" id="permissions-switches-container">
+            <!-- Row: Dashboard -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Dashboard Page</span>
+                  <span class="block text-[11px] text-secondary">Access to business statistics, charts, and metrics.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-dashboard" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Leads -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">leaderboard</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Leads Pipeline</span>
+                  <span class="block text-[11px] text-secondary">Access to sales funnel, kanban board, and lead records.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-leads" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Calendar -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">event</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Calendar Status & Events</span>
+                  <span class="block text-[11px] text-secondary">Access to meeting schedules, events, and calendar views.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-calendar" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Clients -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">people</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Clients Database</span>
+                  <span class="block text-[11px] text-secondary">Access to customer profile sheets and history.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-clients" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Customer Support -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">support_agent</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Customer Support Tickets</span>
+                  <span class="block text-[11px] text-secondary">Access to ticket management and customer help desk.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-support" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Projects -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">assignment</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Projects Board</span>
+                  <span class="block text-[11px] text-secondary">Access to ongoing projects, tasks, and task priorities.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-projects" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Agreements -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">history_edu</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Agreements & Contracts</span>
+                  <span class="block text-[11px] text-secondary">Access to client contract records and signatures.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-agreements" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Campaigns -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">ads_click</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Campaigns</span>
+                  <span class="block text-[11px] text-secondary">Access to marketing campaigns and conversions.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-campaigns" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Staff -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">badge</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Staff Directory</span>
+                  <span class="block text-[11px] text-secondary">Access to staff member lists and roles.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-staff" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Content Tracker -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">video_library</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Content Tracker</span>
+                  <span class="block text-[11px] text-secondary">Access to video content tracking and workflow.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-content_tracker" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Settings -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">settings</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Settings</span>
+                  <span class="block text-[11px] text-secondary">Access to system settings, statuses, services, and roles.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-settings" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <div class="pt-4 pb-1">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-outline">Settings Subpages</h4>
+            </div>
+
+            <!-- Row: Content Settings -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">video_settings</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Content Settings</span>
+                  <span class="block text-[11px] text-secondary">Manage Content Tracker dropdown options.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-content_settings" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Status Page -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">tune</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Status Page</span>
+                  <span class="block text-[11px] text-secondary">Manage lead status stages and colors.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-lead_statuses" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Service Page -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">design_services</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Service Page</span>
+                  <span class="block text-[11px] text-secondary">Manage services offered by the organization.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-services" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Manage Roles -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">groups</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Manage Roles</span>
+                  <span class="block text-[11px] text-secondary">Create and edit staff roles.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-staff_roles" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Notification Settings -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">notifications</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Notification Settings</span>
+                  <span class="block text-[11px] text-secondary">Configure notification preferences.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-notification_settings" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Role Permissions -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">rule</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Role Permissions</span>
+                  <span class="block text-[11px] text-secondary">Control page and subpage access by role.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-role_permissions" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+
+            <!-- Row: Departments -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">corporate_fare</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Departments</span>
+                  <span class="block text-[11px] text-secondary">Manage departments and staff assignments.</span>
+                </div>
+              </div>
+              <input type="checkbox" id="perm-departments" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+            </div>
+          </div>
+
+          <!-- Save Button -->
+          <div class="flex justify-end gap-3 pt-6 border-t border-outline-variant/20">
+            <a href="{% url 'dashboard' %}" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50 transition-all">Cancel</a>
+            <button onclick="saveCurrentRolePermissions()" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90 active:scale-95 transition-all">Save Changes</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  let currentSelectedRole = '';
+  // Load permissions map from Django context
+  const dbPermissions = JSON.parse('{{ role_permissions_json|escapejs }}');
+
+  // Load and pre-select first role on load
+  document.addEventListener('DOMContentLoaded', function() {
+      const tabs = document.querySelectorAll('.role-tab');
+      if (tabs.length > 0) {
+          const firstRoleName = tabs[0].getAttribute('onclick').match(/'([^']+)'/)[1];
+          selectRole(firstRoleName);
+      }
+  });
+
+  // Switch role selection
+  function selectRole(roleName) {
+      currentSelectedRole = roleName;
+      
+      // Update UI active tab state
+      const tabs = document.querySelectorAll('.role-tab');
+      tabs.forEach(tab => {
+          const tabRoleName = tab.getAttribute('onclick').match(/'([^']+)'/)[1];
+          if (tabRoleName === roleName) {
+              tab.classList.add('bg-primary', 'text-white', 'shadow-md', 'hover:bg-primary/95');
+              tab.classList.remove('text-secondary', 'hover:bg-slate-100/70');
+              const chevron = tab.querySelector('.chevron_right');
+              const icon = tab.querySelector('.material-symbols-outlined:first-child');
+              if (chevron) chevron.classList.remove('opacity-0');
+              if (icon) icon.classList.remove('text-outline');
+          } else {
+              tab.classList.remove('bg-primary', 'text-white', 'shadow-md', 'hover:bg-primary/95');
+              tab.classList.add('text-secondary', 'hover:bg-slate-100/70');
+              const chevron = tab.querySelector('.chevron_right');
+              const icon = tab.querySelector('.material-symbols-outlined:first-child');
+              if (chevron) chevron.classList.add('opacity-0');
+              if (icon) icon.classList.add('text-outline');
+          }
+      });
+
+      // Update right panel header
+      document.getElementById('selected-role-title').innerText = `${roleName} Permissions`;
+
+      const perms = dbPermissions[roleName] || {};
+      const pages = ['dashboard', 'leads', 'calendar', 'clients', 'support', 'projects', 'agreements', 'campaigns', 'staff', 'content_tracker', 'settings', 'content_settings', 'lead_statuses', 'services', 'staff_roles', 'notification_settings', 'role_permissions', 'departments'];
+      const settingsSubpages = ['content_settings', 'lead_statuses', 'services', 'staff_roles', 'notification_settings', 'role_permissions', 'departments'];
+      
+      pages.forEach(page => {
+          const cb = document.getElementById(`perm-${page}`);
+          if (!cb) return;
+
+          const key = `${roleName.toLowerCase()}_${page}`;
+          if (perms[key] !== undefined) {
+              cb.checked = perms[key] === true || perms[key] === 'true';
+          } else if ((page === 'content_tracker' || settingsSubpages.includes(page)) && perms[`${roleName.toLowerCase()}_settings`] !== undefined) {
+              cb.checked = perms[`${roleName.toLowerCase()}_settings`] === true || perms[`${roleName.toLowerCase()}_settings`] === 'true';
+          } else {
+              // Defaults logic
+              const roleLower = roleName.toLowerCase();
+              if (roleLower.includes('admin') || roleLower.includes('administrator')) {
+                  cb.checked = true;
+              } else if (roleLower.includes('manager')) {
+                  cb.checked = page !== 'settings' && page !== 'staff' && page !== 'content_tracker' && !settingsSubpages.includes(page);
+              } else {
+                  cb.checked = (page === 'leads' || page === 'calendar' || page === 'clients' || page === 'support' || page === 'dashboard');
+              }
+          }
+      });
+  }
+
+  // Save selected role's toggles to database via AJAX
+  function saveCurrentRolePermissions() {
+      if (!currentSelectedRole) return;
+      
+      const perms = {};
+      const pages = ['dashboard', 'leads', 'calendar', 'clients', 'support', 'projects', 'agreements', 'campaigns', 'staff', 'content_tracker', 'settings', 'content_settings', 'lead_statuses', 'services', 'staff_roles', 'notification_settings', 'role_permissions', 'departments'];
+      pages.forEach(page => {
+          const cb = document.getElementById(`perm-${page}`);
+          if (cb) {
+              const key = `${currentSelectedRole.toLowerCase()}_${page}`;
+              perms[key] = cb.checked;
+          }
+      });
+
+      // Get CSRF Token
+      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]') ? document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+
+      fetch("{% url 'role_permissions' %}", {
+          method: "POST",
+          headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": csrftoken || "{{ csrf_token }}"
+          },
+          body: JSON.stringify({
+              role: currentSelectedRole,
+              permissions: perms
+          })
+      })
+      .then(response => response.json())
+      .then(data => {
+          if (data.success) {
+              // Update local JS map
+              dbPermissions[currentSelectedRole] = perms;
+              if (typeof showToast === 'function') {
+                  showToast(data.message, 'success');
+              }
+          } else {
+              if (typeof showToast === 'function') {
+                  showToast(data.error || 'Failed to update permissions.', 'error');
+              }
+          }
+      })
+      .catch(err => {
+          console.error(err);
+          if (typeof showToast === 'function') {
+              showToast('Network error while saving permissions.', 'error');
+          }
+      });
+  }
+</script>
+<style>
+  /* Custom toggle switches styling */
+  .checked\:before\:left-4\.5:checked::before {
+      left: 1.125rem;
+  }
+</style>
+{% endblock %}
