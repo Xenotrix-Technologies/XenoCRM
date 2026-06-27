@@ -173,9 +173,9 @@
                 <span class="material-symbols-outlined">assignment</span>
                 <span class="font-body-sm text-body-sm">Projects</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'reports' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'reports' %}">
-                <span class="material-symbols-outlined">assessment</span>
-                <span class="font-body-sm text-body-sm">Reports</span>
+            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'agreements' or request.resolver_match.url_name == 'create_agreement' or request.resolver_match.url_name == 'edit_agreement' or request.resolver_match.url_name == 'agreement_detail' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'agreements' %}">
+                <span class="material-symbols-outlined">history_edu</span>
+                <span class="font-body-sm text-body-sm">Agreements</span>
             </a>
 
 
@@ -185,7 +185,7 @@
             </a>
             <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'lead_statuses' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'lead_statuses' %}">
                 <span class="material-symbols-outlined">tune</span>
-                <span class="font-body-sm text-body-sm">Lead Statuses</span>
+                <span class="font-body-sm text-body-sm">Status</span>
             </a>
             <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'staff' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'staff' %}">
                 <span class="material-symbols-outlined">badge</span>

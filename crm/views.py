@@ -8,7 +8,7 @@ from django.db.models import Sum, Q
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib import messages
-from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service
+from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable
 from .forms import EventForm, ProfileForm
 # Views for navigation pages with proper multi-tenant database queries
 
@@ -18,6 +18,22 @@ from .forms import EventForm, ProfileForm
 @login_required
 def clients_view(request):
     org = request.user.profile.organization
+    
+    # Auto-seed default services if none exist
+    services_qs = Service.objects.filter(organization=org)
+    if not services_qs.exists():
+        s1 = Service.objects.create(organization=org, name="Enterprise Cloud Migration", description="End-to-end cloud migration and infrastructure setup.", price=15000.00)
+        s2 = Service.objects.create(organization=org, name="Security Audit & Compliance", description="Complete vulnerability scanning and compliance auditing.", price=8500.00)
+        s3 = Service.objects.create(organization=org, name="Custom AI & Integration", description="Development of bespoke machine learning models and API integration.", price=25000.00)
+        s4 = Service.objects.create(organization=org, name="IT Consulting & Support", description="Professional consulting and technical support services.", price=3500.00)
+        
+        # Assign these services to the seeded qualified leads to make it look full
+        Lead.objects.filter(organization=org, company="TechVision Systems").update(service=s2)
+        Lead.objects.filter(organization=org, company="HyperScale Systems").update(service=s1)
+        Lead.objects.filter(organization=org, company="Fortress Ltd").update(service=s3)
+        Lead.objects.filter(organization=org, company="Vanguard Retail").update(service=s4)
+        services_qs = Service.objects.filter(organization=org)
+
     leads = Lead.objects.filter(organization=org, status='Qualified')
     
     clients_dict = {}
@@ -30,21 +46,159 @@ def clients_view(request):
                 'company': comp,
                 'contacts_count': 0,
                 'total_value': 0.0,
+                'total_paid': 0.0,
                 'avg_score': 0,
-                'leads': []
+                'leads': [],
+                'service_ids': set()
             }
         clients_dict[comp]['contacts_count'] += 1
-        clients_dict[comp]['total_value'] += float(lead.value)
+        clients_dict[comp]['total_value'] += float(lead.value or 0.0)
+        clients_dict[comp]['total_paid'] += float(lead.paid_amount or 0.0)
         clients_dict[comp]['avg_score'] += lead.score
         clients_dict[comp]['leads'].append(lead)
+        if lead.service:
+            clients_dict[comp]['service_ids'].add(lead.service.id)
+        else:
+            clients_dict[comp]['service_ids'].add(0)
     
     clients_list = []
     for comp, data in clients_dict.items():
         if data['contacts_count'] > 0:
             data['avg_score'] = int(data['avg_score'] / data['contacts_count'])
+        data['service_ids_str'] = " ".join(f"service-{sid}" for sid in data['service_ids'])
         clients_list.append(data)
+
+    # Calculate statistics per service
+    service_stats = {}
+    for service in services_qs:
+        service_stats[service.id] = {
+            'id': service.id,
+            'name': service.name,
+            'description': service.description,
+            'price': service.price,
+            'client_count': 0,
+            'total_value': 0.0,
+        }
+    
+    uncategorized_stats = {
+        'id': 0,
+        'name': 'Uncategorized',
+        'description': 'Clients without an assigned service.',
+        'price': 0.0,
+        'client_count': 0,
+        'total_value': 0.0,
+    }
+
+    for client in clients_list:
+        for sid in client['service_ids']:
+            if sid in service_stats:
+                service_stats[sid]['client_count'] += 1
+                service_stats[sid]['total_value'] += client['total_value']
+            elif sid == 0:
+                uncategorized_stats['client_count'] += 1
+                uncategorized_stats['total_value'] += client['total_value']
+
+    services_list = list(service_stats.values())
+    if uncategorized_stats['client_count'] > 0:
+        services_list.append(uncategorized_stats)
+
+    services_list.sort(key=lambda s: s['client_count'], reverse=True)
+
+    context = {
+        'clients': clients_list,
+        'services': services_list,
+    }
+    return render(request, 'clients.html', context)
+
+
+@login_required
+def service_clients_view(request, service_id):
+    org = request.user.profile.organization
+    
+    # Fetch qualified leads
+    leads = Lead.objects.filter(organization=org, status='Qualified')
+    
+    # Filter leads by service
+    if service_id == 'all':
+        service_name = "All Services"
+    elif service_id == '0':
+        service_name = "Uncategorized"
+        leads = leads.filter(service__isnull=True)
+    else:
+        try:
+            service = Service.objects.get(id=int(service_id), organization=org)
+            service_name = service.name
+            leads = leads.filter(service=service)
+        except (ValueError, Service.DoesNotExist):
+            messages.error(request, "Service not found.")
+            return redirect('clients')
+
+    clients_dict = {}
+    for lead in leads:
+        comp = lead.company
+        if not comp:
+            continue
+        if comp not in clients_dict:
+            clients_dict[comp] = {
+                'company': comp,
+                'contacts_count': 0,
+                'total_value': 0.0,
+                'total_paid': 0.0,
+                'avg_score': 0,
+                'leads': []
+            }
+        clients_dict[comp]['contacts_count'] += 1
+        clients_dict[comp]['total_value'] += float(lead.value or 0.0)
+        clients_dict[comp]['total_paid'] += float(lead.paid_amount or 0.0)
+        clients_dict[comp]['avg_score'] += lead.score
+        clients_dict[comp]['leads'].append(lead)
+
+    clients_list = []
+    for comp, data in clients_dict.items():
+        if data['contacts_count'] > 0:
+            data['avg_score'] = int(data['avg_score'] / data['contacts_count'])
+        clients_list.append(data)
+
+    context = {
+        'service_name': service_name,
+        'clients': clients_list,
+    }
+    return render(request, 'service_clients.html', context)
+
+
+@login_required
+def edit_client_company(request):
+    """Edit the company name for all leads of the given company name."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        old_name = request.POST.get('old_company_name', '').strip()
+        new_name = request.POST.get('new_company_name', '').strip()
         
-    return render(request, 'clients.html', {'clients': clients_list})
+        if not old_name or not new_name:
+            return JsonResponse({'success': False, 'error': 'Company names are required.'})
+            
+        # Update company name for all leads of this organization
+        leads_updated = Lead.objects.filter(organization=org, company=old_name).update(company=new_name)
+        return JsonResponse({'success': True, 'message': f"Updated {leads_updated} records to '{new_name}'."})
+        
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def delete_client_company(request):
+    """Delete all qualified leads for the given company name."""
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        company_name = request.POST.get('company_name', '').strip()
+        
+        if not company_name:
+            return JsonResponse({'success': False, 'error': 'Company name is required.'})
+            
+        # Delete all leads belonging to this company for this organization
+        leads_deleted, _ = Lead.objects.filter(organization=org, company=company_name).delete()
+        return JsonResponse({'success': True, 'message': f"Deleted company '{company_name}' and all its {leads_deleted} leads."})
+        
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 
 
@@ -55,38 +209,368 @@ def clients_view(request):
 
 @login_required
 def customer_support_view(request):
-    tickets = [
-        {'id': 'TCK-102', 'subject': 'API Integration Error', 'status': 'Open', 'priority': 'High', 'created': '1h ago'},
-        {'id': 'TCK-101', 'subject': 'Billing Query', 'status': 'Pending', 'priority': 'Medium', 'created': '3h ago'},
-        {'id': 'TCK-099', 'subject': 'Password Reset Issue', 'status': 'Closed', 'priority': 'Low', 'created': '1d ago'}
-    ]
-    return render(request, 'customer_support.html', {'tickets': tickets})
+    org = request.user.profile.organization
+    tickets = Ticket.objects.filter(organization=org)
+    
+    # Auto-seed mock tickets if none exist
+    if not tickets.exists():
+        first_staff = UserProfile.objects.filter(organization=org).first()
+        # Seed default project tasks if none exist to make sure we have tasks
+        first_lead = Lead.objects.filter(organization=org).first()
+        if first_lead and not Task.objects.filter(lead__organization=org).exists():
+            Task.objects.create(lead=first_lead, title="API Integration Setup", due_date="2026-12-31", priority="High")
+            Task.objects.create(lead=first_lead, title="Billing Consultation", due_date="2026-12-31", priority="Medium")
+
+        first_project = Task.objects.filter(lead__organization=org).first()
+        second_project = Task.objects.filter(lead__organization=org).last()
+        
+        Ticket.objects.create(
+            organization=org,
+            ticket_id="TCK-102",
+            subject="API Integration Error",
+            status="Open",
+            priority="High",
+            assignee=first_staff,
+            project=first_project
+        )
+        Ticket.objects.create(
+            organization=org,
+            ticket_id="TCK-101",
+            subject="Billing Query",
+            status="Pending",
+            priority="Medium",
+            assignee=first_staff,
+            project=second_project
+        )
+        Ticket.objects.create(
+            organization=org,
+            ticket_id="TCK-099",
+            subject="Password Reset Issue",
+            status="Closed",
+            priority="Low",
+            assignee=first_staff,
+            project=first_project
+        )
+        tickets = Ticket.objects.filter(organization=org)
+        
+    staff = UserProfile.objects.filter(organization=org)
+    projects = Task.objects.filter(lead__organization=org)
+    
+    return render(request, 'customer_support.html', {
+        'tickets': tickets,
+        'staff': staff,
+        'projects': projects
+    })
+
+
+@login_required
+def create_ticket(request):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        subject = request.POST.get('subject')
+        description = request.POST.get('description', '')
+        priority = request.POST.get('priority', 'Medium')
+        status = request.POST.get('status', 'Open')
+        assignee_id = request.POST.get('assignee')
+        project_id = request.POST.get('project')
+        
+        assignee = None
+        if assignee_id:
+            try:
+                assignee = UserProfile.objects.get(id=int(assignee_id), organization=org)
+            except (ValueError, UserProfile.DoesNotExist):
+                pass
+                
+        project = None
+        if project_id:
+            try:
+                project = Task.objects.get(id=int(project_id), lead__organization=org)
+            except (ValueError, Task.DoesNotExist):
+                pass
+                
+        ticket_count = Ticket.objects.filter(organization=org).count()
+        ticket_id = f"TCK-{100 + ticket_count + 1}"
+        
+        Ticket.objects.create(
+            organization=org,
+            ticket_id=ticket_id,
+            subject=subject,
+            description=description,
+            priority=priority,
+            status=status,
+            assignee=assignee,
+            project=project
+        )
+        
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'message': 'Ticket created successfully.'})
+        messages.success(request, 'Ticket created successfully.')
+        return redirect('customer_support')
+        
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def edit_ticket(request, ticket_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        ticket = get_object_or_404(Ticket, id=ticket_id, organization=org)
+        
+        ticket.subject = request.POST.get('subject')
+        ticket.description = request.POST.get('description', '')
+        ticket.priority = request.POST.get('priority', 'Medium')
+        ticket.status = request.POST.get('status', 'Open')
+        
+        assignee_id = request.POST.get('assignee')
+        if assignee_id:
+            try:
+                ticket.assignee = UserProfile.objects.get(id=int(assignee_id), organization=org)
+            except (ValueError, UserProfile.DoesNotExist):
+                ticket.assignee = None
+        else:
+            ticket.assignee = None
+            
+        project_id = request.POST.get('project')
+        if project_id:
+            try:
+                project = Task.objects.get(id=int(project_id), lead__organization=org)
+                ticket.project = project
+            except (ValueError, Task.DoesNotExist):
+                ticket.project = None
+        else:
+            ticket.project = None
+            
+        ticket.save()
+        
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'message': 'Ticket updated successfully.'})
+        messages.success(request, 'Ticket updated successfully.')
+        return redirect('customer_support')
+        
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def delete_ticket(request, ticket_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        ticket = get_object_or_404(Ticket, id=ticket_id, organization=org)
+        ticket.delete()
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'message': 'Ticket deleted successfully.'})
+        messages.success(request, 'Ticket deleted.')
+        return redirect('customer_support')
+        
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 
 @login_required
 def projects_view(request):
     org = request.user.profile.organization
     tasks = Task.objects.filter(lead__organization=org).order_by('due_date')
-    return render(request, 'projects.html', {'tasks': tasks})
+    staff = UserProfile.objects.filter(organization=org)
+    leads = Lead.objects.filter(organization=org)
+    return render(request, 'projects.html', {
+        'tasks': tasks,
+        'staff': staff,
+        'leads': leads
+    })
 
 
 @login_required
-def reports_view(request):
+def agreements_list_view(request):
     org = request.user.profile.organization
-    leads = Lead.objects.filter(organization=org)
-    total_value = sum(float(l.value) for l in leads)
-    won_value = sum(float(l.value) for l in leads.filter(stage='Won'))
-    lost_value = sum(float(l.value) for l in leads.filter(stage='Lost'))
-    active_value = total_value - won_value - lost_value
+    agreements = Agreement.objects.filter(organization=org)
     
-    metrics = {
-        'total_pipeline': total_value,
-        'closed_won': won_value,
-        'closed_lost': lost_value,
-        'active_pipeline': active_value,
-        'lead_count': leads.count()
-    }
-    return render(request, 'reports.html', {'metrics': metrics})
+    # Expiry detection / simple background status update
+    for agr in agreements:
+        if agr.status == 'Active' and agr.end_date and agr.end_date < timezone.now().date():
+            agr.status = 'Expired'
+            agr.save()
+            
+    return render(request, 'agreements_list.html', {
+        'agreements': agreements
+    })
+
+
+@login_required
+def create_agreement_view(request):
+    org = request.user.profile.organization
+    services = Service.objects.filter(organization=org)
+    if request.method == 'POST':
+        try:
+            # Generate Auto Agreement Number
+            year = timezone.now().year
+            count = Agreement.objects.filter(organization=org, created_at__year=year).count()
+            agreement_number = f"AGR-{year}-{1000 + count + 1}"
+            
+            service_id = request.POST.get('service')
+            service = None
+            if service_id:
+                try:
+                    service = Service.objects.get(id=int(service_id), organization=org)
+                except (ValueError, Service.DoesNotExist):
+                    pass
+            
+            agreement = Agreement.objects.create(
+                organization=org,
+                agreement_number=agreement_number,
+                date=request.POST.get('date'),
+                start_date=request.POST.get('start_date'),
+                end_date=request.POST.get('end_date'),
+                client_name=request.POST.get('client_name'),
+                company_name=request.POST.get('company_name', ''),
+                client_email=request.POST.get('client_email', ''),
+                client_phone=request.POST.get('client_phone', ''),
+                client_address=request.POST.get('client_address', ''),
+                service=service,
+                monthly_fee=request.POST.get('monthly_fee') or 0.00,
+                advance_payment=request.POST.get('advance_payment') or 0.00,
+                payment_cycle=request.POST.get('payment_cycle', 'Monthly'),
+                payment_method=request.POST.get('payment_method', 'Bank Transfer'),
+                posts_count=request.POST.get('posts_count') or 0,
+                campaigns_count=request.POST.get('campaigns_count') or 0,
+                revisions=request.POST.get('revisions') or 3,
+                notice_period=request.POST.get('notice_period') or 30,
+                notes=request.POST.get('notes', ''),
+                status=request.POST.get('status', 'Draft')
+            )
+            
+            # Save Services
+            svc_titles = request.POST.getlist('service_title[]')
+            svc_descs = request.POST.getlist('service_desc[]')
+            for i in range(len(svc_titles)):
+                title = svc_titles[i].strip()
+                if title:
+                    AgreementService.objects.create(
+                        agreement=agreement,
+                        title=title,
+                        description=svc_descs[i].strip() if i < len(svc_descs) else ''
+                    )
+            
+            # Save Deliverables
+            deliv_titles = request.POST.getlist('deliverable_title[]')
+            for t in deliv_titles:
+                title = t.strip()
+                if title:
+                    Deliverable.objects.create(agreement=agreement, title=title)
+                    
+            # Save Client Responsibilities
+            resp_texts = request.POST.getlist('responsibility_text[]')
+            for r in resp_texts:
+                text = r.strip()
+                if text:
+                    ClientResponsibility.objects.create(agreement=agreement, responsibility=text)
+                    
+            messages.success(request, 'Agreement created successfully.')
+            return redirect('agreements')
+        except Exception as e:
+            messages.error(request, f"Error creating agreement: {str(e)}")
+            
+    return render(request, 'agreement_form.html', {
+        'action': 'Create',
+        'agreement': None,
+        'services': services
+    })
+
+
+@login_required
+def update_agreement_view(request, agreement_id):
+    org = request.user.profile.organization
+    agreement = get_object_or_404(Agreement, id=agreement_id, organization=org)
+    services = Service.objects.filter(organization=org)
+    
+    if request.method == 'POST':
+        try:
+            agreement.date = request.POST.get('date')
+            agreement.start_date = request.POST.get('start_date')
+            agreement.end_date = request.POST.get('end_date')
+            agreement.client_name = request.POST.get('client_name')
+            agreement.company_name = request.POST.get('company_name', '')
+            agreement.client_email = request.POST.get('client_email', '')
+            agreement.client_phone = request.POST.get('client_phone', '')
+            agreement.client_address = request.POST.get('client_address', '')
+            
+            service_id = request.POST.get('service')
+            service = None
+            if service_id:
+                try:
+                    service = Service.objects.get(id=int(service_id), organization=org)
+                except (ValueError, Service.DoesNotExist):
+                    pass
+            agreement.service = service
+            agreement.monthly_fee = request.POST.get('monthly_fee') or 0.00
+            agreement.advance_payment = request.POST.get('advance_payment') or 0.00
+            agreement.payment_cycle = request.POST.get('payment_cycle', 'Monthly')
+            agreement.payment_method = request.POST.get('payment_method', 'Bank Transfer')
+            agreement.posts_count = request.POST.get('posts_count') or 0
+            agreement.campaigns_count = request.POST.get('campaigns_count') or 0
+            agreement.revisions = request.POST.get('revisions') or 3
+            agreement.notice_period = request.POST.get('notice_period') or 30
+            agreement.notes = request.POST.get('notes', '')
+            agreement.status = request.POST.get('status', 'Draft')
+            agreement.save()
+            
+            # Refresh Services
+            agreement.services.all().delete()
+            svc_titles = request.POST.getlist('service_title[]')
+            svc_descs = request.POST.getlist('service_desc[]')
+            for i in range(len(svc_titles)):
+                title = svc_titles[i].strip()
+                if title:
+                    AgreementService.objects.create(
+                        agreement=agreement,
+                        title=title,
+                        description=svc_descs[i].strip() if i < len(svc_descs) else ''
+                    )
+            
+            # Refresh Deliverables
+            agreement.deliverables.all().delete()
+            deliv_titles = request.POST.getlist('deliverable_title[]')
+            for t in deliv_titles:
+                title = t.strip()
+                if title:
+                    Deliverable.objects.create(agreement=agreement, title=title)
+                    
+            # Refresh Client Responsibilities
+            agreement.responsibilities.all().delete()
+            resp_texts = request.POST.getlist('responsibility_text[]')
+            for r in resp_texts:
+                text = r.strip()
+                if text:
+                    ClientResponsibility.objects.create(agreement=agreement, responsibility=text)
+                    
+            messages.success(request, 'Agreement updated successfully.')
+            return redirect('agreements')
+        except Exception as e:
+            messages.error(request, f"Error updating agreement: {str(e)}")
+            
+    return render(request, 'agreement_form.html', {
+        'action': 'Update',
+        'agreement': agreement,
+        'services': services
+    })
+
+
+@login_required
+def delete_agreement_view(request, agreement_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        agreement = get_object_or_404(Agreement, id=agreement_id, organization=org)
+        agreement.delete()
+        messages.success(request, 'Agreement deleted successfully.')
+        return redirect('agreements')
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+def agreement_print_view(request, agreement_id):
+    org = request.user.profile.organization
+    agreement = get_object_or_404(Agreement, id=agreement_id, organization=org)
+    return render(request, 'agreement_print.html', {
+        'agreement': agreement,
+        'organization': org
+    })
 
 
 
@@ -106,58 +590,7 @@ def campaign_view(request):
     return render(request, 'campaign.html', {'campaigns': campaigns})
 
 def signup_view(request):
-    if request.user.is_authenticated:
-        return redirect('dashboard')
-    
-    if request.method == 'POST':
-        org_name = request.POST.get('org_name')
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        password_confirm = request.POST.get('password_confirm')
-
-        if password != password_confirm:
-            messages.error(request, "Passwords do not match.")
-            return render(request, 'registration/signup.html')
-
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already exists.")
-            return render(request, 'registration/signup.html')
-
-        try:
-            # Create Organization
-            org = Organization.objects.create(name=org_name)
-            
-            # Create User
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password,
-                first_name=first_name,
-                last_name=last_name
-            )
-
-            # Create UserProfile
-            # Auto-assign typical premium avatar urls to make it visually pleasing
-            avatar_url = "https://lh3.googleusercontent.com/aida-public/AB6AXuAW7b6-rqX4pvH0f9U4MhDYRZg0b0CU4zdddcnQDxuSKVC4o7zD5quJU0Yr0vS_mW_ZpyNm2rNU1ZtClVgLMkxLZZtMoQdkY_jpsH2UiHW0mX7f97C822jCC7YFuBcHyUSk2RY-hXiu4fgyIL51dfNAQ_yLS_pTp-ebecMCF--zR2e-ZBC3zN3LNFES0Gs8aXbIQ5GXtVkf9lIX_HFRCZwopPHKEocY22oY2KtZxnI8Cl98c0sK5MQwclQW1Cs0hLmHW2awzgfmQK8l"
-            UserProfile.objects.create(
-                user=user,
-                organization=org,
-                role="Administrator",
-                profile_image_url=avatar_url
-            )
-
-            # Log user in
-            login(request, user)
-            messages.success(request, f"Welcome to XenoCRM, {first_name}! Your organization space '{org_name}' has been created.")
-            return redirect('dashboard')
-        except Exception as e:
-            messages.error(request, f"Error during signup: {str(e)}")
-            return render(request, 'registration/signup.html')
-
-    return render(request, 'registration/signup.html')
+    return redirect('login')
 
 def login_view(request):
     if request.user.is_authenticated:
@@ -461,11 +894,17 @@ def contact_detail_view(request, lead_id):
         
     activities = lead.activities.all().order_by('-timestamp')
     tasks = lead.tasks.all().order_by('-created_at')
+    owners = UserProfile.objects.filter(organization=org)
+    statuses = get_or_create_default_statuses(org)
+    services = Service.objects.filter(organization=org)
     
     context = {
         'lead': lead,
         'activities': activities,
-        'tasks': tasks
+        'tasks': tasks,
+        'owners': owners,
+        'statuses': statuses,
+        'services': services,
     }
     return render(request, 'contact_detail.html', context)
 
@@ -473,40 +912,125 @@ def contact_detail_view(request, lead_id):
 def add_task(request):
     if request.method == 'POST':
         lead_id = request.POST.get('lead_id')
-        desc = request.POST.get('description')
+        title = request.POST.get('title', 'Project Task')
+        desc = request.POST.get('description', '')
+        start_date = request.POST.get('start_date') or None
         due_date = request.POST.get('due_date')
         priority = request.POST.get('priority', 'Medium')
+        completed = request.POST.get('completed') == 'true' or request.POST.get('completed') == 'on'
         org = request.user.profile.organization
         
         try:
             lead = Lead.objects.get(id=lead_id, organization=org)
             task = Task.objects.create(
                 lead=lead,
+                title=title,
                 description=desc,
+                start_date=start_date,
                 due_date=due_date,
-                priority=priority
+                priority=priority,
+                completed=completed
             )
+            
+            assignee_ids = request.POST.getlist('assignees')
+            if assignee_ids:
+                valid_assignees = UserProfile.objects.filter(id__in=[int(aid) for aid in assignee_ids if aid], organization=org)
+                task.assignees.set(valid_assignees)
+
             # Log activity
             Activity.objects.create(
                 lead=lead,
                 type='Task',
-                description=f"Created task: {desc} (Priority: {priority}, Due: {due_date})"
+                description=f"Created task: {title} (Priority: {priority}, Due: {due_date})"
             )
-            return JsonResponse({
-                'success': True,
-                'task': {
-                    'id': task.id,
-                    'description': task.description,
-                    'due_date_formatted': task.due_date.strftime('%b %d'),
-                    'priority': task.priority,
-                    'completed': task.completed
-                }
-            })
-        except Lead.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Lead not found.'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)})
             
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax') == 'true':
+                return JsonResponse({
+                    'success': True,
+                    'task': {
+                        'id': task.id,
+                        'title': task.title,
+                        'description': task.description,
+                        'due_date_formatted': task.due_date.strftime('%b %d'),
+                        'priority': task.priority,
+                        'completed': task.completed
+                    }
+                })
+            messages.success(request, 'Task created successfully.')
+            return redirect('projects')
+        except Lead.DoesNotExist:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': 'Lead not found.'})
+            messages.error(request, 'Lead not found.')
+            return redirect('projects')
+        except Exception as e:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, f'Error: {str(e)}')
+            return redirect('projects')
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request.'})
+
+
+@login_required
+def edit_task(request, task_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        task = get_object_or_404(Task, id=task_id, lead__organization=org)
+        
+        try:
+            task.title = request.POST.get('title', 'Project Task')
+            task.description = request.POST.get('description', '')
+            task.priority = request.POST.get('priority', 'Medium')
+            task.completed = request.POST.get('completed') == 'true' or request.POST.get('completed') == 'on'
+            
+            start_date_val = request.POST.get('start_date')
+            task.start_date = start_date_val if start_date_val else None
+            
+            due_date_val = request.POST.get('due_date')
+            if due_date_val:
+                task.due_date = due_date_val
+                
+            lead_id = request.POST.get('lead_id')
+            if lead_id:
+                try:
+                    task.lead = Lead.objects.get(id=int(lead_id), organization=org)
+                except (ValueError, Lead.DoesNotExist):
+                    pass
+                    
+            assignee_ids = request.POST.getlist('assignees')
+            if assignee_ids:
+                valid_assignees = UserProfile.objects.filter(id__in=[int(aid) for aid in assignee_ids if aid], organization=org)
+                task.assignees.set(valid_assignees)
+            else:
+                task.assignees.clear()
+                
+            task.save()
+            
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': 'Task updated successfully.'})
+            messages.success(request, 'Task updated successfully.')
+            return redirect('projects')
+        except Exception as e:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': str(e)})
+            messages.error(request, f'Error updating task: {str(e)}')
+            return redirect('projects')
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request.'})
+
+
+@login_required
+def delete_task(request, task_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        task = get_object_or_404(Task, id=task_id, lead__organization=org)
+        task.delete()
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'message': 'Task deleted successfully.'})
+        messages.success(request, 'Task deleted.')
+        return redirect('projects')
+        
     return JsonResponse({'success': False, 'error': 'Invalid request.'})
 
 @login_required
@@ -930,7 +1454,13 @@ def edit_lead(request, lead_id):
             last_followup_val = request.POST.get('last_followup_date_time')
             lead.last_followup_date_time = last_followup_val if last_followup_val else None
 
-            lead.value = safe_parse_decimal(request.POST.get('value', '0.00'), 0.00)
+            val_input = request.POST.get('value', '').strip()
+            if val_input == '':
+                lead.value = None
+            else:
+                lead.value = safe_parse_decimal(val_input, 0.00)
+                
+            lead.paid_amount = safe_parse_decimal(request.POST.get('paid_amount', '0.00'), 0.00)
             lead.location = request.POST.get('location', '') or None
             lead.profile_image_url = request.POST.get('profile_image_url', '') or None
             
@@ -957,6 +1487,8 @@ def edit_lead(request, lead_id):
                     'message': f"Successfully updated lead '{lead.name}'."
                 })
             messages.success(request, f"Successfully updated lead '{lead.name}'.")
+            if lead.status == 'Qualified':
+                return redirect('clients')
             return redirect('leads')
         except Exception as e:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':

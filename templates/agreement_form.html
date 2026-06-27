@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | {{ action }} Agreement{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    <!-- Header -->
+    <div class="flex justify-between items-end mb-6">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">{{ action }} Service Agreement</h2>
+            <p class="text-secondary font-body-md">Fill out the form below to compile an enterprise-grade digital marketing agreement.</p>
+        </div>
+        <a href="{% url 'agreements' %}" class="flex items-center px-4 py-2 border border-outline-variant text-secondary rounded-lg font-button text-button hover:bg-slate-50">
+            Cancel
+        </a>
+    </div>
+
+    <!-- Form Container -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-outline-variant/30 max-w-4xl mx-auto w-full">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Basic Details Section -->
+            <div class="space-y-4">
+                <h3 class="text-xs font-bold text-primary uppercase tracking-wider border-b border-outline-variant/30 pb-2">1. Agreement Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Agreement Date *</label>
+                        <input type="date" name="date" required value="{{ agreement.date|date:'Y-m-d'|default:'' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Start Date *</label>
+                        <input type="date" name="start_date" required value="{{ agreement.start_date|date:'Y-m-d'|default:'' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">End Date *</label>
+                        <input type="date" name="end_date" required value="{{ agreement.end_date|date:'Y-m-d'|default:'' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Client Info Section -->
+            <div class="space-y-4 pt-4">
+                <h3 class="text-xs font-bold text-primary uppercase tracking-wider border-b border-outline-variant/30 pb-2">2. Client Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Client Contact Name *</label>
+                        <input type="text" name="client_name" required value="{{ agreement.client_name|default:'' }}" placeholder="e.g. John Doe" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Company / Organization Name</label>
+                        <input type="text" name="company_name" value="{{ agreement.company_name|default:'' }}" placeholder="e.g. Acme Corp" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Client Email</label>
+                        <input type="email" name="client_email" value="{{ agreement.client_email|default:'' }}" placeholder="client@example.com" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Client Phone</label>
+                        <input type="text" name="client_phone" value="{{ agreement.client_phone|default:'' }}" placeholder="+1-202-555-0143" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Service Offered *</label>
+                        <select name="service" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                            <option value="" disabled selected>-- Select Service --</option>
+                            {% for svc in services %}
+                            <option value="{{ svc.id }}" {% if agreement.service.id == svc.id %}selected{% endif %}>{{ svc.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Client Address</label>
+                    <textarea name="client_address" rows="2" placeholder="Street, City, Zip Code" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">{{ agreement.client_address|default:'' }}</textarea>
+                </div>
+            </div>
+
+            <!-- Campaign Scope Specs & Term Details -->
+            <div class="space-y-4 pt-4">
+                <h3 class="text-xs font-bold text-primary uppercase tracking-wider border-b border-outline-variant/30 pb-2">3. Campaigns & Billing Specifications</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Monthly Fee ($) *</label>
+                        <input type="number" step="0.01" name="monthly_fee" required value="{{ agreement.monthly_fee|default:'0.00' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary font-mono"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Advance Payment ($)</label>
+                        <input type="number" step="0.01" name="advance_payment" value="{{ agreement.advance_payment|default:'0.00' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary font-mono"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Payment Cycle</label>
+                        <select name="payment_cycle" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                            <option value="Monthly" {% if agreement.payment_cycle == 'Monthly' %}selected{% endif %}>Monthly</option>
+                            <option value="Bi-Weekly" {% if agreement.payment_cycle == 'Bi-Weekly' %}selected{% endif %}>Bi-Weekly</option>
+                            <option value="One-Time" {% if agreement.payment_cycle == 'One-Time' %}selected{% endif %}>One-Time</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Payment Method</label>
+                        <input type="text" name="payment_method" value="{{ agreement.payment_method|default:'Bank Transfer' }}" placeholder="Bank Transfer, Card, etc." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Monthly Social Posts</label>
+                        <input type="number" name="posts_count" value="{{ agreement.posts_count|default:0 }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary font-mono"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Ad Campaigns</label>
+                        <input type="number" name="campaigns_count" value="{{ agreement.campaigns_count|default:0 }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary font-mono"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Max Revisions Allowed</label>
+                        <input type="number" name="revisions" value="{{ agreement.revisions|default:3 }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary font-mono"/>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Notice Period (Days)</label>
+                        <input type="number" name="notice_period" value="{{ agreement.notice_period|default:30 }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary font-mono"/>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Agreement Status</label>
+                        <select name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                            <option value="Draft" {% if agreement.status == 'Draft' %}selected{% endif %}>Draft</option>
+                            <option value="Active" {% if agreement.status == 'Active' %}selected{% endif %}>Active</option>
+                            <option value="Completed" {% if agreement.status == 'Completed' %}selected{% endif %}>Completed</option>
+                            <option value="Cancelled" {% if agreement.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Special Notes / Clauses</label>
+                        <input type="text" name="notes" value="{{ agreement.notes|default:'' }}" placeholder="Custom details..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Services Section -->
+            <div class="space-y-4 pt-4">
+                <div class="flex justify-between items-center border-b border-outline-variant/30 pb-2">
+                    <h3 class="text-xs font-bold text-primary uppercase tracking-wider">4. Scope of Services</h3>
+                    <button type="button" onclick="addServiceRow()" class="text-xs text-primary font-bold hover:underline flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">add_circle</span> Add Service
+                    </button>
+                </div>
+                <div id="services-container" class="space-y-3">
+                    {% for svc in agreement.services.all %}
+                    <div class="flex gap-3 items-start service-row bg-slate-50/50 p-3 rounded-xl border border-outline-variant/20">
+                        <div class="flex-1 space-y-2">
+                            <input type="text" name="service_title[]" required value="{{ svc.title }}" placeholder="e.g. Social Media Management" class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs font-bold focus:ring-1 focus:ring-primary"/>
+                            <textarea name="service_desc[]" rows="2" placeholder="Details/channels..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary">{{ svc.description|default:'' }}</textarea>
+                        </div>
+                        <button type="button" onclick="this.closest('.service-row').remove()" class="p-1 text-outline hover:text-red-600">
+                            <span class="material-symbols-outlined">delete</span>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Dynamic Deliverables -->
+            <div class="space-y-4 pt-4">
+                <div class="flex justify-between items-center border-b border-outline-variant/30 pb-2">
+                    <h3 class="text-xs font-bold text-primary uppercase tracking-wider">5. Key Deliverables</h3>
+                    <button type="button" onclick="addDeliverableRow()" class="text-xs text-primary font-bold hover:underline flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">add_circle</span> Add Deliverable
+                    </button>
+                </div>
+                <div id="deliverables-container" class="space-y-2">
+                    {% for del in agreement.deliverables.all %}
+                    <div class="flex gap-3 items-center deliverable-row">
+                        <input type="text" name="deliverable_title[]" required value="{{ del.title }}" placeholder="e.g. 15 Facebook Post Designs" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary"/>
+                        <button type="button" onclick="this.closest('.deliverable-row').remove()" class="p-1 text-outline hover:text-red-600">
+                            <span class="material-symbols-outlined">delete</span>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Dynamic Client Responsibilities -->
+            <div class="space-y-4 pt-4">
+                <div class="flex justify-between items-center border-b border-outline-variant/30 pb-2">
+                    <h3 class="text-xs font-bold text-primary uppercase tracking-wider">6. Client Responsibilities</h3>
+                    <button type="button" onclick="addResponsibilityRow()" class="text-xs text-primary font-bold hover:underline flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">add_circle</span> Add Responsibility
+                    </button>
+                </div>
+                <div id="responsibilities-container" class="space-y-2">
+                    {% for resp in agreement.responsibilities.all %}
+                    <div class="flex gap-3 items-center responsibility-row">
+                        <input type="text" name="responsibility_text[]" required value="{{ resp.responsibility }}" placeholder="e.g. Providing brand guidelines and graphic assets." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary"/>
+                        <button type="button" onclick="this.closest('.responsibility-row').remove()" class="p-1 text-outline hover:text-red-600">
+                            <span class="material-symbols-outlined">delete</span>
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="pt-6 border-t border-outline-variant/30 flex justify-end gap-3">
+                <a href="{% url 'agreements' %}" class="px-5 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50 font-button">Cancel</a>
+                <button type="submit" class="px-6 py-2 bg-primary text-on-primary font-button rounded-lg shadow-md hover:opacity-90 active:scale-95 transition-all">
+                    Save Agreement
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function addServiceRow() {
+        const container = document.getElementById('services-container');
+        const html = `
+            <div class="flex gap-3 items-start service-row bg-slate-50/50 p-3 rounded-xl border border-outline-variant/20">
+                <div class="flex-1 space-y-2">
+                    <input type="text" name="service_title[]" required placeholder="e.g. Meta Ads Management" class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs font-bold focus:ring-1 focus:ring-primary"/>
+                    <textarea name="service_desc[]" rows="2" placeholder="Details/channels..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary"></textarea>
+                </div>
+                <button type="button" onclick="this.closest('.service-row').remove()" class="p-1 text-outline hover:text-red-600">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+    }
+
+    function addDeliverableRow() {
+        const container = document.getElementById('deliverables-container');
+        const html = `
+            <div class="flex gap-3 items-center deliverable-row">
+                <input type="text" name="deliverable_title[]" required placeholder="e.g. Monthly Performance Reports" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary"/>
+                <button type="button" onclick="this.closest('.deliverable-row').remove()" class="p-1 text-outline hover:text-red-600">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+    }
+
+    function addResponsibilityRow() {
+        const container = document.getElementById('responsibilities-container');
+        const html = `
+            <div class="flex gap-3 items-center responsibility-row">
+                <input type="text" name="responsibility_text[]" required placeholder="e.g. Fast approval of draft assets (within 48 hours)." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary"/>
+                <button type="button" onclick="this.closest('.responsibility-row').remove()" class="p-1 text-outline hover:text-red-600">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+            </div>
+        `;
+        container.insertAdjacentHTML('beforeend', html);
+    }
+
+    // Initialize with empty rows if creating
+    {% if action == 'Create' %}
+    window.addEventListener('DOMContentLoaded', () => {
+        if (document.querySelectorAll('.service-row').length === 0) addServiceRow();
+        if (document.querySelectorAll('.deliverable-row').length === 0) addDeliverableRow();
+        if (document.querySelectorAll('.responsibility-row').length === 0) addResponsibilityRow();
+    });
+    {% endif %}
+</script>
+{% endblock %}

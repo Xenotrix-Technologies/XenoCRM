@@ -10,7 +10,7 @@
             <h2 class="font-headline-lg text-headline-lg text-on-background">Workspace Projects</h2>
             <p class="text-secondary font-body-md">Track team project tasks, lead milestones, and delivery actions.</p>
         </div>
-        <button onclick="document.getElementById('quick-create-modal').classList.remove('hidden')" class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md hover:opacity-90 active:scale-95 transition-all">
+        <button onclick="openCreateModal()" class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md hover:opacity-90 active:scale-95 transition-all">
             <span class="material-symbols-outlined mr-2 text-sm">playlist_add</span>
             Add Project Task
         </button>
@@ -22,39 +22,67 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="border-b border-outline-variant bg-surface-container/50 text-[11px] font-label-md uppercase tracking-wider text-secondary">
-                        <th class="px-6 py-4">Task Description</th>
-                        <th class="px-6 py-4">Associated Lead</th>
+                        <th class="px-6 py-4">Task</th>
+                        <th class="px-6 py-4">Description</th>
+                        <th class="px-6 py-4">Assignee</th>
                         <th class="px-6 py-4">Priority</th>
+                        <th class="px-6 py-4">Start Date</th>
                         <th class="px-6 py-4">Due Date</th>
                         <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4 text-right">Action</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-outline-variant/30 text-body-sm text-on-surface">
                     {% for task in tasks %}
                     <tr class="hover:bg-surface-container/30 transition-colors">
-                        <td class="px-6 py-4 font-bold">{{ task.description }}</td>
-                        <td class="px-6 py-4">
-                            <a href="{% url 'contact_detail' task.lead.id %}" class="hover:text-primary transition-colors text-xs font-bold">
-                                {{ task.lead.name }} ({{ task.lead.company }})
+                        <td class="px-6 py-4 font-bold">
+                            <a href="#" onclick="openEditModal('{{ task.id }}', '{{ task.title|escapejs }}', '{{ task.description|default:''|escapejs }}', '[{% for a in task.assignees.all %}{{ a.id }}{% if not forloop.last %},{% endif %}{% endfor %}]', '{{ task.priority|escapejs }}', '{{ task.start_date|date:'Y-m-d' }}', '{{ task.due_date|date:'Y-m-d' }}', '{{ task.completed|yesno:'true,false' }}', '{{ task.lead.id }}')" class="text-primary hover:underline font-bold">
+                                {{ task.title }}
                             </a>
+                        </td>
+                        <td class="px-6 py-4 text-xs text-secondary max-w-[200px] truncate">
+                            {{ task.description|default:"-" }}
+                        </td>
+                        <td class="px-6 py-4">
+                            {% if task.assignees.all %}
+                                <div class="flex flex-col gap-1">
+                                    {% for assignee in task.assignees.all %}
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="material-symbols-outlined text-[14px] text-outline">person</span>
+                                            <span class="text-xs">{{ assignee.user.get_full_name|default:assignee.user.username }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <span class="text-outline-variant italic">Unassigned</span>
+                            {% endif %}
                         </td>
                         <td class="px-6 py-4">
                             <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase {% if task.priority == 'High' %}bg-error-container text-on-error-container{% elif task.priority == 'Medium' %}bg-warning/10 text-warning{% else %}bg-surface-variant text-secondary{% endif %}">
                                 {{ task.priority }}
                             </span>
                         </td>
+                        <td class="px-6 py-4 font-mono text-xs">{{ task.start_date|date:"M d, Y"|default:"-" }}</td>
                         <td class="px-6 py-4 font-mono text-xs">{{ task.due_date|date:"M d, Y" }}</td>
                         <td class="px-6 py-4">
                             <span class="text-xs px-2.5 py-1 rounded-full font-bold {% if task.completed %}bg-success/10 text-success{% else %}bg-warning/10 text-warning{% endif %}">
                                 {% if task.completed %}Completed{% else %}Pending{% endif %}
                             </span>
                         </td>
+                        <td class="px-6 py-4 text-right">
+                            <form method="POST" action="{% url 'delete_task' task.id %}" onsubmit="return confirm('Are you sure you want to delete this task?');" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="p-1.5 rounded-lg hover:bg-red-50 text-outline hover:text-red-600 transition-all" title="Delete Task">
+                                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-secondary">
+                        <td colspan="8" class="px-6 py-12 text-center text-secondary">
                             <span class="material-symbols-outlined text-4xl mb-2 opacity-50">assignment</span>
-                            <p>No active project tasks. Use the Quick Create modal to add tasks to leads.</p>
+                            <p>No active project tasks. Click 'Add Project Task' to create one.</p>
                         </td>
                     </tr>
                     {% endfor %}
@@ -63,4 +91,193 @@
         </div>
     </div>
 </div>
+
+<!-- Create Task Modal -->
+<div id="create-task-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-outline-variant/30 overflow-y-auto max-h-[90vh]">
+        <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/20">
+            <h3 class="font-headline-md text-headline-md font-bold text-on-background">Add Project Task</h3>
+            <button onclick="closeCreateModal()" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+        </div>
+        <form method="POST" action="{% url 'add_task' %}" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Task Title *</label>
+                <input type="text" name="title" required placeholder="e.g. Review Renewal Quote" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+            </div>
+
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Description</label>
+                <textarea name="description" rows="3" placeholder="Provide details about the task..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Associated Lead / Client *</label>
+                <select name="lead_id" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                    <option value="" disabled selected>Select associated lead</option>
+                    {% for lead in leads %}
+                    <option value="{{ lead.id }}">{{ lead.name }} ({% if lead.company %}{{ lead.company }}{% else %}No Company{% endif %})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Assignees</label>
+                    <div class="bg-surface-container-low border border-outline-variant rounded-lg p-2.5 max-h-[110px] overflow-y-auto space-y-1.5">
+                        {% for member in staff %}
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" name="assignees" value="{{ member.id }}" class="rounded border-outline-variant text-primary focus:ring-primary h-4 w-4"/>
+                            <span class="text-xs text-on-surface">{{ member.user.get_full_name|default:member.user.username }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Priority</label>
+                    <select name="priority" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Start Date</label>
+                    <input type="date" name="start_date" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                </div>
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Due Date *</label>
+                    <input type="date" name="due_date" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                </div>
+            </div>
+
+            <div>
+                <label class="flex items-center gap-2 mt-2 select-none cursor-pointer">
+                    <input type="checkbox" name="completed" value="true" class="rounded border-outline-variant text-primary focus:ring-primary h-4 w-4"/>
+                    <span class="text-body-sm text-on-surface">Mark task as completed</span>
+                </label>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
+                <button type="button" onclick="closeCreateModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Add Task</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Task Modal -->
+<div id="edit-task-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-outline-variant/30 overflow-y-auto max-h-[90vh]">
+        <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/20">
+            <h3 class="font-headline-md text-headline-md font-bold text-on-background">Edit Project Task</h3>
+            <button onclick="closeEditModal()" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+        </div>
+        <form id="edit-task-form" method="POST" action="" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Task Title *</label>
+                <input type="text" id="edit-title" name="title" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+            </div>
+
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Description</label>
+                <textarea id="edit-description" name="description" rows="3" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Associated Lead / Client *</label>
+                <select id="edit-lead-id" name="lead_id" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                    {% for lead in leads %}
+                    <option value="{{ lead.id }}">{{ lead.name }} ({% if lead.company %}{{ lead.company }}{% else %}No Company{% endif %})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Assignees</label>
+                    <div class="bg-surface-container-low border border-outline-variant rounded-lg p-2.5 max-h-[110px] overflow-y-auto space-y-1.5">
+                        {% for member in staff %}
+                        <label class="flex items-center gap-2 cursor-pointer select-none">
+                            <input type="checkbox" name="assignees" value="{{ member.id }}" class="edit-assignee-checkbox rounded border-outline-variant text-primary focus:ring-primary h-4 w-4"/>
+                            <span class="text-xs text-on-surface">{{ member.user.get_full_name|default:member.user.username }}</span>
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Priority</label>
+                    <select id="edit-priority" name="priority" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Start Date</label>
+                    <input type="date" id="edit-start-date" name="start_date" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                </div>
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Due Date *</label>
+                    <input type="date" id="edit-due-date" name="due_date" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                </div>
+            </div>
+
+            <div>
+                <label class="flex items-center gap-2 mt-2 select-none cursor-pointer">
+                    <input type="checkbox" id="edit-completed" name="completed" value="true" class="rounded border-outline-variant text-primary focus:ring-primary h-4 w-4"/>
+                    <span class="text-body-sm text-on-surface">Mark task as completed</span>
+                </label>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openCreateModal() {
+        document.getElementById('create-task-modal').classList.remove('hidden');
+    }
+
+    function closeCreateModal() {
+        document.getElementById('create-task-modal').classList.add('hidden');
+    }
+
+    function openEditModal(id, title, description, assigneeIdsJson, priority, startDate, dueDate, completed, leadId) {
+        document.getElementById('edit-title').value = title;
+        document.getElementById('edit-description').value = description || "";
+        document.getElementById('edit-priority').value = priority;
+        document.getElementById('edit-start-date').value = startDate || "";
+        document.getElementById('edit-due-date').value = dueDate || "";
+        document.getElementById('edit-completed').checked = completed === 'true';
+        document.getElementById('edit-lead-id').value = leadId;
+
+        // Parse list of assignee IDs and select checkboxes
+        const assigneeIds = JSON.parse(assigneeIdsJson || "[]");
+        const checkboxes = document.querySelectorAll('.edit-assignee-checkbox');
+        checkboxes.forEach(cb => {
+            cb.checked = assigneeIds.includes(parseInt(cb.value));
+        });
+
+        const form = document.getElementById('edit-task-form');
+        form.action = `/task/${id}/edit/`;
+
+        document.getElementById('edit-task-modal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+        document.getElementById('edit-task-modal').classList.add('hidden');
+    }
+</script>
 {% endblock %}

@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Digital Marketing Service Agreement - {{ agreement.agreement_number }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px;
+            color: #1e293b;
+            background-color: #ffffff;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* Action Bar */
+        .action-bar {
+            background-color: #f8fafc;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 12px;
+            margin-bottom: 40px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        }
+        .action-bar span {
+            font-weight: 600;
+            color: #475569;
+            font-size: 14px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            background-color: #0053db;
+            color: #ffffff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .btn-secondary {
+            background-color: #ffffff;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+        .btn-secondary:hover {
+            background-color: #f1f5f9;
+        }
+        
+        /* Header style */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 24px;
+            margin-bottom: 30px;
+        }
+        .logo-box h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+        }
+        .logo-box p {
+            margin: 2px 0 0 0;
+            color: #0053db;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .agreement-title {
+            text-align: right;
+        }
+        .agreement-title h2 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 800;
+            color: #0053db;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .agreement-title p {
+            margin: 4px 0 0 0;
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 14px;
+            color: #334155;
+        }
+        
+        /* Party details */
+        .party-grid {
+            display: grid;
+            grid-template-cols: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #f1f5f9;
+        }
+        .party-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 11px;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .party-card p {
+            margin: 4px 0;
+            color: #334155;
+        }
+        
+        /* Project specs */
+        .project-meta-grid {
+            display: grid;
+            grid-template-cols: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 40px;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 20px;
+        }
+        .meta-item h4 {
+            margin: 0 0 4px 0;
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .meta-item p {
+            margin: 0;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        
+        /* Clauses styling */
+        .section-clause {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+        }
+        .section-clause h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #0f172a;
+            border-left: 3px solid #0053db;
+            padding-left: 10px;
+            margin: 0 0 12px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .section-clause p, .section-clause ul {
+            margin: 0 0 10px 0;
+            color: #334155;
+        }
+        .section-clause ul {
+            padding-left: 20px;
+        }
+        .section-clause li {
+            margin-bottom: 6px;
+        }
+        
+        /* Payment summary card */
+        .payment-summary-card {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #f1f5f9;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .payment-table td {
+            padding: 8px 12px;
+            color: #334155;
+        }
+        .payment-table tr:not(:last-child) {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .payment-table td.val {
+            text-align: right;
+            font-weight: 700;
+            color: #0053db;
+        }
+        
+        /* Signature Blocks */
+        .signature-section {
+            margin-top: 50px;
+            display: grid;
+            grid-template-cols: 1fr 1fr;
+            gap: 60px;
+            page-break-inside: avoid;
+        }
+        .sig-block {
+            border-top: 1px solid #cbd5e1;
+            padding-top: 15px;
+        }
+        .sig-block p {
+            margin: 6px 0;
+            color: #475569;
+        }
+        .sig-line {
+            height: 40px;
+            margin-bottom: 10px;
+        }
+        
+        /* Footer branding */
+        .footer-version {
+            margin-top: 60px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #94a3b8;
+            page-break-inside: avoid;
+        }
+        
+        @media print {
+            .action-bar {
+                display: none;
+            }
+            body {
+                padding: 0;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <span>Agreement Preview: {{ agreement.agreement_number }}</span>
+            <div class="btn-group">
+                <a href="{% url 'agreements' %}" class="btn btn-secondary">Back to List</a>
+                <a href="{% url 'edit_agreement' agreement.id %}" class="btn btn-secondary">Edit Agreement</a>
+                <button onclick="window.print()" class="btn">Print / Save as PDF</button>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="logo-box">
+                <h1>Xenotrix Technologies</h1>
+                <p>Digital Marketing Service Agreement</p>
+            </div>
+            <div class="agreement-title">
+                <h2>Agreement</h2>
+                <p>{{ agreement.agreement_number }}</p>
+            </div>
+        </div>
+
+        <!-- Meta Grid -->
+        <div class="project-meta-grid">
+            <div class="meta-item">
+                <h4>Agreement Date</h4>
+                <p>{{ agreement.date|date:"F d, Y" }}</p>
+            </div>
+            <div class="meta-item">
+                <h4>Start Date</h4>
+                <p>{{ agreement.start_date|date:"F d, Y" }}</p>
+            </div>
+            <div class="meta-item">
+                <h4>End Date</h4>
+                <p>{{ agreement.end_date|date:"F d, Y" }}</p>
+            </div>
+            <div class="meta-item">
+                <h4>Service Offered</h4>
+                <p>{{ agreement.service.name|default:"-" }}</p>
+            </div>
+        </div>
+
+        <!-- Party Info -->
+        <div class="party-grid">
+            <div class="party-card">
+                <h3>Service Provider:</h3>
+                <p><strong>Xenotrix Technologies</strong></p>
+                <p>230 Commercial Center, Suite B</p>
+                <p>info@xenotrix.com</p>
+            </div>
+            <div class="party-card">
+                <h3>Client Information:</h3>
+                <p><strong>{{ agreement.client_name }}</strong></p>
+                {% if agreement.company_name %}<p>{{ agreement.company_name }}</p>{% endif %}
+                {% if agreement.client_email %}<p>{{ agreement.client_email }}</p>{% endif %}
+                {% if agreement.client_phone %}<p>{{ agreement.client_phone }}</p>{% endif %}
+                {% if agreement.client_address %}<p>{{ agreement.client_address }}</p>{% endif %}
+            </div>
+        </div>
+
+        <!-- Scope of Services -->
+        <div class="section-clause">
+            <h3>1. Scope of Services</h3>
+            <p>Xenotrix Technologies will supply the following services for the duration of this agreement:</p>
+            <ul>
+                {% for service in agreement.services.all %}
+                <li>
+                    <strong>{{ service.title }}:</strong> {{ service.description|default:"Standard campaign deployment." }}
+                </li>
+                {% empty %}
+                <li>Social Media Optimization and Search Engine Optimization.</li>
+                {% endfor %}
+            </ul>
+            {% if agreement.posts_count > 0 or agreement.campaigns_count > 0 %}
+            <p style="margin-top: 15px; font-weight: 600;">Monthly Deliverables Allocation:</p>
+            <ul>
+                {% if agreement.posts_count > 0 %}
+                <li>Minimum monthly social media posts: {{ agreement.posts_count }}</li>
+                {% endif %}
+                {% if agreement.campaigns_count > 0 %}
+                <li>Active ad campaign pipelines: {{ agreement.campaigns_count }}</li>
+                {% endif %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <!-- Key Deliverables -->
+        <div class="section-clause">
+            <h3>2. Key Deliverables</h3>
+            <p>The Service Provider agrees to deliver the following items to the Client:</p>
+            <ul>
+                {% for del in agreement.deliverables.all %}
+                <li>{{ del.title }}</li>
+                {% empty %}
+                <li>Monthly campaign metrics reports.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Client Responsibilities -->
+        <div class="section-clause">
+            <h3>3. Client Responsibilities</h3>
+            <p>To ensure high quality campaign performance, the Client agrees to be responsible for:</p>
+            <ul>
+                {% for resp in agreement.responsibilities.all %}
+                <li>{{ resp.responsibility }}</li>
+                {% empty %}
+                <li>Timely reviews, digital assets provisioning, and billing details.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Payment terms -->
+        <div class="section-clause">
+            <h3>4. Payment Terms & Billing</h3>
+            <div class="payment-summary-card">
+                <table class="payment-table">
+                    <tr>
+                        <td>Monthly Retainer Fee</td>
+                        <td class="val">${{ agreement.monthly_fee|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Advance Deposit Payment</td>
+                        <td class="val">${{ agreement.advance_payment|floatformat:2 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Billing Cycle</td>
+                        <td style="text-align: right; font-weight: 600;">{{ agreement.payment_cycle }}</td>
+                    </tr>
+                    <tr>
+                        <td>Accepted Payment Method</td>
+                        <td style="text-align: right; font-weight: 600;">{{ agreement.payment_method }}</td>
+                    </tr>
+                </table>
+            </div>
+            <p>Monthly retainers will be billed at the beginning of each cycle and must be cleared within 7 business days.</p>
+        </div>
+
+        <div class="page-break"></div>
+
+        <!-- Revisions -->
+        <div class="section-clause" style="margin-top: 20px;">
+            <h3>5. Revisions Policy</h3>
+            <p>The Client is entitled to a maximum of <strong>{{ agreement.revisions }} revisions</strong> per asset or campaign schedule. Any subsequent revisions or complete project redirections will be subject to additional consultancy fees billed at standard hourly rates.</p>
+        </div>
+
+        <!-- Confidentiality -->
+        <div class="section-clause">
+            <h3>6. Confidentiality Clause</h3>
+            <p>Both parties agree that all trade secrets, brand guidelines, customer lists, login credentials, and proprietary advertising strategy data disclosed during this agreement will remain strictly confidential and will not be shared with any third party without explicit prior written authorization.</p>
+        </div>
+
+        <!-- Intellectual Property -->
+        <div class="section-clause">
+            <h3>7. Intellectual Property</h3>
+            <p>Upon receipt of full invoice clearance, all custom marketing materials, copy graphics, and ad assets created specifically for the Client will belong entirely to the Client. The Service Provider retains the right to display design mockups or screenshots in professional project portfolios.</p>
+        </div>
+
+        <!-- Termination -->
+        <div class="section-clause">
+            <h3>8. Termination Policy</h3>
+            <p>This agreement can be terminated by either party upon submitting a written notice of at least <strong>{{ agreement.notice_period }} days</strong> prior to the next billing date. In the event of early termination, all unpaid active retainers must be cleared in full immediately.</p>
+        </div>
+
+        <!-- Performance Disclaimer -->
+        <div class="section-clause">
+            <h3>9. Performance Disclaimer</h3>
+            <p>While Xenotrix Technologies uses industry-leading digital marketing techniques, the Client acknowledges that ad click rates, keyword ranks, and consumer conversions depend heavily on search engine algorithms, platform policies, and market forces. Hence, no specific traffic metrics or sales gains are guaranteed.</p>
+        </div>
+
+        <!-- Governing Law -->
+        <div class="section-clause">
+            <h3>10. Governing Law</h3>
+            <p>This agreement shall be interpreted, governed, and enforced in accordance with the national and state business laws of the jurisdiction in which the Service Provider maintains its head headquarters.</p>
+        </div>
+
+        <!-- Notes -->
+        {% if agreement.notes %}
+        <div class="section-clause">
+            <h3>Special Notes / Addenda</h3>
+            <p>{{ agreement.notes }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Acceptance & Signatures -->
+        <div class="section-clause">
+            <h3>11. Acceptance of Terms</h3>
+            <p>By signing below, both parties confirm they have read, understood, and agreed to all provisions and terms contained in this service agreement.</p>
+            
+            <div class="signature-section">
+                <div class="sig-block">
+                    <div class="sig-line"></div>
+                    <p><strong>Xenotrix Technologies</strong></p>
+                    <p>Authorized Signature</p>
+                    <p>Date: ________________________</p>
+                </div>
+                <div class="sig-block">
+                    <div class="sig-line"></div>
+                    <p><strong>{{ agreement.client_name }}</strong></p>
+                    <p>Client Signature</p>
+                    <p>Date: ________________________</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer-version">
+            <span>Doc ID: {{ agreement.agreement_number }} | Version: 1.2</span>
+            <span>Generated: {% now "Y-m-d H:i:s" %}</span>
+        </div>
+    </div>
+</body>
+</html>

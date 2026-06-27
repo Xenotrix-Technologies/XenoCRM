@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Clients Under {{ service_name }}{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    <!-- Breadcrumb / Back Button -->
+    <div class="mb-6">
+        <a href="{% url 'clients' %}" class="inline-flex items-center text-sm font-semibold text-primary hover:underline gap-1">
+            <span class="material-symbols-outlined text-sm">arrow_back</span>
+            Back to Service Categories
+        </a>
+    </div>
+
+    <!-- Header -->
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">{{ service_name }}</h2>
+            <p class="text-secondary font-body-md">Showing all clients categorized under this service type.</p>
+        </div>
+        <div class="bg-surface-variant text-on-surface-variant px-4 py-1.5 rounded-full text-sm font-semibold">
+            {{ clients|length }} Client{{ clients|length|pluralize }}
+        </div>
+    </div>
+
+    <!-- Clients List Table -->
+    <div class="glass-card rounded-2xl border border-white/40 overflow-hidden shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-surface-container-low/50 border-b border-outline-variant text-[11px] font-bold text-outline uppercase">
+                        <th class="px-3 py-2">Client ID</th>
+                        <th class="px-3 py-2">Name</th>
+                        <th class="px-3 py-2">Company</th>
+                        <th class="px-3 py-2 text-right">Contract Value</th>
+                        <th class="px-3 py-2 text-right">Paid Amount</th>
+                        <th class="px-3 py-2 text-center">Status</th>
+                        <th class="px-3 py-2 text-right"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/30 text-xs">
+                    {% for client in clients %}
+                    <tr class="border-b border-outline-variant/20 hover:bg-primary-container/5 transition-colors text-on-surface">
+                        <td class="px-3 py-2.5 font-mono font-bold text-secondary">
+                            XENO-{% if client.company %}{{ client.company|slice:":2"|upper }}{% else %}CL{% endif %}{{ client.leads.0.id }}H
+                        </td>
+                        <td class="px-3 py-2.5 font-semibold">
+                            <a href="{% url 'contact_detail' client.leads.0.id %}" class="hover:text-primary transition-all text-on-surface">{{ client.leads.0.name }}</a>
+                        </td>
+                        <td class="px-3 py-2.5 text-secondary font-medium">
+                            {{ client.company }}
+                        </td>
+                        <td class="px-3 py-2.5 text-right font-bold">
+                            {% if client.total_value and client.total_value > 0.00 %}
+                                ${{ client.total_value|floatformat:2 }}
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2.5 text-right font-bold text-primary">
+                            ${{ client.total_paid|default:"0.00"|floatformat:2 }}
+                        </td>
+                        <td class="px-3 py-2.5 text-center">
+                            {% if client.leads.0.stage == 'Won' %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                                Completed
+                            </span>
+                            {% else %}
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight bg-green-500/10 text-green-500 border border-green-500/20">
+                                Active
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-3 py-2.5 text-right">
+                            <div class="flex items-center justify-end">
+                                <button onclick="confirmDeleteClient('{{ client.company|escapejs }}', this.closest('tr'))" class="p-1.5 rounded-lg hover:bg-red-50 text-outline hover:text-red-600 transition-all" title="Delete Company">
+                                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="p-12 text-center text-secondary">
+                            <span class="material-symbols-outlined text-5xl mb-2 opacity-50">business</span>
+                            <p class="font-bold">No clients found for this service.</p>
+                            <p class="text-xs mt-1">Clients will appear here once qualified leads are assigned to this service.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="edit-client-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md border border-outline-variant shadow-2xl">
+        <h3 class="font-headline-md text-xl font-bold text-on-surface mb-2">Edit Company Name</h3>
+        <p class="text-xs text-secondary mb-4">Updating this name will update the company details on all associated leads.</p>
+        
+        <form id="edit-client-form" onsubmit="submitEditForm(event)">
+            {% csrf_token %}
+            <input type="hidden" id="old-company-name" name="old_company_name" />
+            <div class="mb-4">
+                <label class="block text-xs font-bold text-outline uppercase mb-1">Company Name</label>
+                <input type="text" id="new-company-name" name="new_company_name" required class="w-full bg-white/60 border border-outline-variant rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white transition-all"/>
+            </div>
+            
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-outline rounded-xl text-xs font-bold hover:bg-surface-variant/20 transition-all">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold hover:shadow-lg hover:shadow-primary/20 transition-all">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let currentEditCompany = '';
+
+function openEditModal(companyName) {
+    currentEditCompany = companyName;
+    document.getElementById('old-company-name').value = companyName;
+    document.getElementById('new-company-name').value = companyName;
+    document.getElementById('edit-client-modal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+    document.getElementById('edit-client-modal').classList.add('hidden');
+}
+
+function submitEditForm(event) {
+    event.preventDefault();
+    const oldName = document.getElementById('old-company-name').value;
+    const newName = document.getElementById('new-company-name').value;
+
+    fetch("{% url 'edit_client_company' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams({
+            'old_company_name': oldName,
+            'new_company_name': newName
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Failed to update company name.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred.');
+    });
+}
+
+function confirmDeleteClient(companyName, rowElement) {
+    if (confirm(`Are you sure you want to delete the company "${companyName}"? This will delete all qualified leads associated with this company.`)) {
+        fetch("{% url 'delete_client_company' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: new URLSearchParams({
+                'company_name': companyName
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Fade out row and remove it
+                rowElement.style.transition = 'all 0.3s ease';
+                rowElement.style.opacity = '0';
+                rowElement.style.transform = 'translateX(-20px)';
+                setTimeout(() => {
+                    rowElement.remove();
+                    // If no rows left, reload to show empty state
+                    if (document.querySelectorAll('tbody tr').length === 0) {
+                        location.reload();
+                    }
+                }, 300);
+            } else {
+                alert(data.error || 'Failed to delete company.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred.');
+        });
+    }
+}
+</script>
+{% endblock %}

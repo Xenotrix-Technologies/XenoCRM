@@ -10,7 +10,7 @@
             <h2 class="font-headline-lg text-headline-lg text-on-background">Customer Support & SLA</h2>
             <p class="text-secondary font-body-md">Resolve support queries, manage help desk articles, and review customer satisfaction metrics.</p>
         </div>
-        <button class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md hover:opacity-90 active:scale-95 transition-all">
+        <button onclick="openCreateModal()" class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md hover:opacity-90 active:scale-95 transition-all">
             <span class="material-symbols-outlined mr-2 text-sm">confirmation_number</span>
             Create Ticket
         </button>
@@ -19,59 +19,384 @@
     <!-- Ticket Queue and Help Articles Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Support Tickets List -->
-        <div class="lg:col-span-2 glass-card p-6 rounded-2xl border border-white/40 shadow-sm flex flex-col justify-between">
+        <div class="lg:col-span-2 glass-card p-6 rounded-2xl border border-white/40 shadow-sm flex flex-col">
             <div>
                 <h3 class="text-xl font-bold font-headline-md mb-6">Active Tickets Queue</h3>
-                <div class="space-y-4">
+                <div class="space-y-4" id="tickets-list">
                     {% for ticket in tickets %}
-                    <div class="p-4 bg-white border border-outline-variant/30 rounded-xl hover:border-primary transition-colors flex justify-between items-center">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="font-mono text-xs font-bold text-primary">{{ ticket.id }}</span>
+                    <div class="p-4 bg-white border border-outline-variant/30 rounded-xl hover:border-primary transition-colors flex justify-between items-center group ticket-item"
+                         data-status="{{ ticket.status }}"
+                         data-priority="{{ ticket.priority }}"
+                         data-assignee="{{ ticket.assignee.id|default:'' }}"
+                         data-project="{{ ticket.project.id|default:'' }}"
+                         data-created="{{ ticket.created_at|date:'U' }}"
+                         data-priority-rank="{% if ticket.priority == 'High' %}3{% elif ticket.priority == 'Medium' %}2{% else %}1{% endif %}">
+                        <div class="space-y-1 flex-1 mr-4">
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono text-xs font-bold text-primary">{{ ticket.ticket_id }}</span>
                                 <span class="text-[9px] px-2 py-0.5 rounded-full font-bold uppercase {% if ticket.priority == 'High' %}bg-error-container text-on-error-container{% elif ticket.priority == 'Medium' %}bg-warning/10 text-warning{% else %}bg-surface-variant text-secondary{% endif %}">
                                     {{ ticket.priority }}
                                 </span>
                             </div>
                             <h4 class="font-bold text-on-surface text-sm">{{ ticket.subject }}</h4>
-                            <p class="text-[10px] text-outline mt-1">Submitted {{ ticket.created }}</p>
+                            {% if ticket.description %}
+                            <p class="text-xs text-secondary mt-0.5 line-clamp-2">{{ ticket.description }}</p>
+                            {% endif %}
+                            <div class="flex items-center gap-3 text-[10px] text-outline mt-1.5 flex-wrap">
+                                <span class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[12px]">person</span>
+                                    {% if ticket.assignee %}
+                                        {{ ticket.assignee.user.get_full_name|default:ticket.assignee.user.username }}
+                                    {% else %}
+                                        <span class="italic text-outline-variant">Unassigned</span>
+                                    {% endif %}
+                                </span>
+                                <span class="w-1.5 h-1.5 rounded-full bg-outline-variant/40"></span>
+                                <span class="flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[12px]">category</span>
+                                    {% if ticket.project %}
+                                        {{ ticket.project.title }}
+                                    {% else %}
+                                        <span class="italic text-outline-variant">General</span>
+                                    {% endif %}
+                                </span>
+                                <span class="w-1.5 h-1.5 rounded-full bg-outline-variant/40"></span>
+                                <span>Created {{ ticket.created_at|timesince }} ago</span>
+                            </div>
                         </div>
-                        <span class="text-xs px-2.5 py-1 rounded-full font-bold {% if ticket.status == 'Open' %}bg-primary/10 text-primary{% elif ticket.status == 'Pending' %}bg-warning/10 text-warning{% else %}bg-success/10 text-success{% endif %}">
-                            {{ ticket.status }}
-                        </span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs px-2.5 py-1 rounded-full font-bold {% if ticket.status == 'Open' %}bg-primary/10 text-primary{% elif ticket.status == 'Pending' %}bg-warning/10 text-warning{% elif ticket.status == 'Resolved' %}bg-success/10 text-success{% else %}bg-secondary/10 text-secondary{% endif %}">
+                                {{ ticket.status }}
+                            </span>
+                            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="openEditModal('{{ ticket.id }}', '{{ ticket.subject|escapejs }}', '{{ ticket.description|default:''|escapejs }}', '{{ ticket.priority|escapejs }}', '{{ ticket.status|escapejs }}', '{{ ticket.assignee.id|default:'' }}', '{{ ticket.project.id|default:'' }}')" class="p-1.5 rounded hover:bg-slate-100 text-outline hover:text-primary transition-all">
+                                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                                </button>
+                                <form method="POST" action="{% url 'delete_ticket' ticket.id %}" onsubmit="return confirm('Are you sure you want to delete this ticket?');" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="p-1.5 rounded hover:bg-red-50 text-outline hover:text-red-600 transition-all">
+                                        <span class="material-symbols-outlined text-[16px]">delete</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                     {% empty %}
-                    <p class="text-xs text-outline text-center py-6">No support tickets found.</p>
+                    <div class="p-8 text-center text-secondary bg-surface-container/20 rounded-xl border border-dashed border-outline-variant/40">
+                        <span class="material-symbols-outlined text-3xl opacity-50 mb-1">confirmation_number</span>
+                        <p class="text-xs">No active support tickets found.</p>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
         </div>
 
-        <!-- Help Center Sidebar -->
-        <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm">
-            <h3 class="text-xl font-bold font-headline-md mb-6">Knowledge Base</h3>
-            <div class="space-y-4">
-                {% for article in articles %}
-                <div class="p-3 bg-surface-container rounded-xl border border-outline-variant/20 hover:border-primary transition-colors cursor-pointer">
-                    <h4 class="font-bold text-xs text-on-surface">{{ article.title }}</h4>
-                    <p class="text-[10px] text-outline mt-1">Category: {{ article.category|default:"General" }}</p>
-                </div>
-                {% empty %}
-                <!-- System default help articles -->
-                <div class="p-3 bg-surface-container rounded-xl border border-outline-variant/20 hover:border-primary transition-colors cursor-pointer">
-                    <h4 class="font-bold text-xs text-on-surface">Integrating XenoCRM with Zapier</h4>
-                    <p class="text-[10px] text-outline mt-1">Category: Integration</p>
-                </div>
-                <div class="p-3 bg-surface-container rounded-xl border border-outline-variant/20 hover:border-primary transition-colors cursor-pointer">
-                    <h4 class="font-bold text-xs text-on-surface">Configuring Multi-Tenancy Roles</h4>
-                    <p class="text-[10px] text-outline mt-1">Category: Security</p>
-                </div>
-                <div class="p-3 bg-surface-container rounded-xl border border-outline-variant/20 hover:border-primary transition-colors cursor-pointer">
-                    <h4 class="font-bold text-xs text-on-surface">Importing Leads via CSV Guide</h4>
-                    <p class="text-[10px] text-outline mt-1">Category: Data Management</p>
-                </div>
-                {% endfor %}
+        <!-- Filters & Sorting Sidebar -->
+        <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm space-y-5">
+            <div>
+                <h3 class="text-lg font-bold font-headline-md mb-2 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">filter_list</span>
+                    Filters & Sorting
+                </h3>
+                <p class="text-[11px] text-outline">Manage list order and criteria dynamically.</p>
             </div>
+
+            <!-- Sort By -->
+            <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-outline uppercase tracking-wider">Sort Tickets</label>
+                <select id="sort-tickets" onchange="applyFiltersAndSort()" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="priority-desc">Priority: High to Low</option>
+                    <option value="priority-asc">Priority: Low to High</option>
+                </select>
+            </div>
+
+            <!-- Filter Status -->
+            <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-outline uppercase tracking-wider">Status</label>
+                <select id="filter-status" onchange="applyFiltersAndSort()" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
+                    <option value="all">All Statuses</option>
+                    <option value="Open">Open</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Resolved">Resolved</option>
+                    <option value="Closed">Closed</option>
+                </select>
+            </div>
+
+            <!-- Filter Priority -->
+            <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-outline uppercase tracking-wider">Priority</label>
+                <select id="filter-priority" onchange="applyFiltersAndSort()" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
+                    <option value="all">All Priorities</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+
+            <!-- Filter Assignee -->
+            <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-outline uppercase tracking-wider">Assignee</label>
+                <select id="filter-assignee" onchange="applyFiltersAndSort()" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
+                    <option value="all">All Assignees</option>
+                    <option value="unassigned">Unassigned</option>
+                    {% for member in staff %}
+                    <option value="{{ member.id }}">{{ member.user.get_full_name|default:member.user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filter Project -->
+            <div class="space-y-1.5">
+                <label class="block text-[10px] font-bold text-outline uppercase tracking-wider">Project</label>
+                <select id="filter-project" onchange="applyFiltersAndSort()" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
+                    <option value="all">All Projects</option>
+                    <option value="none">General / None</option>
+                    {% for project in projects %}
+                    <option value="{{ project.id }}">{{ project.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button onclick="resetFilters()" class="w-full py-2.5 border border-outline-variant hover:bg-slate-50 text-secondary rounded-xl text-xs font-semibold transition-colors flex items-center justify-center gap-1.5 mt-2">
+                <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+                Reset Filters
+            </button>
         </div>
     </div>
 </div>
+
+<!-- Create Ticket Modal -->
+<div id="create-ticket-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-outline-variant/30 overflow-y-auto max-h-[90vh]">
+        <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/20">
+            <h3 class="font-headline-md text-headline-md font-bold text-on-background">Create Support Ticket</h3>
+            <button onclick="closeCreateModal()" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+        </div>
+        <form method="POST" action="{% url 'create_ticket' %}" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Subject *</label>
+                <input type="text" name="subject" required placeholder="Describe the issue..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+            </div>
+
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Description</label>
+                <textarea name="description" rows="3" placeholder="Provide more details about the issue..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"></textarea>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Priority</label>
+                    <select name="priority" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status</label>
+                    <select name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                        <option value="Open" selected>Open</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Assignee (Staff)</label>
+                <select name="assignee" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                    <option value="">Unassigned</option>
+                    {% for member in staff %}
+                    <option value="{{ member.id }}">{{ member.user.get_full_name|default:member.user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Project</label>
+                <select name="project" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                    <option value="">General / None</option>
+                    {% for project in projects %}
+                    <option value="{{ project.id }}">{{ project.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
+                <button type="button" onclick="closeCreateModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Create Ticket</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Ticket Modal -->
+<div id="edit-ticket-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-outline-variant/30 overflow-y-auto max-h-[90vh]">
+        <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/20">
+            <h3 class="font-headline-md text-headline-md font-bold text-on-background">Edit Ticket Details</h3>
+            <button onclick="closeEditModal()" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+        </div>
+        <form id="edit-ticket-form" method="POST" action="" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Subject *</label>
+                <input type="text" id="edit-subject" name="subject" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+            </div>
+
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Description</label>
+                <textarea id="edit-description" name="description" rows="3" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"></textarea>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Priority</label>
+                    <select id="edit-priority" name="priority" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status</label>
+                    <select id="edit-status" name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                        <option value="Open">Open</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Assignee (Staff)</label>
+                <select id="edit-assignee" name="assignee" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                    <option value="">Unassigned</option>
+                    {% for member in staff %}
+                    <option value="{{ member.id }}">{{ member.user.get_full_name|default:member.user.username }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-label-md font-label-md text-outline uppercase mb-1">Project</label>
+                <select id="edit-project" name="project" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                    <option value="">General / None</option>
+                    {% for project in projects %}
+                    <option value="{{ project.id }}">{{ project.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openCreateModal() {
+        document.getElementById('create-ticket-modal').classList.remove('hidden');
+    }
+    
+    function closeCreateModal() {
+        document.getElementById('create-ticket-modal').classList.add('hidden');
+    }
+
+    function openEditModal(id, subject, description, priority, status, assigneeId, projectId) {
+        document.getElementById('edit-subject').value = subject;
+        document.getElementById('edit-description').value = description || "";
+        document.getElementById('edit-priority').value = priority;
+        document.getElementById('edit-status').value = status;
+        document.getElementById('edit-assignee').value = assigneeId || "";
+        document.getElementById('edit-project').value = projectId || "";
+
+        const form = document.getElementById('edit-ticket-form');
+        form.action = `/customer-support/ticket/${id}/edit/`;
+
+        document.getElementById('edit-ticket-modal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+        document.getElementById('edit-ticket-modal').classList.add('hidden');
+    }
+
+    function applyFiltersAndSort() {
+        const statusVal = document.getElementById('filter-status').value;
+        const priorityVal = document.getElementById('filter-priority').value;
+        const assigneeVal = document.getElementById('filter-assignee').value;
+        const projectVal = document.getElementById('filter-project').value;
+        const sortVal = document.getElementById('sort-tickets').value;
+
+        const container = document.getElementById('tickets-list');
+        const items = Array.from(container.getElementsByClassName('ticket-item'));
+
+        items.forEach(item => {
+            const itemStatus = item.getAttribute('data-status');
+            const itemPriority = item.getAttribute('data-priority');
+            const itemAssignee = item.getAttribute('data-assignee');
+            const itemProject = item.getAttribute('data-project');
+
+            let show = true;
+
+            if (statusVal !== 'all' && itemStatus !== statusVal) show = false;
+            if (priorityVal !== 'all' && itemPriority !== priorityVal) show = false;
+            
+            if (assigneeVal !== 'all') {
+                if (assigneeVal === 'unassigned') {
+                    if (itemAssignee !== '') show = false;
+                } else if (itemAssignee !== assigneeVal) {
+                    show = false;
+                }
+            }
+
+            if (projectVal !== 'all') {
+                if (projectVal === 'none') {
+                    if (itemProject !== '') show = false;
+                } else if (itemProject !== projectVal) {
+                    show = false;
+                }
+            }
+
+            if (show) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+
+        // Sorting
+        items.sort((a, b) => {
+            const aCreated = parseInt(a.getAttribute('data-created'));
+            const bCreated = parseInt(b.getAttribute('data-created'));
+            const aPriority = parseInt(a.getAttribute('data-priority-rank'));
+            const bPriority = parseInt(b.getAttribute('data-priority-rank'));
+
+            if (sortVal === 'newest') return bCreated - aCreated;
+            if (sortVal === 'oldest') return aCreated - bCreated;
+            if (sortVal === 'priority-desc') return bPriority - aPriority || bCreated - aCreated;
+            if (sortVal === 'priority-asc') return aPriority - bPriority || bCreated - aCreated;
+            return 0;
+        });
+
+        // Re-append items in new order
+        items.forEach(item => container.appendChild(item));
+    }
+
+    function resetFilters() {
+        document.getElementById('filter-status').value = 'all';
+        document.getElementById('filter-priority').value = 'all';
+        document.getElementById('filter-assignee').value = 'all';
+        document.getElementById('filter-project').value = 'all';
+        document.getElementById('sort-tickets').value = 'newest';
+        applyFiltersAndSort();
+    }
+</script>
 {% endblock %}

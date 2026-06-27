@@ -52,7 +52,7 @@ class XenoCRMTests(TestCase):
             owner=self.profile2
         )
 
-    def test_signup(self):
+    def test_signup_disabled(self):
         response = self.client.post(reverse('signup'), {
             'org_name': 'Test New Org',
             'first_name': 'Test',
@@ -62,9 +62,9 @@ class XenoCRMTests(TestCase):
             'password': 'testpassword123',
             'password_confirm': 'testpassword123'
         })
-        self.assertEqual(response.status_code, 302)
-        self.assertTrue(User.objects.filter(username='testuser').exists())
-        self.assertTrue(Organization.objects.filter(name='Test New Org').exists())
+        self.assertRedirects(response, reverse('login'))
+        self.assertFalse(User.objects.filter(username='testuser').exists())
+        self.assertFalse(Organization.objects.filter(name='Test New Org').exists())
 
     def test_login(self):
         response = self.client.post(reverse('login'), {

@@ -5,66 +5,53 @@
 {% block content %}
 <div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
     <!-- Header -->
-    <div class="flex justify-between items-end mb-8">
+    <div class="flex justify-between items-end mb-6">
         <div>
             <h2 class="font-headline-lg text-headline-lg text-on-background">Clients Directory</h2>
             <p class="text-secondary font-body-md">Manage your clients, corporate relationships, and grouped opportunity pipelines.</p>
         </div>
     </div>
 
-    <!-- Clients Bento/List Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for client in clients %}
-        <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-            <div>
-                <div class="flex justify-between items-start mb-4">
-                    <div class="p-3 bg-secondary-fixed/50 rounded-xl text-primary-fixed-dim">
-                        <span class="material-symbols-outlined text-primary text-2xl">business</span>
+    <!-- Service Categories Section -->
+    <div class="mb-8">
+        <h3 class="text-sm font-bold text-outline uppercase tracking-wider mb-4">Service Categories</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+            {% for service in services %}
+            <a href="{% url 'service_clients' service_id=service.id %}" class="service-filter-card text-left glass-card p-5 rounded-2xl border border-white/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between min-h-[180px]">
+                <div>
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="p-3 bg-secondary-fixed/50 rounded-xl text-primary-fixed-dim">
+                            <span class="material-symbols-outlined text-primary text-2xl">
+                                {% if service.id == 0 %}help{% else %}design_services{% endif %}
+                            </span>
+                        </div>
+                        <span class="bg-secondary/10 text-secondary text-xs px-2.5 py-0.5 rounded-full font-bold">
+                            {{ service.client_count }} Client{{ service.client_count|pluralize }}
+                        </span>
                     </div>
-                    <span class="bg-primary/10 text-primary text-xs px-2.5 py-1 rounded-full font-bold">
-                        {{ client.contacts_count }} Contact{{ client.contacts_count|pluralize }}
-                    </span>
+                    <h4 class="font-bold text-on-surface text-base">{{ service.name }}</h4>
+                    <p class="text-xs text-secondary mt-2 line-clamp-2">{{ service.description }}</p>
                 </div>
-                <h3 class="text-xl font-bold font-headline-md text-on-surface mb-1">{{ client.company }}</h3>
-                <div class="mt-4 space-y-3">
-                    <div class="flex justify-between text-xs">
-                        <span class="text-secondary font-label-md">Pipeline Value</span>
-                        <span class="font-bold text-on-surface">${{ client.total_value|floatformat:2 }}</span>
-                    </div>
-                    <div class="flex justify-between text-xs">
-                        <span class="text-secondary font-label-md">Avg Account Score</span>
-                        <span class="font-bold text-on-surface">{{ client.avg_score }}/100</span>
-                    </div>
-                    <div class="w-full h-1.5 bg-surface-variant rounded-full overflow-hidden">
-                        <div class="h-full bg-primary" style="width: {{ client.avg_score }}%"></div>
-                    </div>
+                <div class="mt-4 pt-3 border-t border-outline-variant/30 flex justify-between items-center text-sm">
+                    <span class="text-secondary">Pipeline Value</span>
+                    <span class="font-bold text-primary">${{ service.total_value|floatformat:2 }}</span>
                 </div>
-            </div>
-            
-            <div class="mt-6 pt-4 border-t border-outline-variant/30 flex justify-between items-center">
-                <div class="flex -space-x-2 overflow-hidden">
-                    {% for lead in client.leads|slice:":3" %}
-                    <div class="w-6 h-6 rounded-full border-2 border-white bg-primary text-white text-[8px] flex items-center justify-center font-bold" title="{{ lead.name }}">
-                        {{ lead.name|slice:":1" }}
-                    </div>
-                    {% endfor %}
-                    {% if client.contacts_count > 3 %}
-                    <span class="text-[9px] text-outline pl-2 flex items-center font-bold">+{{ client.contacts_count|add:"-3" }} more</span>
-                    {% endif %}
-                </div>
-                <a href="{% url 'leads' %}?q={{ client.company|urlencode }}" class="text-xs text-primary font-bold hover:underline flex items-center">
-                    View Deals
-                    <span class="material-symbols-outlined text-sm ml-1">chevron_right</span>
-                </a>
-            </div>
+            </a>
+            {% endfor %}
         </div>
-        {% empty %}
-        <div class="col-span-full glass-card p-12 rounded-2xl text-center text-secondary border border-dashed border-outline-variant">
-            <span class="material-symbols-outlined text-5xl mb-2 opacity-50">business</span>
-            <p class="font-bold">No clients found.</p>
-            <p class="text-xs mt-1">Add lead records with company details to automatically generate client entries.</p>
-        </div>
-        {% endfor %}
     </div>
 </div>
+
+<style>
+.service-filter-card {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+}
+.service-filter-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(var(--primary-rgb, 0, 83, 219), 0.4);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+}
+</style>
 {% endblock %}

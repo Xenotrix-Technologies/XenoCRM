@@ -8,13 +8,13 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
             <h2 class="font-headline-lg text-headline-lg text-on-background">Lead Management</h2>
-            <div class="flex items-center gap-2 text-body-sm text-secondary">
-                <span>{{ paginator.count }} Total Leads</span>
-                <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
-                <span class="text-success font-semibold">+12% from last month</span>
-            </div>
         </div>
         <div class="flex items-center gap-3">
+            <a href="{% url 'import_leads' %}" class="bg-surface-container-lowest border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-surface-container-low transition-all">
+                <span class="material-symbols-outlined text-[18px]">upload</span>
+                Import
+            </a>
+
             <a href="{% url 'add_lead' %}" class="bg-primary text-on-primary px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:opacity-90 transition-all shadow-md">
                 <span class="material-symbols-outlined text-[18px]">add</span>
                 Add Lead
@@ -28,37 +28,37 @@
     </div>
 
     <!-- Filter Bar Form -->
-    <form method="GET" action="{% url 'leads' %}" class="glass-panel rounded-2xl p-4 mb-6 flex flex-wrap items-center gap-4">
-        <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-outline">filter_list</span>
-            <span class="font-label-md text-label-md text-outline">FILTERS:</span>
+    <form method="GET" action="{% url 'leads' %}" class="glass-panel rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-outline">filter_list</span>
+                <span class="font-label-md text-label-md text-outline">FILTERS:</span>
+            </div>
+
+            <select name="status" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
+                <option value="">All Statuses</option>
+                {% for s in statuses %}
+                <option value="{{ s.name }}" {% if status_filter == s.name %}selected{% endif %}>{{ s.name }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="owner" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
+                <option value="">All Owners</option>
+                {% for owner in owners %}
+                <option value="{{ owner.id }}" {% if owner_filter == owner.id|stringformat:"i" %}selected{% endif %}>{{ owner.user.get_full_name|default:owner.user.username }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="sort" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
+                <option value="value_desc" {% if sort_by == 'value_desc' %}selected{% endif %}>Value: High to Low</option>
+                <option value="value_asc" {% if sort_by == 'value_asc' %}selected{% endif %}>Value: Low to High</option>
+            </select>
+            
+            <div class="h-6 w-px bg-outline-variant mx-1"></div>
+            <a href="{% url 'leads' %}" id="clear-filters-btn" class="text-primary font-button text-button hover:underline">Clear all</a>
         </div>
-
-        <select name="status" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
-            <option value="">All Statuses</option>
-            {% for s in statuses %}
-            <option value="{{ s.name }}" {% if status_filter == s.name %}selected{% endif %}>{{ s.name }}</option>
-            {% endfor %}
-        </select>
-
-        <select name="owner" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
-            <option value="">All Owners</option>
-            {% for owner in owners %}
-            <option value="{{ owner.id }}" {% if owner_filter == owner.id|stringformat:"i" %}selected{% endif %}>{{ owner.user.get_full_name|default:owner.user.username }}</option>
-            {% endfor %}
-        </select>
-
-        <select name="sort" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
-            <!--<option value="score_desc" {% if sort_by == 'score_desc' %}selected{% endif %}>Lead Score: High to Low</option>-->
-            <!--<option value="score_asc" {% if sort_by == 'score_asc' %}selected{% endif %}>Lead Score: Low to High</option>-->
-            <option value="value_desc" {% if sort_by == 'value_desc' %}selected{% endif %}>Value: High to Low</option>
-            <option value="value_asc" {% if sort_by == 'value_asc' %}selected{% endif %}>Value: Low to High</option>
-        </select>
         
-        <div class="h-6 w-px bg-outline-variant mx-2"></div>
-        <a href="{% url 'leads' %}" id="clear-filters-btn" class="text-primary font-button text-button hover:underline">Clear all</a>
-        
-        <div class="ml-auto flex items-center gap-2">
+        <div class="flex items-center gap-2">
             <span class="text-body-sm text-secondary">Bulk Actions:</span>
             <button type="button" value="change_status_qualified" class="px-3 py-1.5 rounded-lg border border-outline-variant text-body-sm hover:bg-surface-container-low disabled:opacity-50 bulk-btn" disabled>Mark Qualified</button>
             <button type="button" value="delete" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-600 text-body-sm hover:bg-red-50 disabled:opacity-50 bulk-btn" disabled>Delete</button>
