@@ -42,7 +42,7 @@
                     {% for client in clients %}
                     <tr class="border-b border-outline-variant/20 hover:bg-primary-container/5 transition-colors text-on-surface">
                         <td class="px-3 py-2.5 font-mono font-bold text-secondary">
-                            XENO-{% if client.company %}{{ client.company|slice:":2"|upper }}{% else %}CL{% endif %}{{ client.leads.0.id }}H
+                            X{{ client.leads.0.id|stringformat:"03d" }}
                         </td>
                         <td class="px-3 py-2.5 font-semibold">
                             <a href="{% url 'contact_detail' client.leads.0.id %}" class="hover:text-primary transition-all text-on-surface">{{ client.leads.0.name }}</a>
@@ -52,11 +52,11 @@
                         </td>
                         <td class="px-3 py-2.5 text-right font-bold">
                             {% if client.total_value and client.total_value > 0.00 %}
-                                ${{ client.total_value|floatformat:2 }}
+                                ₹{{ client.total_value|floatformat:2 }}
                             {% endif %}
                         </td>
                         <td class="px-3 py-2.5 text-right font-bold text-primary">
-                            ${{ client.total_paid|default:"0.00"|floatformat:2 }}
+                            ₹{{ client.total_paid|default:"0.00"|floatformat:2 }}
                         </td>
                         <td class="px-3 py-2.5 text-center">
                             {% if client.leads.0.stage == 'Won' %}

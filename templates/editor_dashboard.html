@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% block title %}Editor Dashboard - XenoCRM{% endblock %}
+
+{% block content %}
+<main class="pt-8 p-margin-edge min-h-screen bg-background">
+  <div class="max-w-7xl mx-auto space-y-6">
+    
+    <!-- Breadcrumb & Title -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-outline font-semibold mb-1">
+          <span>Workspace</span>
+          <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+          <span class="text-primary">Editor Dashboard</span>
+        </div>
+        <h2 class="font-headline-lg text-headline-lg font-bold text-on-background">Editor Dashboard</h2>
+        <p class="text-secondary text-body-sm max-w-2xl mt-1">Monitor content production and editor performance analytics.</p>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button onclick="window.location.reload()" class="bg-surface-container border border-outline-variant text-on-surface p-2 rounded-xl hover:bg-slate-50 transition-all" title="Refresh">
+          <span class="material-symbols-outlined text-[18px]">refresh</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <!-- Total Videos -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Total Videos</span>
+          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-[18px]">video_library</span>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="block text-2xl font-bold text-on-surface">{{ total_count }}</span>
+          <span class="text-[10px] text-success font-semibold flex items-center gap-0.5 mt-0.5">
+            <span class="material-symbols-outlined text-[12px]">trending_up</span> +{{ this_month_count }} this month
+          </span>
+        </div>
+      </div>
+      <!-- Pending -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Pending</span>
+          <div class="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
+            <span class="material-symbols-outlined text-[18px]">pending_actions</span>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="block text-2xl font-bold text-on-surface">{{ pending_count }}</span>
+          <span class="text-[10px] text-outline font-semibold flex items-center gap-0.5 mt-0.5">
+            <span class="material-symbols-outlined text-[12px]">hourglass_empty</span> Awaiting edit
+          </span>
+        </div>
+      </div>
+      <!-- In Editing -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">In Editing</span>
+          <div class="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center text-info">
+            <span class="material-symbols-outlined text-[18px]">video_settings</span>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="block text-2xl font-bold text-on-surface">{{ editing_count }}</span>
+          <span class="text-[10px] text-info font-semibold flex items-center gap-0.5 mt-0.5">
+            <span class="material-symbols-outlined text-[12px]">sync</span> In progress
+          </span>
+        </div>
+      </div>
+      <!-- Published -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Published</span>
+          <div class="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center text-success">
+            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="block text-2xl font-bold text-on-surface">{{ published_count }}</span>
+          <span class="text-[10px] text-success font-semibold flex items-center gap-0.5 mt-0.5">
+            <span class="material-symbols-outlined text-[12px]">done_all</span> Live content
+          </span>
+        </div>
+      </div>
+      <!-- Scheduled -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Scheduled</span>
+          <div class="w-8 h-8 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary">
+            <span class="material-symbols-outlined text-[18px]">schedule</span>
+          </div>
+        </div>
+        <div class="mt-4">
+          <span class="block text-2xl font-bold text-on-surface">{{ scheduled_count }}</span>
+          <span class="text-[10px] text-tertiary font-semibold flex items-center gap-0.5 mt-0.5">
+            <span class="material-symbols-outlined text-[12px]">calendar_today</span> Queue set
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        
+      <!-- Status Distribution -->
+      <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm flex flex-col items-center">
+        <h3 class="font-bold text-on-surface w-full mb-4">Status Distribution</h3>
+        <div class="w-full max-w-[300px]">
+            <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+      
+      <!-- Editor Performance -->
+      <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm">
+        <h3 class="font-bold text-on-surface w-full mb-4">Content Assigned per Editor</h3>
+        <div class="w-full">
+            <canvas id="editorChart"></canvas>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- Timeline Insights Section -->
+    <div class="grid grid-cols-1 gap-6 mt-6">
+      <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm">
+        <h3 class="font-bold text-on-surface w-full mb-4">Due Date Timeline</h3>
+        <div class="w-full h-[250px]">
+            <canvas id="timelineChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const statusLabels = JSON.parse('{{ status_labels|safe }}');
+    const statusData = JSON.parse('{{ status_data|safe }}');
+    const editorLabels = JSON.parse('{{ editor_labels|safe }}');
+    const editorData = JSON.parse('{{ editor_data|safe }}');
+    const timelineLabels = JSON.parse('{{ timeline_labels|safe }}');
+    const timelineData = JSON.parse('{{ timeline_data|safe }}');
+    
+    // Status Doughnut Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusData,
+                backgroundColor: [
+                    '#3B82F6', // blue
+                    '#10B981', // emerald
+                    '#F59E0B', // amber
+                    '#EF4444', // rose
+                    '#8B5CF6', // purple
+                    '#14B8A6'  // teal
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+
+    // Editor Performance Bar Chart
+    const editorCtx = document.getElementById('editorChart').getContext('2d');
+    new Chart(editorCtx, {
+        type: 'bar',
+        data: {
+            labels: editorLabels,
+            datasets: [{
+                label: 'Assigned Videos',
+                data: editorData,
+                backgroundColor: '#0F172A', // primary
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+        }
+    });
+    
+    // Timeline Bar Chart
+    const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+    new Chart(timelineCtx, {
+        type: 'bar',
+        data: {
+            labels: timelineLabels,
+            datasets: [{
+                label: 'Number of Items',
+                data: timelineData,
+                backgroundColor: [
+                    '#EF4444', // Overdue - rose
+                    '#F59E0B', // Next 7 days - amber
+                    '#3B82F6', // Later - blue
+                    '#94A3B8'  // No date - slate
+                ],
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

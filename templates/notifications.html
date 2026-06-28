@@ -11,182 +11,50 @@
       <p class="text-secondary text-body-md mt-1">Stay updated with calendar meetings, pending project tasks, and customer support tickets.</p>
     </div>
 
-    <!-- Tabbed Panels -->
+    <!-- Unified Feed -->
     <div class="glass-card rounded-2xl p-6 border border-outline-variant/30 shadow-xl bg-white space-y-6">
-      
-      <!-- Tabs Selector -->
-      <div class="border-b border-outline-variant">
-        <nav class="flex gap-8">
-          <button onclick="switchNotifTab('calendar')" id="notif-tab-calendar"
-            class="notif-tab-btn py-4 font-button border-b-2 border-primary text-primary transition-all flex items-center gap-2">
-            <span class="material-symbols-outlined text-[20px]">calendar_month</span>
-            Calendar Meetings
-            <span class="bg-primary/10 text-primary text-xs px-2.5 py-0.5 rounded-full font-bold">
-              {{ calendar_events|length }}
-            </span>
-          </button>
-          <button onclick="switchNotifTab('projects')" id="notif-tab-projects"
-            class="notif-tab-btn py-4 font-button border-b-2 border-transparent text-secondary hover:text-on-surface transition-all flex items-center gap-2">
-            <span class="material-symbols-outlined text-[20px]">rocket_launch</span>
-            Project & Tasks
-            <span class="bg-warning/10 text-warning text-xs px-2.5 py-0.5 rounded-full font-bold">
-              {{ pending_tasks|length|add:expiring_agreements|length }}
-            </span>
-          </button>
-          <button onclick="switchNotifTab('support')" id="notif-tab-support"
-            class="notif-tab-btn py-4 font-button border-b-2 border-transparent text-secondary hover:text-on-surface transition-all flex items-center gap-2">
-            <span class="material-symbols-outlined text-[20px]">support_agent</span>
-            Customer Support
-            <span class="bg-tertiary-container/30 text-tertiary text-xs px-2.5 py-0.5 rounded-full font-bold">
-              {{ open_tickets|length }}
-            </span>
-          </button>
-        </nav>
-      </div>
-
-      <!-- Tab Content Area -->
-      <div>
-        <!-- Calendar Notifications Tab -->
-        <div id="notif-panel-calendar" class="notif-panel space-y-4">
-          <h3 class="text-sm font-bold text-outline uppercase tracking-wider mb-2">Upcoming Events (Next 7 Days)</h3>
-          {% for event in calendar_events %}
-          <div class="flex items-center justify-between p-4 bg-surface-container/20 border border-outline-variant/50 rounded-2xl hover:border-primary/20 hover:shadow-sm transition-all group">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl flex-shrink-0 flex flex-col items-center justify-center text-center font-sans border border-outline-variant/30" style="background-color: {{ event.color }}20; border-color: {{ event.color }}40;">
-                <span class="text-[10px] font-bold uppercase leading-none" style="color: {{ event.color }};">{{ event.start_time|date:"b" }}</span>
-                <span class="text-lg font-black leading-none mt-1" style="color: {{ event.color }};">{{ event.start_time|date:"d" }}</span>
-              </div>
-              <div>
-                <h4 class="text-sm font-bold text-on-surface group-hover:text-primary transition-colors">{{ event.title }}</h4>
-                <p class="text-xs text-secondary mt-0.5">{{ event.start_time|date:"h:i A" }} - {{ event.end_time|date:"h:i A" }} • {{ event.description|default:"No description details" }}</p>
-              </div>
+      <div class="space-y-4">
+        {% for item in unified_feed %}
+        <div class="flex items-center justify-between p-4 bg-surface-container/20 border border-outline-variant/50 rounded-2xl hover:border-primary/20 hover:shadow-sm transition-all group {% if item.is_unread %}bg-primary/5{% endif %}">
+          <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-xl flex-shrink-0 flex items-center justify-center {{ item.color_class }} border">
+              <span class="material-symbols-outlined text-[24px]">{{ item.icon }}</span>
             </div>
-            <a href="{% url 'calendar' %}" class="flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant text-[11px] font-bold uppercase rounded-lg hover:bg-slate-50 transition-all text-secondary hover:text-primary">
-              View Calendar
+            <div>
+              <h4 class="text-sm font-bold text-on-surface group-hover:text-primary transition-colors">{{ item.title }}</h4>
+              <p class="text-xs text-secondary mt-0.5">
+                <span class="font-semibold">{{ item.type }}</span> • 
+                {{ item.description }} • 
+                <span class="text-xs text-outline font-medium">
+                  {% if item.date > now %}
+                    {{ item.date|timeuntil }} from now
+                  {% else %}
+                    {{ item.date|timesince }} ago
+                  {% endif %}
+                </span>
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            {% if item.is_unread %}
+            <div class="w-2.5 h-2.5 rounded-full bg-error"></div>
+            {% endif %}
+            {% if item.url != '#' %}
+            <a href="{{ item.url }}" class="flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant text-[11px] font-bold uppercase rounded-lg hover:bg-slate-50 transition-all text-secondary hover:text-primary">
+              View
               <span class="material-symbols-outlined text-xs">arrow_forward</span>
             </a>
-          </div>
-          {% empty %}
-          <div class="text-center py-12 space-y-3">
-            <span class="material-symbols-outlined text-outline text-5xl">event_busy</span>
-            <p class="text-secondary text-sm">No upcoming meetings scheduled for the next 7 days.</p>
-          </div>
-          {% endfor %}
-        </div>
-
-        <!-- Project & Tasks Notifications Tab -->
-        <div id="notif-panel-projects" class="notif-panel space-y-6 hidden">
-          <!-- Pending Tasks Section -->
-          <div>
-            <h3 class="text-sm font-bold text-outline uppercase tracking-wider mb-3">Pending & Overdue Tasks</h3>
-            <div class="space-y-3">
-              {% for task in pending_tasks %}
-              <div class="flex items-center justify-between p-4 bg-white border border-outline-variant rounded-2xl hover:shadow-sm transition-all">
-                <div class="flex items-start gap-3">
-                  <span class="material-symbols-outlined text-warning mt-0.5">priority_high</span>
-                  <div>
-                    <h4 class="text-sm font-bold text-on-surface">{{ task.title }}</h4>
-                    <p class="text-xs text-secondary mt-0.5">
-                      Due: <span class="font-semibold text-error">{{ task.due_date|date:"F d, Y" }}</span> • Lead: {{ task.lead.name }}
-                    </p>
-                  </div>
-                </div>
-                <a href="{% url 'projects' %}" class="flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant text-[11px] font-bold uppercase rounded-lg hover:bg-slate-50 transition-all text-secondary">
-                  Manage Task
-                </a>
-              </div>
-              {% empty %}
-              <div class="text-center py-6 border border-dashed border-outline-variant/60 rounded-2xl">
-                <p class="text-secondary text-xs">All project tasks are fully completed!</p>
-              </div>
-              {% endfor %}
-            </div>
-          </div>
-
-          <!-- Agreements Expiring Section -->
-          <div>
-            <h3 class="text-sm font-bold text-outline uppercase tracking-wider mb-3">Agreements Expiring Soon (Next 30 Days)</h3>
-            <div class="space-y-3">
-              {% for agr in expiring_agreements %}
-              <div class="flex items-center justify-between p-4 bg-white border border-outline-variant rounded-2xl hover:shadow-sm transition-all">
-                <div class="flex items-start gap-3">
-                  <span class="material-symbols-outlined text-primary mt-0.5">verified_user</span>
-                  <div>
-                    <h4 class="text-sm font-bold text-on-surface">Agreement #{{ agr.agreement_number }}</h4>
-                    <p class="text-xs text-secondary mt-0.5">
-                      Expires: <span class="font-semibold text-error">{{ agr.end_date|date:"F d, Y" }}</span> • Client: {{ agr.client_name }}
-                    </p>
-                  </div>
-                </div>
-                <a href="{% url 'agreements' %}" class="flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant text-[11px] font-bold uppercase rounded-lg hover:bg-slate-50 transition-all text-secondary">
-                  Renew
-                </a>
-              </div>
-              {% empty %}
-              <div class="text-center py-6 border border-dashed border-outline-variant/60 rounded-2xl">
-                <p class="text-secondary text-xs">No active agreements expiring within the next 30 days.</p>
-              </div>
-              {% endfor %}
-            </div>
+            {% endif %}
           </div>
         </div>
-
-        <!-- Customer Support Notifications Tab -->
-        <div id="notif-panel-support" class="notif-panel space-y-4 hidden">
-          <h3 class="text-sm font-bold text-outline uppercase tracking-wider mb-2">Open / In Progress Tickets</h3>
-          {% for ticket in open_tickets %}
-          <div class="flex items-center justify-between p-4 bg-white border border-outline-variant rounded-2xl hover:shadow-sm transition-all group">
-            <div class="flex items-start gap-4">
-              <span class="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-2 {% if ticket.priority == 'High' or ticket.priority == 'Critical' %}bg-red-500{% elif ticket.priority == 'Medium' %}bg-yellow-500{% else %}bg-green-500{% endif %}"></span>
-              <div>
-                <div class="flex items-center gap-2.5">
-                  <span class="text-xs font-bold text-primary">{{ ticket.ticket_id }}</span>
-                  <h4 class="text-sm font-bold text-on-surface">{{ ticket.subject }}</h4>
-                  <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-full bg-slate-100 text-secondary border border-outline-variant/50">
-                    {{ ticket.status }}
-                  </span>
-                </div>
-                <p class="text-xs text-secondary mt-1">
-                  Priority: <span class="font-semibold">{{ ticket.priority }}</span> • Assigned: {{ ticket.assignee.user.get_full_name|default:ticket.assignee.user.username|default:"Unassigned" }}
-                </p>
-              </div>
-            </div>
-            <a href="{% url 'customer_support' %}" class="flex items-center gap-1.5 px-3 py-1.5 border border-outline-variant text-[11px] font-bold uppercase rounded-lg hover:bg-slate-50 transition-all text-secondary hover:text-primary">
-              View Ticket
-              <span class="material-symbols-outlined text-xs">arrow_forward</span>
-            </a>
-          </div>
-          {% empty %}
-          <div class="text-center py-12 space-y-3">
-            <span class="material-symbols-outlined text-outline text-5xl">support_agent</span>
-            <p class="text-secondary text-sm">No open customer support tickets requiring attention.</p>
-          </div>
-          {% endfor %}
+        {% empty %}
+        <div class="text-center py-12 space-y-3">
+          <span class="material-symbols-outlined text-outline text-5xl">notifications_paused</span>
+          <p class="text-secondary text-sm">You're all caught up! No notifications right now.</p>
         </div>
+        {% endfor %}
       </div>
-
     </div>
   </div>
 </main>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-  function switchNotifTab(tab) {
-      // Toggle button classes
-      document.querySelectorAll('.notif-tab-btn').forEach(btn => {
-          btn.classList.remove('border-primary', 'text-primary');
-          btn.classList.add('border-transparent', 'text-secondary');
-      });
-      const activeBtn = document.getElementById(`notif-tab-${tab}`);
-      activeBtn.classList.remove('border-transparent', 'text-secondary');
-      activeBtn.classList.add('border-primary', 'text-primary');
-
-      // Toggle panel displays
-      document.querySelectorAll('.notif-panel').forEach(panel => {
-          panel.classList.add('hidden');
-      });
-      document.getElementById(`notif-panel-${tab}`).classList.remove('hidden');
-  }
-</script>
 {% endblock %}

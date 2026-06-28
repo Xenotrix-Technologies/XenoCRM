@@ -28,13 +28,13 @@
                 <div class="p-2 bg-primary/10 rounded-lg">
                     <span class="material-symbols-outlined text-primary">payments</span>
                 </div>
-                <span class="text-success text-xs font-bold flex items-center">
-                    <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
-                    +12.5%
+                <span class="{% if revenue_trend >= 0 %}text-success{% else %}text-error{% endif %} text-xs font-bold flex items-center">
+                    <span class="material-symbols-outlined text-xs mr-1">{% if revenue_trend >= 0 %}trending_up{% else %}trending_down{% endif %}</span>
+                    {% if revenue_trend >= 0 %}+{% endif %}{{ revenue_trend }}%
                 </span>
             </div>
             <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Total Revenue</p>
-            <h3 class="text-3xl font-display-lg text-on-background mt-1">${{ total_revenue|floatformat:0 }}</h3>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ total_revenue|floatformat:0 }}</h3>
             <div class="w-full h-1 bg-surface-variant rounded-full mt-4 overflow-hidden">
                 <div class="h-full bg-primary w-[75%]"></div>
             </div>
@@ -46,9 +46,9 @@
                 <div class="p-2 bg-tertiary-container/20 rounded-lg">
                     <span class="material-symbols-outlined text-tertiary">group_add</span>
                 </div>
-                <span class="text-success text-xs font-bold flex items-center">
-                    <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
-                    +8.2%
+                <span class="{% if leads_trend >= 0 %}text-success{% else %}text-error{% endif %} text-xs font-bold flex items-center">
+                    <span class="material-symbols-outlined text-xs mr-1">{% if leads_trend >= 0 %}trending_up{% else %}trending_down{% endif %}</span>
+                    {% if leads_trend >= 0 %}+{% endif %}{{ leads_trend }}%
                 </span>
             </div>
             <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Total Leads</p>
@@ -75,9 +75,9 @@
                 <div class="p-2 bg-warning/10 rounded-lg">
                     <span class="material-symbols-outlined text-warning">analytics</span>
                 </div>
-                <span class="text-success text-xs font-bold flex items-center">
-                    <span class="material-symbols-outlined text-xs mr-1">trending_up</span>
-                    +1.4%
+                <span class="{% if conversion_trend >= 0 %}text-success{% else %}text-error{% endif %} text-xs font-bold flex items-center">
+                    <span class="material-symbols-outlined text-xs mr-1">{% if conversion_trend >= 0 %}trending_up{% else %}trending_down{% endif %}</span>
+                    {% if conversion_trend >= 0 %}+{% endif %}{{ conversion_trend }}%
                 </span>
             </div>
             <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Conversion Rate</p>

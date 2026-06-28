@@ -17,7 +17,7 @@
     <div class="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-outline-variant/30 glass-card">
             <p class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Weighted Forecast</p>
-            <h3 class="text-headline-md font-headline-md font-bold mt-1 text-primary">${{ weighted_forecast|floatformat:0 }}</h3>
+            <h3 class="text-headline-md font-headline-md font-bold mt-1 text-primary">₹{{ weighted_forecast|floatformat:0 }}</h3>
             <div class="mt-2 flex items-center gap-1 text-success text-body-sm font-bold">
                 <span class="material-symbols-outlined text-[18px]">trending_up</span>
                 12% vs last month
@@ -25,7 +25,7 @@
         </div>
         <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-outline-variant/30 glass-card">
             <p class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider">Total Pipeline</p>
-            <h3 class="text-headline-md font-headline-md font-bold mt-1">${{ total_pipeline|floatformat:0 }}</h3>
+            <h3 class="text-headline-md font-headline-md font-bold mt-1">₹{{ total_pipeline|floatformat:0 }}</h3>
             <p class="text-label-md font-label-md text-outline mt-2">{{ total_deals }} Active Deals</p>
         </div>
         <div class="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-outline-variant/30 glass-card">
@@ -80,7 +80,7 @@
                     <div>
                         <h4 class="font-headline-md text-[16px] font-bold text-on-surface uppercase tracking-wide">{{ stage_name }}</h4>
                         <span class="text-label-md font-label-md text-primary column-total" data-total="{{ stage_info.total_value }}">
-                            ${{ stage_info.total_value|floatformat:0 }} • <span class="column-count">{{ stage_info.leads|length }}</span> Deals
+                            ₹{{ stage_info.total_value|floatformat:0 }} • <span class="column-count">{{ stage_info.leads|length }}</span> Deals
                         </span>
                     </div>
                     <button class="material-symbols-outlined text-outline hover:text-primary">more_horiz</button>
@@ -115,7 +115,7 @@
                                     {{ lead.owner.user.username|slice:":2"|upper }}
                                     {% endif %}
                                 </div>
-                                <span class="text-label-md font-label-md font-bold">${{ lead.value|floatformat:0 }}</span>
+                                <span class="text-label-md font-label-md font-bold">₹{{ lead.value|floatformat:0 }}</span>
                             </div>
                             <span class="text-[10px] font-label-md text-outline">{{ lead.created_at|date:"M d" }}</span>
                         </div>
@@ -233,7 +233,7 @@
             const totalSpan = zone.querySelector('.column-total');
             
             countSpan.textContent = cardsInZone.length;
-            totalSpan.childNodes[0].textContent = `$${total.toLocaleString('en-US', {maximumFractionDigits: 0})} • `;
+            totalSpan.childNodes[0].textContent = `₹${total.toLocaleString('en-US', {maximumFractionDigits: 0})} • `;
         });
     }
 

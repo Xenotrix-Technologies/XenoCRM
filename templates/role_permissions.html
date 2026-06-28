@@ -17,11 +17,11 @@
       <p class="text-secondary text-body-sm mt-1">Select a role from the left pane to view and customize which pages and navigation links are accessible for that role.</p>
     </div>
 
-    <!-- Two-Pane Layout -->
+    <!-- Three-Pane Layout -->
     <div class="grid grid-cols-12 gap-6">
       
-      <!-- Left Pane: Roles Selector (Vertical Tabs) -->
-      <div class="col-span-12 md:col-span-4 space-y-2">
+      <!-- Left Pane: System Roles (Vertical Tabs) -->
+      <div class="col-span-12 md:col-span-3 space-y-2">
         <h3 class="text-xs font-bold uppercase tracking-wider text-outline mb-3 pl-2">System Roles</h3>
         <div class="space-y-1 bg-white/50 p-2 rounded-2xl border border-outline-variant/30" id="roles-tabs-container">
           {% for role in roles %}
@@ -39,8 +39,38 @@
         </div>
       </div>
 
-      <!-- Right Pane: Permissions for Selected Role -->
-      <div class="col-span-12 md:col-span-8">
+      <!-- Middle Pane: Staff List for Selected Role -->
+      <div class="col-span-12 md:col-span-3 space-y-2 hidden" id="staff-pane">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-outline mb-3 pl-2" id="staff-pane-title">Staff</h3>
+        <div class="space-y-1 bg-white/50 p-2 rounded-2xl border border-outline-variant/30">
+          
+          <button type="button" onclick="selectBaseRole()" id="staff-tab-base" class="staff-tab w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all text-left font-semibold text-sm bg-primary/10 text-primary">
+            <div class="flex items-center gap-3">
+              <span class="material-symbols-outlined text-[20px]">shield_person</span>
+              <span>Staff Permissions</span>
+            </div>
+          </button>
+
+          <hr class="border-outline-variant/30 my-2" />
+          
+          <div class="px-1 mb-2 relative">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-outline">search</span>
+            <input type="text" id="staff-search-input" onkeyup="filterStaff()" placeholder="Search staff..." class="w-full bg-slate-50 border border-outline-variant/50 text-sm rounded-lg pl-9 pr-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all text-on-surface placeholder:text-outline" />
+          </div>
+          
+          <div class="flex items-center px-4 py-1 mb-1 hidden" id="select-all-container">
+              <input type="checkbox" id="select-all-staff" class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer" onclick="toggleSelectAllStaff(this.checked)">
+              <label for="select-all-staff" class="ml-2 text-xs font-bold text-secondary cursor-pointer">Select All Staff</label>
+          </div>
+
+          <div id="staff-list-container" class="space-y-1">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Pane: Permissions for Selected Role/Staff -->
+      <div class="col-span-12 md:col-span-6 transition-all" id="permissions-pane">
         <div class="glass-card rounded-2xl p-8 border border-outline-variant/30 shadow-xl bg-white space-y-6">
           <div class="border-b border-outline-variant/20 pb-4">
             <div class="flex items-center gap-3">
@@ -49,6 +79,16 @@
                 <h3 class="font-headline-md text-[18px] font-bold text-on-surface" id="selected-role-title">Select a Role</h3>
                 <p class="text-xs text-secondary mt-0.5">Toggle the switches to configure page access for this role.</p>
               </div>
+            </div>
+          </div>
+
+          <!-- Column Headers -->
+          <div class="flex items-center justify-between px-4 pb-1">
+            <span class="text-xs font-bold uppercase tracking-wider text-outline">Page</span>
+            <div class="flex items-center gap-4">
+              <span class="text-xs font-bold uppercase tracking-wider text-outline w-[52px] text-center">View</span>
+              <span class="text-xs font-bold uppercase tracking-wider text-outline w-[52px] text-center">Edit</span>
+              <span class="text-xs font-bold uppercase tracking-wider text-outline w-[52px] text-center">Delete</span>
             </div>
           </div>
 
@@ -65,7 +105,11 @@
                   <span class="block text-[11px] text-secondary">Access to business statistics, charts, and metrics.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-dashboard" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-dashboard" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-dashboard-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-dashboard-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Leads -->
@@ -79,7 +123,11 @@
                   <span class="block text-[11px] text-secondary">Access to sales funnel, kanban board, and lead records.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-leads" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-leads" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-leads-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-leads-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Calendar -->
@@ -93,7 +141,11 @@
                   <span class="block text-[11px] text-secondary">Access to meeting schedules, events, and calendar views.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-calendar" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-calendar" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-calendar-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-calendar-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Clients -->
@@ -107,7 +159,11 @@
                   <span class="block text-[11px] text-secondary">Access to customer profile sheets and history.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-clients" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-clients" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-clients-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-clients-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Customer Support -->
@@ -121,7 +177,11 @@
                   <span class="block text-[11px] text-secondary">Access to ticket management and customer help desk.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-support" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-support" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-support-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-support-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Projects -->
@@ -135,7 +195,11 @@
                   <span class="block text-[11px] text-secondary">Access to ongoing projects, tasks, and task priorities.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-projects" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-projects" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-projects-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-projects-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Agreements -->
@@ -149,7 +213,11 @@
                   <span class="block text-[11px] text-secondary">Access to client contract records and signatures.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-agreements" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-agreements" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-agreements-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-agreements-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Campaigns -->
@@ -163,7 +231,11 @@
                   <span class="block text-[11px] text-secondary">Access to marketing campaigns and conversions.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-campaigns" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-campaigns" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-campaigns-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-campaigns-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Staff -->
@@ -177,7 +249,11 @@
                   <span class="block text-[11px] text-secondary">Access to staff member lists and roles.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-staff" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-staff" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-staff-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-staff-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Content Tracker -->
@@ -191,7 +267,11 @@
                   <span class="block text-[11px] text-secondary">Access to video content tracking and workflow.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-content_tracker" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-content_tracker" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-content_tracker-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-content_tracker-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Settings -->
@@ -205,7 +285,11 @@
                   <span class="block text-[11px] text-secondary">Access to system settings, statuses, services, and roles.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-settings" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-settings" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-settings-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-settings-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <div class="pt-4 pb-1">
@@ -223,7 +307,11 @@
                   <span class="block text-[11px] text-secondary">Manage Content Tracker dropdown options.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-content_settings" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-content_settings" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-content_settings-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-content_settings-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Status Page -->
@@ -237,7 +325,11 @@
                   <span class="block text-[11px] text-secondary">Manage lead status stages and colors.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-lead_statuses" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-lead_statuses" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-lead_statuses-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-lead_statuses-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Service Page -->
@@ -251,7 +343,11 @@
                   <span class="block text-[11px] text-secondary">Manage services offered by the organization.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-services" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-services" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-services-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-services-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Manage Roles -->
@@ -265,7 +361,11 @@
                   <span class="block text-[11px] text-secondary">Create and edit staff roles.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-staff_roles" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-staff_roles" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-staff_roles-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-staff_roles-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Notification Settings -->
@@ -279,7 +379,11 @@
                   <span class="block text-[11px] text-secondary">Configure notification preferences.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-notification_settings" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-notification_settings" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-notification_settings-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-notification_settings-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Role Permissions -->
@@ -293,7 +397,11 @@
                   <span class="block text-[11px] text-secondary">Control page and subpage access by role.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-role_permissions" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-role_permissions" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-role_permissions-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-role_permissions-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
 
             <!-- Row: Departments -->
@@ -307,7 +415,11 @@
                   <span class="block text-[11px] text-secondary">Manage departments and staff assignments.</span>
                 </div>
               </div>
-              <input type="checkbox" id="perm-departments" class="perm-switch w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-departments" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-departments-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-departments-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
             </div>
           </div>
 
@@ -327,8 +439,14 @@
 {% block extra_js %}
 <script>
   let currentSelectedRole = '';
+  let currentSelectedStaffIds = [];
   // Load permissions map from Django context
   const dbPermissions = JSON.parse('{{ role_permissions_json|escapejs }}');
+  const staffList = JSON.parse('{{ staff_list_json|escapejs }}');
+  const staffPermissions = JSON.parse('{{ staff_permissions_json|escapejs }}');
+
+  const pages = ['dashboard', 'leads', 'calendar', 'clients', 'support', 'projects', 'agreements', 'campaigns', 'staff', 'content_tracker', 'settings', 'content_settings', 'lead_statuses', 'services', 'staff_roles', 'notification_settings', 'role_permissions', 'departments'];
+  const settingsSubpages = ['content_settings', 'lead_statuses', 'services', 'staff_roles', 'notification_settings', 'role_permissions', 'departments'];
 
   // Load and pre-select first role on load
   document.addEventListener('DOMContentLoaded', function() {
@@ -337,6 +455,38 @@
           const firstRoleName = tabs[0].getAttribute('onclick').match(/'([^']+)'/)[1];
           selectRole(firstRoleName);
       }
+
+      // Wire up toggle dependencies: View → Edit → Delete (cascading)
+      pages.forEach(page => {
+          const viewCb = document.getElementById(`perm-${page}`);
+          const editCb = document.getElementById(`perm-${page}-edit`);
+          const deleteCb = document.getElementById(`perm-${page}-delete`);
+
+          if (viewCb && editCb) {
+              // Enabling edit auto-enables view
+              editCb.addEventListener('change', function() {
+                  if (this.checked) {
+                      viewCb.checked = true;
+                  }
+              });
+              // Disabling view also disables edit and delete
+              viewCb.addEventListener('change', function() {
+                  if (!this.checked) {
+                      editCb.checked = false;
+                      if (deleteCb) deleteCb.checked = false;
+                  }
+              });
+          }
+
+          if (deleteCb && viewCb) {
+              // Enabling delete auto-enables view
+              deleteCb.addEventListener('change', function() {
+                  if (this.checked) {
+                      viewCb.checked = true;
+                  }
+              });
+          }
+      });
   });
 
   // Switch role selection
@@ -364,31 +514,233 @@
           }
       });
 
-      // Update right panel header
-      document.getElementById('selected-role-title').innerText = `${roleName} Permissions`;
+      // Clear staff search input
+      const searchInput = document.getElementById('staff-search-input');
+      if (searchInput) searchInput.value = '';
 
-      const perms = dbPermissions[roleName] || {};
-      const pages = ['dashboard', 'leads', 'calendar', 'clients', 'support', 'projects', 'agreements', 'campaigns', 'staff', 'content_tracker', 'settings', 'content_settings', 'lead_statuses', 'services', 'staff_roles', 'notification_settings', 'role_permissions', 'departments'];
-      const settingsSubpages = ['content_settings', 'lead_statuses', 'services', 'staff_roles', 'notification_settings', 'role_permissions', 'departments'];
+      // Populate Staff Column
+      const staffContainer = document.getElementById('staff-list-container');
+      staffContainer.innerHTML = '';
+      document.getElementById('staff-pane').classList.remove('hidden');
+
+      const roleStaff = staffList.filter(s => s.role === roleName);
+      if (roleStaff.length === 0) {
+          staffContainer.innerHTML = '<p class="text-xs text-secondary px-4 py-2 italic">No staff assigned to this role.</p>';
+          document.getElementById('select-all-container').classList.add('hidden');
+      } else {
+          document.getElementById('select-all-container').classList.remove('hidden');
+          document.getElementById('select-all-staff').checked = false;
+          roleStaff.forEach(staff => {
+              const btn = document.createElement('div');
+              btn.id = `staff-tab-${staff.id}`;
+              btn.className = 'staff-tab w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all text-left font-semibold text-sm hover:bg-slate-100/70 text-secondary cursor-pointer';
+              btn.onclick = (e) => {
+                  if(e.target.tagName !== 'INPUT') {
+                      const cb = document.getElementById(`staff-cb-${staff.id}`);
+                      if (cb) {
+                          cb.checked = !cb.checked;
+                          toggleStaffSelection(staff.id, staff.name, cb.checked);
+                      }
+                  }
+              };
+              
+              const safeName = staff.name.replace(/'/g, "\\'");
+              btn.innerHTML = `
+                <div class="flex items-center gap-3 w-full">
+                  <input type="checkbox" id="staff-cb-${staff.id}" class="staff-checkbox w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer" onclick="toggleStaffSelection(${staff.id}, '${safeName}', this.checked)">
+                  <span class="material-symbols-outlined text-[20px] text-outline pointer-events-none">person</span>
+                  <span class="truncate flex-1 pointer-events-none">${staff.name}</span>
+                </div>
+              `;
+              staffContainer.appendChild(btn);
+          });
+      }
+
+      // Default select base role
+      selectBaseRole();
+  }
+
+  function filterStaff() {
+      const input = document.getElementById('staff-search-input');
+      const filter = input.value.toLowerCase();
+      const container = document.getElementById('staff-list-container');
+      const buttons = container.getElementsByTagName('button');
+
+      for (let i = 0; i < buttons.length; i++) {
+          const span = buttons[i].querySelector('div > span:nth-of-type(2)');
+          if (span) {
+              const txtValue = span.textContent || span.innerText;
+              if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                  buttons[i].style.display = "";
+              } else {
+                  buttons[i].style.display = "none";
+              }
+          }
+      }
+  }
+
+  function selectBaseRole() {
+      currentSelectedStaffIds = [];
+      document.querySelectorAll('.staff-checkbox').forEach(cb => cb.checked = false);
+      const selectAllCb = document.getElementById('select-all-staff');
+      if (selectAllCb) selectAllCb.checked = false;
+      
+      updateStaffTabUI('staff-tab-base');
+      document.getElementById('selected-role-title').innerText = `${currentSelectedRole} Permissions`;
+      renderPermissions(dbPermissions[currentSelectedRole] || {});
+  }
+
+  function toggleSelectAllStaff(isChecked) {
+      const roleStaff = staffList.filter(s => s.role === currentSelectedRole);
+      roleStaff.forEach(staff => {
+          const cb = document.getElementById(`staff-cb-${staff.id}`);
+          if (cb) {
+              cb.checked = isChecked;
+              // Add/remove silently
+              if (isChecked) {
+                  if (!currentSelectedStaffIds.includes(staff.id)) currentSelectedStaffIds.push(staff.id);
+              } else {
+                  currentSelectedStaffIds = currentSelectedStaffIds.filter(id => id !== staff.id);
+              }
+          }
+      });
+      processStaffSelectionState();
+  }
+
+  function toggleStaffSelection(staffId, staffName, isChecked) {
+      if (isChecked) {
+          if (!currentSelectedStaffIds.includes(staffId)) {
+              currentSelectedStaffIds.push(staffId);
+          }
+      } else {
+          currentSelectedStaffIds = currentSelectedStaffIds.filter(id => id !== staffId);
+          const selectAllCb = document.getElementById('select-all-staff');
+          if (selectAllCb) selectAllCb.checked = false;
+      }
+      
+      processStaffSelectionState();
+  }
+  
+  function processStaffSelectionState() {
+      if (currentSelectedStaffIds.length === 0) {
+          selectBaseRole();
+      } else if (currentSelectedStaffIds.length === 1) {
+          const sId = currentSelectedStaffIds[0];
+          const sName = staffList.find(s => s.id === sId)?.name || 'Staff';
+          
+          updateStaffTabUI(`staff-tab-${sId}`);
+          document.getElementById('selected-role-title').innerText = `${sName} (Override)`;
+          
+          const basePerms = dbPermissions[currentSelectedRole] || {};
+          const staffPerms = staffPermissions[sId] || {};
+          const combined = { ...basePerms, ...staffPerms }; 
+          renderPermissions(combined);
+      } else {
+          updateStaffTabUI('multiple');
+          document.getElementById('selected-role-title').innerText = `Multiple Staff Selected (${currentSelectedStaffIds.length})`;
+          renderPermissions(dbPermissions[currentSelectedRole] || {});
+      }
+  }
+
+  function updateStaffTabUI(activeTabId) {
+      const tabs = document.querySelectorAll('.staff-tab');
+      tabs.forEach(tab => {
+          if (activeTabId === 'multiple') {
+              if (tab.id === 'staff-tab-base') {
+                  tab.classList.remove('bg-primary/10', 'text-primary');
+                  tab.classList.add('text-secondary', 'hover:bg-slate-100/70');
+              } else {
+                  const staffIdStr = tab.id.replace('staff-tab-', '');
+                  const isSelected = currentSelectedStaffIds.includes(parseInt(staffIdStr));
+                  if (isSelected) {
+                      tab.classList.add('bg-primary/10', 'text-primary');
+                      tab.classList.remove('text-secondary', 'hover:bg-slate-100/70');
+                  } else {
+                      tab.classList.remove('bg-primary/10', 'text-primary');
+                      tab.classList.add('text-secondary', 'hover:bg-slate-100/70');
+                  }
+              }
+              return;
+          }
+          
+          if (tab.id === activeTabId) {
+              tab.classList.add('bg-primary/10', 'text-primary');
+              tab.classList.remove('text-secondary', 'hover:bg-slate-100/70');
+              const chevron = tab.querySelector('.chevron_right');
+              const icon = tab.querySelector('.material-symbols-outlined');
+              if (chevron) chevron.classList.remove('opacity-0');
+              if (icon) {
+                  icon.classList.remove('text-outline');
+                  icon.classList.add('text-primary');
+              }
+          } else {
+              tab.classList.remove('bg-primary/10', 'text-primary');
+              tab.classList.add('text-secondary', 'hover:bg-slate-100/70');
+              const chevron = tab.querySelector('.chevron_right');
+              const icon = tab.querySelector('.material-symbols-outlined');
+              if (chevron) chevron.classList.add('opacity-0');
+              if (icon) {
+                  icon.classList.add('text-outline');
+                  icon.classList.remove('text-primary');
+              }
+          }
+      });
+  }
+
+  function renderPermissions(perms) {
+      const roleLower = currentSelectedRole.toLowerCase();
       
       pages.forEach(page => {
-          const cb = document.getElementById(`perm-${page}`);
-          if (!cb) return;
+          const viewCb = document.getElementById(`perm-${page}`);
+          const editCb = document.getElementById(`perm-${page}-edit`);
+          const deleteCb = document.getElementById(`perm-${page}-delete`);
+          if (!viewCb) return;
 
-          const key = `${roleName.toLowerCase()}_${page}`;
-          if (perms[key] !== undefined) {
-              cb.checked = perms[key] === true || perms[key] === 'true';
-          } else if ((page === 'content_tracker' || settingsSubpages.includes(page)) && perms[`${roleName.toLowerCase()}_settings`] !== undefined) {
-              cb.checked = perms[`${roleName.toLowerCase()}_settings`] === true || perms[`${roleName.toLowerCase()}_settings`] === 'true';
+          const viewKey = `${roleLower}_${page}`;
+          const editKey = `${roleLower}_${page}_edit`;
+          const deleteKey = `${roleLower}_${page}_delete`;
+
+          // --- Set VIEW toggle ---
+          if (perms[viewKey] !== undefined) {
+              viewCb.checked = perms[viewKey] === true || perms[viewKey] === 'true';
+          } else if ((page === 'content_tracker' || settingsSubpages.includes(page)) && perms[`${roleLower}_settings`] !== undefined) {
+              viewCb.checked = perms[`${roleLower}_settings`] === true || perms[`${roleLower}_settings`] === 'true';
           } else {
               // Defaults logic
-              const roleLower = roleName.toLowerCase();
               if (roleLower.includes('admin') || roleLower.includes('administrator')) {
-                  cb.checked = true;
+                  viewCb.checked = true;
               } else if (roleLower.includes('manager')) {
-                  cb.checked = page !== 'settings' && page !== 'staff' && page !== 'content_tracker' && !settingsSubpages.includes(page);
+                  viewCb.checked = page !== 'settings' && page !== 'staff' && page !== 'content_tracker' && !settingsSubpages.includes(page);
               } else {
-                  cb.checked = (page === 'leads' || page === 'calendar' || page === 'clients' || page === 'support' || page === 'dashboard');
+                  viewCb.checked = (page === 'leads' || page === 'calendar' || page === 'clients' || page === 'support' || page === 'dashboard');
+              }
+          }
+
+          // --- Set EDIT toggle ---
+          if (editCb) {
+              if (perms[editKey] !== undefined) {
+                  editCb.checked = perms[editKey] === true || perms[editKey] === 'true';
+              } else {
+                  // Default: admins get edit, others don't
+                  if (roleLower.includes('admin') || roleLower.includes('administrator')) {
+                      editCb.checked = true;
+                  } else {
+                      editCb.checked = false;
+                  }
+              }
+          }
+
+          // --- Set DELETE toggle ---
+          if (deleteCb) {
+              if (perms[deleteKey] !== undefined) {
+                  deleteCb.checked = perms[deleteKey] === true || perms[deleteKey] === 'true';
+              } else {
+                  // Default: only admins get delete
+                  if (roleLower.includes('admin') || roleLower.includes('administrator')) {
+                      deleteCb.checked = true;
+                  } else {
+                      deleteCb.checked = false;
+                  }
               }
           }
       });
@@ -399,12 +751,20 @@
       if (!currentSelectedRole) return;
       
       const perms = {};
-      const pages = ['dashboard', 'leads', 'calendar', 'clients', 'support', 'projects', 'agreements', 'campaigns', 'staff', 'content_tracker', 'settings', 'content_settings', 'lead_statuses', 'services', 'staff_roles', 'notification_settings', 'role_permissions', 'departments'];
+      const roleLower = currentSelectedRole.toLowerCase();
+
       pages.forEach(page => {
-          const cb = document.getElementById(`perm-${page}`);
-          if (cb) {
-              const key = `${currentSelectedRole.toLowerCase()}_${page}`;
-              perms[key] = cb.checked;
+          const viewCb = document.getElementById(`perm-${page}`);
+          const editCb = document.getElementById(`perm-${page}-edit`);
+          const deleteCb = document.getElementById(`perm-${page}-delete`);
+          if (viewCb) {
+              perms[`${roleLower}_${page}`] = viewCb.checked;
+          }
+          if (editCb) {
+              perms[`${roleLower}_${page}_edit`] = editCb.checked;
+          }
+          if (deleteCb) {
+              perms[`${roleLower}_${page}_delete`] = deleteCb.checked;
           }
       });
 
@@ -419,6 +779,7 @@
           },
           body: JSON.stringify({
               role: currentSelectedRole,
+              staff_ids: currentSelectedStaffIds,
               permissions: perms
           })
       })
@@ -426,7 +787,13 @@
       .then(data => {
           if (data.success) {
               // Update local JS map
-              dbPermissions[currentSelectedRole] = perms;
+              if (currentSelectedStaffIds.length > 0) {
+                  currentSelectedStaffIds.forEach(id => {
+                      staffPermissions[id] = perms;
+                  });
+              } else {
+                  dbPermissions[currentSelectedRole] = perms;
+              }
               if (typeof showToast === 'function') {
                   showToast(data.message, 'success');
               }
@@ -448,6 +815,10 @@
   /* Custom toggle switches styling */
   .checked\:before\:left-4\.5:checked::before {
       left: 1.125rem;
+  }
+  /* Delete toggle turns red when checked */
+  .perm-toggle-delete:checked {
+      background-color: #ef4444 !important;
   }
 </style>
 {% endblock %}

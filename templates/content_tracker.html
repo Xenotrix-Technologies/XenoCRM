@@ -18,7 +18,8 @@
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex items-center gap-2 flex-nowrap shrink-0">
+        {% if request.user.profile.has_edit_content_tracker %}
         <a href="{% url 'add_content_item' %}" class="bg-primary text-on-primary px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:opacity-90 transition-all shadow-md">
           <span class="material-symbols-outlined text-[18px]">add_circle</span>
           Add Content
@@ -31,90 +32,14 @@
           <span class="material-symbols-outlined text-[18px]">file_download</span>
           Export
         </button>
+        {% endif %}
         <button onclick="window.location.reload()" class="bg-surface-container border border-outline-variant text-on-surface p-2 rounded-xl hover:bg-slate-50 transition-all" title="Refresh">
           <span class="material-symbols-outlined text-[18px]">refresh</span>
         </button>
       </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-      <!-- Total Videos -->
-      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-outline uppercase tracking-wider">Total Videos</span>
-          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-            <span class="material-symbols-outlined text-[18px]">video_library</span>
-          </div>
-        </div>
-        <div class="mt-4">
-          <span class="block text-2xl font-bold text-on-surface">{{ total_count }}</span>
-          <span class="text-[10px] text-success font-semibold flex items-center gap-0.5 mt-0.5">
-            <span class="material-symbols-outlined text-[12px]">trending_up</span> All platforms
-          </span>
-        </div>
-      </div>
-      <!-- Pending -->
-      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-outline uppercase tracking-wider">Pending</span>
-          <div class="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
-            <span class="material-symbols-outlined text-[18px]">pending_actions</span>
-          </div>
-        </div>
-        <div class="mt-4">
-          <span class="block text-2xl font-bold text-on-surface">{{ pending_count }}</span>
-          <span class="text-[10px] text-outline font-semibold flex items-center gap-0.5 mt-0.5">
-            <span class="material-symbols-outlined text-[12px]">hourglass_empty</span> Awaiting edit
-          </span>
-        </div>
-      </div>
-      <!-- In Editing -->
-      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-outline uppercase tracking-wider">In Editing</span>
-          <div class="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center text-info">
-            <span class="material-symbols-outlined text-[18px]">video_settings</span>
-          </div>
-        </div>
-        <div class="mt-4">
-          <span class="block text-2xl font-bold text-on-surface">{{ editing_count }}</span>
-          <span class="text-[10px] text-info font-semibold flex items-center gap-0.5 mt-0.5">
-            <span class="material-symbols-outlined text-[12px]">sync</span> In progress
-          </span>
-        </div>
-      </div>
-      <!-- Published -->
-      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-outline uppercase tracking-wider">Published</span>
-          <div class="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center text-success">
-            <span class="material-symbols-outlined text-[18px]">check_circle</span>
-          </div>
-        </div>
-        <div class="mt-4">
-          <span class="block text-2xl font-bold text-on-surface">{{ published_count }}</span>
-          <span class="text-[10px] text-success font-semibold flex items-center gap-0.5 mt-0.5">
-            <span class="material-symbols-outlined text-[12px]">done_all</span> Live content
-          </span>
-        </div>
-      </div>
-      <!-- Scheduled -->
-      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-outline uppercase tracking-wider">Scheduled</span>
-          <div class="w-8 h-8 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary">
-            <span class="material-symbols-outlined text-[18px]">schedule</span>
-          </div>
-        </div>
-        <div class="mt-4">
-          <span class="block text-2xl font-bold text-on-surface">{{ scheduled_count }}</span>
-          <span class="text-[10px] text-tertiary font-semibold flex items-center gap-0.5 mt-0.5">
-            <span class="material-symbols-outlined text-[12px]">calendar_today</span> Queue set
-          </span>
-        </div>
-      </div>
-    </div>
+
 
     <!-- Filters Section -->
     <div class="glass-card p-5 rounded-2xl border border-outline-variant/30 bg-white shadow-sm space-y-4">
@@ -149,13 +74,9 @@
         <div>
           <select name="status_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
             <option value="">All Statuses</option>
-            <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
-            <option value="Editing" {% if status_filter == 'Editing' %}selected{% endif %}>Editing</option>
-            <option value="Review" {% if status_filter == 'Review' %}selected{% endif %}>Review</option>
-            <option value="Approved" {% if status_filter == 'Approved' %}selected{% endif %}>Approved</option>
-            <option value="Published" {% if status_filter == 'Published' %}selected{% endif %}>Published</option>
-            <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
-            <option value="Scheduled" {% if status_filter == 'Scheduled' %}selected{% endif %}>Scheduled</option>
+            {% for opt in status_options %}
+            <option value="{{ opt }}" {% if status_filter == opt %}selected{% endif %}>{{ opt }}</option>
+            {% endfor %}
           </select>
         </div>
 
@@ -173,10 +94,9 @@
         <div>
           <select name="priority_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
             <option value="">All Priorities</option>
-            <option value="Low" {% if priority_filter == 'Low' %}selected{% endif %}>Low</option>
-            <option value="Medium" {% if priority_filter == 'Medium' %}selected{% endif %}>Medium</option>
-            <option value="High" {% if priority_filter == 'High' %}selected{% endif %}>High</option>
-            <option value="Urgent" {% if priority_filter == 'Urgent' %}selected{% endif %}>Urgent</option>
+            {% for opt in priority_options %}
+            <option value="{{ opt }}" {% if priority_filter == opt %}selected{% endif %}>{{ opt }}</option>
+            {% endfor %}
           </select>
         </div>
 
@@ -184,12 +104,9 @@
         <div>
           <select name="campaign_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
             <option value="">All Campaign Status</option>
-            <option value="Not Started" {% if campaign_filter == 'Not Started' %}selected{% endif %}>Not Started</option>
-            <option value="Planning" {% if campaign_filter == 'Planning' %}selected{% endif %}>Planning</option>
-            <option value="In Progress" {% if campaign_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
-            <option value="Paused" {% if campaign_filter == 'Paused' %}selected{% endif %}>Paused</option>
-            <option value="Completed" {% if campaign_filter == 'Completed' %}selected{% endif %}>Completed</option>
-            <option value="Cancelled" {% if campaign_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+            {% for opt in campaign_status_options %}
+            <option value="{{ opt }}" {% if campaign_filter == opt %}selected{% endif %}>{{ opt }}</option>
+            {% endfor %}
           </select>
         </div>
 
@@ -215,6 +132,7 @@
       </form>
     </div>
 
+    {% if request.user.profile.has_delete_content_tracker %}
     <!-- Bulk Actions (Hidden by default, shown when items checked) -->
     <div id="bulk-actions-bar" class="hidden p-4 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-between text-sm animate-fade-in">
       <span class="font-bold text-primary" id="checked-count-text">0 items selected</span>
@@ -223,6 +141,7 @@
         Bulk Delete Selected
       </button>
     </div>
+    {% endif %}
 
     <!-- Main Table Card -->
     <div class="glass-card rounded-2xl border border-outline-variant/30 bg-white shadow-sm overflow-hidden flex flex-col justify-between">
@@ -232,7 +151,9 @@
           <thead>
             <tr class="bg-slate-50 border-b border-outline-variant/30 text-xs font-bold text-outline select-none sticky top-0 z-10">
               <th class="p-4 w-12 text-center">
+                {% if request.user.profile.has_delete_content_tracker %}
                 <input type="checkbox" id="check-all" class="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer" onclick="toggleSelectAll(this)"/>
+                {% endif %}
               </th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('id')">ID</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('client__name')">Client</th>
@@ -242,20 +163,26 @@
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('due_date')">Due Date</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('status')">Status</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('platform')">Platform</th>
-              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('due_date')">Upload Date</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('due_date')">Publish Date</th>
               <th class="p-4">Post Type</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('campaign_status')">Campaign</th>
               <th class="p-4">Link</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('priority')">Priority</th>
               <th class="p-4">Notes</th>
+              {% if request.user.profile.has_edit_content_tracker or request.user.profile.has_delete_content_tracker %}
               <th class="p-4 text-center w-20">Actions</th>
+              {% else %}
+              <th class="p-4 text-center w-20"></th>
+              {% endif %}
             </tr>
           </thead>
           <tbody class="divide-y divide-outline-variant/15 text-xs text-on-surface">
             {% for item in page_obj %}
             <tr class="hover:bg-slate-50/50 transition-colors" id="row-{{ item.id }}">
               <td class="p-4 text-center">
+                {% if request.user.profile.has_delete_content_tracker %}
                 <input type="checkbox" name="item_ids" value="{{ item.id }}" class="row-checkbox w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer" onclick="updateBulkBar()"/>
+                {% endif %}
               </td>
               <td class="p-4 font-mono font-bold text-outline">#{{ item.id }}</td>
               <td class="p-4 font-bold text-on-surface">{{ item.client.name }}</td>
@@ -270,21 +197,18 @@
               <td class="p-4 text-secondary">{{ item.date_received|date:"Y-m-d"|default:"-" }}</td>
               <td class="p-4 text-secondary font-bold">{{ item.due_date|date:"Y-m-d"|default:"-" }}</td>
               <td class="p-4">
-                {% if item.status == 'Pending' %}
-                  <span class="px-2 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200/50 font-bold text-[10px] uppercase">Pending</span>
-                {% elif item.status == 'Editing' %}
-                  <span class="px-2 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200/50 font-bold text-[10px] uppercase">Editing</span>
-                {% elif item.status == 'Review' %}
-                  <span class="px-2 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200/50 font-bold text-[10px] uppercase">Review</span>
-                {% elif item.status == 'Approved' %}
-                  <span class="px-2 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50 font-bold text-[10px] uppercase">Approved</span>
-                {% elif item.status == 'Published' %}
-                  <span class="px-2 py-1 rounded-full bg-green-100 text-green-800 border border-green-300 font-bold text-[10px] uppercase">Published</span>
-                {% elif item.status == 'Rejected' %}
-                  <span class="px-2 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200/50 font-bold text-[10px] uppercase">Rejected</span>
-                {% elif item.status == 'Scheduled' %}
-                  <span class="px-2 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200/50 font-bold text-[10px] uppercase">Scheduled</span>
-                {% endif %}
+                <span class="px-2 py-1 rounded-full font-bold text-[10px] uppercase border
+                  {% if item.status|lower == 'pending' %}bg-amber-50 text-amber-700 border-amber-200/50
+                  {% elif item.status|lower == 'editing' %}bg-blue-50 text-blue-700 border-blue-200/50
+                  {% elif item.status|lower == 'edited' %}bg-indigo-50 text-indigo-700 border-indigo-200/50
+                  {% elif item.status|lower == 'review' %}bg-purple-50 text-purple-700 border-purple-200/50
+                  {% elif item.status|lower == 'approved' %}bg-emerald-50 text-emerald-700 border-emerald-200/50
+                  {% elif item.status|lower == 'published' %}bg-green-100 text-green-800 border-green-300
+                  {% elif item.status|lower == 'rejected' %}bg-rose-50 text-rose-700 border-rose-200/50
+                  {% elif item.status|lower == 'scheduled' %}bg-teal-50 text-teal-700 border-teal-200/50
+                  {% else %}bg-slate-100 text-slate-700 border-slate-300{% endif %}">
+                  {{ item.status }}
+                </span>
               </td>
               <td class="p-4 font-semibold text-secondary">{{ item.platform }}</td>
               <td class="p-4 text-secondary">{{ item.upload_date|date:"Y-m-d"|default:"-" }}</td>
@@ -328,12 +252,14 @@
                 {{ item.notes|default:"-" }}
               </td>
               <td class="p-4 text-center">
+                {% if request.user.profile.has_edit_content_tracker or request.user.profile.has_delete_content_tracker %}
                 <!-- Dropdown Menu -->
                 <div class="relative inline-block text-left" id="dropdown-parent-{{ item.id }}">
                   <button onclick="toggleActionDropdown(event, {{ item.id }})" class="p-1 rounded-lg text-outline hover:bg-slate-100 transition-all">
                     <span class="material-symbols-outlined text-[18px]">more_vert</span>
                   </button>
                   <div id="dropdown-menu-{{ item.id }}" class="hidden absolute right-0 mt-1 w-36 rounded-lg bg-white border border-outline-variant/30 shadow-lg z-[40] divide-y divide-outline-variant/10 text-xs">
+                    {% if request.user.profile.has_edit_content_tracker %}
                     <div class="py-1">
                       <a href="{% url 'edit_content_item' item.id %}" class="w-full text-left px-3 py-2 text-on-surface hover:bg-slate-50 flex items-center gap-2">
                         <span class="material-symbols-outlined text-[14px]">edit</span> Edit
@@ -346,12 +272,18 @@
                       <button onclick="quickMarkComplete({{ item.id }})" class="w-full text-left px-3 py-2 text-success hover:bg-slate-50 flex items-center gap-2 font-semibold">
                         <span class="material-symbols-outlined text-[14px]">done_all</span> Mark Complete
                       </button>
+                    </div>
+                    {% endif %}
+                    {% if request.user.profile.has_delete_content_tracker %}
+                    <div class="py-1">
                       <button onclick="deleteItem({{ item.id }})" class="w-full text-left px-3 py-2 text-error hover:bg-slate-50 flex items-center gap-2 font-semibold">
                         <span class="material-symbols-outlined text-[14px]">delete</span> Delete
                       </button>
                     </div>
+                    {% endif %}
                   </div>
                 </div>
+                {% endif %}
               </td>
             </tr>
             {% empty %}
@@ -368,6 +300,7 @@
           </tbody>
         </table>
       </div>
+
 
       <!-- Pagination Block -->
       <div class="p-4 border-t border-outline-variant/30 bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-xs text-secondary font-medium select-none">
@@ -488,13 +421,9 @@
       <div>
         <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status</label>
         <select name="status" id="form-status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-          <option value="Pending">Pending</option>
-          <option value="Editing">Editing</option>
-          <option value="Review">Review</option>
-          <option value="Approved">Approved</option>
-          <option value="Published">Published</option>
-          <option value="Rejected">Rejected</option>
-          <option value="Scheduled">Scheduled</option>
+          {% for opt in status_options %}
+          <option value="{{ opt }}">{{ opt }}</option>
+          {% endfor %}
         </select>
       </div>
 
@@ -502,12 +431,9 @@
       <div>
         <label class="block text-label-md font-label-md text-outline uppercase mb-1">Campaign Status</label>
         <select name="campaign_status" id="form-campaign-status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-          <option value="Not Started">Not Started</option>
-          <option value="Planning">Planning</option>
-          <option value="In Progress">In Progress</option>
-          <option value="Paused">Paused</option>
-          <option value="Completed">Completed</option>
-          <option value="Cancelled">Cancelled</option>
+          {% for opt in campaign_status_options %}
+          <option value="{{ opt }}">{{ opt }}</option>
+          {% endfor %}
         </select>
       </div>
 
@@ -515,10 +441,9 @@
       <div>
         <label class="block text-label-md font-label-md text-outline uppercase mb-1">Priority</label>
         <select name="priority" id="form-priority" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-          <option value="Low">Low</option>
-          <option value="Medium" selected>Medium</option>
-          <option value="High">High</option>
-          <option value="Urgent">Urgent</option>
+          {% for opt in priority_options %}
+          <option value="{{ opt }}">{{ opt }}</option>
+          {% endfor %}
         </select>
       </div>
 
@@ -532,7 +457,7 @@
         <input type="date" name="due_date" id="form-due-date" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
       </div>
       <div>
-        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Upload Date</label>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Publish Date</label>
         <input type="date" name="upload_date" id="form-upload-date" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
       </div>
 
@@ -807,7 +732,7 @@
       window.location.search = urlParams.toString();
   }
 
-  // Client-side CSV export
+  // Export to CSV
   function exportToCSV() {
       const table = document.getElementById("content-items-table");
       let csv = [];

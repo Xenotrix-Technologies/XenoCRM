@@ -10,7 +10,7 @@ from django.db.models import Sum, Q
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib import messages
-from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable, Campaign, ContentDropdownOption
+from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable, Campaign, ContentDropdownOption, SystemNotification
 from .forms import EventForm, ProfileForm
 # Views for navigation pages with proper multi-tenant database queries
 
@@ -247,7 +247,7 @@ def customer_support_view(request):
         
         Ticket.objects.create(
             organization=org,
-            ticket_id="TCK-102",
+            ticket_id="XTC-003",
             subject="API Integration Error",
             status="Open",
             priority="High",
@@ -256,7 +256,7 @@ def customer_support_view(request):
         )
         Ticket.objects.create(
             organization=org,
-            ticket_id="TCK-101",
+            ticket_id="XTC-002",
             subject="Billing Query",
             status="Pending",
             priority="Medium",
@@ -265,7 +265,7 @@ def customer_support_view(request):
         )
         Ticket.objects.create(
             organization=org,
-            ticket_id="TCK-099",
+            ticket_id="XTC-001",
             subject="Password Reset Issue",
             status="Closed",
             priority="Low",
@@ -310,7 +310,7 @@ def create_ticket(request):
                 pass
                 
         ticket_count = Ticket.objects.filter(organization=org).count()
-        ticket_id = f"TCK-{100 + ticket_count + 1}"
+        ticket_id = f"XTC-{ticket_count + 1:03d}"
         
         Ticket.objects.create(
             organization=org,
@@ -325,7 +325,7 @@ def create_ticket(request):
         
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'message': 'Ticket created successfully.'})
-        messages.success(request, 'Ticket created successfully.')
+        SystemNotification.objects.create(user=request.user, message='Ticket created successfully.', type='success')
         return redirect('customer_support')
         
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
@@ -365,7 +365,7 @@ def edit_ticket(request, ticket_id):
         
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'message': 'Ticket updated successfully.'})
-        messages.success(request, 'Ticket updated successfully.')
+        SystemNotification.objects.create(user=request.user, message='Ticket updated successfully.', type='success')
         return redirect('customer_support')
         
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
@@ -379,7 +379,7 @@ def delete_ticket(request, ticket_id):
         ticket.delete()
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'message': 'Ticket deleted successfully.'})
-        messages.success(request, 'Ticket deleted.')
+        SystemNotification.objects.create(user=request.user, message='Ticket deleted.', type='success')
         return redirect('customer_support')
         
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
@@ -423,7 +423,7 @@ def create_agreement_view(request):
             # Generate Auto Agreement Number
             year = timezone.now().year
             count = Agreement.objects.filter(organization=org, created_at__year=year).count()
-            agreement_number = f"AGR-{year}-{1000 + count + 1}"
+            agreement_number = f"AGR-{year}-{count + 1:03d}"
             
             service_id = request.POST.get('service')
             service = None
@@ -483,7 +483,7 @@ def create_agreement_view(request):
                 if text:
                     ClientResponsibility.objects.create(agreement=agreement, responsibility=text)
                     
-            messages.success(request, 'Agreement created successfully.')
+            SystemNotification.objects.create(user=request.user, message='Agreement created successfully.', type='success')
             return redirect('agreements')
         except Exception as e:
             messages.error(request, f"Error creating agreement: {str(e)}")
@@ -561,7 +561,7 @@ def update_agreement_view(request, agreement_id):
                 if text:
                     ClientResponsibility.objects.create(agreement=agreement, responsibility=text)
                     
-            messages.success(request, 'Agreement updated successfully.')
+            SystemNotification.objects.create(user=request.user, message='Agreement updated successfully.', type='success')
             return redirect('agreements')
         except Exception as e:
             messages.error(request, f"Error updating agreement: {str(e)}")
@@ -579,7 +579,7 @@ def delete_agreement_view(request, agreement_id):
         org = request.user.profile.organization
         agreement = get_object_or_404(Agreement, id=agreement_id, organization=org)
         agreement.delete()
-        messages.success(request, 'Agreement deleted successfully.')
+        SystemNotification.objects.create(user=request.user, message='Agreement deleted successfully.', type='success')
         return redirect('agreements')
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
@@ -635,7 +635,7 @@ def add_campaign(request):
         )
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'message': 'Campaign launched successfully.'})
-        messages.success(request, 'Campaign launched successfully.')
+        SystemNotification.objects.create(user=request.user, message='Campaign launched successfully.', type='success')
     except Exception as e:
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': False, 'error': str(e)})
@@ -666,7 +666,7 @@ def edit_campaign(request, campaign_id):
         
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'message': 'Campaign updated successfully.'})
-        messages.success(request, 'Campaign updated successfully.')
+        SystemNotification.objects.create(user=request.user, message='Campaign updated successfully.', type='success')
     except Exception as e:
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': False, 'error': str(e)})
@@ -685,7 +685,7 @@ def delete_campaign(request, campaign_id):
         campaign.delete()
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'message': 'Campaign deleted successfully.'})
-        messages.success(request, 'Campaign deleted successfully.')
+        SystemNotification.objects.create(user=request.user, message='Campaign deleted successfully.', type='success')
     except Exception as e:
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': False, 'error': str(e)})
@@ -818,7 +818,33 @@ def dashboard_view(request):
                 break
         trend_values.append(rev_val)
 
+    # Trend calculations
+    today_date = timezone.now().date()
+    first_day_this_month = today_date.replace(day=1)
+    last_day_last_month = first_day_this_month - timedelta(days=1)
+    first_day_last_month = last_day_last_month.replace(day=1)
+
+    leads_this_month = leads_qs.filter(created_at__gte=first_day_this_month).count()
+    leads_last_month = leads_qs.filter(created_at__gte=first_day_last_month, created_at__lt=first_day_this_month).count()
+    
+    leads_trend = ((leads_this_month - leads_last_month) / leads_last_month * 100) if leads_last_month > 0 else (100.0 if leads_this_month > 0 else 0.0)
+
+    won_this_month = leads_qs.filter(stage='Won', created_at__gte=first_day_this_month)
+    won_last_month = leads_qs.filter(stage='Won', created_at__gte=first_day_last_month, created_at__lt=first_day_this_month)
+    
+    rev_this_month = won_this_month.aggregate(Sum('value'))['value__sum'] or 0.00
+    rev_last_month = won_last_month.aggregate(Sum('value'))['value__sum'] or 0.00
+    
+    revenue_trend = ((float(rev_this_month) - float(rev_last_month)) / float(rev_last_month) * 100) if rev_last_month > 0 else (100.0 if rev_this_month > 0 else 0.0)
+
+    conv_this_month = (won_this_month.count() / leads_this_month * 100) if leads_this_month > 0 else 0.0
+    conv_last_month = (won_last_month.count() / leads_last_month * 100) if leads_last_month > 0 else 0.0
+    conversion_trend = conv_this_month - conv_last_month
+
     context = {
+        'revenue_trend': round(revenue_trend, 1),
+        'leads_trend': round(leads_trend, 1),
+        'conversion_trend': round(conversion_trend, 1),
         'total_revenue': total_revenue,
         'total_leads': total_leads,
         'conversion_rate': conversion_rate,
@@ -871,7 +897,7 @@ def leads_view(request):
             if action == 'delete':
                 count = target_leads.count()
                 target_leads.delete()
-                messages.success(request, f"Successfully deleted {count} leads.")
+                SystemNotification.objects.create(user=request.user, message=f"Successfully deleted {count} leads.", type='success')
             elif action == 'change_status_qualified':
                 count = target_leads.update(status='Qualified', stage='Qualified')
                 for lead in target_leads:
@@ -880,7 +906,7 @@ def leads_view(request):
                         type='Stage Update',
                         description="Bulk changed status to Qualified."
                     )
-                messages.success(request, f"Successfully updated {count} leads to Qualified.")
+                SystemNotification.objects.create(user=request.user, message=f"Successfully updated {count} leads to Qualified.", type='success')
         return redirect('leads')
 
     leads_qs = Lead.objects.filter(organization=org).exclude(status='Qualified')
@@ -1089,7 +1115,7 @@ def add_task(request):
                         'completed': task.completed
                     }
                 })
-            messages.success(request, 'Task created successfully.')
+            SystemNotification.objects.create(user=request.user, message='Task created successfully.', type='success')
             return redirect('projects')
         except Lead.DoesNotExist:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -1142,7 +1168,7 @@ def edit_task(request, task_id):
             
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': True, 'message': 'Task updated successfully.'})
-            messages.success(request, 'Task updated successfully.')
+            SystemNotification.objects.create(user=request.user, message='Task updated successfully.', type='success')
             return redirect('projects')
         except Exception as e:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -1161,7 +1187,7 @@ def delete_task(request, task_id):
         task.delete()
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'message': 'Task deleted successfully.'})
-        messages.success(request, 'Task deleted.')
+        SystemNotification.objects.create(user=request.user, message='Task deleted.', type='success')
         return redirect('projects')
         
     return JsonResponse({'success': False, 'error': 'Invalid request.'})
@@ -1283,7 +1309,7 @@ def quick_create_lead(request):
                         'profile_image_url': lead.profile_image_url or ''
                     }
                 })
-            messages.success(request, f"Successfully created lead '{name}' for {company}.")
+            SystemNotification.objects.create(user=request.user, message=f"Successfully created lead '{name}' for {company}.", type='success')
         except Exception as e:
             if is_ajax:
                 return JsonResponse({'success': False, 'error': str(e)})
@@ -1333,7 +1359,7 @@ def event_create_view(request):
             event.owner = request.user
             event.organization = org
             event.save()
-            messages.success(request, 'Event created successfully.')
+            SystemNotification.objects.create(user=request.user, message='Event created successfully.', type='success')
             return redirect('calendar')
     else:
         form = EventForm()
@@ -1348,7 +1374,7 @@ def event_edit_view(request, event_id):
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Event updated successfully.')
+            SystemNotification.objects.create(user=request.user, message='Event updated successfully.', type='success')
             return redirect('calendar')
     else:
         form = EventForm(instance=event)
@@ -1360,7 +1386,7 @@ def event_delete_view(request, event_id):
     org = request.user.profile.organization
     event = get_object_or_404(Event, id=event_id, organization=org)
     event.delete()
-    messages.success(request, 'Event deleted.')
+    SystemNotification.objects.create(user=request.user, message='Event deleted.', type='success')
     return redirect('calendar')
 
 @login_required
@@ -1409,7 +1435,7 @@ def profile_edit_view(request):
                 profile_obj.profile_image_url = settings.MEDIA_URL + path
                 
             profile_obj.save()
-            messages.success(request, 'Profile updated successfully.')
+            SystemNotification.objects.create(user=request.user, message='Profile updated successfully.', type='success')
             return redirect('profile_edit')
     else:
         form = ProfileForm(instance=profile)
@@ -1586,7 +1612,7 @@ def add_lead(request):
                     'success': True,
                     'message': f"Successfully created lead '{name}'."
                 })
-            messages.success(request, f"Successfully created lead '{name}'.")
+            SystemNotification.objects.create(user=request.user, message=f"Successfully created lead '{name}'.", type='success')
             return redirect('leads')
         except Exception as e:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -1669,7 +1695,7 @@ def edit_lead(request, lead_id):
                     'success': True,
                     'message': f"Successfully updated lead '{lead.name}'."
                 })
-            messages.success(request, f"Successfully updated lead '{lead.name}'.")
+            SystemNotification.objects.create(user=request.user, message=f"Successfully updated lead '{lead.name}'.", type='success')
             if lead.status == 'Qualified':
                 return redirect('clients')
             return redirect('leads')
@@ -1700,7 +1726,7 @@ def delete_lead(request, lead_id):
         lead.delete()
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'message': f"Successfully deleted lead '{name}'."})
-        messages.success(request, f"Successfully deleted lead '{name}'.")
+        SystemNotification.objects.create(user=request.user, message=f"Successfully deleted lead '{name}'.", type='success')
         return redirect('leads')
         
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -2260,7 +2286,7 @@ def add_staff_view(request):
                     location=location or None,
                     department=dept
                 )
-                messages.success(request, f"Staff member '{first_name or username}' created successfully.")
+                SystemNotification.objects.create(user=request.user, message=f"Staff member '{first_name or username}' created successfully.", type='success')
                 return redirect('staff')
             except Exception as e:
                 messages.error(request, str(e))
@@ -2361,7 +2387,7 @@ def edit_staff_view(request, profile_id):
                 profile.department = dept
                 profile.save()
 
-                messages.success(request, f"Staff member '{first_name or username}' updated successfully.")
+                SystemNotification.objects.create(user=request.user, message=f"Staff member '{first_name or username}' updated successfully.", type='success')
                 return redirect('staff')
             except Exception as e:
                 messages.error(request, str(e))
@@ -2601,36 +2627,126 @@ def delete_service(request, service_id):
 def notifications_view(request):
     org = request.user.profile.organization
     import datetime
+    from django.urls import reverse
     now = timezone.now()
     one_week_later = now + datetime.timedelta(days=7)
-    
+
+    unified_feed = []
+
+    # 1. Calendar Events (Next 7 days)
     calendar_events = Event.objects.filter(
         organization=org,
         start_time__gte=now,
         start_time__lte=one_week_later
     ).order_by('start_time')
     
+    for event in calendar_events:
+        unified_feed.append({
+            'type': 'Event',
+            'title': event.title,
+            'description': f"{event.start_time.strftime('%I:%M %p')} - {event.end_time.strftime('%I:%M %p')}",
+            'date': event.start_time,
+            'icon': 'calendar_month',
+            'color_class': 'text-primary bg-primary/10 border-primary/30',
+            'url': reverse('calendar')
+        })
+
+    # 2. Pending Tasks
     pending_tasks = Task.objects.filter(
         lead__organization=org,
         completed=False
     ).order_by('due_date')
-    
+
+    for task in pending_tasks:
+        dt = timezone.make_aware(datetime.datetime.combine(task.due_date, datetime.time.min)) if not hasattr(task.due_date, 'hour') else task.due_date
+        unified_feed.append({
+            'type': 'Task',
+            'title': task.title,
+            'description': f"Lead: {task.lead.name}",
+            'date': dt,
+            'icon': 'rocket_launch',
+            'color_class': 'text-warning bg-warning/10 border-warning/30',
+            'url': reverse('contact_detail', args=[task.lead.id])
+        })
+
+    # 3. Expiring Agreements (Next 30 days)
     thirty_days_later = now.date() + datetime.timedelta(days=30)
     expiring_agreements = Agreement.objects.filter(
         organization=org,
         end_date__lte=thirty_days_later
     ).order_by('end_date')
-    
+
+    for ag in expiring_agreements:
+        dt = timezone.make_aware(datetime.datetime.combine(ag.end_date, datetime.time.min))
+        unified_feed.append({
+            'type': 'Agreement',
+            'title': f"Agreement {ag.agreement_number}",
+            'description': f"Client: {ag.client_name}",
+            'date': dt,
+            'icon': 'contract',
+            'color_class': 'text-secondary bg-secondary/10 border-secondary/30',
+            'url': reverse('agreement_detail', args=[ag.id])
+        })
+
+    # 4. Open Tickets
     open_tickets = Ticket.objects.filter(
         organization=org,
         status__in=['Open', 'In Progress']
     ).order_by('-created_at')
+
+    for ticket in open_tickets:
+        unified_feed.append({
+            'type': 'Support Ticket',
+            'title': ticket.subject,
+            'description': f"Status: {ticket.status}",
+            'date': ticket.created_at,
+            'icon': 'support_agent',
+            'color_class': 'text-tertiary bg-tertiary-container/30 border-tertiary/30',
+            'url': reverse('customer_support')
+        })
+
+    # 5. Recent Activities
+    recent_activities = Activity.objects.filter(
+        lead__organization=org
+    ).order_by('-timestamp')[:20]
+
+    for act in recent_activities:
+        unified_feed.append({
+            'type': 'Activity',
+            'title': f"{act.type} - {act.lead.name}",
+            'description': act.description,
+            'date': act.timestamp,
+            'icon': 'history',
+            'color_class': 'text-on-surface bg-surface-variant/50 border-outline-variant',
+            'url': reverse('contact_detail', args=[act.lead.id])
+        })
+
+    # 6. System Alerts
+    system_alerts = SystemNotification.objects.filter(user=request.user).order_by('-created_at')
     
+    for alert in system_alerts:
+        icon = 'check_circle' if alert.type == 'success' else ('error' if alert.type == 'error' else 'info')
+        color_class = 'text-success bg-success/10 border-success/30' if alert.type == 'success' else ('text-error bg-error/10 border-error/30' if alert.type == 'error' else 'text-info bg-info/10 border-info/30')
+        unified_feed.append({
+            'type': 'System Alert',
+            'title': alert.message,
+            'description': alert.type.capitalize(),
+            'date': alert.created_at,
+            'icon': icon,
+            'color_class': color_class,
+            'url': '#',
+            'is_unread': not alert.is_read
+        })
+
+    # Mark unread as read
+    SystemNotification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+
+    # Sort unified feed by date descending (newest / furthest future first)
+    unified_feed.sort(key=lambda x: x['date'], reverse=True)
+
     context = {
-        'calendar_events': calendar_events,
-        'pending_tasks': pending_tasks,
-        'expiring_agreements': expiring_agreements,
-        'open_tickets': open_tickets,
+        'unified_feed': unified_feed,
+        'now': now,
     }
     return render(request, 'notifications.html', context)
 
@@ -2870,6 +2986,9 @@ def content_tracker_view(request):
     
     platforms = _get_content_options(org, 'platform')
     post_types = _get_content_options(org, 'post_type')
+    status_options = _get_content_options(org, 'status')
+    campaign_status_options = _get_content_options(org, 'campaign_status')
+    priority_options = _get_content_options(org, 'priority')
     
     context = {
         'page_obj': page_obj,
@@ -2882,6 +3001,9 @@ def content_tracker_view(request):
         'scheduled_count': scheduled_count,
         'platforms': platforms,
         'post_types': post_types,
+        'status_options': status_options,
+        'campaign_status_options': campaign_status_options,
+        'priority_options': priority_options,
         'q': q,
         'client_filter': client_filter,
         'editor_filter': editor_filter,
@@ -2950,7 +3072,7 @@ def add_content_item(request):
                 post_type=post_type, campaign_status=campaign_status,
                 video_link=video_link or None, priority=priority, notes=notes,
             )
-            messages.success(request, f"Content item '{video_title}' created successfully.")
+            SystemNotification.objects.create(user=request.user, message=f"Content item '{video_title}' created successfully.", type='success')
             return redirect('content_tracker')
         except Exception as e:
             messages.error(request, str(e))
@@ -3038,7 +3160,7 @@ def edit_content_item(request, item_id):
             item.priority = priority
             item.notes = notes
             item.save()
-            messages.success(request, f"Content item '{video_title}' updated successfully.")
+            SystemNotification.objects.create(user=request.user, message=f"Content item '{video_title}' updated successfully.", type='success')
             return redirect('content_tracker')
         except Exception as e:
             messages.error(request, str(e))
@@ -3454,7 +3576,7 @@ def add_content_option(request):
         ContentDropdownOption.objects.create(
             organization=org, category=category, value=value, display_order=max_order
         )
-        messages.success(request, f'"{value}" added successfully.')
+        SystemNotification.objects.create(user=request.user, message=f'"{value}" added successfully.', type='success')
         return redirect('content_settings')
     return redirect('content_settings')
 
@@ -3482,7 +3604,7 @@ def edit_content_option(request, option_id):
             option.value = new_value
             option.is_active = is_active
             option.save()
-            messages.success(request, f'Option updated to "{new_value}".')
+            SystemNotification.objects.create(user=request.user, message=f'Option updated to "{new_value}".', type='success')
         except ContentDropdownOption.DoesNotExist:
             messages.error(request, 'Option not found.')
         return redirect('content_settings')
@@ -3498,8 +3620,213 @@ def delete_content_option(request, option_id):
         try:
             option = ContentDropdownOption.objects.get(id=option_id, organization=org)
             option.delete()
-            messages.success(request, 'Option deleted.')
+            SystemNotification.objects.create(user=request.user, message='Option deleted.', type='success')
         except ContentDropdownOption.DoesNotExist:
             messages.error(request, 'Option not found.')
         return redirect('content_settings')
     return redirect('content_settings')
+
+import json
+from django.http import JsonResponse
+
+@login_required
+def editor_board_view(request):
+    org = request.user.profile.organization
+    from crm.models import ContentItem
+    from django.utils import timezone
+    
+    today = timezone.now().date()
+    # Fetch custom editor statuses from settings
+    from crm.models import ContentDropdownOption
+    active_editor_statuses = ContentDropdownOption.objects.filter(
+        organization=org, category='editor_status', is_active=True
+    ).order_by('display_order', 'value').values_list('value', flat=True)
+    
+    status_choices = list(active_editor_statuses)
+    if not status_choices:
+        status_choices = ['Pending', 'Editing', 'Review']
+        
+    items = ContentItem.objects.filter(
+        organization=org,
+        due_date__year=today.year,
+        due_date__month=today.month,
+        status__in=status_choices
+    ).exclude(status__iexact='Edited')
+    
+    priority_filter = request.GET.get('priority_filter', '').strip()
+    if priority_filter:
+        items = items.filter(priority=priority_filter)
+        
+    items = items.order_by('-due_date', '-created_at')
+    
+    current_month_name = today.strftime('%B %Y')
+    grouped_items = {current_month_name: list(items)}
+    
+    # We strictly use 'Edited' as the completion status based on user rules
+    completion_status = 'Edited'
+    
+    context = {
+        'grouped_items': grouped_items,
+        'status_choices': status_choices,
+        'priority_filter': priority_filter,
+        'completion_status': completion_status,
+    }
+    return render(request, 'editor_board.html', context)
+
+@login_required
+def editor_board_update(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            item_id = data.get('item_id')
+            status = data.get('status')
+            notes = data.get('notes')
+            
+            org = request.user.profile.organization
+            from crm.models import ContentItem
+            item = ContentItem.objects.get(id=item_id, organization=org)
+            
+            if status is not None:
+                item.status = status
+            if notes is not None:
+                item.notes = notes
+                
+            item.save()
+            return JsonResponse({'success': True, 'message': 'Updated successfully.'})
+            
+        except ContentItem.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Item not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+            
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=400)
+
+@login_required
+def post_management_view(request):
+    org = request.user.profile.organization
+    from crm.models import ContentItem
+    from django.utils import timezone
+    
+    today = timezone.now().date()
+    # Fetch custom marketer statuses from settings
+    from crm.models import ContentDropdownOption
+    active_marketer_statuses = ContentDropdownOption.objects.filter(
+        organization=org, category='marketer_status', is_active=True
+    ).order_by('display_order', 'value').values_list('value', flat=True)
+    
+    status_choices = list(active_marketer_statuses)
+    if not status_choices:
+        status_choices = ['Approved', 'Scheduled', 'Published']
+        
+    items = ContentItem.objects.filter(
+        organization=org,
+        status='Approved'
+    )
+    
+    priority_filter = request.GET.get('priority_filter', '').strip()
+    if priority_filter:
+        items = items.filter(priority=priority_filter)
+        
+    items = items.order_by('-due_date', '-created_at')
+    
+    current_month_name = today.strftime('%B %Y')
+    grouped_items = {current_month_name: list(items)}
+    
+    # We strictly use 'Published' as the completion status
+    completion_status = 'Published'
+    
+    context = {
+        'grouped_items': grouped_items,
+        'status_choices': status_choices,
+        'priority_filter': priority_filter,
+        'completion_status': completion_status,
+    }
+    return render(request, 'post_management.html', context)
+
+@login_required
+def post_management_update(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            item_id = data.get('item_id')
+            status = data.get('status')
+            notes = data.get('notes')
+            
+            org = request.user.profile.organization
+            from crm.models import ContentItem
+            item = ContentItem.objects.get(id=item_id, organization=org)
+            
+            if status is not None:
+                item.status = status
+            if notes is not None:
+                item.notes = notes
+                
+            item.save()
+            return JsonResponse({'success': True, 'message': 'Updated successfully.'})
+            
+        except ContentItem.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Item not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+            
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=400)
+
+@login_required
+def editor_dashboard_view(request):
+    org = request.user.profile.organization
+    from crm.models import ContentItem, UserProfile
+    from django.db.models import Count
+    import json
+    
+    items = ContentItem.objects.filter(organization=org)
+    
+    total_count = items.count()
+    pending_count = items.filter(status__iexact='Pending').count()
+    editing_count = items.filter(status__iexact='Editing').count()
+    published_count = items.filter(status__iexact='Published').count()
+    scheduled_count = items.filter(status__iexact='Scheduled').count()
+    
+    # Chart 1: Status Distribution
+    status_counts = items.values('status').annotate(count=Count('id'))
+    status_labels = []
+    status_data = []
+    for s in status_counts:
+        status_labels.append(s['status'])
+        status_data.append(s['count'])
+        
+    # Chart 2: Editor Performance (Total Assigned)
+    editor_counts = items.exclude(editor__isnull=True).values('editor__user__username', 'editor__user__first_name').annotate(count=Count('id'))
+    editor_labels = []
+    editor_data = []
+    for e in editor_counts:
+        name = e['editor__user__first_name'] or e['editor__user__username']
+        editor_labels.append(name)
+        editor_data.append(e['count'])
+        
+    # Chart 3: Items Due in Next 7 Days vs Overdue vs Later
+    from django.utils import timezone
+    from datetime import timedelta
+    today = timezone.now().date()
+    
+    overdue = items.filter(due_date__lt=today).count()
+    next_7 = items.filter(due_date__gte=today, due_date__lte=today + timedelta(days=7)).count()
+    later = items.filter(due_date__gt=today + timedelta(days=7)).count()
+    no_date = items.filter(due_date__isnull=True).count()
+    
+    timeline_labels = ['Overdue', 'Next 7 Days', 'Later', 'No Due Date']
+    timeline_data = [overdue, next_7, later, no_date]
+    
+    context = {
+        'total_count': total_count,
+        'pending_count': pending_count,
+        'editing_count': editing_count,
+        'published_count': published_count,
+        'scheduled_count': scheduled_count,
+        'status_labels': json.dumps(status_labels),
+        'status_data': json.dumps(status_data),
+        'editor_labels': json.dumps(editor_labels),
+        'editor_data': json.dumps(editor_data),
+        'timeline_labels': json.dumps(timeline_labels),
+        'timeline_data': json.dumps(timeline_data),
+    }
+    return render(request, 'editor_dashboard.html', context)
