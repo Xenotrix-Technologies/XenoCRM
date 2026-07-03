@@ -1,0 +1,250 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Financial Reports{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar" id="report-container">
+    
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6" data-html2canvas-ignore>
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[24px] text-primary">assessment</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-background font-bold uppercase tracking-wider text-primary">Financial Reports</h2>
+        </div>
+        <button onclick="exportToPDF()" class="flex items-center gap-1.5 px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-all shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">download</span>
+            Export as PDF
+        </button>
+    </div>
+
+    <!-- Report Title (For PDF) -->
+    <div class="hidden print-header mb-8 text-center" id="pdf-title">
+        <h1 class="text-2xl font-bold text-primary uppercase tracking-wider">XenoCRM Financial Report</h1>
+        <p class="text-secondary mt-2">Generated on: {% now "F j, Y" %}</p>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-6">
+        
+        <!-- 1. Revenue vs Expenses -->
+        <div class="glass-card p-5 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
+            <h4 class="font-headline-sm text-on-surface mb-4 font-bold text-sm uppercase tracking-wider">Revenue vs Expenses</h4>
+            <div class="relative h-64">
+                <canvas id="revExpChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 2. Monthly Profit -->
+        <div class="glass-card p-5 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
+            <h4 class="font-headline-sm text-on-surface mb-4 font-bold text-sm uppercase tracking-wider">Monthly Profit</h4>
+            <div class="relative h-64">
+                <canvas id="profitChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 3. Revenue by Client -->
+        <div class="glass-card p-5 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
+            <h4 class="font-headline-sm text-on-surface mb-4 font-bold text-sm uppercase tracking-wider">Revenue by Client</h4>
+            <div class="relative h-64">
+                <canvas id="clientRevChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 4. Cash Flow -->
+        <div class="glass-card p-5 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
+            <h4 class="font-headline-sm text-on-surface mb-4 font-bold text-sm uppercase tracking-wider">Cash Flow (Last 4 Weeks)</h4>
+            <div class="relative h-64">
+                <canvas id="cashFlowChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 5. Income vs Expense (Doughnut) -->
+        <div class="glass-card p-5 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
+            <h4 class="font-headline-sm text-on-surface mb-4 font-bold text-sm uppercase tracking-wider">Income vs Expense</h4>
+            <div class="relative h-64">
+                <canvas id="incExpChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 6. Invoice Status (Doughnut) -->
+        <div class="glass-card p-5 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
+            <h4 class="font-headline-sm text-on-surface mb-4 font-bold text-sm uppercase tracking-wider">Invoice Status</h4>
+            <div class="relative h-64">
+                <canvas id="invStatusChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 7. Payment Methods (Pie) -->
+        <div class="glass-card p-5 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
+            <h4 class="font-headline-sm text-on-surface mb-4 font-bold text-sm uppercase tracking-wider">Payment Methods</h4>
+            <div class="relative h-64">
+                <canvas id="payMethodChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 8. Outstanding Receivables (List/KPIs) -->
+        <div class="glass-card p-5 rounded-xl shadow-sm border border-outline-variant/30 bg-surface flex flex-col">
+            <h4 class="font-headline-sm text-on-surface mb-4 font-bold text-sm uppercase tracking-wider">Outstanding Receivables</h4>
+            <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                <ul class="space-y-4">
+                    {% for rec in receivables %}
+                    <li class="flex justify-between items-center border-b border-outline-variant/30 pb-3 last:border-0">
+                        <div>
+                            <p class="font-bold text-on-surface text-sm">{{ rec.client }}</p>
+                            <p class="text-xs text-error font-medium mt-1">{{ rec.days }}</p>
+                        </div>
+                        <span class="font-bold text-primary">₹{{ rec.amount }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    Chart.defaults.font.family = 'Inter';
+
+    // 1. Revenue vs Expenses
+    new Chart(document.getElementById('revExpChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: {{ months|safe }},
+            datasets: [
+                {
+                    label: 'Revenue',
+                    data: {{ revenue_data|safe }},
+                    backgroundColor: '#2563eb', // primary
+                    borderRadius: 4
+                },
+                {
+                    label: 'Expenses',
+                    data: {{ expenses_data|safe }},
+                    backgroundColor: '#EF4444', // error
+                    borderRadius: 4
+                }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // 2. Monthly Profit
+    new Chart(document.getElementById('profitChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: {{ months|safe }},
+            datasets: [{
+                label: 'Profit',
+                data: {{ profit_data|safe }},
+                borderColor: '#22C55E', // success
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // 3. Revenue by Client
+    new Chart(document.getElementById('clientRevChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: {{ client_labels|safe }},
+            datasets: [{
+                label: 'Revenue',
+                data: {{ client_revenue|safe }},
+                backgroundColor: '#006056', // tertiary
+                borderRadius: 4
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y' }
+    });
+
+    // 4. Cash Flow
+    new Chart(document.getElementById('cashFlowChart').getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: {{ cash_flow_labels|safe }},
+            datasets: [{
+                label: 'Cash Flow',
+                data: {{ cash_flow_data|safe }},
+                borderColor: '#F59E0B', // warning
+                borderWidth: 2,
+                tension: 0.2
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // 5. Income vs Expense
+    new Chart(document.getElementById('incExpChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ inc_exp_labels|safe }},
+            datasets: [{
+                data: {{ inc_exp_data|safe }},
+                backgroundColor: ['#22C55E', '#EF4444'],
+                borderWidth: 0
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
+    });
+
+    // 6. Invoice Status
+    new Chart(document.getElementById('invStatusChart').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: {{ inv_status_labels|safe }},
+            datasets: [{
+                data: {{ inv_status_data|safe }},
+                backgroundColor: ['#22C55E', '#F59E0B', '#EF4444'],
+                borderWidth: 0
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
+    });
+
+    // 7. Payment Methods
+    new Chart(document.getElementById('payMethodChart').getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: {{ pay_methods_labels|safe }},
+            datasets: [{
+                data: {{ pay_methods_data|safe }},
+                backgroundColor: ['#2563eb', '#006056', '#F59E0B', '#8B5CF6'],
+                borderWidth: 0
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+});
+
+function exportToPDF() {
+    const element = document.getElementById('report-container');
+    const pdfTitle = document.getElementById('pdf-title');
+    
+    // Show title specifically for the PDF
+    pdfTitle.classList.remove('hidden');
+
+    const opt = {
+        margin:       0.5,
+        filename:     'Financial_Report.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+        // Hide title again after generating
+        pdfTitle.classList.add('hidden');
+    });
+}
+</script>
+{% endblock %}

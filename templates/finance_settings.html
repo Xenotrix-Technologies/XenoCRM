@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Finance Settings{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[24px] text-primary">settings</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-background font-bold uppercase tracking-wider text-primary">Finance Settings</h2>
+        </div>
+        <p class="text-secondary text-sm">Manage configuration options across all finance modules.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Payment Methods -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-outline-variant/30 bg-surface">
+            <h3 class="text-title-md font-bold text-on-surface mb-4">Payment Methods</h3>
+            <ul class="space-y-2 mb-4">
+                {% for method in payment_methods %}
+                <li class="flex justify-between items-center bg-surface-container-highest p-3 rounded-lg border border-outline-variant/50">
+                    <span class="text-body-md text-on-surface">{{ method.name }}</span>
+                    <form method="POST" action="{% url 'finance_settings' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="del_method_{{ method.id }}">
+                        <button type="submit" class="text-error hover:text-error/80 transition-colors" title="Delete">
+                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                        </button>
+                    </form>
+                </li>
+                {% empty %}
+                <li class="text-sm text-secondary italic">No payment methods configured.</li>
+                {% endfor %}
+            </ul>
+            <form method="POST" action="{% url 'finance_settings' %}" class="flex gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_payment_method">
+                <input type="text" name="name" placeholder="Add new method..." required class="flex-1 bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary text-on-surface">
+                <button type="submit" class="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-all shadow-sm">Add</button>
+            </form>
+        </div>
+
+        <!-- Expense Categories -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-outline-variant/30 bg-surface">
+            <h3 class="text-title-md font-bold text-on-surface mb-4">Expense Categories</h3>
+            <ul class="space-y-2 mb-4">
+                {% for category in expense_categories %}
+                <li class="flex justify-between items-center bg-surface-container-highest p-3 rounded-lg border border-outline-variant/50">
+                    <span class="text-body-md text-on-surface">{{ category.name }}</span>
+                    <form method="POST" action="{% url 'finance_settings' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="del_category_{{ category.id }}">
+                        <button type="submit" class="text-error hover:text-error/80 transition-colors" title="Delete">
+                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                        </button>
+                    </form>
+                </li>
+                {% empty %}
+                <li class="text-sm text-secondary italic">No expense categories configured.</li>
+                {% endfor %}
+            </ul>
+            <form method="POST" action="{% url 'finance_settings' %}" class="flex gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_expense_category">
+                <input type="text" name="name" placeholder="Add new category..." required class="flex-1 bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary text-on-surface">
+                <button type="submit" class="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-all shadow-sm">Add</button>
+            </form>
+        </div>
+
+        <!-- Payment Statuses -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-outline-variant/30 bg-surface">
+            <h3 class="text-title-md font-bold text-on-surface mb-4">Payment Statuses</h3>
+            <ul class="space-y-2 mb-4">
+                {% for status in payment_statuses %}
+                <li class="flex justify-between items-center bg-surface-container-highest p-3 rounded-lg border border-outline-variant/50">
+                    <span class="text-body-md text-on-surface">{{ status.name }}</span>
+                    <form method="POST" action="{% url 'finance_settings' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="del_status_{{ status.id }}">
+                        <button type="submit" class="text-error hover:text-error/80 transition-colors" title="Delete">
+                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                        </button>
+                    </form>
+                </li>
+                {% empty %}
+                <li class="text-sm text-secondary italic">No payment statuses configured.</li>
+                {% endfor %}
+            </ul>
+            <form method="POST" action="{% url 'finance_settings' %}" class="flex gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_payment_status">
+                <input type="text" name="name" placeholder="Add new status..." required class="flex-1 bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary text-on-surface">
+                <button type="submit" class="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-all shadow-sm">Add</button>
+            </form>
+        </div>
+
+        <!-- Commission Types -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-outline-variant/30 bg-surface">
+            <h3 class="text-title-md font-bold text-on-surface mb-4">Commission Types</h3>
+            <ul class="space-y-2 mb-4">
+                {% for commission in commission_types %}
+                <li class="flex justify-between items-center bg-surface-container-highest p-3 rounded-lg border border-outline-variant/50">
+                    <span class="text-body-md text-on-surface">{{ commission.name }}</span>
+                    <form method="POST" action="{% url 'finance_settings' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="del_commission_{{ commission.id }}">
+                        <button type="submit" class="text-error hover:text-error/80 transition-colors" title="Delete">
+                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                        </button>
+                    </form>
+                </li>
+                {% empty %}
+                <li class="text-sm text-secondary italic">No commission types configured.</li>
+                {% endfor %}
+            </ul>
+            <form method="POST" action="{% url 'finance_settings' %}" class="flex gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_commission_type">
+                <input type="text" name="name" placeholder="Add new commission type..." required class="flex-1 bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary text-on-surface">
+                <button type="submit" class="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-all shadow-sm">Add</button>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

@@ -13,8 +13,8 @@
           <span class="material-symbols-outlined text-[12px]">chevron_right</span>
           <span class="text-primary">Editor Dashboard</span>
         </div>
-        <h2 class="font-headline-lg text-headline-lg font-bold text-on-background">Editor Dashboard</h2>
-        <p class="text-secondary text-body-sm max-w-2xl mt-1">Monitor content production and editor performance analytics.</p>
+        <h2 class="font-headline-lg text-headline-lg font-bold text-on-background">Editing Department Dashboard</h2>
+        <p class="text-secondary text-body-sm max-w-2xl mt-1">Monitor the editing team's workload, project progress, delivery status, and production performance.</p>
       </div>
       
       <!-- Action Buttons -->
@@ -25,114 +25,273 @@
       </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+    <!-- 1. KPI Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <!-- Total Videos -->
       <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between mb-4">
           <span class="text-xs font-bold text-outline uppercase tracking-wider">Total Videos</span>
           <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
             <span class="material-symbols-outlined text-[18px]">video_library</span>
           </div>
         </div>
-        <div class="mt-4">
-          <span class="block text-2xl font-bold text-on-surface">{{ total_count }}</span>
-          <span class="text-[10px] text-success font-semibold flex items-center gap-0.5 mt-0.5">
-            <span class="material-symbols-outlined text-[12px]">trending_up</span> +{{ this_month_count }} this month
-          </span>
-        </div>
+        <span class="block text-2xl font-bold text-on-surface">{{ kpi.total_videos }}</span>
       </div>
-      <!-- Pending -->
+      <!-- Videos in Editing -->
       <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-outline uppercase tracking-wider">Pending</span>
-          <div class="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
-            <span class="material-symbols-outlined text-[18px]">pending_actions</span>
-          </div>
-        </div>
-        <div class="mt-4">
-          <span class="block text-2xl font-bold text-on-surface">{{ pending_count }}</span>
-          <span class="text-[10px] text-outline font-semibold flex items-center gap-0.5 mt-0.5">
-            <span class="material-symbols-outlined text-[12px]">hourglass_empty</span> Awaiting edit
-          </span>
-        </div>
-      </div>
-      <!-- In Editing -->
-      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between mb-4">
           <span class="text-xs font-bold text-outline uppercase tracking-wider">In Editing</span>
           <div class="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center text-info">
             <span class="material-symbols-outlined text-[18px]">video_settings</span>
           </div>
         </div>
-        <div class="mt-4">
-          <span class="block text-2xl font-bold text-on-surface">{{ editing_count }}</span>
-          <span class="text-[10px] text-info font-semibold flex items-center gap-0.5 mt-0.5">
-            <span class="material-symbols-outlined text-[12px]">sync</span> In progress
-          </span>
-        </div>
+        <span class="block text-2xl font-bold text-on-surface">{{ kpi.in_editing }}</span>
       </div>
-      <!-- Published -->
+      <!-- Pending Review -->
       <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-outline uppercase tracking-wider">Published</span>
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Pending Review</span>
+          <div class="w-8 h-8 rounded-lg bg-warning/10 flex items-center justify-center text-warning">
+            <span class="material-symbols-outlined text-[18px]">rate_review</span>
+          </div>
+        </div>
+        <span class="block text-2xl font-bold text-on-surface">{{ kpi.pending_review }}</span>
+      </div>
+      <!-- Approved Videos -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Approved</span>
           <div class="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center text-success">
-            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+            <span class="material-symbols-outlined text-[18px]">thumb_up</span>
           </div>
         </div>
-        <div class="mt-4">
-          <span class="block text-2xl font-bold text-on-surface">{{ published_count }}</span>
-          <span class="text-[10px] text-success font-semibold flex items-center gap-0.5 mt-0.5">
-            <span class="material-symbols-outlined text-[12px]">done_all</span> Live content
-          </span>
-        </div>
+        <span class="block text-2xl font-bold text-on-surface">{{ kpi.approved }}</span>
       </div>
-      <!-- Scheduled -->
+      <!-- Published Videos -->
       <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
-        <div class="flex items-center justify-between">
-          <span class="text-xs font-bold text-outline uppercase tracking-wider">Scheduled</span>
-          <div class="w-8 h-8 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary">
-            <span class="material-symbols-outlined text-[18px]">schedule</span>
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Published</span>
+          <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-[18px]">public</span>
           </div>
         </div>
-        <div class="mt-4">
-          <span class="block text-2xl font-bold text-on-surface">{{ scheduled_count }}</span>
-          <span class="text-[10px] text-tertiary font-semibold flex items-center gap-0.5 mt-0.5">
-            <span class="material-symbols-outlined text-[12px]">calendar_today</span> Queue set
-          </span>
+        <span class="block text-2xl font-bold text-on-surface">{{ kpi.published }}</span>
+      </div>
+      <!-- Overdue Deliveries -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Overdue</span>
+          <div class="w-8 h-8 rounded-lg bg-error/10 flex items-center justify-center text-error">
+            <span class="material-symbols-outlined text-[18px]">warning</span>
+          </div>
         </div>
+        <span class="block text-2xl font-bold text-error">{{ kpi.overdue }}</span>
+      </div>
+      <!-- Active Editors -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Active Editors</span>
+          <div class="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+            <span class="material-symbols-outlined text-[18px]">group</span>
+          </div>
+        </div>
+        <span class="block text-2xl font-bold text-on-surface">{{ kpi.active_editors }}</span>
+      </div>
+      <!-- Average Editing Time -->
+      <div class="glass-card p-4 rounded-2xl border border-outline-variant/30 bg-white flex flex-col justify-between shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold text-outline uppercase tracking-wider">Avg Edit Time</span>
+          <div class="w-8 h-8 rounded-lg bg-info/10 flex items-center justify-center text-info">
+            <span class="material-symbols-outlined text-[18px]">timer</span>
+          </div>
+        </div>
+        <span class="block text-2xl font-bold text-on-surface">{{ kpi.avg_editing_time }}</span>
       </div>
     </div>
 
-    <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        
-      <!-- Status Distribution -->
-      <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm flex flex-col items-center">
-        <h3 class="font-bold text-on-surface w-full mb-4">Status Distribution</h3>
-        <div class="w-full max-w-[300px]">
-            <canvas id="statusChart"></canvas>
+    <!-- 2. Editing Pipeline -->
+    <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm overflow-x-auto">
+        <h3 class="font-bold text-on-surface w-full mb-6">Editing Pipeline</h3>
+        <div class="flex items-center justify-between min-w-[700px] relative">
+            <!-- connecting line -->
+            <div class="absolute top-1/2 left-0 w-full h-1 bg-surface-variant -z-10 -translate-y-1/2"></div>
+            {% for item in pipeline %}
+            <div class="flex flex-col items-center bg-white px-2">
+                <div class="w-12 h-12 rounded-full border-4 border-white bg-primary text-white flex items-center justify-center font-bold mb-2 shadow-md">
+                    {{ item.count }}
+                </div>
+                <span class="text-sm font-bold text-on-surface">{{ item.stage }}</span>
+                <span class="text-xs text-outline">{{ item.percent }}%</span>
+                <div class="w-16 h-1.5 bg-surface-variant rounded-full mt-2 overflow-hidden">
+                    <div class="h-full bg-primary" style="width: {{ item.percent }}%"></div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
-      </div>
-      
-      <!-- Editor Performance -->
-      <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm">
-        <h3 class="font-bold text-on-surface w-full mb-4">Content Assigned per Editor</h3>
-        <div class="w-full">
-            <canvas id="editorChart"></canvas>
-        </div>
-      </div>
-      
     </div>
-    
-    <!-- Timeline Insights Section -->
-    <div class="grid grid-cols-1 gap-6 mt-6">
-      <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm">
-        <h3 class="font-bold text-on-surface w-full mb-4">Due Date Timeline</h3>
-        <div class="w-full h-[250px]">
-            <canvas id="timelineChart"></canvas>
+
+    <!-- 3. Production Analytics -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Videos Completed per Day -->
+        <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm flex flex-col items-center col-span-1 lg:col-span-1">
+            <h3 class="font-bold text-on-surface w-full mb-4">Videos Completed per Day</h3>
+            <div class="w-full relative h-[250px]">
+                <canvas id="completedPerDayChart"></canvas>
+            </div>
         </div>
-      </div>
+        <!-- Monthly Editing Performance -->
+        <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm flex flex-col items-center col-span-1 lg:col-span-1">
+            <h3 class="font-bold text-on-surface w-full mb-4">Monthly Editing Performance</h3>
+            <div class="w-full relative h-[250px]">
+                <canvas id="monthlyPerfChart"></canvas>
+            </div>
+        </div>
+        <!-- Content Status Distribution -->
+        <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm flex flex-col items-center col-span-1 lg:col-span-1">
+            <h3 class="font-bold text-on-surface w-full mb-4">Content Status Distribution</h3>
+            <div class="w-full max-w-[250px] relative h-[250px]">
+                <canvas id="statusDistChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Department Workload Table -->
+    <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm overflow-x-auto">
+        <h3 class="font-bold text-on-surface mb-4">Department Workload</h3>
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="text-xs text-outline uppercase tracking-wider border-b border-outline-variant/30">
+                    <th class="pb-3 pr-4 font-semibold">Editor</th>
+                    <th class="pb-3 px-4 font-semibold text-center">Assigned</th>
+                    <th class="pb-3 px-4 font-semibold text-center">In Progress</th>
+                    <th class="pb-3 px-4 font-semibold text-center">Review</th>
+                    <th class="pb-3 px-4 font-semibold text-center">Completed</th>
+                    <th class="pb-3 px-4 font-semibold text-center">Overdue</th>
+                    <th class="pb-3 pl-4 font-semibold w-1/4">Productivity</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for w in workload %}
+                <tr class="border-b border-outline-variant/10 hover:bg-surface-variant/10 transition-colors">
+                    <td class="py-3 pr-4 text-sm font-bold text-on-surface flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                            {{ w.editor|slice:":1" }}
+                        </div>
+                        {{ w.editor }}
+                    </td>
+                    <td class="py-3 px-4 text-sm text-center text-on-surface-variant">{{ w.assigned }}</td>
+                    <td class="py-3 px-4 text-sm text-center text-on-surface-variant">{{ w.in_progress }}</td>
+                    <td class="py-3 px-4 text-sm text-center text-on-surface-variant">{{ w.review }}</td>
+                    <td class="py-3 px-4 text-sm text-center text-success font-semibold">{{ w.completed }}</td>
+                    <td class="py-3 px-4 text-sm text-center {% if w.overdue > 0 %}text-error font-bold{% else %}text-outline{% endif %}">{{ w.overdue }}</td>
+                    <td class="py-3 pl-4 text-sm">
+                        <div class="flex items-center gap-2">
+                            <div class="flex-grow h-2 bg-surface-variant rounded-full overflow-hidden">
+                                <div class="h-full bg-primary" style="width: {{ w.productivity }}%"></div>
+                            </div>
+                            <span class="text-xs font-semibold w-8 text-right">{{ w.productivity }}%</span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 5 & 6 & 7: Status Summary, Platform Dist, Priority Dist -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Content Status Summary Cards -->
+        <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm flex flex-col gap-3 lg:col-span-1">
+            <h3 class="font-bold text-on-surface mb-2">Content Status Summary</h3>
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-xl">
+                <span class="text-sm font-semibold text-on-surface-variant">Pending Editing</span>
+                <span class="text-sm font-bold">{{ status_summary.pending_editing }}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-info/10 rounded-xl">
+                <span class="text-sm font-semibold text-info">In Review</span>
+                <span class="text-sm font-bold text-info">{{ status_summary.in_review }}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-warning/10 rounded-xl">
+                <span class="text-sm font-semibold text-warning">Waiting for Client Approval</span>
+                <span class="text-sm font-bold text-warning">{{ status_summary.waiting_client }}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-surface-container rounded-xl">
+                <span class="text-sm font-semibold text-on-surface-variant">Scheduled for Publishing</span>
+                <span class="text-sm font-bold">{{ status_summary.scheduled }}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-success/10 rounded-xl">
+                <span class="text-sm font-semibold text-success">Published Today</span>
+                <span class="text-sm font-bold text-success">{{ status_summary.published_today }}</span>
+            </div>
+        </div>
+
+        <!-- Platform Distribution -->
+        <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm flex flex-col items-center lg:col-span-1">
+            <h3 class="font-bold text-on-surface w-full mb-4">Platform Distribution</h3>
+            <div class="w-full max-w-[250px] relative h-[250px]">
+                <canvas id="platformDistChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Priority Distribution -->
+        <div class="glass-card p-6 rounded-2xl border border-outline-variant/30 bg-white shadow-sm flex flex-col gap-4 lg:col-span-1 justify-center">
+            <h3 class="font-bold text-on-surface mb-2">Priority Distribution</h3>
+            
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-error/10 flex items-center justify-center text-error">
+                    <span class="material-symbols-outlined">priority_high</span>
+                </div>
+                <div class="flex-grow">
+                    <div class="flex justify-between items-end mb-1">
+                        <span class="text-sm font-bold text-error uppercase tracking-wider">Urgent</span>
+                        <span class="text-xl font-bold">{{ priority.urgent }}</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-surface-variant rounded-full"><div class="h-full bg-error rounded-full" style="width: 10%"></div></div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center text-warning">
+                    <span class="material-symbols-outlined">keyboard_double_arrow_up</span>
+                </div>
+                <div class="flex-grow">
+                    <div class="flex justify-between items-end mb-1">
+                        <span class="text-sm font-bold text-warning uppercase tracking-wider">High</span>
+                        <span class="text-xl font-bold">{{ priority.high }}</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-surface-variant rounded-full"><div class="h-full bg-warning rounded-full" style="width: 30%"></div></div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-info/10 flex items-center justify-center text-info">
+                    <span class="material-symbols-outlined">drag_handle</span>
+                </div>
+                <div class="flex-grow">
+                    <div class="flex justify-between items-end mb-1">
+                        <span class="text-sm font-bold text-info uppercase tracking-wider">Medium</span>
+                        <span class="text-xl font-bold">{{ priority.medium }}</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-surface-variant rounded-full"><div class="h-full bg-info rounded-full" style="width: 50%"></div></div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-surface-container-highest flex items-center justify-center text-outline">
+                    <span class="material-symbols-outlined">keyboard_double_arrow_down</span>
+                </div>
+                <div class="flex-grow">
+                    <div class="flex justify-between items-end mb-1">
+                        <span class="text-sm font-bold text-outline uppercase tracking-wider">Low</span>
+                        <span class="text-xl font-bold">{{ priority.low }}</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-surface-variant rounded-full"><div class="h-full bg-outline-variant rounded-full" style="width: 40%"></div></div>
+                </div>
+            </div>
+            
+        </div>
+
     </div>
 
   </div>
@@ -143,91 +302,127 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     
-    const statusLabels = JSON.parse('{{ status_labels|safe }}');
-    const statusData = JSON.parse('{{ status_data|safe }}');
-    const editorLabels = JSON.parse('{{ editor_labels|safe }}');
-    const editorData = JSON.parse('{{ editor_data|safe }}');
-    const timelineLabels = JSON.parse('{{ timeline_labels|safe }}');
-    const timelineData = JSON.parse('{{ timeline_data|safe }}');
+    // Parse Context Variables
+    const completedPerDayLabels = JSON.parse('{{ completed_per_day_labels|safe }}');
+    const completedPerDayData = JSON.parse('{{ completed_per_day_data|safe }}');
     
-    // Status Doughnut Chart
-    const statusCtx = document.getElementById('statusChart').getContext('2d');
-    new Chart(statusCtx, {
-        type: 'doughnut',
+    const monthlyPerfLabels = JSON.parse('{{ monthly_perf_labels|safe }}');
+    const monthlyPerfData = JSON.parse('{{ monthly_perf_data|safe }}');
+    
+    const statusDistLabels = JSON.parse('{{ status_dist_labels|safe }}');
+    const statusDistData = JSON.parse('{{ status_dist_data|safe }}');
+    
+    const platformLabels = JSON.parse('{{ platform_labels|safe }}');
+    const platformData = JSON.parse('{{ platform_data|safe }}');
+
+    // Chart.js Default Config
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#737373';
+    
+    // 1. Videos Completed per Day (Line Chart)
+    const ctxCompleted = document.getElementById('completedPerDayChart').getContext('2d');
+    new Chart(ctxCompleted, {
+        type: 'line',
         data: {
-            labels: statusLabels,
+            labels: completedPerDayLabels,
             datasets: [{
-                data: statusData,
-                backgroundColor: [
-                    '#3B82F6', // blue
-                    '#10B981', // emerald
-                    '#F59E0B', // amber
-                    '#EF4444', // rose
-                    '#8B5CF6', // purple
-                    '#14B8A6'  // teal
-                ],
-                borderWidth: 0
+                label: 'Completed Videos',
+                data: completedPerDayData,
+                borderColor: '#1D4ED8',
+                backgroundColor: 'rgba(29, 78, 216, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                fill: true,
+                pointBackgroundColor: '#1D4ED8',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 4
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [5, 5], color: '#e5e7eb' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 2. Monthly Editing Performance (Bar Chart)
+    const ctxMonthly = document.getElementById('monthlyPerfChart').getContext('2d');
+    new Chart(ctxMonthly, {
+        type: 'bar',
+        data: {
+            labels: monthlyPerfLabels,
+            datasets: [{
+                label: 'Videos',
+                data: monthlyPerfData,
+                backgroundColor: '#3B82F6',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: { beginAtZero: true, grid: { borderDash: [5, 5], color: '#e5e7eb' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    // 3. Content Status Distribution (Donut Chart)
+    const ctxStatus = document.getElementById('statusDistChart').getContext('2d');
+    new Chart(ctxStatus, {
+        type: 'doughnut',
+        data: {
+            labels: statusDistLabels,
+            datasets: [{
+                data: statusDistData,
+                backgroundColor: ['#60A5FA', '#FBBF24', '#34D399', '#818CF8'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
             plugins: {
                 legend: { position: 'bottom' }
             }
         }
     });
 
-    // Editor Performance Bar Chart
-    const editorCtx = document.getElementById('editorChart').getContext('2d');
-    new Chart(editorCtx, {
-        type: 'bar',
+    // 4. Platform Distribution (Donut Chart)
+    const ctxPlatform = document.getElementById('platformDistChart').getContext('2d');
+    new Chart(ctxPlatform, {
+        type: 'pie',
         data: {
-            labels: editorLabels,
+            labels: platformLabels,
             datasets: [{
-                label: 'Assigned Videos',
-                data: editorData,
-                backgroundColor: '#0F172A', // primary
-                borderRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } }
-            }
-        }
-    });
-    
-    // Timeline Bar Chart
-    const timelineCtx = document.getElementById('timelineChart').getContext('2d');
-    new Chart(timelineCtx, {
-        type: 'bar',
-        data: {
-            labels: timelineLabels,
-            datasets: [{
-                label: 'Number of Items',
-                data: timelineData,
-                backgroundColor: [
-                    '#EF4444', // Overdue - rose
-                    '#F59E0B', // Next 7 days - amber
-                    '#3B82F6', // Later - blue
-                    '#94A3B8'  // No date - slate
-                ],
-                borderRadius: 4
+                data: platformData,
+                backgroundColor: ['#E1306C', '#1877F2', '#FF0000', '#0077B5', '#000000'],
+                borderWidth: 0,
+                hoverOffset: 4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } }
-            },
             plugins: {
-                legend: { display: false }
+                legend: { position: 'bottom' }
             }
         }
     });
+
 });
 </script>
 {% endblock %}

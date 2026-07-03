@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Record New Expense{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    
+    <!-- Header -->
+    <div class="flex items-center gap-4 mb-8">
+        <a href="{% url 'finance_expenses' %}" class="w-10 h-10 rounded-full bg-surface-variant text-on-surface flex items-center justify-center hover:bg-surface-variant/80 transition-colors shadow-sm">
+            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+        </a>
+        <h2 class="font-headline-sm text-headline-sm font-bold uppercase tracking-wider text-primary">Record New Expense</h2>
+    </div>
+
+    <!-- Form Container -->
+    <div class="glass-card p-8 rounded-2xl shadow-sm border border-outline-variant/30 bg-surface text-on-surface max-w-4xl mx-auto w-full">
+        <form method="POST" action="{% url 'finance_add_expense' %}" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Transaction Date -->
+                <div>
+                    <label class="block text-label-sm font-bold text-on-surface-variant mb-2">Transaction Date</label>
+                    <div class="relative">
+                        <input type="date" name="date" required
+                            class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-body-md focus:ring-2 focus:ring-error focus:border-error text-on-surface appearance-none">
+                    </div>
+                </div>
+
+                <!-- Category -->
+                <div>
+                    <label class="block text-label-sm font-bold text-on-surface-variant mb-2">Category</label>
+                    <select name="category" required class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-body-md focus:ring-2 focus:ring-error focus:border-error text-on-surface appearance-none">
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% empty %}
+                        <option value="">No categories available (Configure in Settings)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Description -->
+                <div>
+                    <label class="block text-label-sm font-bold text-on-surface-variant mb-2">Description</label>
+                    <input type="text" name="description" placeholder="e.g. Fuel for client visit" required
+                        class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-body-md focus:ring-2 focus:ring-error focus:border-error text-on-surface placeholder-on-surface-variant/50">
+                </div>
+
+                <!-- Cost Center -->
+                <div>
+                    <label class="block text-label-sm font-bold text-on-surface-variant mb-2">Cost Center</label>
+                    <input type="text" name="cost_center" placeholder="e.g. Xenotrix HQ" required
+                        class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-body-md focus:ring-2 focus:ring-error focus:border-error text-on-surface placeholder-on-surface-variant/50">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Payment Method -->
+                <div>
+                    <label class="block text-label-sm font-bold text-on-surface-variant mb-2">Payment Method</label>
+                    <select name="payment_method" required class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-body-md focus:ring-2 focus:ring-error focus:border-error text-on-surface appearance-none">
+                        {% for method in payment_methods %}
+                        <option value="{{ method.id }}">{{ method.name }}</option>
+                        {% empty %}
+                        <option value="">No payment methods available (Configure in Settings)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Amount -->
+                <div>
+                    <label class="block text-label-sm font-bold text-on-surface-variant mb-2">Amount Spent (₹)</label>
+                    <input type="number" step="0.01" name="amount" placeholder="0.00" required
+                        class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-body-md focus:ring-2 focus:ring-error focus:border-error text-on-surface placeholder-on-surface-variant/50 font-bold text-error">
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="pt-4">
+                <button type="submit" class="px-6 py-3 bg-error text-white font-bold rounded-lg hover:bg-error/90 transition-all shadow-sm">
+                    Save Expense Entry
+                </button>
+            </div>
+            
+        </form>
+    </div>
+
+</div>
+{% endblock %}

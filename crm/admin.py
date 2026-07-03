@@ -56,3 +56,16 @@ class AgreementAdmin(admin.ModelAdmin):
     list_filter = ('status', 'date', 'organization')
     search_fields = ('agreement_number', 'client_name', 'company_name')
     inlines = [AgreementServiceInline, DeliverableInline, ClientResponsibilityInline]
+
+from .models import (
+    Income, Expense, PartnerPayout,
+    FinancePaymentMethod, FinanceExpenseCategory, FinancePaymentStatus, FinanceCommissionType
+)
+
+admin.site.register(Income)
+admin.site.register(Expense)
+admin.site.register(PartnerPayout)
+admin.site.register(FinancePaymentMethod)
+admin.site.register(FinanceExpenseCategory)
+admin.site.register(FinancePaymentStatus)
+admin.site.register(FinanceCommissionType)

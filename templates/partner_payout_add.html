@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Record New Payout Request{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    
+    <!-- Header -->
+    <div class="flex items-center gap-4 mb-8">
+        <a href="{% url 'partner_payouts' %}" class="w-10 h-10 rounded-full bg-surface-variant text-on-surface flex items-center justify-center hover:bg-surface-variant/80 transition-colors shadow-sm">
+            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
+        </a>
+        <h2 class="font-headline-sm text-headline-sm font-bold uppercase tracking-wider text-primary">Record New Payout Request</h2>
+    </div>
+
+    <!-- Form Container -->
+    <div class="glass-card p-8 rounded-2xl shadow-sm border border-outline-variant/30 bg-surface text-on-surface max-w-4xl mx-auto w-full">
+        <form method="POST" action="{% url 'partner_payout_add' %}" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Payout Date -->
+                <div>
+                    <label class="block text-label-sm font-bold text-on-surface-variant mb-2">Payout Date</label>
+                    <div class="relative">
+                        <input type="date" name="payout_date" required
+                            class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-body-md focus:ring-2 focus:ring-primary focus:border-primary text-on-surface appearance-none">
+                    </div>
+                </div>
+
+                <!-- Partner Name -->
+                <div>
+                    <label class="block text-label-sm font-bold text-on-surface-variant mb-2">Partner Name</label>
+                    <input type="text" name="partner_name" placeholder="e.g. Acme Agency" required
+                        class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-body-md focus:ring-2 focus:ring-primary focus:border-primary text-on-surface placeholder-on-surface-variant/50">
+                </div>
+            </div>
+
+            <!-- Project / Client -->
+            <div>
+                <label class="block text-label-sm font-bold text-on-surface-variant mb-2">Project / Client / Withdraw Reason</label>
+                <input type="text" name="project_client" placeholder="e.g. TechVision / Website Redesign" required
+                    class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-body-md focus:ring-2 focus:ring-primary focus:border-primary text-on-surface placeholder-on-surface-variant/50">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Amount -->
+                <div>
+                    <label class="block text-label-sm font-bold text-on-surface-variant mb-2">Payout Amount (₹)</label>
+                    <input type="number" step="0.01" name="amount" placeholder="0.00" required
+                        class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-body-md focus:ring-2 focus:ring-primary focus:border-primary text-on-surface placeholder-on-surface-variant/50 font-bold text-primary">
+                </div>
+
+                <!-- Payment Method -->
+                <div>
+                    <label class="block text-label-sm font-bold text-on-surface-variant mb-2">Payment Method</label>
+                    <select name="payment_method" required class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-body-md focus:ring-2 focus:ring-primary focus:border-primary text-on-surface appearance-none">
+                        {% for method in payment_methods %}
+                        <option value="{{ method.id }}">{{ method.name }}</option>
+                        {% empty %}
+                        <option value="">No payment methods available (Configure in Settings)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Status -->
+                <div>
+                    <label class="block text-label-sm font-bold text-on-surface-variant mb-2">Status</label>
+                    <select name="status" required class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-4 py-2.5 text-body-md focus:ring-2 focus:ring-primary focus:border-primary text-on-surface appearance-none">
+                        {% for s in statuses %}
+                        <option value="{{ s.id }}">{{ s.name }}</option>
+                        {% empty %}
+                        <option value="">No statuses available (Configure in Settings)</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Submit -->
+            <div class="pt-4">
+                <button type="submit" class="px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm">
+                    Submit Payout Request
+                </button>
+            </div>
+            
+        </form>
+    </div>
+
+</div>
+{% endblock %}

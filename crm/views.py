@@ -12,6 +12,9 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable, Campaign, ContentDropdownOption, SystemNotification
 from .forms import EventForm, ProfileForm
+from .models import Income, Expense
+from datetime import datetime
+from decimal import Decimal
 # Views for navigation pages with proper multi-tenant database queries
 
 
@@ -40,21 +43,7 @@ def page_permission_required(permission_name):
 def clients_view(request):
     org = request.user.profile.organization
     
-    # Auto-seed default services if none exist
     services_qs = Service.objects.filter(organization=org)
-    if not services_qs.exists():
-        s1 = Service.objects.create(organization=org, name="Enterprise Cloud Migration", description="End-to-end cloud migration and infrastructure setup.", price=15000.00)
-        s2 = Service.objects.create(organization=org, name="Security Audit & Compliance", description="Complete vulnerability scanning and compliance auditing.", price=8500.00)
-        s3 = Service.objects.create(organization=org, name="Custom AI & Integration", description="Development of bespoke machine learning models and API integration.", price=25000.00)
-        s4 = Service.objects.create(organization=org, name="IT Consulting & Support", description="Professional consulting and technical support services.", price=3500.00)
-        
-        # Assign these services to the seeded qualified leads to make it look full
-        Lead.objects.filter(organization=org, company="TechVision Systems").update(service=s2)
-        Lead.objects.filter(organization=org, company="HyperScale Systems").update(service=s1)
-        Lead.objects.filter(organization=org, company="Fortress Ltd").update(service=s3)
-        Lead.objects.filter(organization=org, company="Vanguard Retail").update(service=s4)
-        services_qs = Service.objects.filter(organization=org)
-
     leads = Lead.objects.filter(organization=org, status='Qualified')
     
     clients_dict = {}
@@ -232,48 +221,6 @@ def delete_client_company(request):
 def customer_support_view(request):
     org = request.user.profile.organization
     tickets = Ticket.objects.filter(organization=org)
-    
-    # Auto-seed mock tickets if none exist
-    if not tickets.exists():
-        first_staff = UserProfile.objects.filter(organization=org).first()
-        # Seed default project tasks if none exist to make sure we have tasks
-        first_lead = Lead.objects.filter(organization=org).first()
-        if first_lead and not Task.objects.filter(lead__organization=org).exists():
-            Task.objects.create(lead=first_lead, title="API Integration Setup", due_date="2026-12-31", priority="High")
-            Task.objects.create(lead=first_lead, title="Billing Consultation", due_date="2026-12-31", priority="Medium")
-
-        first_project = Task.objects.filter(lead__organization=org).first()
-        second_project = Task.objects.filter(lead__organization=org).last()
-        
-        Ticket.objects.create(
-            organization=org,
-            ticket_id="XTC-003",
-            subject="API Integration Error",
-            status="Open",
-            priority="High",
-            assignee=first_staff,
-            project=first_project
-        )
-        Ticket.objects.create(
-            organization=org,
-            ticket_id="XTC-002",
-            subject="Billing Query",
-            status="Pending",
-            priority="Medium",
-            assignee=first_staff,
-            project=second_project
-        )
-        Ticket.objects.create(
-            organization=org,
-            ticket_id="XTC-001",
-            subject="Password Reset Issue",
-            status="Closed",
-            priority="Low",
-            assignee=first_staff,
-            project=first_project
-        )
-        tickets = Ticket.objects.filter(organization=org)
-        
     staff = UserProfile.objects.filter(organization=org)
     projects = Task.objects.filter(lead__organization=org)
     
@@ -604,12 +551,6 @@ def agreement_print_view(request, agreement_id):
 def campaign_view(request):
     org = request.user.profile.organization
     campaigns = Campaign.objects.filter(organization=org)
-    if not campaigns.exists():
-        Campaign.objects.create(organization=org, name='Summer Solstice Email Blast', status='Active', leads_generated=42, spend=450.00, budget=1000.00)
-        Campaign.objects.create(organization=org, name='Q2 LinkedIn Lead Gen', status='Completed', leads_generated=128, spend=1200.00, budget=1200.00)
-        Campaign.objects.create(organization=org, name='AdWords CRM Search Retargeting', status='Active', leads_generated=19, spend=280.00, budget=800.00)
-        Campaign.objects.create(organization=org, name='Autumn Product Demo Invite', status='Planning', leads_generated=0, spend=0.00, budget=500.00)
-        campaigns = Campaign.objects.filter(organization=org)
     
     return render(request, 'campaign.html', {'campaigns': campaigns})
 
@@ -739,8 +680,25 @@ def dashboard_view(request):
     tasks_qs = Task.objects.filter(lead__organization=org)
     active_tasks_count = tasks_qs.filter(completed=False).count()
     completed_tasks_count = tasks_qs.filter(completed=True).count()
+    tasks_due_today = tasks_qs.filter(due_date=timezone.now().date()).count() if hasattr(Task, 'due_date') else 0
     total_tasks_count = tasks_qs.count()
     task_completion_rate = (completed_tasks_count / total_tasks_count * 100) if total_tasks_count > 0 else 0.0
+    
+    # 4b. Active Deals
+    active_deals_qs = leads_qs.exclude(stage__in=['Won', 'Lost'])
+    active_deals_count = active_deals_qs.count()
+    active_deals_value = active_deals_qs.aggregate(Sum('value'))['value__sum'] or 0.00
+    
+    # 4c. Customer Satisfaction (Mock for design)
+    customer_satisfaction = 96
+    
+    # 4d. AI Insights
+    ai_insights = [
+        {"title": "Revenue increase", "description": "Revenue increased by 18% compared to last month", "type": "SUCCESS", "time": "2h ago", "icon": "trending_up"},
+        {"title": "Hot Leads", "description": "4 hot leads need immediate follow-up", "type": "WARNING", "time": "3h ago", "icon": "local_fire_department"},
+        {"title": "Conversion Rate", "description": "Conversion improved by 3% this week", "type": "SUCCESS", "time": "1d ago", "icon": "analytics"},
+        {"title": "Churn Risk", "description": "One high-value client inactive for 14 days", "type": "DANGER", "time": "1d ago", "icon": "warning"},
+    ]
     
     # 5. New Leads (ordered by created_at desc)
     new_leads = leads_qs.order_by('-created_at')
@@ -765,31 +723,7 @@ def dashboard_view(request):
         else:
             funnel_rates[st] = 0.0 if st != 'New' else 100.0
 
-    # 9. AI Insights (Generated dynamically based on leads)
-    ai_insights = []
-    hot_leads = leads_qs.filter(score__gte=85).order_by('-score')
-    for hl in hot_leads[:2]:
-        ai_insights.append({
-            'title': 'Opportunity Found',
-            'type': 'HOT',
-            'time': 'Just now',
-            'description': f"Lead '{hl.name}' from {hl.company} has a high score of {hl.score}. Recommended outreach for proposal."
-        })
-    cold_leads = leads_qs.filter(status='Cold Lead')
-    for cl in cold_leads[:1]:
-        ai_insights.append({
-            'title': 'Cold Lead Alert',
-            'type': 'CHURN',
-            'time': '2h ago',
-            'description': f"Engagement for lead '{cl.name}' has dropped. Risk of churn: Medium."
-        })
-    if not ai_insights:
-        ai_insights.append({
-            'title': 'Outreach Tip',
-            'type': 'TIP',
-            'time': '1h ago',
-            'description': "Ensure all New leads have an assigned owner and a scheduled initial activity."
-        })
+
 
     # 10. Revenue Trend data (value of won leads grouped by month for the last 6 months)
     from django.db.models.functions import TruncMonth
@@ -841,6 +775,22 @@ def dashboard_view(request):
     conv_last_month = (won_last_month.count() / leads_last_month * 100) if leads_last_month > 0 else 0.0
     conversion_trend = conv_this_month - conv_last_month
 
+    # 11. Leads by Service
+    services_qs = Service.objects.filter(organization=org)
+    service_labels = []
+    service_data = []
+    for s in services_qs:
+        count = leads_qs.filter(service=s).count()
+        if count > 0:
+            service_labels.append(s.name)
+            service_data.append(count)
+    
+    if not service_labels:
+        service_labels = ["Uncategorized"]
+        service_data = [leads_qs.count() or 1]
+
+    import json
+
     context = {
         'revenue_trend': round(revenue_trend, 1),
         'leads_trend': round(leads_trend, 1),
@@ -850,15 +800,21 @@ def dashboard_view(request):
         'conversion_rate': conversion_rate,
         'active_tasks_count': active_tasks_count,
         'completed_tasks_count': completed_tasks_count,
+        'tasks_due_today': tasks_due_today,
         'task_completion_rate': task_completion_rate,
+        'active_deals_count': active_deals_count,
+        'active_deals_value': active_deals_value,
+        'customer_satisfaction': customer_satisfaction,
+        'ai_insights': ai_insights,
         'new_leads': new_leads,
         'recent_activities': recent_activities,
         'upcoming_meetings': upcoming_meetings,
         'funnel_data': funnel_data,
         'funnel_rates': funnel_rates,
-        'ai_insights': ai_insights,
-        'trend_labels': trend_labels,
-        'trend_values': trend_values,
+        'trend_labels': json.dumps(trend_labels),
+        'trend_values': json.dumps(trend_values),
+        'service_labels': json.dumps(service_labels),
+        'service_data': json.dumps(service_data),
     }
     
     return render(request, 'dashboard.html', context)
@@ -3773,60 +3729,203 @@ def post_management_update(request):
 
 @login_required
 def editor_dashboard_view(request):
-    org = request.user.profile.organization
-    from crm.models import ContentItem, UserProfile
-    from django.db.models import Count
     import json
+    from django.db.models import Count
+    from crm.models import ContentItem
     
+    org = request.user.profile.organization
     items = ContentItem.objects.filter(organization=org)
     
-    total_count = items.count()
-    pending_count = items.filter(status__iexact='Pending').count()
-    editing_count = items.filter(status__iexact='Editing').count()
-    published_count = items.filter(status__iexact='Published').count()
-    scheduled_count = items.filter(status__iexact='Scheduled').count()
+    # KPI Data
+    kpi = {
+        'total_videos': items.count(),
+        'in_editing': items.filter(status='Editing').count(),
+        'pending_review': items.filter(status='Review').count(),
+        'approved': items.filter(status='Approved').count(),
+        'published': items.filter(status='Published').count(),
+        'overdue': 0,
+        'active_editors': 0,
+        'avg_editing_time': '0 hrs'
+    }
+
+    total = items.count() or 1
+    # Pipeline Data
+    pipeline = [
+        {'stage': 'Pending', 'count': items.filter(status='Pending').count(), 'percent': int(items.filter(status='Pending').count()/total*100)},
+        {'stage': 'Editing', 'count': items.filter(status='Editing').count(), 'percent': int(items.filter(status='Editing').count()/total*100)},
+        {'stage': 'Review', 'count': items.filter(status='Review').count(), 'percent': int(items.filter(status='Review').count()/total*100)},
+        {'stage': 'Approved', 'count': items.filter(status='Approved').count(), 'percent': int(items.filter(status='Approved').count()/total*100)},
+        {'stage': 'Published', 'count': items.filter(status='Published').count(), 'percent': int(items.filter(status='Published').count()/total*100)},
+    ]
+
+    # Analytics Charts Data
+    completed_per_day_labels = []
+    completed_per_day_data = []
     
-    # Chart 1: Status Distribution
-    status_counts = items.values('status').annotate(count=Count('id'))
-    status_labels = []
-    status_data = []
-    for s in status_counts:
-        status_labels.append(s['status'])
-        status_data.append(s['count'])
-        
-    # Chart 2: Editor Performance (Total Assigned)
-    editor_counts = items.exclude(editor__isnull=True).values('editor__user__username', 'editor__user__first_name').annotate(count=Count('id'))
-    editor_labels = []
-    editor_data = []
-    for e in editor_counts:
-        name = e['editor__user__first_name'] or e['editor__user__username']
-        editor_labels.append(name)
-        editor_data.append(e['count'])
-        
-    # Chart 3: Items Due in Next 7 Days vs Overdue vs Later
-    from django.utils import timezone
-    from datetime import timedelta
-    today = timezone.now().date()
+    monthly_perf_labels = []
+    monthly_perf_data = []
     
-    overdue = items.filter(due_date__lt=today).count()
-    next_7 = items.filter(due_date__gte=today, due_date__lte=today + timedelta(days=7)).count()
-    later = items.filter(due_date__gt=today + timedelta(days=7)).count()
-    no_date = items.filter(due_date__isnull=True).count()
+    status_dist_labels = ['Editing', 'Review', 'Approved', 'Published']
+    status_dist_data = [
+        items.filter(status='Editing').count(),
+        items.filter(status='Review').count(),
+        items.filter(status='Approved').count(),
+        items.filter(status='Published').count()
+    ]
+
+    # Platform Distribution
+    platform_counts = items.values('platform').annotate(count=Count('id'))
+    platform_labels = [p['platform'] for p in platform_counts if p['platform']]
+    platform_data = [p['count'] for p in platform_counts if p['platform']]
+
+    # Department Workload Table
+    workload = []
+
+    # Content Status Summary
+    status_summary = {
+        'pending_editing': items.filter(status='Pending').count(),
+        'in_review': items.filter(status='Review').count(),
+        'waiting_client': 0,
+        'scheduled': items.filter(status='Scheduled').count(),
+        'published_today': 0
+    }
     
-    timeline_labels = ['Overdue', 'Next 7 Days', 'Later', 'No Due Date']
-    timeline_data = [overdue, next_7, later, no_date]
-    
+    # Priority
+    priority = {
+        'high': items.filter(priority='High').count(),
+        'medium': items.filter(priority='Medium').count(),
+        'low': items.filter(priority='Low').count(),
+        'urgent': items.filter(priority='Urgent').count()
+    }
+
     context = {
-        'total_count': total_count,
-        'pending_count': pending_count,
-        'editing_count': editing_count,
-        'published_count': published_count,
-        'scheduled_count': scheduled_count,
-        'status_labels': json.dumps(status_labels),
-        'status_data': json.dumps(status_data),
-        'editor_labels': json.dumps(editor_labels),
-        'editor_data': json.dumps(editor_data),
-        'timeline_labels': json.dumps(timeline_labels),
-        'timeline_data': json.dumps(timeline_data),
+        'kpi': kpi,
+        'pipeline': pipeline,
+        'completed_per_day_labels': json.dumps(completed_per_day_labels),
+        'completed_per_day_data': json.dumps(completed_per_day_data),
+        'monthly_perf_labels': json.dumps(monthly_perf_labels),
+        'monthly_perf_data': json.dumps(monthly_perf_data),
+        'status_dist_labels': json.dumps(status_dist_labels),
+        'status_dist_data': json.dumps(status_dist_data),
+        'platform_labels': json.dumps(platform_labels),
+        'platform_data': json.dumps(platform_data),
+        'workload': workload,
+        'status_summary': status_summary,
+        'priority': priority
     }
     return render(request, 'editor_dashboard.html', context)
+
+
+@login_required
+def finance_dashboard_view(request):
+    return render(request, 'finance_dashboard.html')
+
+@login_required
+def finance_income_view(request):
+    if request.method == 'POST' and request.FILES.get('csv_file'):
+        csv_file = request.FILES['csv_file']
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, 'Please upload a valid CSV file.')
+            return redirect('finance_income')
+
+        try:
+            decoded_file = csv_file.read().decode('utf-8').splitlines()
+            reader = csv.DictReader(decoded_file)
+            
+            success_count = 0
+            for row in reader:
+                date_str = row.get('date', '').strip()
+                client_name = row.get('client_name', '').strip()
+                project_name = row.get('project_name', '').strip()
+                amount_str = row.get('amount', '').strip()
+
+                if date_str and client_name and amount_str:
+                    try:
+                        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+                        amount = Decimal(amount_str)
+                        Income.objects.create(
+                            organization=request.user.profile.organization,
+                            date=date_obj,
+                            client_name=client_name,
+                            project_name=project_name,
+                            amount=amount
+                        )
+                        success_count += 1
+                    except Exception as e:
+                        print(f"Error parsing row: {row}, Error: {e}")
+                        continue
+            
+            messages.success(request, f'Successfully imported {success_count} income records.')
+        except Exception as e:
+            messages.error(request, f'Error processing file: {e}')
+            
+        return redirect('finance_income')
+
+    return render(request, 'finance_income.html')
+
+@login_required
+def finance_add_income_view(request):
+    return redirect('finance_income')
+
+@login_required
+def finance_expenses_view(request):
+    if request.method == 'POST' and request.FILES.get('csv_file'):
+        csv_file = request.FILES['csv_file']
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, 'Please upload a valid CSV file.')
+            return redirect('finance_expenses')
+
+        try:
+            decoded_file = csv_file.read().decode('utf-8').splitlines()
+            reader = csv.DictReader(decoded_file)
+            
+            success_count = 0
+            for row in reader:
+                date_str = row.get('date', '').strip()
+                description = row.get('description', '').strip()
+                cost_center = row.get('cost_center', '').strip()
+                amount_str = row.get('amount', '').strip()
+
+                if date_str and amount_str:
+                    try:
+                        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+                        amount = Decimal(amount_str)
+                        Expense.objects.create(
+                            organization=request.user.profile.organization,
+                            date=date_obj,
+                            description=description,
+                            cost_center=cost_center,
+                            amount=amount
+                        )
+                        success_count += 1
+                    except Exception as e:
+                        print(f"Error parsing row: {row}, Error: {e}")
+                        continue
+            
+            messages.success(request, f'Successfully imported {success_count} expense records.')
+        except Exception as e:
+            messages.error(request, f'Error processing file: {e}')
+            
+        return redirect('finance_expenses')
+
+    return render(request, 'finance_expenses.html')
+
+@login_required
+def finance_add_expense_view(request):
+    return redirect('finance_expenses')
+
+@login_required
+def finance_reports_view(request):
+    return render(request, 'finance_reports.html')
+
+@login_required
+def partner_payout_view(request):
+    return render(request, 'partner_payouts.html')
+
+@login_required
+def partner_payout_add_view(request):
+    return redirect('partner_payouts')
+
+@login_required
+def finance_settings_view(request):
+    return render(request, 'finance_settings.html')

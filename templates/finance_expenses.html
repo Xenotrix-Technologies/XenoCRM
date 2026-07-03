@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Expenses Management{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[24px] text-primary">trending_down</span>
+            <h2 class="font-headline-sm text-headline-sm text-on-background font-bold uppercase tracking-wider text-primary">Expenses Management</h2>
+        </div>
+        <div class="flex items-center gap-3">
+            <form method="POST" enctype="multipart/form-data" class="m-0">
+                {% csrf_token %}
+                <input type="file" name="csv_file" id="expense_csv_upload" accept=".csv" class="hidden" onchange="this.form.submit()">
+                <button type="button" onclick="document.getElementById('expense_csv_upload').click()" class="flex items-center gap-1.5 px-4 py-2 bg-white border border-outline-variant text-on-surface font-bold text-sm rounded-lg hover:bg-slate-50 transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">upload</span>
+                    Import Data
+                </button>
+            </form>
+            <a href="{% url 'finance_add_expense' %}" class="flex items-center gap-1.5 px-4 py-2 bg-error text-white font-bold text-sm rounded-lg hover:bg-error/90 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                Record New Expense
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="glass-card p-4 rounded-xl shadow-sm border border-outline-variant/30 mb-6 bg-surface text-on-surface">
+        <form class="flex flex-wrap items-end gap-4">
+            <div class="flex-1 min-w-[90px]">
+                <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Day</label>
+                <input type="text" placeholder="DD" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface placeholder-on-surface-variant/50">
+            </div>
+            <div class="flex-1 min-w-[130px]">
+                <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Month</label>
+                <select class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface appearance-none">
+                    <option>All Months</option>
+                    <option>January</option>
+                    <option>February</option>
+                </select>
+            </div>
+            <div class="flex-1 min-w-[90px]">
+                <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Year</label>
+                <input type="text" placeholder="YYYY" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface placeholder-on-surface-variant/50">
+            </div>
+            <div class="flex-[1.5] min-w-[150px]">
+                <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Cost Center</label>
+                <input type="text" placeholder="Search Cost Center..." class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface placeholder-on-surface-variant/50">
+            </div>
+            <div class="flex-[1.5] min-w-[150px]">
+                <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Sort by Value</label>
+                <select class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface appearance-none">
+                    <option>Latest (Recent First)</option>
+                    <option>Highest Amount</option>
+                    <option>Lowest Amount</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" class="px-4 py-1.5 bg-primary text-white text-sm font-bold rounded-md hover:bg-primary/90 transition-all shadow-sm">
+                    Apply Filters
+                </button>
+                <button type="reset" class="px-4 py-1.5 bg-surface-variant text-on-surface-variant text-sm font-bold rounded-md hover:bg-surface-variant/80 transition-all">
+                    Reset
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Data Table -->
+    <div class="glass-card rounded-xl shadow-sm border border-outline-variant/30 overflow-hidden bg-surface">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-surface-variant/20 border-b border-outline-variant/30">
+                        <th class="px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Date</th>
+                        <th class="px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Category</th>
+                        <th class="px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Description</th>
+                        <th class="px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Cost Center</th>
+                        <th class="px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Method</th>
+                        <th class="px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Amount</th>
+                        <th class="px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/20">
+                    {% for item in expenses %}
+                    <tr class="hover:bg-primary/5 transition-colors group bg-white">
+                        <td class="px-4 py-3 text-xs text-on-surface font-medium">{{ item.date }}</td>
+                        <td class="px-4 py-3 text-xs text-on-surface">
+                            <span class="px-2 py-0.5 rounded-full border border-outline-variant/50 text-[10px] font-bold text-on-surface bg-surface-container inline-block">
+                                {{ item.category }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-on-surface-variant">{{ item.description }}</td>
+                        <td class="px-4 py-3 text-xs text-on-surface">{{ item.cost_center }}</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border border-outline-variant/50 text-on-surface bg-surface-container inline-block uppercase tracking-wider">
+                                {{ item.method }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs font-bold text-error">
+                            {{ item.amount }}
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                            <div class="flex items-center justify-end gap-1">
+                                <button class="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-secondary hover:bg-primary-container hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                                </button>
+                                <button class="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-secondary hover:bg-error-container hover:text-error transition-colors">
+                                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="p-6 text-center text-secondary bg-white text-sm">
+                            <div class="flex flex-col items-center justify-center">
+                                <span class="material-symbols-outlined text-3xl mb-2 opacity-50">receipt_long</span>
+                                <p>No expense records found.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

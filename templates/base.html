@@ -231,7 +231,7 @@
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="content-dropdown-menu" id="content-dropdown-btn"
                     onclick="toggleContentDropdown()"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'content_tracker' or request.resolver_match.url_name == 'add_content_item' or request.resolver_match.url_name == 'edit_content_item' or request.resolver_match.url_name == 'editor_dashboard' or request.resolver_match.url_name == 'editor_board' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'content_tracker' or request.resolver_match.url_name == 'add_content_item' or request.resolver_match.url_name == 'edit_content_item' or request.resolver_match.url_name == 'editor_dashboard' or request.resolver_match.url_name == 'editor_board' or request.resolver_match.url_name == 'content_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined">video_library</span>
                         <span class="font-body-sm text-body-sm">CMS</span>
@@ -251,16 +251,61 @@
                         <span class="material-symbols-outlined text-[20px]">edit_square</span>
                         <span>Editor Board</span>
                     </a>
+                    {% if request.user.profile.has_access_content_settings %}
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'content_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'content_settings' %}">
+                        <span class="material-symbols-outlined text-[20px]">video_settings</span>
+                        <span>Content Settings</span>
+                    </a>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
+
+            <!-- Finance Dropdown Accordion -->
+            <div class="space-y-1">
+                <button type="button" aria-expanded="false" aria-controls="finance-dropdown-menu" id="finance-dropdown-btn"
+                    onclick="toggleFinanceDropdown()"
+                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'finance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined">payments</span>
+                        <span class="font-body-sm text-body-sm">Finance</span>
+                    </div>
+                    <span id="finance-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
+                </button>
+                <div id="finance-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="finance-dropdown-btn">
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_dashboard' %}">
+                        <span class="material-symbols-outlined text-[20px]">speed</span>
+                        <span>Finance Dashboard</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_income' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_income' %}">
+                        <span class="material-symbols-outlined text-[20px]">trending_up</span>
+                        <span>Income</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_expenses' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_expenses' %}">
+                        <span class="material-symbols-outlined text-[20px]">trending_down</span>
+                        <span>Expenses</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_reports' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_reports' %}">
+                        <span class="material-symbols-outlined text-[20px]">assessment</span>
+                        <span>Financial Reports</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_settings' %}">
+                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                        <span>Finance Settings</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'partner_payouts' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'partner_payouts' %}">
+                        <span class="material-symbols-outlined text-[20px]">payments</span>
+                        <span>Partner Payouts</span>
+                    </a>
+                </div>
+            </div>
 
             {% if request.user.profile.has_any_settings_access %}
             <!-- Settings Dropdown Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="settings-dropdown-menu" id="settings-dropdown-btn"
                     onclick="toggleSettingsDropdown()"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'lead_statuses' or request.resolver_match.url_name == 'services' or request.resolver_match.url_name == 'staff_roles' or request.resolver_match.url_name == 'notification_settings' or request.resolver_match.url_name == 'role_permissions' or request.resolver_match.url_name == 'departments' or request.resolver_match.url_name == 'content_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'lead_statuses' or request.resolver_match.url_name == 'services' or request.resolver_match.url_name == 'staff_roles' or request.resolver_match.url_name == 'notification_settings' or request.resolver_match.url_name == 'role_permissions' or request.resolver_match.url_name == 'departments' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined">settings</span>
                         <span class="font-body-sm text-body-sm">Settings</span>
@@ -268,12 +313,6 @@
                     <span id="settings-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="settings-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="settings-dropdown-btn">
-                    {% if request.user.profile.has_access_content_settings %}
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'content_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'content_settings' %}">
-                        <span class="material-symbols-outlined text-[20px]">video_settings</span>
-                        <span>Content Settings</span>
-                    </a>
-                    {% endif %}
                     {% if request.user.profile.has_access_lead_statuses %}
                     <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'lead_statuses' %}">
                         <span class="material-symbols-outlined text-[20px]">tune</span>
@@ -482,6 +521,24 @@
             const menu = document.getElementById('content-dropdown-menu');
             const btn = document.getElementById('content-dropdown-btn');
             const arrow = document.getElementById('content-arrow');
+            if (!menu || !btn || !arrow) return;
+            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+            
+            if (isExpanded) {
+                menu.classList.add('hidden');
+                btn.setAttribute('aria-expanded', 'false');
+                arrow.style.transform = '';
+            } else {
+                menu.classList.remove('hidden');
+                btn.setAttribute('aria-expanded', 'true');
+                arrow.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        function toggleFinanceDropdown() {
+            const menu = document.getElementById('finance-dropdown-menu');
+            const btn = document.getElementById('finance-dropdown-btn');
+            const arrow = document.getElementById('finance-arrow');
             if (!menu || !btn || !arrow) return;
             const isExpanded = btn.getAttribute('aria-expanded') === 'true';
             

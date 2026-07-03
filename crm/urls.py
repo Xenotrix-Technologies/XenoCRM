@@ -110,4 +110,15 @@ urlpatterns = [
     path('settings/content-settings/add/', views.add_content_option, name='add_content_option'),
     path('settings/content-settings/<int:option_id>/edit/', views.edit_content_option, name='edit_content_option'),
     path('settings/content-settings/<int:option_id>/delete/', views.delete_content_option, name='delete_content_option'),
+    
+    # Finance
+    path('finance/dashboard/', views.finance_dashboard_view, name='finance_dashboard'),
+    path('finance/income/', views.finance_income_view, name='finance_income'),
+    path('finance/income/add/', views.finance_add_income_view, name='finance_add_income'),
+    path('finance/expenses/', views.finance_expenses_view, name='finance_expenses'),
+    path('finance/expenses/add/', views.finance_add_expense_view, name='finance_add_expense'),
+    path('finance/reports/', views.finance_reports_view, name='finance_reports'),
+    path('finance/partner-payouts/', views.partner_payout_view, name='partner_payouts'),
+    path('finance/partner-payouts/add/', views.partner_payout_add_view, name='partner_payout_add'),
+    path('finance/settings/', views.finance_settings_view, name='finance_settings'),
 ]

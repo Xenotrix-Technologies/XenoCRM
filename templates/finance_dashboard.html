@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Finance Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-gradient {
+        background: linear-gradient(180deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0) 100%);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    <!-- Dashboard Header -->
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Finance Dashboard</h2>
+            <p class="text-secondary font-body-md">Your financial overview and insights.</p>
+        </div>
+    </div>
+
+    <!-- 8 KPI Bento Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        
+        <!-- KPI: Total Revenue -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 bg-success/10 rounded-lg">
+                    <span class="material-symbols-outlined text-success">account_balance</span>
+                </div>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Total Revenue</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ total_revenue|floatformat:0 }}</h3>
+        </div>
+
+        <!-- KPI: Outstanding Invoices -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 bg-warning/10 rounded-lg">
+                    <span class="material-symbols-outlined text-warning">receipt_long</span>
+                </div>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Outstanding Invoices</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ outstanding_invoices|floatformat:0 }}</h3>
+        </div>
+        
+        <!-- KPI: Payments Received -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 bg-primary/10 rounded-lg">
+                    <span class="material-symbols-outlined text-primary">price_check</span>
+                </div>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Payments Received</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ payments_received|floatformat:0 }}</h3>
+        </div>
+
+        <!-- KPI: Pending Payments -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 bg-error/10 rounded-lg">
+                    <span class="material-symbols-outlined text-error">hourglass_bottom</span>
+                </div>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Pending Payments</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ pending_payments|floatformat:0 }}</h3>
+        </div>
+
+        <!-- KPI: Monthly Expenses -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 bg-error/10 rounded-lg">
+                    <span class="material-symbols-outlined text-error">trending_down</span>
+                </div>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Monthly Expenses</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ monthly_expenses|floatformat:0 }}</h3>
+        </div>
+
+        <!-- KPI: Net Profit -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 bg-success/10 rounded-lg">
+                    <span class="material-symbols-outlined text-success">savings</span>
+                </div>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Net Profit</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ net_profit|floatformat:0 }}</h3>
+        </div>
+
+        <!-- KPI: Active Clients -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 bg-tertiary/10 rounded-lg">
+                    <span class="material-symbols-outlined text-tertiary">groups</span>
+                </div>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Active Clients</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">{{ active_clients }}</h3>
+        </div>
+
+        <!-- KPI: Total Invoices -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2 bg-primary/10 rounded-lg">
+                    <span class="material-symbols-outlined text-primary">description</span>
+                </div>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Total Invoices</p>
+            <h3 class="text-3xl font-display-lg text-on-background mt-1">{{ total_invoices }}</h3>
+        </div>
+    </div>
+
+    <!-- Mini Analytics Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white flex justify-between items-center bg-gradient-to-r from-primary/5 to-transparent">
+            <div>
+                <h4 class="font-headline-sm text-on-surface font-bold">Revenue This Month</h4>
+                <h2 class="text-4xl font-display-lg text-primary mt-2">₹{{ revenue_this_month|floatformat:0 }}</h2>
+            </div>
+            <span class="material-symbols-outlined text-6xl text-primary/20">calendar_month</span>
+        </div>
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white flex justify-between items-center bg-gradient-to-r from-success/5 to-transparent">
+            <div>
+                <h4 class="font-headline-sm text-on-surface font-bold">Revenue This Year</h4>
+                <h2 class="text-4xl font-display-lg text-success mt-2">₹{{ revenue_this_year|floatformat:0 }}</h2>
+            </div>
+            <span class="material-symbols-outlined text-6xl text-success/20">calendar_today</span>
+        </div>
+    </div>
+
+    <!-- Charts Section 1 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Monthly Revenue Trend (Line Chart) -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white">
+            <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Monthly Revenue Trend</h4>
+            <div class="relative h-64 chart-gradient rounded-xl p-4 border border-outline-variant/30">
+                <canvas id="monthlyTrendChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Revenue by Client (Bar Chart) -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white">
+            <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Revenue by Top Clients</h4>
+            <div class="relative h-64">
+                <canvas id="clientRevenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section 2 -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Revenue by Service Chart -->
+        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white">
+            <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Revenue by Service</h4>
+            <div class="relative h-64">
+                <canvas id="serviceRevenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    Chart.defaults.font.family = 'Inter';
+
+    // 1. Monthly Revenue Trend (Line Chart)
+    const trendCtx = document.getElementById('monthlyTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: {{ trend_labels|safe }},
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: {{ trend_data|safe }},
+                borderColor: '#2563eb', // primary
+                backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                borderWidth: 2,
+                pointBackgroundColor: '#2563eb',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    ticks: { callback: function(value) { return '₹' + (value/1000) + 'k'; } }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    // 2. Revenue by Client (Bar Chart)
+    const clientCtx = document.getElementById('clientRevenueChart').getContext('2d');
+    new Chart(clientCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ client_revenue_labels|safe }},
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: {{ client_revenue_data|safe }},
+                backgroundColor: '#006056', // tertiary
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    ticks: { callback: function(value) { return '₹' + (value/1000) + 'k'; } }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    // 3. Service Revenue Doughnut Chart
+    const srvCtx = document.getElementById('serviceRevenueChart').getContext('2d');
+    const serviceLabels = {{ service_labels|safe }};
+    const serviceRevenue = {{ service_revenue|safe }};
+    
+    new Chart(srvCtx, {
+        type: 'doughnut',
+        data: {
+            labels: serviceLabels.length > 0 ? serviceLabels : ['No Data'],
+            datasets: [{
+                data: serviceRevenue.length > 0 ? serviceRevenue : [1],
+                backgroundColor: [
+                    '#2563eb', // primary
+                    '#006056', // tertiary
+                    '#22C55E', // success
+                    '#F59E0B', // warning
+                    '#dbe1ff',
+                ],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { usePointStyle: true }
+                }
+            },
+            cutout: '70%'
+        }
+    });
+
+});
+</script>
+{% endblock %}
