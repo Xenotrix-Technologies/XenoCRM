@@ -118,7 +118,16 @@
                                     </div>
                                 </div>
 
-                                <!-- Lead Status & Owner -->
+                                <!-- Lead / Client Status & Owner -->
+                                {% if lead.stage == 'Won' %}
+                                <div>
+                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Client Status</label>
+                                    <div class="relative flex items-center">
+                                        <span class="material-symbols-outlined absolute left-3 text-success text-[18px]">verified</span>
+                                        <input type="text" value="Active Client" readonly class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary text-success font-bold"/>
+                                    </div>
+                                </div>
+                                {% else %}
                                 <div>
                                     <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Lead Status</label>
                                     <div class="relative flex items-center">
@@ -130,6 +139,7 @@
                                         </select>
                                     </div>
                                 </div>
+                                {% endif %}
                                 <div>
                                     <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Assigned Employee (Owner)</label>
                                     <div class="relative flex items-center">
@@ -205,34 +215,6 @@
                             </div>
                         </div>
                         
-                        <!-- Account Details display-only cards -->
-                        <div class="col-span-2 glass-card rounded-xl p-6 border border-outline-variant/30">
-                            <h3 class="font-headline-md mb-4 text-[18px] font-bold">Metrics Overview</h3>
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                                <div class="space-y-1">
-                                    <p class="font-label-md text-outline uppercase">Lifecycle Stage</p>
-                                    <p class="font-body-md font-bold text-on-surface">{{ lead.lifecycle_stage }}</p>
-                                </div>
-                                <div class="space-y-1">
-                                    <p class="font-label-md text-outline uppercase">Annual Revenue</p>
-                                    <p class="font-body-md font-bold text-on-surface">₹{{ lead.annual_revenue|floatformat:0 }} (ARR)</p>
-                                </div>
-                                <div class="space-y-1">
-                                    <p class="font-label-md text-outline uppercase">Last Interaction</p>
-                                    <p class="font-body-md font-bold text-on-surface">{{ lead.last_activity|timesince }} ago</p>
-                                </div>
-                                <div class="space-y-1">
-                                    <p class="font-label-md text-outline uppercase">Health Score</p>
-                                    <div class="flex items-center gap-2">
-                                        <p class="font-body-md font-bold text-success">{{ lead.health_score }}/100</p>
-                                        <div class="w-12 h-1.5 bg-surface-container rounded-full overflow-hidden">
-                                            <div class="bg-success h-full" style="width: {{ lead.health_score }}%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
 
                     <!-- Activity Timeline (Compact Preview) -->
                     <div class="col-span-2 glass-card rounded-xl p-6 border border-outline-variant/30">

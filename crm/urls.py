@@ -25,6 +25,7 @@ urlpatterns = [
     path('lead/quick-create/', views.quick_create_lead, name='quick_create_lead'),
 
     path('clients/', views.clients_view, name='clients'),
+    path('clients/profile/<path:company_name>/', views.client_profile_view, name='client_profile'),
     path('clients/service/<str:service_id>/', views.service_clients_view, name='service_clients'),
     path('clients/edit-company/', views.edit_client_company, name='edit_client_company'),
     path('clients/delete-company/', views.delete_client_company, name='delete_client_company'),
@@ -64,6 +65,16 @@ urlpatterns = [
     path('statuses/<int:status_id>/edit/', views.edit_lead_status, name='edit_lead_status'),
     path('statuses/<int:status_id>/delete/', views.delete_lead_status, name='delete_lead_status'),
     path('statuses/reorder/', views.reorder_lead_statuses, name='reorder_lead_statuses'),
+    
+    # Finance Payment Methods
+    path('statuses/finance-method/add/', views.add_finance_method, name='add_finance_method'),
+    path('statuses/finance-method/<int:method_id>/edit/', views.edit_finance_method, name='edit_finance_method'),
+    path('statuses/finance-method/<int:method_id>/delete/', views.delete_finance_method, name='delete_finance_method'),
+
+    # Finance Expense Categories
+    path('statuses/finance-category/add/', views.add_finance_category, name='add_finance_category'),
+    path('statuses/finance-category/<int:cat_id>/edit/', views.edit_finance_category, name='edit_finance_category'),
+    path('statuses/finance-category/<int:cat_id>/delete/', views.delete_finance_category, name='delete_finance_category'),
 
     # Staff Management
     path('staff/', views.staff_list_view, name='staff'),
@@ -115,8 +126,10 @@ urlpatterns = [
     path('finance/dashboard/', views.finance_dashboard_view, name='finance_dashboard'),
     path('finance/income/', views.finance_income_view, name='finance_income'),
     path('finance/income/add/', views.finance_add_income_view, name='finance_add_income'),
+    path('finance/income/edit/<int:income_id>/', views.finance_edit_income, name='finance_edit_income'),
     path('finance/expenses/', views.finance_expenses_view, name='finance_expenses'),
     path('finance/expenses/add/', views.finance_add_expense_view, name='finance_add_expense'),
+    path('finance/expenses/edit/<int:expense_id>/', views.finance_edit_expense, name='finance_edit_expense'),
     path('finance/reports/', views.finance_reports_view, name='finance_reports'),
     path('finance/partner-payouts/', views.partner_payout_view, name='partner_payouts'),
     path('finance/partner-payouts/add/', views.partner_payout_add_view, name='partner_payout_add'),

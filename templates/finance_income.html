@@ -15,9 +15,21 @@
             <form method="POST" enctype="multipart/form-data" class="m-0">
                 {% csrf_token %}
                 <input type="file" name="csv_file" id="income_csv_upload" accept=".csv" class="hidden" onchange="this.form.submit()">
-                <button type="button" onclick="document.getElementById('income_csv_upload').click()" class="flex items-center gap-1.5 px-4 py-2 bg-white border border-outline-variant text-on-surface font-bold text-sm rounded-lg hover:bg-slate-50 transition-all shadow-sm">
+                <button type="button" onclick="document.getElementById('income_csv_upload').click()" class="flex items-center gap-1.5 px-4 py-2 bg-white border border-outline-variant text-on-surface font-bold text-sm rounded-lg hover:bg-slate-50 transition-all shadow-sm group relative">
                     <span class="material-symbols-outlined text-[18px]">upload</span>
                     Import Data
+                    <span class="material-symbols-outlined text-[16px] text-outline ml-1 cursor-help group-hover:text-primary transition-colors" onclick="event.stopPropagation()">info</span>
+                    <!-- Tooltip -->
+                    <div class="absolute top-full right-0 mt-2 w-64 p-3 bg-surface text-on-surface text-left rounded-xl shadow-xl border border-outline-variant/30 text-xs z-50 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 cursor-default">
+                        <p class="font-bold mb-2 text-primary border-b border-outline-variant/30 pb-1">CSV Format Rules</p>
+                        <p class="mb-1 text-secondary">Columns must exactly match:</p>
+                        <ul class="list-disc pl-4 text-on-surface-variant font-medium space-y-1 mb-1">
+                            <li><code class="bg-surface-container px-1 py-0.5 rounded text-[10px] text-on-surface font-bold">date</code> (YYYY-MM-DD)</li>
+                            <li><code class="bg-surface-container px-1 py-0.5 rounded text-[10px] text-on-surface font-bold">client_name</code></li>
+                            <li><code class="bg-surface-container px-1 py-0.5 rounded text-[10px] text-on-surface font-bold">amount</code></li>
+                            <li><code class="bg-surface-container px-1 py-0.5 rounded text-[10px] text-on-surface font-bold">project_name</code> (Optional)</li>
+                        </ul>
+                    </div>
                 </button>
             </form>
             <a href="{% url 'finance_add_income' %}" class="flex items-center gap-1.5 px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-all shadow-sm">
@@ -83,11 +95,11 @@
                     {% for item in incomes %}
                     <tr class="hover:bg-primary/5 transition-colors group bg-white">
                         <td class="px-4 py-3 text-xs text-on-surface font-medium">{{ item.date }}</td>
-                        <td class="px-4 py-3 text-xs text-on-surface font-bold">{{ item.client }}</td>
-                        <td class="px-4 py-3 text-xs text-on-surface-variant">{{ item.project }}</td>
+                        <td class="px-4 py-3 text-xs text-on-surface font-bold">{{ item.client_name }}</td>
+                        <td class="px-4 py-3 text-xs text-on-surface-variant">{{ item.project_name|default:"-" }}</td>
                         <td class="px-4 py-3">
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border border-outline-variant/50 text-success bg-success/10 inline-block uppercase tracking-wider">
-                                {{ item.method }}
+                                {{ item.payment_method.name|default:"-" }}
                             </span>
                         </td>
                         <td class="px-4 py-3 text-xs font-bold text-primary">
@@ -95,7 +107,7 @@
                         </td>
                         <td class="px-4 py-3 text-right">
                             <div class="flex items-center justify-end gap-1">
-                                <button class="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-secondary hover:bg-primary-container hover:text-primary transition-colors">
+                                <button onclick="openEditIncomeModal('{{ item.id }}', '{{ item.date|date:'Y-m-d' }}', '{{ item.client_name|escapejs }}', '{{ item.project_name|default:''|escapejs }}', '{{ item.amount }}', '{{ item.payment_method.id|default:'' }}')" class="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-secondary hover:bg-primary-container hover:text-primary transition-colors">
                                     <span class="material-symbols-outlined text-[16px]">edit</span>
                                 </button>
                                 <button class="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-secondary hover:bg-error-container hover:text-error transition-colors">
@@ -119,4 +131,70 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Income Modal -->
+<div id="editIncomeModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-outline-variant/30 transform transition-all">
+        <div class="px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center bg-surface-container-low">
+            <h3 class="text-lg font-bold text-on-surface">Edit Income Record</h3>
+            <button onclick="closeEditIncomeModal()" class="text-outline hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="editIncomeForm" method="POST" class="p-6">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Date</label>
+                    <input type="date" name="date" id="editIncomeDate" required class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Client Name</label>
+                    <input type="text" name="client_name" id="editIncomeClient" required class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Project Name</label>
+                    <input type="text" name="project_name" id="editIncomeProject" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Amount (₹)</label>
+                    <input type="number" step="0.01" name="amount" id="editIncomeAmount" required class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Payment Method</label>
+                    <select name="payment_method_id" id="editIncomeMethod" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary text-on-surface appearance-none">
+                        <option value="">- Select Method -</option>
+                        {% for method in finance_methods %}
+                        <option value="{{ method.id }}">{{ method.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" onclick="closeEditIncomeModal()" class="px-4 py-2 text-sm font-bold text-secondary hover:text-primary transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg shadow-sm hover:bg-primary/90 transition-all">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openEditIncomeModal(id, date, clientName, projectName, amount, methodId) {
+    const form = document.getElementById('editIncomeForm');
+    form.action = `/finance/income/edit/${id}/`;
+    document.getElementById('editIncomeDate').value = date;
+    document.getElementById('editIncomeClient').value = clientName;
+    document.getElementById('editIncomeProject').value = projectName;
+    document.getElementById('editIncomeAmount').value = amount;
+    document.getElementById('editIncomeMethod').value = methodId || "";
+    document.getElementById('editIncomeModal').classList.remove('hidden');
+}
+
+function closeEditIncomeModal() {
+    document.getElementById('editIncomeModal').classList.add('hidden');
+}
+</script>
 {% endblock %}

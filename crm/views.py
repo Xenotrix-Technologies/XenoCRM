@@ -12,7 +12,7 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable, Campaign, ContentDropdownOption, SystemNotification
 from .forms import EventForm, ProfileForm
-from .models import Income, Expense
+from .models import Income, Expense, FinancePaymentMethod, FinanceExpenseCategory
 from datetime import datetime
 from decimal import Decimal
 # Views for navigation pages with proper multi-tenant database queries
@@ -158,8 +158,8 @@ def service_clients_view(request, service_id):
                 'leads': []
             }
         clients_dict[comp]['contacts_count'] += 1
-        clients_dict[comp]['total_value'] += float(lead.value or 0.0)
-        clients_dict[comp]['total_paid'] += float(lead.paid_amount or 0.0)
+        clients_dict[comp]['total_value'] = max(clients_dict[comp]['total_value'], float(lead.value or 0.0))
+        clients_dict[comp]['total_paid'] = max(clients_dict[comp]['total_paid'], float(lead.paid_amount or 0.0))
         clients_dict[comp]['avg_score'] += lead.score
         clients_dict[comp]['leads'].append(lead)
 
@@ -174,6 +174,49 @@ def service_clients_view(request, service_id):
         'clients': clients_list,
     }
     return render(request, 'service_clients.html', context)
+
+
+@login_required
+def client_profile_view(request, company_name):
+    from urllib.parse import unquote
+    from django.db.models import Q
+    
+    company_name = unquote(company_name)
+    org = request.user.profile.organization
+    
+    # All leads under this company
+    leads = Lead.objects.filter(organization=org, company=company_name).order_by('-created_at')
+    
+    if not leads.exists():
+        messages.error(request, "Client not found.")
+        return redirect('clients')
+
+    # Aggregates
+    if leads.exists():
+        total_value = max((lead.value or 0) for lead in leads)
+        total_paid = max((lead.paid_amount or 0) for lead in leads)
+    else:
+        total_value = 0
+        total_paid = 0
+    
+    # Agreements associated with this company
+    agreements = Agreement.objects.filter(
+        Q(organization=org) & (Q(company_name=company_name) | Q(client_name=company_name))
+    ).order_by('-created_at')
+
+    # Combined activities
+    activities = Activity.objects.filter(lead__in=leads).order_by('-timestamp')
+
+    context = {
+        'company_name': company_name,
+        'leads': leads,
+        'total_value': total_value,
+        'total_paid': total_paid,
+        'agreements': agreements,
+        'activities': activities,
+        'primary_lead': leads.first(), 
+    }
+    return render(request, 'client_profile.html', context)
 
 
 @login_required
@@ -401,6 +444,7 @@ def create_agreement_view(request):
                 revisions=request.POST.get('revisions') or 3,
                 notice_period=request.POST.get('notice_period') or 30,
                 notes=request.POST.get('notes', ''),
+                project_estimation_json=request.POST.get('project_estimation_json', ''),
                 status=request.POST.get('status', 'Draft')
             )
             
@@ -476,6 +520,7 @@ def update_agreement_view(request, agreement_id):
             agreement.revisions = request.POST.get('revisions') or 3
             agreement.notice_period = request.POST.get('notice_period') or 30
             agreement.notes = request.POST.get('notes', '')
+            agreement.project_estimation_json = request.POST.get('project_estimation_json', '')
             agreement.status = request.POST.get('status', 'Draft')
             agreement.save()
             
@@ -707,7 +752,11 @@ def dashboard_view(request):
     recent_activities = Activity.objects.filter(lead__organization=org).order_by('-timestamp')[:5]
     
     # 7. Upcoming meetings
-    upcoming_meetings = Meeting.objects.filter(organization=org, date_time__gte=timezone.now()).order_by('date_time')[:3]
+    upcoming_meetings = Event.objects.filter(
+        organization=org, 
+        start_time__gte=timezone.now(),
+        color__in=['#004ac6', '#10b981']
+    ).order_by('start_time')[:3]
     
     # 8. Sales Funnel stats (stage counts)
     stages = ['New', 'Qualified', 'Proposal', 'Negotiation', 'Won']
@@ -1410,8 +1459,8 @@ def calendar_events_json_view(request):
         events_data.append({
             'id': event.id,
             'title': event.title,
-            'start': event.start_time.isoformat(),
-            'end': event.end_time.isoformat(),
+            'start': event.start_time.strftime('%Y-%m-%dT%H:%M:%S') if event.start_time else None,
+            'end': event.end_time.strftime('%Y-%m-%dT%H:%M:%S') if event.end_time else None,
             'description': event.description or '',
             'recurring': event.recurring,
             'color': event.color,
@@ -1436,8 +1485,8 @@ def event_create_ajax(request):
                 'event': {
                     'id': event.id,
                     'title': event.title,
-                    'start': event.start_time.isoformat(),
-                    'end': event.end_time.isoformat(),
+                    'start': event.start_time.strftime('%Y-%m-%dT%H:%M:%S') if event.start_time else None,
+                    'end': event.end_time.strftime('%Y-%m-%dT%H:%M:%S') if event.end_time else None,
                     'description': event.description or '',
                     'recurring': event.recurring,
                     'color': event.color,
@@ -1463,8 +1512,8 @@ def event_edit_ajax(request, event_id):
                 'event': {
                     'id': event.id,
                     'title': event.title,
-                    'start': event.start_time.isoformat(),
-                    'end': event.end_time.isoformat(),
+                    'start': event.start_time.strftime('%Y-%m-%dT%H:%M:%S') if event.start_time else None,
+                    'end': event.end_time.strftime('%Y-%m-%dT%H:%M:%S') if event.end_time else None,
                     'description': event.description or '',
                     'recurring': event.recurring,
                     'color': event.color,
@@ -1753,7 +1802,13 @@ def lead_statuses_view(request):
     """List all lead statuses for the current organisation."""
     org = request.user.profile.organization
     statuses = get_or_create_default_statuses(org)
-    return render(request, 'lead_statuses.html', {'statuses': statuses})
+    finance_methods = FinancePaymentMethod.objects.filter(organization=org).order_by('name')
+    finance_categories = FinanceExpenseCategory.objects.filter(organization=org).order_by('name')
+    return render(request, 'lead_statuses.html', {
+        'statuses': statuses,
+        'finance_methods': finance_methods,
+        'finance_categories': finance_categories
+    })
 
 
 @login_required
@@ -1861,6 +1916,55 @@ def reorder_lead_statuses(request):
 
         return JsonResponse({'success': True, 'message': 'Statuses reordered.'})
 
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
+@page_permission_required('lead_statuses')
+def add_finance_method(request):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        name = request.POST.get('name', '').strip()
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Method name is required.'})
+            
+        if FinancePaymentMethod.objects.filter(organization=org, name__iexact=name).exists():
+            return JsonResponse({'success': False, 'error': f"Method '{name}' already exists."})
+            
+        method = FinancePaymentMethod.objects.create(organization=org, name=name)
+        return JsonResponse({
+            'success': True,
+            'method': {'id': method.id, 'name': method.name}
+        })
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+@login_required
+@page_permission_required('lead_statuses')
+def edit_finance_method(request, method_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        name = request.POST.get('name', '').strip()
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Method name is required.'})
+            
+        method = get_object_or_404(FinancePaymentMethod, id=method_id, organization=org)
+        
+        if FinancePaymentMethod.objects.filter(organization=org, name__iexact=name).exclude(id=method_id).exists():
+            return JsonResponse({'success': False, 'error': f"Method '{name}' already exists."})
+            
+        method.name = name
+        method.save()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+@login_required
+@page_permission_required('lead_statuses')
+def delete_finance_method(request, method_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        method = get_object_or_404(FinancePaymentMethod, id=method_id, organization=org)
+        method.delete()
+        return JsonResponse({'success': True})
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 
@@ -3829,11 +3933,17 @@ def finance_income_view(request):
             return redirect('finance_income')
 
         try:
-            decoded_file = csv_file.read().decode('utf-8').splitlines()
+            decoded_file = csv_file.read().decode('utf-8-sig').splitlines()
             reader = csv.DictReader(decoded_file)
             
+            # Normalize headers
+            reader.fieldnames = [field.strip().lower() for field in reader.fieldnames] if reader.fieldnames else []
+            
             success_count = 0
+            errors = []
+            row_num = 1
             for row in reader:
+                row_num += 1
                 date_str = row.get('date', '').strip()
                 client_name = row.get('client_name', '').strip()
                 project_name = row.get('project_name', '').strip()
@@ -3841,8 +3951,18 @@ def finance_income_view(request):
 
                 if date_str and client_name and amount_str:
                     try:
-                        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
-                        amount = Decimal(amount_str)
+                        date_obj = None
+                        for fmt in ('%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y', '%m/%d/%Y', '%Y/%m/%d'):
+                            try:
+                                date_obj = datetime.strptime(date_str, fmt).date()
+                                break
+                            except ValueError:
+                                pass
+                        if not date_obj:
+                            raise ValueError(f"Date format not recognized: {date_str}")
+                        # Clean amount
+                        clean_amount = amount_str.replace(',', '').replace('₹', '').replace('$', '').strip()
+                        amount = Decimal(clean_amount)
                         Income.objects.create(
                             organization=request.user.profile.organization,
                             date=date_obj,
@@ -3852,20 +3972,104 @@ def finance_income_view(request):
                         )
                         success_count += 1
                     except Exception as e:
-                        print(f"Error parsing row: {row}, Error: {e}")
+                        errors.append(f"Row {row_num}: {str(e)}")
                         continue
+                else:
+                    if any(row.values()): # Only report if row is not completely empty
+                        errors.append(f"Row {row_num}: Missing required fields (date, client_name, amount)")
             
-            messages.success(request, f'Successfully imported {success_count} income records.')
+            if success_count > 0:
+                messages.success(request, f'Successfully imported {success_count} income records.')
+            if errors:
+                messages.error(request, f'Errors in {len(errors)} rows. First few: {"; ".join(errors[:3])}')
         except Exception as e:
             messages.error(request, f'Error processing file: {e}')
             
         return redirect('finance_income')
 
-    return render(request, 'finance_income.html')
+    incomes = Income.objects.filter(organization=request.user.profile.organization).order_by('-date')
+    finance_methods = FinancePaymentMethod.objects.filter(organization=request.user.profile.organization).order_by('name')
+    context = {'incomes': incomes, 'finance_methods': finance_methods}
+    return render(request, 'finance_income.html', context)
 
 @login_required
 def finance_add_income_view(request):
+    org = request.user.profile.organization
+    if request.method == 'POST':
+        try:
+            date_str = request.POST.get('date')
+            client_name = request.POST.get('client_name')
+            project_name = request.POST.get('project_name')
+            amount_str = request.POST.get('amount')
+            payment_method_id = request.POST.get('payment_method')
+            
+            income = Income(organization=org)
+            if date_str:
+                income.date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            if client_name and client_name != "No Client / General":
+                income.client_name = client_name
+            if project_name:
+                income.project_name = project_name
+            if amount_str:
+                clean_amount = amount_str.replace(',', '').replace('₹', '').replace('$', '').strip()
+                income.amount = Decimal(clean_amount)
+                
+            if payment_method_id:
+                try:
+                    pm = FinancePaymentMethod.objects.get(id=payment_method_id, organization=org)
+                    income.payment_method = pm
+                except FinancePaymentMethod.DoesNotExist:
+                    pass
+                
+            income.save()
+            messages.success(request, 'Income record added successfully.')
+            return redirect('finance_income')
+        except Exception as e:
+            messages.error(request, f'Failed to add income record: {e}')
+            return redirect('finance_income')
+            
+    clients = list(Income.objects.filter(organization=org).values_list('client_name', flat=True).distinct())
+    clients = [c for c in clients if c and c != "No Client / General"]
+    payment_methods = FinancePaymentMethod.objects.filter(organization=org).order_by('name')
+    return render(request, 'finance_add_income.html', {'clients': clients, 'payment_methods': payment_methods})
+
+@login_required
+def finance_edit_income(request, income_id):
+    income = get_object_or_404(Income, id=income_id, organization=request.user.profile.organization)
+    if request.method == 'POST':
+        try:
+            date_str = request.POST.get('date')
+            client_name = request.POST.get('client_name')
+            project_name = request.POST.get('project_name')
+            amount_str = request.POST.get('amount')
+            
+            if date_str:
+                income.date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            if client_name:
+                income.client_name = client_name
+            if project_name is not None:
+                income.project_name = project_name
+            if amount_str:
+                clean_amount = amount_str.replace(',', '').replace('₹', '').replace('$', '').strip()
+                income.amount = Decimal(clean_amount)
+                
+            payment_method_id = request.POST.get('payment_method_id')
+            if payment_method_id:
+                try:
+                    pm = FinancePaymentMethod.objects.get(id=payment_method_id, organization=request.user.profile.organization)
+                    income.payment_method = pm
+                except FinancePaymentMethod.DoesNotExist:
+                    pass
+            elif payment_method_id == "":
+                income.payment_method = None
+                
+            income.save()
+            messages.success(request, 'Income record updated successfully.')
+        except Exception as e:
+            messages.error(request, f'Failed to update income record: {e}')
+            
     return redirect('finance_income')
+
 
 @login_required
 def finance_expenses_view(request):
@@ -3876,11 +4080,17 @@ def finance_expenses_view(request):
             return redirect('finance_expenses')
 
         try:
-            decoded_file = csv_file.read().decode('utf-8').splitlines()
+            decoded_file = csv_file.read().decode('utf-8-sig').splitlines()
             reader = csv.DictReader(decoded_file)
             
+            # Normalize headers
+            reader.fieldnames = [field.strip().lower() for field in reader.fieldnames] if reader.fieldnames else []
+            
             success_count = 0
+            errors = []
+            row_num = 1
             for row in reader:
+                row_num += 1
                 date_str = row.get('date', '').strip()
                 description = row.get('description', '').strip()
                 cost_center = row.get('cost_center', '').strip()
@@ -3888,8 +4098,18 @@ def finance_expenses_view(request):
 
                 if date_str and amount_str:
                     try:
-                        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
-                        amount = Decimal(amount_str)
+                        date_obj = None
+                        for fmt in ('%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y', '%m/%d/%Y', '%Y/%m/%d'):
+                            try:
+                                date_obj = datetime.strptime(date_str, fmt).date()
+                                break
+                            except ValueError:
+                                pass
+                        if not date_obj:
+                            raise ValueError(f"Date format not recognized: {date_str}")
+                        # Clean amount
+                        clean_amount = amount_str.replace(',', '').replace('₹', '').replace('$', '').strip()
+                        amount = Decimal(clean_amount)
                         Expense.objects.create(
                             organization=request.user.profile.organization,
                             date=date_obj,
@@ -3899,19 +4119,118 @@ def finance_expenses_view(request):
                         )
                         success_count += 1
                     except Exception as e:
-                        print(f"Error parsing row: {row}, Error: {e}")
+                        errors.append(f"Row {row_num}: {str(e)}")
                         continue
+                else:
+                    if any(row.values()):
+                        errors.append(f"Row {row_num}: Missing required fields (date, amount)")
             
-            messages.success(request, f'Successfully imported {success_count} expense records.')
+            if success_count > 0:
+                messages.success(request, f'Successfully imported {success_count} expense records.')
+            if errors:
+                messages.error(request, f'Errors in {len(errors)} rows. First few: {"; ".join(errors[:3])}')
         except Exception as e:
             messages.error(request, f'Error processing file: {e}')
             
         return redirect('finance_expenses')
 
-    return render(request, 'finance_expenses.html')
+    expenses = Expense.objects.filter(organization=request.user.profile.organization).order_by('-date')
+    finance_methods = FinancePaymentMethod.objects.filter(organization=request.user.profile.organization).order_by('name')
+    finance_categories = FinanceExpenseCategory.objects.filter(organization=request.user.profile.organization).order_by('name')
+    context = {'expenses': expenses, 'finance_methods': finance_methods, 'finance_categories': finance_categories}
+    return render(request, 'finance_expenses.html', context)
 
 @login_required
 def finance_add_expense_view(request):
+    org = request.user.profile.organization
+    if request.method == 'POST':
+        try:
+            date_str = request.POST.get('date')
+            category_id = request.POST.get('category')
+            description = request.POST.get('description')
+            cost_center = request.POST.get('cost_center')
+            payment_method_id = request.POST.get('payment_method')
+            amount_str = request.POST.get('amount')
+            
+            expense = Expense(organization=org)
+            if date_str:
+                expense.date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            if category_id:
+                try:
+                    cat = FinanceExpenseCategory.objects.get(id=category_id, organization=org)
+                    expense.category = cat
+                except FinanceExpenseCategory.DoesNotExist:
+                    pass
+            if description:
+                expense.description = description
+            if cost_center:
+                expense.cost_center = cost_center
+            if payment_method_id:
+                try:
+                    pm = FinancePaymentMethod.objects.get(id=payment_method_id, organization=org)
+                    expense.payment_method = pm
+                except FinancePaymentMethod.DoesNotExist:
+                    pass
+            if amount_str:
+                clean_amount = amount_str.replace(',', '').replace('₹', '').replace('$', '').strip()
+                expense.amount = Decimal(clean_amount)
+                
+            expense.save()
+            messages.success(request, 'Expense record added successfully.')
+            return redirect('finance_expenses')
+        except Exception as e:
+            messages.error(request, f'Failed to add expense record: {e}')
+            return redirect('finance_expenses')
+
+    categories = FinanceExpenseCategory.objects.filter(organization=org).order_by('name')
+    payment_methods = FinancePaymentMethod.objects.filter(organization=org).order_by('name')
+    return render(request, 'finance_add_expense.html', {'categories': categories, 'payment_methods': payment_methods})
+
+@login_required
+def finance_edit_expense(request, expense_id):
+    expense = get_object_or_404(Expense, id=expense_id, organization=request.user.profile.organization)
+    if request.method == 'POST':
+        try:
+            date_str = request.POST.get('date')
+            category = request.POST.get('category')
+            description = request.POST.get('description')
+            amount_str = request.POST.get('amount')
+            cost_center = request.POST.get('cost_center')
+            
+            if date_str:
+                expense.date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            category_id = request.POST.get('category_id')
+            if category_id:
+                try:
+                    cat_obj = FinanceExpenseCategory.objects.get(id=category_id, organization=request.user.profile.organization)
+                    expense.category = cat_obj
+                except FinanceExpenseCategory.DoesNotExist:
+                    pass
+            elif category_id == "":
+                expense.category = None
+            if description is not None:
+                expense.description = description
+            if cost_center is not None:
+                expense.cost_center = cost_center
+            if amount_str:
+                clean_amount = amount_str.replace(',', '').replace('₹', '').replace('$', '').strip()
+                expense.amount = Decimal(clean_amount)
+                
+            payment_method_id = request.POST.get('payment_method_id')
+            if payment_method_id:
+                try:
+                    pm = FinancePaymentMethod.objects.get(id=payment_method_id, organization=request.user.profile.organization)
+                    expense.payment_method = pm
+                except FinancePaymentMethod.DoesNotExist:
+                    pass
+            elif payment_method_id == "":
+                expense.payment_method = None
+                
+            expense.save()
+            messages.success(request, 'Expense record updated successfully.')
+        except Exception as e:
+            messages.error(request, f'Failed to update expense record: {e}')
+            
     return redirect('finance_expenses')
 
 @login_required
@@ -3929,3 +4248,46 @@ def partner_payout_add_view(request):
 @login_required
 def finance_settings_view(request):
     return render(request, 'finance_settings.html')
+
+
+@login_required
+@page_permission_required('lead_statuses')
+def add_finance_category(request):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        name = request.POST.get('name', '').strip()
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Category name is required.'})
+        cat = FinanceExpenseCategory.objects.create(organization=org, name=name)
+        return JsonResponse({'success': True, 'id': cat.id, 'name': cat.name})
+    return JsonResponse({'success': False, 'error': 'Invalid request.'})
+
+@login_required
+@page_permission_required('lead_statuses')
+def edit_finance_category(request, cat_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        name = request.POST.get('name', '').strip()
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Category name is required.'})
+        try:
+            cat = FinanceExpenseCategory.objects.get(id=cat_id, organization=org)
+            cat.name = name
+            cat.save()
+            return JsonResponse({'success': True, 'id': cat.id, 'name': cat.name})
+        except FinanceExpenseCategory.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Category not found.'})
+    return JsonResponse({'success': False, 'error': 'Invalid request.'})
+
+@login_required
+@page_permission_required('lead_statuses')
+def delete_finance_category(request, cat_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        try:
+            cat = FinanceExpenseCategory.objects.get(id=cat_id, organization=org)
+            cat.delete()
+            return JsonResponse({'success': True})
+        except FinanceExpenseCategory.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Category not found.'})
+    return JsonResponse({'success': False, 'error': 'Invalid request.'})

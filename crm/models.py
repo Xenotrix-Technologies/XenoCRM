@@ -662,6 +662,7 @@ class Agreement(models.Model):
     revisions = models.IntegerField(default=3)
     notice_period = models.IntegerField(default=30)
     notes = models.TextField(blank=True, null=True)
+    project_estimation_json = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=50, default='Draft')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -672,6 +673,16 @@ class Agreement(models.Model):
 
     def __str__(self):
         return f"{self.agreement_number} - {self.client_name}"
+
+    @property
+    def parsed_estimation(self):
+        import json
+        if self.project_estimation_json:
+            try:
+                return json.loads(self.project_estimation_json)
+            except Exception:
+                pass
+        return None
 
 
 class AgreementService(models.Model):

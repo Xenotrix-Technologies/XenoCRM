@@ -266,10 +266,10 @@
         <div class="header">
             <div class="logo-box">
                 <h1>Xenotrix Technologies</h1>
-                <p>Digital Marketing Service Agreement</p>
+                <p>{{ agreement.service.name | default:"Service Agreement" }} Agreement</p>
             </div>
             <div class="agreement-title">
-                <h2>Agreement</h2>
+                <h2>Quotation</h2>
                 <p>{{ agreement.agreement_number }}</p>
             </div>
         </div>
@@ -299,8 +299,9 @@
             <div class="party-card">
                 <h3>Service Provider:</h3>
                 <p><strong>Xenotrix Technologies</strong></p>
-                <p>230 Commercial Center, Suite B</p>
-                <p>info@xenotrix.com</p>
+                <p>Thiruvilwamala, Thrissur, Kerala 680594</p>
+                <p>+91 9995544316</p>
+                <p>xenotrixtech@gmail.com</p>
             </div>
             <div class="party-card">
                 <h3>Client Information:</h3>
@@ -363,6 +364,79 @@
                 {% endfor %}
             </ul>
         </div>
+
+        {% if agreement.parsed_estimation %}
+        <!-- Project Estimation (Auto-Generated) -->
+        <div class="section-clause">
+            <h3>Project Estimation & Details</h3>
+            <div class="payment-summary-card" style="margin-top: 15px;">
+                <table class="payment-table">
+                    <tr>
+                        <td style="width: 40%;"><strong>Selected Service</strong></td>
+                        <td style="text-align: right;">{{ agreement.parsed_estimation.service }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Package Selected</strong></td>
+                        <td style="text-align: right;">{% if agreement.parsed_estimation.package %}{{ agreement.parsed_estimation.package.name }}{% else %}Custom{% endif %}</td>
+                    </tr>
+                    {% if agreement.parsed_estimation.addons and agreement.parsed_estimation.addons|length > 0 %}
+                    <tr>
+                        <td style="vertical-align: top;"><strong>Optional Services</strong></td>
+                        <td style="text-align: right; color: #64748b; font-size: 11px;">
+                            <ul style="list-style: none; padding: 0; margin: 0;">
+                                {% for addon in agreement.parsed_estimation.addons %}
+                                <li>+ {{ addon.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td><strong>Project Timeline</strong></td>
+                        <td style="text-align: right;">{{ agreement.parsed_estimation.timeline }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Base Cost</strong></td>
+                        <td style="text-align: right;" class="val">₹{{ agreement.parsed_estimation.basePrice|default:0|floatformat:2 }}</td>
+                    </tr>
+                    {% if agreement.parsed_estimation.addonsPrice > 0 %}
+                    <tr>
+                        <td><strong>Add-ons Total</strong></td>
+                        <td style="text-align: right;" class="val">₹{{ agreement.parsed_estimation.addonsPrice|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if agreement.parsed_estimation.timelineFee > 0 %}
+                    <tr>
+                        <td><strong>Timeline Surcharge</strong></td>
+                        <td style="text-align: right;" class="val">₹{{ agreement.parsed_estimation.timelineFee|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if agreement.parsed_estimation.discount > 0 %}
+                    <tr>
+                        <td><strong>Discount Applied</strong></td>
+                        <td style="text-align: right; color: #ef4444;" class="val">- ₹{{ agreement.parsed_estimation.discount|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if agreement.parsed_estimation.gst > 0 %}
+                    <tr>
+                        <td><strong>GST (18%)</strong></td>
+                        <td style="text-align: right;" class="val">₹{{ agreement.parsed_estimation.gst|floatformat:2 }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr style="border-top: 2px solid #e2e8f0; font-size: 14px;">
+                        <td style="padding-top: 15px;"><strong>Estimated Total Cost</strong></td>
+                        <td style="text-align: right; padding-top: 15px;" class="val">₹{{ agreement.parsed_estimation.total|floatformat:2 }}</td>
+                    </tr>
+                </table>
+            </div>
+            {% if agreement.parsed_estimation.requirements %}
+            <div style="margin-top: 15px;">
+                <p><strong>Specific Requirements / Notes:</strong></p>
+                <p style="font-size: 12px; color: #475569; white-space: pre-wrap; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0;">{{ agreement.parsed_estimation.requirements }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
 
         <!-- Payment terms -->
         <div class="section-clause">

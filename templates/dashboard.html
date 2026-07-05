@@ -12,18 +12,22 @@
         box-shadow: 0 4px 24px -4px rgba(11, 28, 48, 0.05);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
     .glass-card-premium:hover {
         box-shadow: 0 12px 32px -4px rgba(11, 28, 48, 0.1);
         transform: translateY(-2px);
     }
+
     .chart-gradient {
         background: linear-gradient(180deg, rgba(37, 99, 235, 0.15) 0%, rgba(37, 99, 235, 0) 100%);
     }
+
     .gradient-text {
         background: linear-gradient(135deg, #2563EB 0%, #60A5FA 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
+
     .progress-ring__circle {
         transition: stroke-dashoffset 0.35s;
         transform: rotate(-90deg);
@@ -37,14 +41,15 @@
     <!-- Dashboard Header -->
     <div class="flex justify-between items-end mb-8">
         <div>
-            <h2 class="font-headline-lg text-4xl font-black text-on-background tracking-tight">Executive Dashboard</h2>
-            <p class="text-secondary font-body-md mt-2 text-lg">Welcome back, {{ request.user.first_name|default:request.user.username }} 👋. Here's your business overview for today.</p>
+            <h2 class="font-headline-lg text-3xl font-black text-on-background tracking-tight">Executive Dashboard</h2>
+            <p class="text-secondary font-body-md mt-2 text-base">Welcome back, {{ request.user.first_name|default:request.user.username }}. Here's your business overview for today.</p>
         </div>
         <div class="flex gap-3">
-            <a href="{% url 'leads' %}?export=csv" class="bg-white border border-outline-variant text-on-surface px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-colors flex items-center gap-2">
+            <button
+                class="bg-white border border-outline-variant text-on-surface px-4 py-2 rounded-xl text-sm font-bold shadow-sm hover:bg-slate-50 transition-colors flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">download</span>
                 Generate Report
-            </a>
+            </button>
         </div>
     </div>
 
@@ -58,14 +63,18 @@
                     <div class="p-2.5 bg-primary/10 text-primary rounded-xl">
                         <span class="material-symbols-outlined">payments</span>
                     </div>
-                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Total Revenue</span>
+                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Total
+                        Revenue</span>
                 </div>
-                <span class="{% if revenue_trend >= 0 %}bg-success/10 text-success{% else %}bg-danger/10 text-danger{% endif %} text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[14px]">{% if revenue_trend >= 0 %}trending_up{% else %}trending_down{% endif %}</span>
+                <span
+                    class="{% if revenue_trend >= 0 %}bg-success/10 text-success{% else %}bg-danger/10 text-danger{% endif %} text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">{% if revenue_trend >= 0 %}trending_up{% else
+                        %}trending_down{% endif %}</span>
                     {% if revenue_trend >= 0 %}+{% endif %}{{ revenue_trend }}%
                 </span>
             </div>
-            <h3 class="text-4xl font-display-lg font-black text-on-background mt-2">₹{{ total_revenue|floatformat:0 }}</h3>
+            <h3 class="text-3xl font-display-lg font-black text-on-background mt-2">₹{{ total_revenue|floatformat:0 }}
+            </h3>
             <div class="mt-4 flex items-center gap-3">
                 <div class="flex-1 h-1.5 bg-surface-variant rounded-full overflow-hidden">
                     <div class="h-full bg-primary rounded-full" style="width: 75%"></div>
@@ -73,7 +82,7 @@
                 <span class="text-[10px] text-outline font-bold">75% to goal</span>
             </div>
         </div>
-        
+
         <!-- KPI: Leads -->
         <div class="glass-card-premium p-6 relative overflow-hidden">
             <div class="absolute -right-4 -top-4 w-24 h-24 bg-tertiary-container/10 rounded-full blur-2xl"></div>
@@ -82,19 +91,22 @@
                     <div class="p-2.5 bg-tertiary-container/10 text-tertiary rounded-xl">
                         <span class="material-symbols-outlined">group</span>
                     </div>
-                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Total Leads</span>
+                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Total
+                        Leads</span>
                 </div>
-                <span class="bg-surface-variant/50 text-secondary text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                <span
+                    class="bg-surface-variant/50 text-secondary text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
                     +{{ new_leads.count }} Today
                 </span>
             </div>
-            <h3 class="text-4xl font-display-lg font-black text-on-background mt-2">{{ total_leads }}</h3>
+            <h3 class="text-3xl font-display-lg font-black text-on-background mt-2">{{ total_leads }}</h3>
             <div class="flex items-center mt-4 gap-2">
                 <div class="flex -space-x-3">
                     {% for lead in new_leads|slice:":4" %}
-                    <div class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-primary text-white text-[10px] flex items-center justify-center font-bold shadow-sm">
+                    <div
+                        class="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-primary text-white text-[10px] flex items-center justify-center font-bold shadow-sm">
                         {% if lead.profile_image_url %}
-                        <img class="w-full h-full object-cover" src="{{ lead.profile_image_url }}" alt=""/>
+                        <img class="w-full h-full object-cover" src="{{ lead.profile_image_url }}" alt="" />
                         {% else %}
                         {{ lead.name|slice:":1" }}
                         {% endif %}
@@ -114,18 +126,22 @@
                     <div class="p-2.5 bg-warning/10 text-warning rounded-xl">
                         <span class="material-symbols-outlined">analytics</span>
                     </div>
-                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Conversion Rate</span>
+                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Conversion
+                        Rate</span>
                 </div>
             </div>
             <div class="flex items-end justify-between mt-2">
                 <div>
-                    <h3 class="text-4xl font-display-lg font-black text-on-background">{{ conversion_rate|floatformat:1 }}%</h3>
+                    <h3 class="text-3xl font-display-lg font-black text-on-background">{{ conversion_rate|floatformat:1 }}%</h3>
                     <p class="text-xs text-outline mt-2 font-medium">Industry Avg: 10.2%</p>
                 </div>
                 <div class="relative w-16 h-16">
                     <svg class="w-16 h-16 transform -rotate-90">
-                        <circle class="text-surface-variant" stroke-width="4" stroke="currentColor" fill="transparent" r="28" cx="32" cy="32" />
-                        <circle class="text-warning progress-ring__circle" stroke-width="4" stroke-dasharray="175.92" stroke-dashoffset="{{ 175.92|add:'-'|add:conversion_rate|stringformat:'f'|default:'100' }}" stroke-linecap="round" stroke="currentColor" fill="transparent" r="28" cx="32" cy="32" />
+                        <circle class="text-surface-variant" stroke-width="4" stroke="currentColor" fill="transparent"
+                            r="28" cx="32" cy="32" />
+                        <circle class="text-warning progress-ring__circle" stroke-width="4" stroke-dasharray="175.92"
+                            stroke-dashoffset="{{ 175.92|add:'-'|add:conversion_rate|stringformat:'f'|default:'100' }}"
+                            stroke-linecap="round" stroke="currentColor" fill="transparent" r="28" cx="32" cy="32" />
                     </svg>
                 </div>
             </div>
@@ -138,13 +154,17 @@
                     <div class="p-2.5 bg-secondary-container/30 text-primary rounded-xl">
                         <span class="material-symbols-outlined">check_circle</span>
                     </div>
-                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Pending Tasks</span>
+                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Pending
+                        Tasks</span>
                 </div>
             </div>
-            <h3 class="text-4xl font-display-lg font-black text-on-background mt-2">{{ active_tasks_count }}</h3>
-            <div class="flex justify-between mt-4 text-xs font-medium text-outline bg-surface-container-low p-2 rounded-lg">
-                <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-success"></span> Completed: {{ completed_tasks_count }}</span>
-                <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-warning"></span> Due Today: {{ tasks_due_today }}</span>
+            <h3 class="text-3xl font-display-lg font-black text-on-background mt-2">{{ active_tasks_count }}</h3>
+            <div
+                class="flex justify-between mt-4 text-xs font-medium text-outline bg-surface-container-low p-2 rounded-lg">
+                <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                    Completed: {{ completed_tasks_count }}</span>
+                <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-warning"></span> Due
+                    Today: {{ tasks_due_today }}</span>
             </div>
         </div>
 
@@ -155,10 +175,11 @@
                     <div class="p-2.5 bg-primary/10 text-primary rounded-xl">
                         <span class="material-symbols-outlined">handshake</span>
                     </div>
-                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Active Deals</span>
+                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Active
+                        Deals</span>
                 </div>
             </div>
-            <h3 class="text-4xl font-display-lg font-black text-on-background mt-2">{{ active_deals_count }}</h3>
+            <h3 class="text-3xl font-display-lg font-black text-on-background mt-2">{{ active_deals_count }}</h3>
             <div class="mt-4 p-2 bg-primary/5 rounded-lg border border-primary/10">
                 <p class="text-xs text-primary font-bold">Worth: ₹{{ active_deals_value|floatformat:0 }}</p>
             </div>
@@ -171,10 +192,11 @@
                     <div class="p-2.5 bg-success/10 text-success rounded-xl">
                         <span class="material-symbols-outlined">sentiment_very_satisfied</span>
                     </div>
-                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Customer Sat.</span>
+                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Customer
+                        Sat.</span>
                 </div>
             </div>
-            <h3 class="text-4xl font-display-lg font-black text-success mt-2">{{ customer_satisfaction }}%</h3>
+            <h3 class="text-3xl font-display-lg font-black text-success mt-2">{{ customer_satisfaction }}%</h3>
             <div class="mt-4 flex items-center gap-2">
                 <div class="h-2 flex-1 flex bg-surface-variant rounded-full overflow-hidden">
                     <div class="h-full bg-danger" style="width: 10%"></div>
@@ -198,8 +220,10 @@
             </div>
             <div class="space-y-4">
                 {% for insight in ai_insights %}
-                <div class="flex items-start gap-3 p-3 bg-white rounded-xl shadow-sm border border-outline-variant/30 transition-transform hover:-translate-y-1">
-                    <div class="p-1.5 rounded-lg {% if insight.type == 'SUCCESS' %}bg-success/10 text-success{% elif insight.type == 'WARNING' %}bg-warning/10 text-warning{% elif insight.type == 'DANGER' %}bg-danger/10 text-danger{% else %}bg-primary/10 text-primary{% endif %}">
+                <div
+                    class="flex items-start gap-3 p-3 bg-white rounded-xl shadow-sm border border-outline-variant/30 transition-transform hover:-translate-y-1">
+                    <div
+                        class="p-1.5 rounded-lg {% if insight.type == 'SUCCESS' %}bg-success/10 text-success{% elif insight.type == 'WARNING' %}bg-warning/10 text-warning{% elif insight.type == 'DANGER' %}bg-danger/10 text-danger{% else %}bg-primary/10 text-primary{% endif %}">
                         <span class="material-symbols-outlined text-[16px]">{{ insight.icon }}</span>
                     </div>
                     <div>
@@ -219,8 +243,10 @@
                     <p class="text-sm text-secondary mt-1">Monthly performance compared to last year</p>
                 </div>
                 <div class="flex bg-surface-container-low p-1 rounded-xl">
-                    <button class="px-3 py-1 text-xs font-bold rounded-lg bg-white shadow-sm text-primary">Last 6 Months</button>
-                    <button class="px-3 py-1 text-xs font-medium rounded-lg text-secondary hover:text-on-surface">Last Year</button>
+                    <button class="px-3 py-1 text-xs font-bold rounded-lg bg-white shadow-sm text-primary">Last 6
+                        Months</button>
+                    <button class="px-3 py-1 text-xs font-medium rounded-lg text-secondary hover:text-on-surface">Last
+                        Year</button>
                 </div>
             </div>
             <div class="h-72 relative w-full overflow-hidden rounded-xl">
@@ -231,7 +257,7 @@
 
     <!-- Bottom Grids: Funnel & Data -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        
+
         <!-- Sales Funnel (Premium) -->
         <div class="lg:col-span-1 glass-card-premium p-6">
             <div class="flex justify-between items-center mb-6">
@@ -258,8 +284,10 @@
                     </div>
                     <div class="h-8 bg-surface-container rounded-lg w-full flex items-center relative overflow-hidden">
                         <div class="h-full bg-primary/20 absolute left-0" style="width: 100%"></div>
-                        <div class="h-full bg-primary absolute left-0 rounded-r-lg transition-all duration-1000" style="width: {{ funnel_rates.Qualified|default:0|floatformat:0 }}%"></div>
-                        <span class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Qualified > 15 %}text-white{% else %}text-primary{% endif %}">
+                        <div class="h-full bg-primary absolute left-0 rounded-r-lg transition-all duration-1000"
+                            style="width: {{ funnel_rates.Qualified|default:0|floatformat:0 }}%"></div>
+                        <span
+                            class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Qualified > 15 %}text-white{% else %}text-primary{% endif %}">
                             {{ funnel_rates.Qualified|floatformat:0 }}%
                         </span>
                     </div>
@@ -272,8 +300,10 @@
                     </div>
                     <div class="h-8 bg-surface-container rounded-lg w-full flex items-center relative overflow-hidden">
                         <div class="h-full bg-primary/20 absolute left-0" style="width: 100%"></div>
-                        <div class="h-full bg-primary absolute left-0 rounded-r-lg transition-all duration-1000" style="width: {{ funnel_rates.Proposal|default:0|floatformat:0 }}%"></div>
-                        <span class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Proposal > 15 %}text-white{% else %}text-primary{% endif %}">
+                        <div class="h-full bg-primary absolute left-0 rounded-r-lg transition-all duration-1000"
+                            style="width: {{ funnel_rates.Proposal|default:0|floatformat:0 }}%"></div>
+                        <span
+                            class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Proposal > 15 %}text-white{% else %}text-primary{% endif %}">
                             {{ funnel_rates.Proposal|floatformat:0 }}%
                         </span>
                     </div>
@@ -286,8 +316,10 @@
                     </div>
                     <div class="h-8 bg-surface-container rounded-lg w-full flex items-center relative overflow-hidden">
                         <div class="h-full bg-primary/20 absolute left-0" style="width: 100%"></div>
-                        <div class="h-full bg-primary absolute left-0 rounded-r-lg transition-all duration-1000" style="width: {{ funnel_rates.Negotiation|default:0|floatformat:0 }}%"></div>
-                        <span class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Negotiation > 15 %}text-white{% else %}text-primary{% endif %}">
+                        <div class="h-full bg-primary absolute left-0 rounded-r-lg transition-all duration-1000"
+                            style="width: {{ funnel_rates.Negotiation|default:0|floatformat:0 }}%"></div>
+                        <span
+                            class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Negotiation > 15 %}text-white{% else %}text-primary{% endif %}">
                             {{ funnel_rates.Negotiation|floatformat:0 }}%
                         </span>
                     </div>
@@ -300,8 +332,10 @@
                     </div>
                     <div class="h-8 bg-surface-container rounded-lg w-full flex items-center relative overflow-hidden">
                         <div class="h-full bg-success/20 absolute left-0" style="width: 100%"></div>
-                        <div class="h-full bg-success absolute left-0 rounded-r-lg transition-all duration-1000" style="width: {{ funnel_rates.Won|default:0|floatformat:0 }}%"></div>
-                        <span class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Won > 15 %}text-white{% else %}text-success{% endif %}">
+                        <div class="h-full bg-success absolute left-0 rounded-r-lg transition-all duration-1000"
+                            style="width: {{ funnel_rates.Won|default:0|floatformat:0 }}%"></div>
+                        <span
+                            class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Won > 15 %}text-white{% else %}text-success{% endif %}">
                             {{ funnel_rates.Won|floatformat:0 }}%
                         </span>
                     </div>
@@ -331,14 +365,17 @@
                             <td class="p-4">
                                 <div class="flex items-center gap-3">
                                     {% if lead.profile_image_url %}
-                                    <img class="w-10 h-10 rounded-full border border-white shadow-sm object-cover" src="{{ lead.profile_image_url }}" alt=""/>
+                                    <img class="w-10 h-10 rounded-full border border-white shadow-sm object-cover"
+                                        src="{{ lead.profile_image_url }}" alt="" />
                                     {% else %}
-                                    <div class="w-10 h-10 rounded-full border border-white shadow-sm bg-primary-container text-primary flex items-center justify-center font-bold text-sm">
+                                    <div
+                                        class="w-10 h-10 rounded-full border border-white shadow-sm bg-primary-container text-primary flex items-center justify-center font-bold text-sm">
                                         {{ lead.name|slice:":2"|upper }}
                                     </div>
                                     {% endif %}
                                     <div>
-                                        <a href="{% url 'contact_detail' lead.id %}" class="font-bold text-sm text-on-surface hover:text-primary transition-colors">{{ lead.name }}</a>
+                                        <a href="{% url 'contact_detail' lead.id %}"
+                                            class="font-bold text-sm text-on-surface hover:text-primary transition-colors">{{ lead.name }}</a>
                                         <p class="text-xs text-secondary">{{ lead.email }}</p>
                                     </div>
                                 </div>
@@ -364,25 +401,30 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Footer row: Activities & Upcoming -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <!-- Recent Activities -->
         <div class="glass-card-premium p-6">
             <h4 class="font-headline-md text-xl font-bold text-on-background mb-6">Recent Activities</h4>
-            <div class="relative space-y-6 before:content-[''] before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant/40">
+            <div
+                class="relative space-y-6 before:content-[''] before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant/40">
                 {% for activity in recent_activities %}
                 <div class="relative pl-10 group">
-                    <div class="absolute left-0 top-0.5 w-[32px] h-[32px] bg-white border-2 {% if activity.type == 'Email' %}border-primary text-primary{% elif activity.type == 'Call' %}border-warning text-warning{% elif activity.type == 'Meeting' %}border-tertiary text-tertiary{% else %}border-success text-success{% endif %} rounded-full flex items-center justify-center z-10 shadow-sm group-hover:scale-110 transition-transform">
+                    <div
+                        class="absolute left-0 top-0.5 w-[32px] h-[32px] bg-white border-2 {% if activity.type == 'Email' %}border-primary text-primary{% elif activity.type == 'Call' %}border-warning text-warning{% elif activity.type == 'Meeting' %}border-tertiary text-tertiary{% else %}border-success text-success{% endif %} rounded-full flex items-center justify-center z-10 shadow-sm group-hover:scale-110 transition-transform">
                         <span class="material-symbols-outlined text-[16px]">
-                            {% if activity.type == 'Email' %}mail{% elif activity.type == 'Call' %}call{% elif activity.type == 'Meeting' %}event{% else %}check_circle{% endif %}
+                            {% if activity.type == 'Email' %}mail{% elif activity.type == 'Call' %}call{% elif
+                            activity.type == 'Meeting' %}event{% else %}check_circle{% endif %}
                         </span>
                     </div>
-                    <div class="bg-white/50 p-3 rounded-xl border border-outline-variant/30 shadow-sm group-hover:bg-white transition-colors">
+                    <div
+                        class="bg-white/50 p-3 rounded-xl border border-outline-variant/30 shadow-sm group-hover:bg-white transition-colors">
                         <p class="text-sm font-bold text-on-surface">{{ activity.description }}</p>
                         <div class="flex items-center gap-2 mt-1">
                             <span class="text-[10px] font-medium text-primary bg-primary/5 px-2 py-0.5 rounded">{{ activity.lead.name }}</span>
-                            <span class="text-[10px] text-outline flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">schedule</span> {{ activity.timestamp|timesince }} ago</span>
+                            <span class="text-[10px] text-outline flex items-center gap-1"><span
+                                    class="material-symbols-outlined text-[12px]">schedule</span> {{ activity.timestamp|timesince }} ago</span>
                         </div>
                     </div>
                 </div>
@@ -397,28 +439,30 @@
             <h4 class="font-headline-md text-xl font-bold text-on-background mb-6">Upcoming Meetings</h4>
             <div class="space-y-4">
                 {% for meeting in upcoming_meetings %}
-                <div class="flex items-stretch p-3 bg-white rounded-xl border border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
-                    <div class="bg-primary-container text-primary rounded-lg flex flex-col items-center justify-center min-w-[60px] px-2 py-3 border border-primary/10 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="text-[10px] font-bold uppercase tracking-wider">{{ meeting.date_time|date:"M" }}</span>
-                        <span class="text-2xl font-black leading-none mt-1">{{ meeting.date_time|date:"d" }}</span>
+                <div
+                    class="flex items-stretch p-3 bg-white rounded-xl border border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow cursor-pointer group">
+                    <div
+                        class="bg-primary-container text-primary rounded-lg flex flex-col items-center justify-center min-w-[60px] px-2 py-3 border border-primary/10 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="text-[10px] font-bold uppercase tracking-wider">{{ meeting.start_time|date:"M" }}</span>
+                        <span class="text-2xl font-black leading-none mt-1">{{ meeting.start_time|date:"d" }}</span>
                     </div>
                     <div class="flex-1 ml-4 py-1 flex flex-col justify-center">
                         <p class="text-sm font-bold text-on-surface group-hover:text-primary transition-colors">{{ meeting.title }}</p>
                         <div class="flex items-center gap-3 mt-1.5">
                             <span class="text-[11px] text-secondary flex items-center gap-1">
                                 <span class="material-symbols-outlined text-[14px]">schedule</span>
-                                {{ meeting.date_time|date:"h:i A" }}
+                                {{ meeting.start_time|date:"h:i A" }}
                             </span>
                             <span class="text-[11px] text-secondary flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[14px]">location_on</span>
-                                {{ meeting.location }}
+                                <span class="material-symbols-outlined text-[14px]">person</span>
+                                {{ meeting.owner.get_full_name|default:meeting.owner.username }}
                             </span>
                         </div>
                     </div>
                 </div>
                 {% empty %}
                 <div class="text-center py-8">
-                    <span class="material-symbols-outlined text-4xl text-outline-variant mb-2">event_busy</span>
+                    <span class="material-symbols-outlined text-3xl text-outline-variant mb-2">event_busy</span>
                     <p class="text-sm text-outline">No upcoming meetings scheduled.</p>
                 </div>
                 {% endfor %}
@@ -431,98 +475,98 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function() {
-      // Setup Chart defaults for premium look
-      Chart.defaults.font.family = "'Inter', sans-serif";
-      Chart.defaults.color = '#737686';
-      
-      const trendValues = {{ trend_values|safe|default:"[]" }};
-      const trendLabels = {{ trend_labels|safe|default:"[]" }};
-      
-      // Revenue Trend Chart (Premium Gradient Line)
-      const ctxTrend = document.getElementById('revenueTrendChart');
-      if (ctxTrend && trendValues.length) {
-          const ctx = ctxTrend.getContext('2d');
-          const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-          gradient.addColorStop(0, 'rgba(37, 99, 235, 0.2)');
-          gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+    document.addEventListener('DOMContentLoaded', function () {
+        // Setup Chart defaults for premium look
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#737686';
 
-          new Chart(ctxTrend, {
-              type: 'line',
-              data: {
-                  labels: trendLabels,
-                  datasets: [{
-                      label: 'Revenue (₹)',
-                      data: trendValues,
-                      borderColor: '#2563EB',
-                      backgroundColor: gradient,
-                      borderWidth: 4,
-                      fill: true,
-                      tension: 0.4,
-                      pointBackgroundColor: '#ffffff',
-                      pointBorderColor: '#2563EB',
-                      pointBorderWidth: 3,
-                      pointRadius: 5,
-                      pointHoverRadius: 8,
-                      pointHoverBackgroundColor: '#2563EB',
-                      pointHoverBorderColor: '#ffffff',
-                      pointHoverBorderWidth: 2
-                  }]
-              },
-              options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: { 
-                      legend: { display: false },
-                      tooltip: {
-                          backgroundColor: 'rgba(11, 28, 48, 0.9)',
-                          titleFont: { size: 13, family: 'Inter' },
-                          bodyFont: { size: 14, weight: 'bold', family: 'Inter' },
-                          padding: 12,
-                          cornerRadius: 8,
-                          displayColors: false
-                      }
-                  },
-                  scales: {
-                      y: { 
-                          beginAtZero: true, 
-                          grid: { borderDash: [4, 4], color: 'rgba(195, 198, 215, 0.4)' },
-                          border: { display: false }
-                      },
-                      x: { 
-                          grid: { display: false },
-                          border: { display: false }
-                      }
-                  },
-                  interaction: {
-                      intersect: false,
-                      mode: 'index',
-                  },
-              }
-          });
-      }
+        const trendValues = {{ trend_values|safe|default:"[]" }};
+    const trendLabels = {{ trend_labels|safe|default:"[]" }};
 
-      // Small Sparkline Chart for Leads KPI
-      const ctxSparkline = document.getElementById('leadsSparkline');
-      if (ctxSparkline) {
-          new Chart(ctxSparkline, {
-              type: 'line',
-              data: {
-                  labels: ['M','T','W','T','F','S','S'],
-                  datasets: [{
-                      data: [3, 5, 4, 8, 5, 12, {{ new_leads.count|default:15 }}],
-                      borderColor: '#10b981',
-                      borderWidth: 2,
-                      tension: 0.4,
-                      pointRadius: 0
-                  }]
-              },
-              options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: { legend: { display: false }, tooltip: { enabled: false } },
-                  scales: { x: { display: false }, y: { display: false } }
-              }
+    // Revenue Trend Chart (Premium Gradient Line)
+    const ctxTrend = document.getElementById('revenueTrendChart');
+    if (ctxTrend && trendValues.length) {
+        const ctx = ctxTrend.getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(37, 99, 235, 0.2)');
+        gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+
+        new Chart(ctxTrend, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: trendValues,
+                    borderColor: '#2563EB',
+                    backgroundColor: gradient,
+                    borderWidth: 4,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#2563EB',
+                    pointBorderWidth: 3,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointHoverBackgroundColor: '#2563EB',
+                    pointHoverBorderColor: '#ffffff',
+                    pointHoverBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(11, 28, 48, 0.9)',
+                        titleFont: { size: 13, family: 'Inter' },
+                        bodyFont: { size: 14, weight: 'bold', family: 'Inter' },
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { borderDash: [4, 4], color: 'rgba(195, 198, 215, 0.4)' },
+                        border: { display: false }
+                    },
+                    x: {
+                        grid: { display: false },
+                        border: { display: false }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index',
+                },
+            }
+        });
+    }
+
+    // Small Sparkline Chart for Leads KPI
+    const ctxSparkline = document.getElementById('leadsSparkline');
+    if (ctxSparkline) {
+        new Chart(ctxSparkline, {
+            type: 'line',
+            data: {
+                labels: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+                datasets: [{
+                    data: [3, 5, 4, 8, 5, 12, {{ new_leads.count|default:15 }}],
+                borderColor: '#10b981',
+                borderWidth: 2,
+                tension: 0.4,
+                pointRadius: 0
+            }]
+        },
+            options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            scales: { x: { display: false }, y: { display: false } }
+        }
           });
       }
   });

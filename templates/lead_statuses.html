@@ -650,6 +650,7 @@
         const pManager = document.getElementById('priority-manager-card');
         const pAddCard = document.getElementById('priority-add-card');
         const layoutContainer = document.getElementById('calendar-layout-container');
+        const statusOrderCard = document.getElementById('status-order-card');
 
         if (layoutContainer) {
             if (cat === 'calendar') {
@@ -658,6 +659,8 @@
                 if (qAddCard) qAddCard.classList.remove('hidden');
                 if (pManager) pManager.classList.add('hidden');
                 if (pAddCard) pAddCard.classList.add('hidden');
+                if (statusOrderCard) statusOrderCard.classList.add('hidden');
+                document.querySelector('.glass-panel:has(#add-status-form)').classList.remove('hidden');
                 renderQuickTemplates();
             } else if (cat === 'projects') {
                 layoutContainer.className = "grid grid-cols-1 md:grid-cols-2 gap-6";
@@ -665,6 +668,9 @@
                 if (qAddCard) qAddCard.classList.add('hidden');
                 if (pManager) pManager.classList.remove('hidden');
                 if (pAddCard) pAddCard.classList.remove('hidden');
+                if (statusOrderCard) statusOrderCard.classList.remove('hidden');
+                document.querySelector('.glass-panel:has(#add-status-form)').classList.remove('hidden');
+                document.querySelector('.glass-panel:has(#add-status-form)').classList.remove('hidden');
                 renderPriorities();
             } else {
                 layoutContainer.className = "";
@@ -672,6 +678,10 @@
                 if (qAddCard) qAddCard.classList.add('hidden');
                 if (pManager) pManager.classList.add('hidden');
                 if (pAddCard) pAddCard.classList.add('hidden');
+                if (statusOrderCard) statusOrderCard.classList.remove('hidden');
+                
+                const createStatusCard = document.querySelector('.glass-panel:has(#add-status-form)');
+                if (createStatusCard) createStatusCard.classList.remove('hidden');
             }
         }
 
@@ -1296,5 +1306,7 @@
             });
         });
     });
+
+
 </script>
 {% endblock %}

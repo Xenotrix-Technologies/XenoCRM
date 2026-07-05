@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | {{ company_name }} - Client Profile{% endblock %}
+
+{% block extra_css %}
+<style>
+    .glass-card {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(195, 198, 215, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="pt-4 p-margin-edge min-h-screen">
+    <div class="max-w-container-max mx-auto">
+        <!-- Page Header / Breadcrumbs -->
+        <div class="flex items-center gap-2 mb-6 font-label-md text-outline">
+            <a href="{% url 'clients' %}" class="hover:underline">Clients</a>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span class="text-primary font-bold">Client Profile</span>
+        </div>
+
+        <div class="grid grid-cols-12 gap-gutter-md">
+            <div class="col-span-12 lg:col-span-8 space-y-gutter-md">
+                <!-- Company Header Card -->
+                <div class="glass-card rounded-xl p-8 shadow-sm border border-outline-variant/30 space-y-6">
+                    <div class="flex flex-col md:flex-row items-center gap-6 pb-6 border-b border-outline-variant/20">
+                        <div class="relative">
+                            <div class="w-20 h-20 rounded-full bg-secondary-container text-secondary flex items-center justify-center font-bold text-2xl border border-outline-variant shadow-md">
+                                {{ company_name|slice:":2"|upper }}
+                            </div>
+                        </div>
+                        <div class="flex-1 w-full space-y-3">
+                            <div>
+                                <h1 class="text-2xl font-bold text-on-surface">{{ company_name }}</h1>
+                                <p class="text-sm text-secondary mt-1">Client Profile • {{ leads|length }} Associated Contact{{ leads|length|pluralize }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-outline uppercase tracking-wider font-bold">Total Contract Value</div>
+                            <div class="text-2xl font-bold text-primary">₹{{ total_value|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabbed Navigation -->
+                <div class="border-b border-outline-variant">
+                    <nav class="flex gap-8">
+                        <a class="py-4 font-button border-b-2 border-primary text-primary transition-all active-tab-link" href="#" onclick="switchTab(event, 'tab-contacts')">Contacts ({{ leads|length }})</a>
+                        <a class="py-4 font-button border-b-2 border-transparent text-secondary hover:text-on-surface transition-all" href="#" onclick="switchTab(event, 'tab-timeline')">Activity Timeline</a>
+                        <a class="py-4 font-button border-b-2 border-transparent text-secondary hover:text-on-surface transition-all" href="#" onclick="switchTab(event, 'tab-agreements')">Agreements ({{ agreements|length }})</a>
+                    </nav>
+                </div>
+
+                <!-- Contacts Tab -->
+                <div id="tab-contacts" class="tab-content">
+                    <div class="glass-card rounded-xl p-6 border border-outline-variant/30 space-y-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-headline-md text-[18px] font-bold">Associated Contacts</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-surface-container-low/50 border-b border-outline-variant text-[11px] font-bold text-outline uppercase">
+                                        <th class="px-3 py-2">Name</th>
+                                        <th class="px-3 py-2">Email</th>
+                                        <th class="px-3 py-2">Phone</th>
+                                        <th class="px-3 py-2 text-center">Status</th>
+                                        <th class="px-3 py-2 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-outline-variant/30 text-xs">
+                                    {% for lead in leads %}
+                                    <tr class="hover:bg-primary-container/5 transition-colors text-on-surface">
+                                        <td class="px-3 py-3 font-semibold">
+                                            <a href="{% url 'contact_detail' lead.id %}" class="hover:text-primary transition-all text-on-surface flex items-center gap-2">
+                                                <div class="w-6 h-6 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-[10px]">
+                                                    {{ lead.name|slice:":1"|upper }}
+                                                </div>
+                                                {{ lead.name }}
+                                            </a>
+                                        </td>
+                                        <td class="px-3 py-3 text-secondary">{{ lead.email }}</td>
+                                        <td class="px-3 py-3 text-secondary">{{ lead.phone_number|default:"-" }}</td>
+                                        <td class="px-3 py-3 text-center">
+                                            <span class="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight {{ lead.status_badge_class }}" style="{{ lead.status_badge_style|default:'' }}">
+                                                {{ lead.stage|default:lead.status }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-3 text-right">
+                                            <a href="{% url 'contact_detail' lead.id %}" class="text-primary hover:underline text-xs font-bold">View Profile</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Tab -->
+                <div id="tab-timeline" class="glass-card rounded-xl p-6 border border-outline-variant/30 tab-content hidden">
+                    <h3 class="font-headline-md text-[18px] font-bold mb-6">Combined Activity Timeline</h3>
+                    <div class="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[1px] before:bg-outline-variant/30">
+                        {% for activity in activities %}
+                        <div class="relative pl-10">
+                            <div class="absolute left-0 top-0 w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary z-10">
+                                <span class="material-symbols-outlined text-[18px]">
+                                    {% if activity.type == 'Email' %}mail{% elif activity.type == 'Call' %}call{% elif activity.type == 'Meeting' %}calendar_today{% else %}description{% endif %}
+                                </span>
+                            </div>
+                            <div class="bg-surface-container-low rounded-xl p-4 border border-outline-variant/30">
+                                <p class="font-body-sm font-bold flex justify-between items-start">
+                                    <span>{{ activity.type }} <span class="text-secondary font-normal text-xs">with {{ activity.lead.name }}</span></span>
+                                    <span class="text-xs text-outline font-normal">{{ activity.timestamp|date:"M d, Y h:i a" }}</span>
+                                </p>
+                                <p class="text-sm text-secondary mt-1">{{ activity.description }}</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-sm text-outline pl-10">No activities recorded for this company yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Agreements Tab -->
+                <div id="tab-agreements" class="tab-content hidden">
+                    <div class="glass-card rounded-xl p-6 border border-outline-variant/30 space-y-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-headline-md text-[18px] font-bold">Associated Agreements</h3>
+                            <a href="{% url 'create_agreement' %}" class="bg-primary text-on-primary px-4 py-2 rounded-lg text-xs font-bold hover:shadow-lg transition-all">Create New</a>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for agreement in agreements %}
+                            <a href="{% url 'agreement_detail' agreement.id %}" class="block bg-surface-container-low border border-outline-variant rounded-xl p-4 hover:border-primary transition-all">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-xs font-bold font-mono text-secondary">{{ agreement.agreement_number }}</span>
+                                    <span class="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full {% if agreement.status == 'Draft' %}bg-secondary-container text-secondary{% elif agreement.status == 'Active' %}bg-primary-container text-primary{% else %}bg-surface-variant text-on-surface{% endif %}">
+                                        {{ agreement.status }}
+                                    </span>
+                                </div>
+                                <h4 class="font-bold text-on-surface">{{ agreement.service.name|default:"General Agreement" }}</h4>
+                                <p class="text-xs text-secondary mt-1">Date: {{ agreement.date|date:"M d, Y" }}</p>
+                            </a>
+                            {% empty %}
+                            <div class="col-span-2 text-center py-8">
+                                <span class="material-symbols-outlined text-4xl text-outline opacity-50 mb-2">description</span>
+                                <p class="text-sm font-bold text-secondary">No agreements found for this client.</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Meta info -->
+            <div class="col-span-12 lg:col-span-4 space-y-gutter-md">
+                <div class="glass-card rounded-xl p-6 border border-outline-variant/30 space-y-4">
+                    <h3 class="font-headline-md text-[16px] font-bold border-b border-outline-variant/20 pb-3">Company Details</h3>
+                    <div class="space-y-4 text-sm">
+                        {% if primary_lead.location %}
+                        <div>
+                            <p class="text-xs font-bold text-outline uppercase tracking-wider mb-1">Location</p>
+                            <p class="font-medium text-on-surface">{{ primary_lead.location }}</p>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <p class="text-xs font-bold text-outline uppercase tracking-wider mb-1">Total Leads</p>
+                            <p class="font-medium text-on-surface">{{ leads|length }} Leads</p>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-outline uppercase tracking-wider mb-1">Amount Paid</p>
+                            <p class="font-medium text-primary">₹{{ total_paid|floatformat:2 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    function switchTab(e, tabId) {
+        if (e) e.preventDefault();
+        
+        // Hide all contents
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        // Show target content
+        const target = document.getElementById(tabId);
+        if (target) {
+            target.classList.remove('hidden');
+        }
+
+        // Reset all links
+        document.querySelectorAll('nav a').forEach(el => {
+            el.classList.remove('border-primary', 'text-primary', 'active-tab-link');
+            el.classList.add('border-transparent', 'text-secondary');
+        });
+        
+        // Highlight active link
+        if (e && e.currentTarget) {
+            e.currentTarget.classList.remove('border-transparent', 'text-secondary');
+            e.currentTarget.classList.add('border-primary', 'text-primary', 'active-tab-link');
+        }
+    }
+</script>
+{% endblock %}

@@ -36,7 +36,7 @@
             </div>
             <div class="flex-1 min-w-[130px]">
                 <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Month</label>
-                <select class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface appearance-none">
+                <select class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface">
                     <option>All Months</option>
                     <option>January</option>
                     <option>February</option>
@@ -52,7 +52,7 @@
             </div>
             <div class="flex-[1.5] min-w-[150px]">
                 <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Sort by Value</label>
-                <select class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface appearance-none">
+                <select class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface">
                     <option>Latest (Recent First)</option>
                     <option>Highest Amount</option>
                     <option>Lowest Amount</option>
@@ -90,14 +90,14 @@
                         <td class="px-4 py-3 text-xs text-on-surface font-medium">{{ item.date }}</td>
                         <td class="px-4 py-3 text-xs text-on-surface">
                             <span class="px-2 py-0.5 rounded-full border border-outline-variant/50 text-[10px] font-bold text-on-surface bg-surface-container inline-block">
-                                {{ item.category }}
+                                {{ item.category.name|default:"-" }}
                             </span>
                         </td>
                         <td class="px-4 py-3 text-xs text-on-surface-variant">{{ item.description }}</td>
-                        <td class="px-4 py-3 text-xs text-on-surface">{{ item.cost_center }}</td>
+                        <td class="px-4 py-3 text-xs text-on-surface">{{ item.cost_center|default:"-" }}</td>
                         <td class="px-4 py-3">
                             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border border-outline-variant/50 text-on-surface bg-surface-container inline-block uppercase tracking-wider">
-                                {{ item.method }}
+                                {{ item.payment_method.name|default:"-" }}
                             </span>
                         </td>
                         <td class="px-4 py-3 text-xs font-bold text-error">
@@ -105,7 +105,7 @@
                         </td>
                         <td class="px-4 py-3 text-right">
                             <div class="flex items-center justify-end gap-1">
-                                <button class="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-secondary hover:bg-primary-container hover:text-primary transition-colors">
+                                <button onclick="openEditExpenseModal('{{ item.id }}', '{{ item.date|date:'Y-m-d' }}', '{{ item.category.id|default:'' }}', '{{ item.description|default:''|escapejs }}', '{{ item.cost_center|default:''|escapejs }}', '{{ item.amount }}', '{{ item.payment_method.id|default:'' }}')" class="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-secondary hover:bg-primary-container hover:text-primary transition-colors">
                                     <span class="material-symbols-outlined text-[16px]">edit</span>
                                 </button>
                                 <button class="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-secondary hover:bg-error-container hover:text-error transition-colors">
@@ -129,4 +129,79 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Expense Modal -->
+<div id="editExpenseModal" class="fixed inset-0 z-50 hidden bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-outline-variant/30 transform transition-all">
+        <div class="px-6 py-4 border-b border-outline-variant/30 flex justify-between items-center bg-surface-container-low">
+            <h3 class="text-lg font-bold text-on-surface">Edit Expense Record</h3>
+            <button onclick="closeEditExpenseModal()" class="text-outline hover:text-primary transition-colors">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form id="editExpenseForm" method="POST" class="p-6">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Date</label>
+                    <input type="date" name="date" id="editExpenseDate" required class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Category</label>
+                    <select name="category_id" id="editExpenseCategory" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary text-on-surface appearance-none">
+                        <option value="">- Select Category -</option>
+                        {% for cat in finance_categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Description</label>
+                    <input type="text" name="description" id="editExpenseDescription" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Cost Center</label>
+                    <input type="text" name="cost_center" id="editExpenseCostCenter" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Amount (₹)</label>
+                    <input type="number" step="0.01" name="amount" id="editExpenseAmount" required class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Payment Method</label>
+                    <select name="payment_method_id" id="editExpenseMethod" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary text-on-surface appearance-none">
+                        <option value="">- Select Method -</option>
+                        {% for method in finance_methods %}
+                        <option value="{{ method.id }}">{{ method.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button type="button" onclick="closeEditExpenseModal()" class="px-4 py-2 text-sm font-bold text-secondary hover:text-primary transition-colors">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-white text-sm font-bold rounded-lg shadow-sm hover:bg-primary/90 transition-all">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openEditExpenseModal(id, date, category, description, cost_center, amount, methodId) {
+    const form = document.getElementById('editExpenseForm');
+    form.action = `/finance/expenses/edit/${id}/`;
+    document.getElementById('editExpenseDate').value = date;
+    document.getElementById('editExpenseCategory').value = category;
+    document.getElementById('editExpenseDescription').value = description;
+    document.getElementById('editExpenseCostCenter').value = cost_center;
+    document.getElementById('editExpenseAmount').value = amount;
+    document.getElementById('editExpenseMethod').value = methodId || "";
+    document.getElementById('editExpenseModal').classList.remove('hidden');
+}
+
+function closeEditExpenseModal() {
+    document.getElementById('editExpenseModal').classList.add('hidden');
+}
+</script>
 {% endblock %}

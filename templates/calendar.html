@@ -363,7 +363,7 @@
         right: 'dayGridMonth,timeGridWeek,timeGridDay'
       },
       events: function(info, successCallback, failureCallback) {
-        fetch("{% url 'calendar_events_json' %}")
+        fetch("{% url 'calendar_events_json' %}?t=" + new Date().getTime(), { cache: 'no-store' })
           .then(res => res.json())
           .then(events => {
             // Update Stat Counters in sidebar dynamically
