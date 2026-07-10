@@ -13,6 +13,7 @@ from django.contrib import messages
 from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable, Campaign, ContentDropdownOption, SystemNotification
 from .forms import EventForm, ProfileForm
 from .models import Income, Expense, FinancePaymentMethod, FinanceExpenseCategory
+from .models import ClientStatus, ProjectStatus, CampaignStatus, CalendarStatus, TicketStatus, PriorityStatus
 from datetime import datetime
 from decimal import Decimal
 # Views for navigation pages with proper multi-tenant database queries
@@ -737,14 +738,6 @@ def dashboard_view(request):
     # 4c. Customer Satisfaction (Mock for design)
     customer_satisfaction = 96
     
-    # 4d. AI Insights
-    ai_insights = [
-        {"title": "Revenue increase", "description": "Revenue increased by 18% compared to last month", "type": "SUCCESS", "time": "2h ago", "icon": "trending_up"},
-        {"title": "Hot Leads", "description": "4 hot leads need immediate follow-up", "type": "WARNING", "time": "3h ago", "icon": "local_fire_department"},
-        {"title": "Conversion Rate", "description": "Conversion improved by 3% this week", "type": "SUCCESS", "time": "1d ago", "icon": "analytics"},
-        {"title": "Churn Risk", "description": "One high-value client inactive for 14 days", "type": "DANGER", "time": "1d ago", "icon": "warning"},
-    ]
-    
     # 5. New Leads (ordered by created_at desc)
     new_leads = leads_qs.order_by('-created_at')
     
@@ -837,6 +830,36 @@ def dashboard_view(request):
     if not service_labels:
         service_labels = ["Uncategorized"]
         service_data = [leads_qs.count() or 1]
+
+    # Dynamically compute AI Insights
+    ai_insights = []
+    
+    if revenue_trend > 0:
+        ai_insights.append({"title": "Revenue increase", "description": f"Revenue increased by {revenue_trend:.1f}% compared to last month", "type": "SUCCESS", "time": "Just now", "icon": "trending_up"})
+    elif revenue_trend < 0:
+        ai_insights.append({"title": "Revenue decrease", "description": f"Revenue decreased by {abs(revenue_trend):.1f}% compared to last month", "type": "DANGER", "time": "Just now", "icon": "trending_down"})
+    else:
+        ai_insights.append({"title": "Revenue stable", "description": "Revenue is unchanged compared to last month", "type": "PRIMARY", "time": "Just now", "icon": "trending_flat"})
+
+    hot_leads_count = active_deals_qs.filter(score__gte=80).count()
+    if hot_leads_count > 0:
+        ai_insights.append({"title": "Hot Leads", "description": f"{hot_leads_count} hot leads need immediate follow-up", "type": "WARNING", "time": "Just now", "icon": "local_fire_department"})
+    else:
+        ai_insights.append({"title": "Hot Leads", "description": "No hot leads at the moment", "type": "SUCCESS", "time": "Just now", "icon": "local_fire_department"})
+
+    if conversion_trend > 0:
+        ai_insights.append({"title": "Conversion Rate", "description": f"Conversion improved by {conversion_trend:.1f}% this month", "type": "SUCCESS", "time": "Just now", "icon": "analytics"})
+    elif conversion_trend < 0:
+        ai_insights.append({"title": "Conversion Rate", "description": f"Conversion dropped by {abs(conversion_trend):.1f}% this month", "type": "DANGER", "time": "Just now", "icon": "analytics"})
+    else:
+        ai_insights.append({"title": "Conversion Rate", "description": "Conversion rate is stable this month", "type": "PRIMARY", "time": "Just now", "icon": "analytics"})
+
+    fourteen_days_ago = timezone.now() - timedelta(days=14)
+    inactive_clients_count = active_deals_qs.filter(last_activity__lt=fourteen_days_ago, value__gte=1000).count()
+    if inactive_clients_count > 0:
+        ai_insights.append({"title": "Churn Risk", "description": f"{inactive_clients_count} high-value leads inactive for 14+ days", "type": "DANGER", "time": "Just now", "icon": "warning"})
+    else:
+        ai_insights.append({"title": "Churn Risk", "description": "No immediate churn risk detected", "type": "SUCCESS", "time": "Just now", "icon": "check_circle"})
 
     import json
 
@@ -1796,18 +1819,54 @@ def annotate_lead_badges(leads, org):
 
 # â”€â”€ Lead Statuses management views â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+def get_or_create_dynamic_statuses(org, category_str, model_class):
+    qs = model_class.objects.filter(organization=org)
+    if not qs.exists():
+        DEFAULT_STATUSES_MAP = {
+            'clients': [{'name': 'Active', 'color': '#10b981'}, {'name': 'Inactive', 'color': '#64748b'}, {'name': 'Pending', 'color': '#f59e0b'}, {'name': 'Suspended', 'color': '#ef4444'}],
+            'projects': [{'name': 'Planning', 'color': '#3b82f6'}, {'name': 'In Progress', 'color': '#f59e0b'}, {'name': 'On Hold', 'color': '#64748b'}, {'name': 'Completed', 'color': '#10b981'}, {'name': 'Cancelled', 'color': '#ef4444'}],
+            'campaigns': [{'name': 'Planning', 'color': '#64748b'}, {'name': 'Active', 'color': '#0053db'}, {'name': 'Completed', 'color': '#22c55e'}],
+            'calendar': [{'name': 'Meetings', 'color': '#004ac6'}, {'name': 'Calls', 'color': '#10b981'}, {'name': 'Deadlines', 'color': '#ef4444'}, {'name': 'Follow-ups', 'color': '#8b5cf6'}, {'name': 'Personal', 'color': '#f97316'}],
+            'tickets': [{'name': 'Open', 'color': '#ef4444'}, {'name': 'Pending', 'color': '#f59e0b'}, {'name': 'Resolved', 'color': '#10b981'}, {'name': 'Closed', 'color': '#64748b'}],
+            'priority': [{'name': 'Low', 'color': '#64748b'}, {'name': 'Medium', 'color': '#f59e0b'}, {'name': 'High', 'color': '#ef4444'}, {'name': 'Critical', 'color': '#8b5cf6'}]
+        }
+        defaults = DEFAULT_STATUSES_MAP.get(category_str, [])
+        for idx, s in enumerate(defaults):
+            model_class.objects.create(organization=org, name=s['name'], color=s['color'], position=idx)
+        qs = model_class.objects.filter(organization=org)
+    return qs
+
 @login_required
-@page_permission_required('lead_statuses')
+def finance_settings_view(request):
+    """View to manage Finance settings (Categories and Methods)"""
+    org = request.user.profile.organization
+    finance_methods = FinancePaymentMethod.objects.filter(organization=org).order_by('name')
+    finance_categories = FinanceExpenseCategory.objects.filter(organization=org).order_by('name')
+    return render(request, 'finance_settings.html', {
+        'finance_methods': finance_methods,
+        'finance_categories': finance_categories,
+    })
+
 def lead_statuses_view(request):
     """List all lead statuses for the current organisation."""
     org = request.user.profile.organization
     statuses = get_or_create_default_statuses(org)
-    finance_methods = FinancePaymentMethod.objects.filter(organization=org).order_by('name')
-    finance_categories = FinanceExpenseCategory.objects.filter(organization=org).order_by('name')
+    
+    client_statuses = get_or_create_dynamic_statuses(org, 'clients', ClientStatus)
+    project_statuses = get_or_create_dynamic_statuses(org, 'projects', ProjectStatus)
+    campaign_statuses = get_or_create_dynamic_statuses(org, 'campaigns', CampaignStatus)
+    calendar_statuses = get_or_create_dynamic_statuses(org, 'calendar', CalendarStatus)
+    ticket_statuses = get_or_create_dynamic_statuses(org, 'tickets', TicketStatus)
+    priority_statuses = get_or_create_dynamic_statuses(org, 'priority', PriorityStatus)
+
     return render(request, 'lead_statuses.html', {
         'statuses': statuses,
-        'finance_methods': finance_methods,
-        'finance_categories': finance_categories
+        'client_statuses': client_statuses,
+        'project_statuses': project_statuses,
+        'campaign_statuses': campaign_statuses,
+        'calendar_statuses': calendar_statuses,
+        'ticket_statuses': ticket_statuses,
+        'priority_statuses': priority_statuses,
     })
 
 
@@ -3922,7 +3981,30 @@ def editor_dashboard_view(request):
 
 @login_required
 def finance_dashboard_view(request):
-    return render(request, 'finance_dashboard.html')
+    org = request.user.profile.organization
+    
+    total_revenue = Income.objects.filter(organization=org).aggregate(Sum('amount'))['amount__sum'] or 0
+    monthly_expenses = Expense.objects.filter(organization=org).aggregate(Sum('amount'))['amount__sum'] or 0
+    
+    context = {
+        'total_revenue': total_revenue,
+        'outstanding_invoices': 0,
+        'payments_received': total_revenue,
+        'pending_payments': 0,
+        'monthly_expenses': monthly_expenses,
+        'net_profit': float(total_revenue) - float(monthly_expenses),
+        'active_clients': Lead.objects.filter(organization=org).count(),
+        'total_invoices': Income.objects.filter(organization=org).count(),
+        'revenue_this_month': 0,
+        'revenue_this_year': total_revenue,
+        'trend_labels': json.dumps(["Jan", "Feb", "Mar", "Apr", "May", "Jun"]),
+        'trend_data': json.dumps([0, 0, 0, 0, 0, 0]),
+        'client_revenue_labels': json.dumps([]),
+        'client_revenue_data': json.dumps([]),
+        'service_labels': json.dumps([]),
+        'service_revenue': json.dumps([]),
+    }
+    return render(request, 'finance_dashboard.html', context)
 
 @login_required
 def finance_income_view(request):
@@ -4028,8 +4110,8 @@ def finance_add_income_view(request):
             messages.error(request, f'Failed to add income record: {e}')
             return redirect('finance_income')
             
-    clients = list(Income.objects.filter(organization=org).values_list('client_name', flat=True).distinct())
-    clients = [c for c in clients if c and c != "No Client / General"]
+    clients_from_leads = list(Lead.objects.filter(organization=org, status='Qualified').values_list('company', flat=True).distinct())
+    clients = sorted(list(set([c for c in clients_from_leads if c and c != "No Client / General"])))
     payment_methods = FinancePaymentMethod.objects.filter(organization=org).order_by('name')
     return render(request, 'finance_add_income.html', {'clients': clients, 'payment_methods': payment_methods})
 
@@ -4245,10 +4327,6 @@ def partner_payout_view(request):
 def partner_payout_add_view(request):
     return redirect('partner_payouts')
 
-@login_required
-def finance_settings_view(request):
-    return render(request, 'finance_settings.html')
-
 
 @login_required
 @page_permission_required('lead_statuses')
@@ -4291,3 +4369,206 @@ def delete_finance_category(request, cat_id):
         except FinanceExpenseCategory.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Category not found.'})
     return JsonResponse({'success': False, 'error': 'Invalid request.'})
+
+
+def get_dynamic_model_class(category):
+    return {
+        'clients': ClientStatus,
+        'projects': ProjectStatus,
+        'campaigns': CampaignStatus,
+        'calendar': CalendarStatus,
+        'tickets': TicketStatus,
+        'priority': PriorityStatus,
+    }.get(category)
+
+@login_required
+@page_permission_required('lead_statuses')
+def add_dynamic_status(request, category):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        model_class = get_dynamic_model_class(category)
+        if not model_class:
+            return JsonResponse({'success': False, 'error': 'Invalid category.'})
+        
+        name = request.POST.get('name', '').strip()
+        color = request.POST.get('color', '#64748b')
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Status name is required.'})
+        if model_class.objects.filter(organization=org, name=name).exists():
+            return JsonResponse({'success': False, 'error': f"Status '{name}' already exists."})
+        
+        max_pos = model_class.objects.filter(organization=org).count()
+        model_class.objects.create(organization=org, name=name, color=color, position=max_pos)
+        return JsonResponse({'success': True, 'message': f"Status '{name}' created."})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+@login_required
+@page_permission_required('lead_statuses')
+def edit_dynamic_status(request, category, status_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        model_class = get_dynamic_model_class(category)
+        if not model_class:
+            return JsonResponse({'success': False, 'error': 'Invalid category.'})
+        
+        try:
+            status_obj = model_class.objects.get(id=status_id, organization=org)
+        except model_class.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Status not found.'})
+            
+        new_name = request.POST.get('name', '').strip()
+        new_color = request.POST.get('color', status_obj.color)
+        if not new_name:
+            return JsonResponse({'success': False, 'error': 'Status name is required.'})
+        if model_class.objects.filter(organization=org, name=new_name).exclude(id=status_id).exists():
+            return JsonResponse({'success': False, 'error': f"Status '{new_name}' already exists."})
+            
+        status_obj.name = new_name
+        status_obj.color = new_color
+        status_obj.save()
+        return JsonResponse({'success': True, 'message': f"Status updated to '{new_name}'."})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+@login_required
+@page_permission_required('lead_statuses')
+def delete_dynamic_status(request, category, status_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        model_class = get_dynamic_model_class(category)
+        if not model_class:
+            return JsonResponse({'success': False, 'error': 'Invalid category.'})
+            
+        try:
+            status_obj = model_class.objects.get(id=status_id, organization=org)
+        except model_class.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Status not found.'})
+            
+        if model_class.objects.filter(organization=org).count() <= 1:
+            return JsonResponse({'success': False, 'error': 'Cannot delete the last remaining status.'})
+            
+        deleted_name = status_obj.name
+        status_obj.delete()
+        return JsonResponse({'success': True, 'message': f"Status '{deleted_name}' deleted."})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+@login_required
+def reorder_dynamic_statuses(request, category):
+    if request.method == 'POST':
+        import json
+        org = request.user.profile.organization
+        model_class = get_dynamic_model_class(category)
+        if not model_class:
+            return JsonResponse({'success': False, 'error': 'Invalid category.'})
+            
+        try:
+            body = json.loads(request.body)
+            order = body.get('order', [])
+        except (json.JSONDecodeError, AttributeError):
+            order = request.POST.getlist('order[]')
+            
+        for idx, sid in enumerate(order):
+            model_class.objects.filter(id=sid, organization=org).update(position=idx)
+        return JsonResponse({'success': True, 'message': 'Statuses reordered.'})
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+@login_required
+@page_permission_required('lead_statuses')
+def generic_status_settings_view(request, category, model_class, category_title, add_url, edit_url_prefix, delete_url_prefix, reorder_url):
+    org = request.user.profile.organization
+    if category == 'leads':
+        statuses = get_or_create_default_statuses(org)
+    else:
+        statuses = get_or_create_dynamic_statuses(org, category, model_class)
+    
+    return render(request, 'generic_status_settings.html', {
+        'category_title': category_title,
+        'statuses': statuses,
+        'add_url': add_url,
+        'edit_url_prefix': edit_url_prefix,
+        'delete_url_prefix': delete_url_prefix,
+        'reorder_url': reorder_url
+    })
+
+@login_required
+@page_permission_required('lead_statuses')
+def lead_status_settings(request):
+    from django.urls import reverse
+    return generic_status_settings_view(
+        request, 'leads', LeadStatus, 'Leads',
+        reverse('add_lead_status'),
+        '/statuses/', # edit_url_prefix (will append <id>/edit/)
+        '/statuses/', # delete_url_prefix
+        reverse('reorder_lead_statuses')
+    )
+
+@login_required
+@page_permission_required('clients')
+def client_status_settings(request):
+    from django.urls import reverse
+    return generic_status_settings_view(
+        request, 'clients', ClientStatus, 'Clients',
+        reverse('add_dynamic_status', args=['clients']),
+        '/statuses/category/clients/',
+        '/statuses/category/clients/',
+        reverse('reorder_dynamic_statuses', args=['clients'])
+    )
+
+@login_required
+@page_permission_required('projects')
+def project_status_settings(request):
+    from django.urls import reverse
+    return generic_status_settings_view(
+        request, 'projects', ProjectStatus, 'Projects',
+        reverse('add_dynamic_status', args=['projects']),
+        '/statuses/category/projects/',
+        '/statuses/category/projects/',
+        reverse('reorder_dynamic_statuses', args=['projects'])
+    )
+
+@login_required
+@page_permission_required('campaigns')
+def campaign_status_settings(request):
+    from django.urls import reverse
+    return generic_status_settings_view(
+        request, 'campaigns', CampaignStatus, 'Campaigns',
+        reverse('add_dynamic_status', args=['campaigns']),
+        '/statuses/category/campaigns/',
+        '/statuses/category/campaigns/',
+        reverse('reorder_dynamic_statuses', args=['campaigns'])
+    )
+
+@login_required
+@page_permission_required('calendar')
+def calendar_status_settings(request):
+    from django.urls import reverse
+    return generic_status_settings_view(
+        request, 'calendar', CalendarStatus, 'Calendar',
+        reverse('add_dynamic_status', args=['calendar']),
+        '/statuses/category/calendar/',
+        '/statuses/category/calendar/',
+        reverse('reorder_dynamic_statuses', args=['calendar'])
+    )
+
+@login_required
+@page_permission_required('support')
+def ticket_status_settings(request):
+    from django.urls import reverse
+    return generic_status_settings_view(
+        request, 'tickets', TicketStatus, 'Tickets',
+        reverse('add_dynamic_status', args=['tickets']),
+        '/statuses/category/tickets/',
+        '/statuses/category/tickets/',
+        reverse('reorder_dynamic_statuses', args=['tickets'])
+    )
+
+@login_required
+@page_permission_required('support')
+def priority_status_settings(request):
+    from django.urls import reverse
+    return generic_status_settings_view(
+        request, 'priority', PriorityStatus, 'Priority',
+        reverse('add_dynamic_status', args=['priority']),
+        '/statuses/category/priority/',
+        '/statuses/category/priority/',
+        reverse('reorder_dynamic_statuses', args=['priority'])
+    )

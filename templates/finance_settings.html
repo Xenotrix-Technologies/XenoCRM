@@ -3,128 +3,386 @@
 {% block title %}XenoCRM | Finance Settings{% endblock %}
 
 {% block content %}
-<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
-    
+<main class="pt-4 p-margin-edge min-h-screen flex flex-col bg-background">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[24px] text-primary">settings</span>
-            <h2 class="font-headline-sm text-headline-sm text-on-background font-bold uppercase tracking-wider text-primary">Finance Settings</h2>
+    <div class="mb-6 flex items-center justify-between">
+        <div>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Finance Settings</h2>
+            <p class="text-body-sm text-secondary">Manage your expense categories and payment methods used in finance modules.</p>
         </div>
-        <p class="text-secondary text-sm">Manage configuration options across all finance modules.</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Main Content Panels -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left: Status List Container -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="glass-panel rounded-2xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4 border-b border-outline-variant/30 pb-3">
+                    <h3 class="font-headline-md text-headline-md font-bold">Finance Categories & Methods</h3>
+                </div>
 
-        <!-- Payment Methods -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-outline-variant/30 bg-surface">
-            <h3 class="text-title-md font-bold text-on-surface mb-4">Payment Methods</h3>
-            <ul class="space-y-2 mb-4">
-                {% for method in payment_methods %}
-                <li class="flex justify-between items-center bg-surface-container-highest p-3 rounded-lg border border-outline-variant/50">
-                    <span class="text-body-md text-on-surface">{{ method.name }}</span>
-                    <form method="POST" action="{% url 'finance_settings' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="del_method_{{ method.id }}">
-                        <button type="submit" class="text-error hover:text-error/80 transition-colors" title="Delete">
-                            <span class="material-symbols-outlined text-[18px]">delete</span>
-                        </button>
-                    </form>
-                </li>
-                {% empty %}
-                <li class="text-sm text-secondary italic">No payment methods configured.</li>
-                {% endfor %}
-            </ul>
-            <form method="POST" action="{% url 'finance_settings' %}" class="flex gap-2">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="add_payment_method">
-                <input type="text" name="name" placeholder="Add new method..." required class="flex-1 bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary text-on-surface">
-                <button type="submit" class="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-all shadow-sm">Add</button>
-            </form>
+                <div class="space-y-6">
+                    <!-- Expense Categories -->
+                    <div>
+                        <h4 class="font-bold text-on-surface mb-2 text-sm uppercase tracking-wide">Expense Categories</h4>
+                        <div class="space-y-3">
+                            {% for cat in finance_categories %}
+                            <div class="w-full flex items-center justify-between p-4 bg-white rounded-xl border border-outline-variant hover:border-primary/30 shadow-sm transition-all">
+                                <div class="flex items-center gap-3">
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight bg-slate-100 text-slate-700">
+                                        {{ cat.name }}
+                                    </span>
+                                </div>
+                                
+                                <div class="flex items-center gap-2">
+                                    <button type="button"
+                                        onclick="openEditFinanceModal('{{ cat.id }}', '{{ cat.name|escapejs }}')"
+                                        class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all"
+                                        title="Edit Category">
+                                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                                    </button>
+                                    <button type="button" onclick="deleteFinanceCategory('{{ cat.id }}', '{{ cat.name|escapejs }}')"
+                                        class="p-2 rounded-lg hover:bg-red-50 text-outline hover:text-red-600 transition-all"
+                                        title="Delete Category">
+                                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="p-8 text-center text-outline">No categories found. Add a new one below.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Payment Methods -->
+                    <div>
+                        <h4 class="font-bold text-on-surface mb-2 text-sm uppercase tracking-wide">Payment Methods</h4>
+                        <div class="space-y-3">
+                            {% for method in finance_methods %}
+                            <div class="w-full flex items-center justify-between p-4 bg-white rounded-xl border border-outline-variant hover:border-primary/30 shadow-sm transition-all">
+                                <div class="flex items-center gap-3">
+                                    <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight bg-blue-50 text-blue-700">
+                                        {{ method.name }}
+                                    </span>
+                                </div>
+                                
+                                <div class="flex items-center gap-2">
+                                    <button type="button"
+                                        onclick="openEditFinanceMethodModal('{{ method.id }}', '{{ method.name|escapejs }}')"
+                                        class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all"
+                                        title="Edit Payment Method">
+                                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                                    </button>
+                                    <button type="button" onclick="deleteFinanceMethod('{{ method.id }}', '{{ method.name|escapejs }}')"
+                                        class="p-2 rounded-lg hover:bg-red-50 text-outline hover:text-red-600 transition-all"
+                                        title="Delete Payment Method">
+                                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="p-8 text-center text-outline">No payment methods found. Add a new one below.</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Expense Categories -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-outline-variant/30 bg-surface">
-            <h3 class="text-title-md font-bold text-on-surface mb-4">Expense Categories</h3>
-            <ul class="space-y-2 mb-4">
-                {% for category in expense_categories %}
-                <li class="flex justify-between items-center bg-surface-container-highest p-3 rounded-lg border border-outline-variant/50">
-                    <span class="text-body-md text-on-surface">{{ category.name }}</span>
-                    <form method="POST" action="{% url 'finance_settings' %}">
+        <!-- Right: Actions/Sidebar Form -->
+        <div class="space-y-6">
+            <div class="glass-panel rounded-2xl p-6 shadow-sm">
+                <h3 class="font-headline-md text-headline-md font-bold mb-4 border-b border-outline-variant/30 pb-3">Create New Record</h3>
+                
+                <!-- Finance Category Form -->
+                <div id="add-finance-form" class="space-y-8">
+                    <form method="POST" action="{% url 'add_finance_category' %}" class="space-y-4">
                         {% csrf_token %}
-                        <input type="hidden" name="action" value="del_category_{{ category.id }}">
-                        <button type="submit" class="text-error hover:text-error/80 transition-colors" title="Delete">
-                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                        <div>
+                            <h4 class="font-bold text-on-surface mb-2 text-sm uppercase">Add Expense Category</h4>
+                            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Category Name *</label>
+                            <input type="text" name="name" required placeholder="e.g. Marketing"
+                                class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-primary text-on-primary py-2.5 rounded-lg font-button hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2 mt-4">
+                            <span class="material-symbols-outlined text-[18px]">add</span>
+                            Add Category
                         </button>
                     </form>
-                </li>
-                {% empty %}
-                <li class="text-sm text-secondary italic">No expense categories configured.</li>
-                {% endfor %}
-            </ul>
-            <form method="POST" action="{% url 'finance_settings' %}" class="flex gap-2">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="add_expense_category">
-                <input type="text" name="name" placeholder="Add new category..." required class="flex-1 bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary text-on-surface">
-                <button type="submit" class="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-all shadow-sm">Add</button>
-            </form>
-        </div>
 
-        <!-- Payment Statuses -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-outline-variant/30 bg-surface">
-            <h3 class="text-title-md font-bold text-on-surface mb-4">Payment Statuses</h3>
-            <ul class="space-y-2 mb-4">
-                {% for status in payment_statuses %}
-                <li class="flex justify-between items-center bg-surface-container-highest p-3 rounded-lg border border-outline-variant/50">
-                    <span class="text-body-md text-on-surface">{{ status.name }}</span>
-                    <form method="POST" action="{% url 'finance_settings' %}">
+                    <!-- Finance Method Form -->
+                    <form id="add-finance-method-form" method="POST" action="{% url 'add_finance_method' %}" class="space-y-4 pt-6 border-t border-outline-variant/30">
                         {% csrf_token %}
-                        <input type="hidden" name="action" value="del_status_{{ status.id }}">
-                        <button type="submit" class="text-error hover:text-error/80 transition-colors" title="Delete">
-                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                        <div>
+                            <h4 class="font-bold text-on-surface mb-2 text-sm uppercase">Add Payment Method</h4>
+                            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Method Name *</label>
+                            <input type="text" name="name" required placeholder="e.g. Credit Card"
+                                class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-primary text-on-primary py-2.5 rounded-lg font-button hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2 mt-4">
+                            <span class="material-symbols-outlined text-[18px]">add</span>
+                            Add Method
                         </button>
                     </form>
-                </li>
-                {% empty %}
-                <li class="text-sm text-secondary italic">No payment statuses configured.</li>
-                {% endfor %}
-            </ul>
-            <form method="POST" action="{% url 'finance_settings' %}" class="flex gap-2">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="add_payment_status">
-                <input type="text" name="name" placeholder="Add new status..." required class="flex-1 bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary text-on-surface">
-                <button type="submit" class="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-all shadow-sm">Add</button>
-            </form>
+                </div>
+            </div>
+            
+            <div class="glass-panel rounded-2xl p-6 shadow-sm border border-primary/20 bg-primary-container/10">
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-primary mt-1">lightbulb</span>
+                    <div>
+                        <h4 class="font-bold text-on-surface mb-1">Helpful Tip</h4>
+                        <p class="text-body-sm text-secondary leading-relaxed">
+                            These categories appear when adding or editing an income or expense record.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <!-- Commission Types -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-outline-variant/30 bg-surface">
-            <h3 class="text-title-md font-bold text-on-surface mb-4">Commission Types</h3>
-            <ul class="space-y-2 mb-4">
-                {% for commission in commission_types %}
-                <li class="flex justify-between items-center bg-surface-container-highest p-3 rounded-lg border border-outline-variant/50">
-                    <span class="text-body-md text-on-surface">{{ commission.name }}</span>
-                    <form method="POST" action="{% url 'finance_settings' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="del_commission_{{ commission.id }}">
-                        <button type="submit" class="text-error hover:text-error/80 transition-colors" title="Delete">
-                            <span class="material-symbols-outlined text-[18px]">delete</span>
-                        </button>
-                    </form>
-                </li>
-                {% empty %}
-                <li class="text-sm text-secondary italic">No commission types configured.</li>
-                {% endfor %}
-            </ul>
-            <form method="POST" action="{% url 'finance_settings' %}" class="flex gap-2">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="add_commission_type">
-                <input type="text" name="name" placeholder="Add new commission type..." required class="flex-1 bg-surface-container-highest border border-outline-variant/50 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary focus:border-primary text-on-surface">
-                <button type="submit" class="px-4 py-2 bg-primary text-white font-bold text-sm rounded-lg hover:bg-primary/90 transition-all shadow-sm">Add</button>
-            </form>
-        </div>
-
     </div>
 
-</div>
+    <!-- Edit Finance Category Modal -->
+    <div id="edit-finance-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-outline-variant/30">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/20">
+                <h3 class="font-headline-md text-headline-md font-bold text-on-background">Edit Finance Category</h3>
+                <button type="button" onclick="closeEditFinanceModal()" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+            </div>
+            <form id="edit-finance-form" method="POST" action="" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Category Name *</label>
+                    <input type="text" id="edit-finance-name" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                </div>
+                <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
+                    <button type="button" onclick="closeEditFinanceModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Finance Method Modal -->
+    <div id="edit-finance-method-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-outline-variant/30">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/20">
+                <h3 class="font-headline-md text-headline-md font-bold text-on-background">Edit Payment Method</h3>
+                <button type="button" onclick="closeEditFinanceMethodModal()" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+            </div>
+            <form id="edit-finance-method-form" method="POST" action="" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Method Name *</label>
+                    <input type="text" id="edit-finance-method-name" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                </div>
+                <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
+                    <button type="button" onclick="closeEditFinanceMethodModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Server-backed AJAX for adding finance category/method
+    const addFinanceForm = document.getElementById('add-finance-form');
+    if (addFinanceForm) {
+        addFinanceForm.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const submitBtn = form.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = 'Adding...';
+
+                const formData = new FormData(form);
+                fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    if (data.success) {
+                        if (typeof showToast === 'function') showToast('Added successfully!', 'success');
+                        else alert('Added successfully!');
+                        setTimeout(() => window.location.reload(), 800);
+                    } else {
+                        if (typeof showToast === 'function') showToast(data.error || 'Failed to add.', 'error');
+                        else alert(data.error || 'Failed to add.');
+                    }
+                })
+                .catch(err => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    console.error(err);
+                    if (typeof showToast === 'function') showToast('Network error.', 'error');
+                });
+            });
+        });
+    }
+
+    // Finance Category actions
+    function deleteFinanceCategory(id, name) {
+        if (!confirm(`Are you sure you want to delete category "${name}"?`)) return;
+
+        fetch(`/statuses/finance-category/${id}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') showToast(data.message || 'Category deleted.', 'success');
+                else alert(data.message || 'Category deleted.');
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                if (typeof showToast === 'function') showToast(data.error || 'Failed to delete category.', 'error');
+                else alert(data.error || 'Failed to delete category.');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function openEditFinanceModal(id, name) {
+        document.getElementById('edit-finance-name').value = name;
+        const form = document.getElementById('edit-finance-form');
+        form.action = `/statuses/finance-category/${id}/edit/`;
+        document.getElementById('edit-finance-modal').classList.remove('hidden');
+    }
+
+    function closeEditFinanceModal() {
+        document.getElementById('edit-finance-modal').classList.add('hidden');
+    }
+
+    const editFinanceForm = document.getElementById('edit-finance-form');
+    if (editFinanceForm) {
+        editFinanceForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = editFinanceForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Saving...';
+
+            const formData = new FormData(editFinanceForm);
+            fetch(editFinanceForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                if (data.success) {
+                    if (typeof showToast === 'function') showToast('Category updated successfully!', 'success');
+                    else alert('Category updated successfully!');
+                    closeEditFinanceModal();
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    if (typeof showToast === 'function') showToast(data.error || 'Failed to update category.', 'error');
+                    else alert(data.error || 'Failed to update category.');
+                }
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                console.error(err);
+            });
+        });
+    }
+
+    // Finance Method actions
+    function deleteFinanceMethod(id, name) {
+        if (!confirm(`Are you sure you want to delete payment method "${name}"?`)) return;
+
+        fetch(`/statuses/finance-method/${id}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') showToast(data.message || 'Payment method deleted.', 'success');
+                else alert(data.message || 'Payment method deleted.');
+                setTimeout(() => window.location.reload(), 800);
+            } else {
+                if (typeof showToast === 'function') showToast(data.error || 'Failed to delete payment method.', 'error');
+                else alert(data.error || 'Failed to delete payment method.');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function openEditFinanceMethodModal(id, name) {
+        document.getElementById('edit-finance-method-name').value = name;
+        const form = document.getElementById('edit-finance-method-form');
+        form.action = `/statuses/finance-method/${id}/edit/`;
+        document.getElementById('edit-finance-method-modal').classList.remove('hidden');
+    }
+
+    function closeEditFinanceMethodModal() {
+        document.getElementById('edit-finance-method-modal').classList.add('hidden');
+    }
+
+    const editFinanceMethodForm = document.getElementById('edit-finance-method-form');
+    if (editFinanceMethodForm) {
+        editFinanceMethodForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const submitBtn = editFinanceMethodForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Saving...';
+
+            const formData = new FormData(editFinanceMethodForm);
+            fetch(editFinanceMethodForm.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                if (data.success) {
+                    if (typeof showToast === 'function') showToast('Payment method updated successfully!', 'success');
+                    else alert('Payment method updated successfully!');
+                    closeEditFinanceMethodModal();
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    if (typeof showToast === 'function') showToast(data.error || 'Failed to update payment method.', 'error');
+                    else alert(data.error || 'Failed to update payment method.');
+                }
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+                console.error(err);
+            });
+        });
+    }
+</script>
 {% endblock %}

@@ -156,36 +156,126 @@
             </a>
             {% endif %}
             {% if request.user.profile.has_access_leads %}
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'leads' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'leads' %}">
-                <span class="material-symbols-outlined">leaderboard</span>
-                <span class="font-body-sm text-body-sm">Leads</span>
-            </a>
+            <!-- Leads Dropdown Accordion -->
+            <div class="space-y-1">
+                <button type="button" aria-expanded="false" aria-controls="leads-dropdown-menu" id="leads-dropdown-btn"
+                    onclick="toggleSidebarDropdown('leads')"
+                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'leads' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'leads' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined">leaderboard</span>
+                        <span class="font-body-sm text-body-sm">Leads</span>
+                    </div>
+                    <span id="leads-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
+                </button>
+                <div id="leads-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="leads-dropdown-btn">
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'leads' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'leads' %}">
+                        <span class="material-symbols-outlined text-[20px]">list</span>
+                        <span>Overview</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'leads' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'lead_status_settings' %}?tab=leads">
+                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                        <span>Status Settings</span>
+                    </a>
+                </div>
+            </div>
             {% endif %}
             {% if request.user.profile.has_access_calendar %}
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'calendar' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'calendar' %}">
-                <span class="material-symbols-outlined">event</span>
-                <span class="font-body-sm text-body-sm">Calendar</span>
-            </a>
+            <!-- Calendar Dropdown Accordion -->
+            <div class="space-y-1">
+                <button type="button" aria-expanded="false" aria-controls="calendar-dropdown-menu" id="calendar-dropdown-btn"
+                    onclick="toggleSidebarDropdown('calendar')"
+                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'calendar' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'calendar' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined">event</span>
+                        <span class="font-body-sm text-body-sm">Calendar</span>
+                    </div>
+                    <span id="calendar-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
+                </button>
+                <div id="calendar-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="calendar-dropdown-btn">
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'calendar' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'calendar' %}">
+                        <span class="material-symbols-outlined text-[20px]">event</span>
+                        <span>Overview</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'calendar' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'calendar_status_settings' %}">
+                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                        <span>Status Settings</span>
+                    </a>
+                </div>
+            </div>
             {% endif %}
             <!-- Active navigation items mapped to Django URLs -->
             {% if request.user.profile.has_access_clients %}
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'clients' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'clients' %}">
-                <span class="material-symbols-outlined">people</span>
-                <span class="font-body-sm text-body-sm">Clients</span>
-            </a>
+            <!-- Clients Dropdown Accordion -->
+            <div class="space-y-1">
+                <button type="button" aria-expanded="false" aria-controls="clients-dropdown-menu" id="clients-dropdown-btn"
+                    onclick="toggleSidebarDropdown('clients')"
+                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'clients' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'clients' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined">people</span>
+                        <span class="font-body-sm text-body-sm">Clients</span>
+                    </div>
+                    <span id="clients-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
+                </button>
+                <div id="clients-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="clients-dropdown-btn">
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'clients' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'clients' %}">
+                        <span class="material-symbols-outlined text-[20px]">people</span>
+                        <span>Overview</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'clients' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'client_status_settings' %}">
+                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                        <span>Status Settings</span>
+                    </a>
+                </div>
+            </div>
             {% endif %}
 
             {% if request.user.profile.has_access_support %}
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'customer_support' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'customer_support' %}">
-                <span class="material-symbols-outlined">support_agent</span>
-                <span class="font-body-sm text-body-sm">Customer Support</span>
-            </a>
+            <!-- Support Dropdown Accordion -->
+            <div class="space-y-1">
+                <button type="button" aria-expanded="false" aria-controls="support-dropdown-menu" id="support-dropdown-btn"
+                    onclick="toggleSidebarDropdown('support')"
+                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'customer_support' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'tickets' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined">support_agent</span>
+                        <span class="font-body-sm text-body-sm">Customer Support</span>
+                    </div>
+                    <span id="support-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
+                </button>
+                <div id="support-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="support-dropdown-btn">
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'customer_support' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'customer_support' %}">
+                        <span class="material-symbols-outlined text-[20px]">support_agent</span>
+                        <span>Overview</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'tickets' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'ticket_status_settings' %}">
+                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                        <span>Ticket Status</span>
+                    </a>
+                </div>
+            </div>
             {% endif %}
             {% if request.user.profile.has_access_projects %}
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'projects' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'projects' %}">
-                <span class="material-symbols-outlined">assignment</span>
-                <span class="font-body-sm text-body-sm">Projects</span>
-            </a>
+            <!-- Projects Dropdown Accordion -->
+            <div class="space-y-1">
+                <button type="button" aria-expanded="false" aria-controls="projects-dropdown-menu" id="projects-dropdown-btn"
+                    onclick="toggleSidebarDropdown('projects')"
+                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'projects' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'projects' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined">assignment</span>
+                        <span class="font-body-sm text-body-sm">Projects</span>
+                    </div>
+                    <span id="projects-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
+                </button>
+                <div id="projects-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="projects-dropdown-btn">
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'projects' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'projects' %}">
+                        <span class="material-symbols-outlined text-[20px]">assignment</span>
+                        <span>Overview</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'projects' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'project_status_settings' %}">
+                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                        <span>Status Settings</span>
+                    </a>
+                </div>
+            </div>
             {% endif %}
             {% if request.user.profile.has_access_agreements %}
             <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'agreements' or request.resolver_match.url_name == 'create_agreement' or request.resolver_match.url_name == 'edit_agreement' or request.resolver_match.url_name == 'agreement_detail' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'agreements' %}">
@@ -205,7 +295,7 @@
             <!-- Campaigns Dropdown Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="campaigns-dropdown-menu" id="campaigns-dropdown-btn"
-                    onclick="toggleCampaignsDropdown()"
+                    onclick="toggleSidebarDropdown('campaigns')"
                     class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'campaign' or request.resolver_match.url_name == 'post_management' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined">ads_click</span>
@@ -222,6 +312,10 @@
                         <span class="material-symbols-outlined text-[20px]">campaign</span>
                         <span>Post Management</span>
                     </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'campaigns' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'campaign_status_settings' %}">
+                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                        <span>Status Settings</span>
+                    </a>
                 </div>
             </div>
             {% endif %}
@@ -230,7 +324,7 @@
             <!-- Content Tracker Dropdown Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="content-dropdown-menu" id="content-dropdown-btn"
-                    onclick="toggleContentDropdown()"
+                    onclick="toggleSidebarDropdown('content')"
                     class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'content_tracker' or request.resolver_match.url_name == 'add_content_item' or request.resolver_match.url_name == 'edit_content_item' or request.resolver_match.url_name == 'editor_dashboard' or request.resolver_match.url_name == 'editor_board' or request.resolver_match.url_name == 'content_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined">video_library</span>
@@ -264,7 +358,7 @@
             <!-- Finance Dropdown Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="finance-dropdown-menu" id="finance-dropdown-btn"
-                    onclick="toggleFinanceDropdown()"
+                    onclick="toggleSidebarDropdown('finance')"
                     class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'finance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined">payments</span>
@@ -289,13 +383,14 @@
                         <span class="material-symbols-outlined text-[20px]">assessment</span>
                         <span>Financial Reports</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_settings' %}">
-                        <span class="material-symbols-outlined text-[20px]">settings</span>
-                        <span>Finance Settings</span>
-                    </a>
+
                     <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'partner_payouts' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'partner_payouts' %}">
                         <span class="material-symbols-outlined text-[20px]">payments</span>
                         <span>Partner Payouts</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'finance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_settings' %}">
+                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                        <span>Status Settings</span>
                     </a>
                 </div>
             </div>
@@ -304,8 +399,8 @@
             <!-- Settings Dropdown Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="settings-dropdown-menu" id="settings-dropdown-btn"
-                    onclick="toggleSettingsDropdown()"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'lead_statuses' or request.resolver_match.url_name == 'services' or request.resolver_match.url_name == 'staff_roles' or request.resolver_match.url_name == 'notification_settings' or request.resolver_match.url_name == 'role_permissions' or request.resolver_match.url_name == 'departments' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    onclick="toggleSidebarDropdown('settings')"
+                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'services' or request.resolver_match.url_name == 'staff_roles' or request.resolver_match.url_name == 'notification_settings' or request.resolver_match.url_name == 'role_permissions' or request.resolver_match.url_name == 'departments' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined">settings</span>
                         <span class="font-body-sm text-body-sm">Settings</span>
@@ -313,12 +408,7 @@
                     <span id="settings-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="settings-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="settings-dropdown-btn">
-                    {% if request.user.profile.has_access_lead_statuses %}
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'lead_statuses' %}">
-                        <span class="material-symbols-outlined text-[20px]">tune</span>
-                        <span>Status Page</span>
-                    </a>
-                    {% endif %}
+
                     {% if request.user.profile.has_access_services %}
                     <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'services' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'services' %}">
                         <span class="material-symbols-outlined text-[20px]">design_services</span>
@@ -499,64 +589,10 @@
             }, 4000);
         }
 
-        function toggleCampaignsDropdown() {
-            const menu = document.getElementById('campaigns-dropdown-menu');
-            const btn = document.getElementById('campaigns-dropdown-btn');
-            const arrow = document.getElementById('campaigns-arrow');
-            if (!menu || !btn || !arrow) return;
-            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
-            
-            if (isExpanded) {
-                menu.classList.add('hidden');
-                btn.setAttribute('aria-expanded', 'false');
-                arrow.style.transform = '';
-            } else {
-                menu.classList.remove('hidden');
-                btn.setAttribute('aria-expanded', 'true');
-                arrow.style.transform = 'rotate(180deg)';
-            }
-        }
-
-        function toggleContentDropdown() {
-            const menu = document.getElementById('content-dropdown-menu');
-            const btn = document.getElementById('content-dropdown-btn');
-            const arrow = document.getElementById('content-arrow');
-            if (!menu || !btn || !arrow) return;
-            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
-            
-            if (isExpanded) {
-                menu.classList.add('hidden');
-                btn.setAttribute('aria-expanded', 'false');
-                arrow.style.transform = '';
-            } else {
-                menu.classList.remove('hidden');
-                btn.setAttribute('aria-expanded', 'true');
-                arrow.style.transform = 'rotate(180deg)';
-            }
-        }
-
-        function toggleFinanceDropdown() {
-            const menu = document.getElementById('finance-dropdown-menu');
-            const btn = document.getElementById('finance-dropdown-btn');
-            const arrow = document.getElementById('finance-arrow');
-            if (!menu || !btn || !arrow) return;
-            const isExpanded = btn.getAttribute('aria-expanded') === 'true';
-            
-            if (isExpanded) {
-                menu.classList.add('hidden');
-                btn.setAttribute('aria-expanded', 'false');
-                arrow.style.transform = '';
-            } else {
-                menu.classList.remove('hidden');
-                btn.setAttribute('aria-expanded', 'true');
-                arrow.style.transform = 'rotate(180deg)';
-            }
-        }
-
-        function toggleSettingsDropdown() {
-            const menu = document.getElementById('settings-dropdown-menu');
-            const btn = document.getElementById('settings-dropdown-btn');
-            const arrow = document.getElementById('settings-arrow');
+        function toggleSidebarDropdown(id) {
+            const menu = document.getElementById(id + '-dropdown-menu');
+            const btn = document.getElementById(id + '-dropdown-btn');
+            const arrow = document.getElementById(id + '-arrow');
             if (!menu || !btn || !arrow) return;
             const isExpanded = btn.getAttribute('aria-expanded') === 'true';
             
@@ -738,39 +774,19 @@
             }
 
 
-            // Auto-expand Settings for settings-section pages.
-            const activeUrlName = "{{ request.resolver_match.url_name }}";
-            
-            if (activeUrlName === 'campaign' || activeUrlName === 'post_management') {
-                const menu = document.getElementById('campaigns-dropdown-menu');
-                const btn = document.getElementById('campaigns-dropdown-btn');
-                const arrow = document.getElementById('campaigns-arrow');
-                if (menu && btn && arrow) {
+            // Auto-expand Dropdowns based on active links
+            document.querySelectorAll('[id$="-dropdown-menu"]').forEach(menu => {
+                // Check if this menu contains an active link (identified by bg-primary-container/10)
+                const hasActiveLink = menu.querySelector('a.bg-primary-container\\/10');
+                if (hasActiveLink) {
                     menu.classList.remove('hidden');
-                    btn.setAttribute('aria-expanded', 'true');
-                    arrow.style.transform = 'rotate(180deg)';
+                    const baseId = menu.id.replace('-dropdown-menu', '');
+                    const btn = document.getElementById(baseId + '-dropdown-btn');
+                    const arrow = document.getElementById(baseId + '-arrow');
+                    if (btn) btn.setAttribute('aria-expanded', 'true');
+                    if (arrow) arrow.style.transform = 'rotate(180deg)';
                 }
-            }
-            if (activeUrlName === 'content_tracker' || activeUrlName === 'add_content_item' || activeUrlName === 'edit_content_item' || activeUrlName === 'editor_dashboard' || activeUrlName === 'editor_board') {
-                const menu = document.getElementById('content-dropdown-menu');
-                const btn = document.getElementById('content-dropdown-btn');
-                const arrow = document.getElementById('content-arrow');
-                if (menu && btn && arrow) {
-                    menu.classList.remove('hidden');
-                    btn.setAttribute('aria-expanded', 'true');
-                    arrow.style.transform = 'rotate(180deg)';
-                }
-            }
-            if (activeUrlName === 'lead_statuses' || activeUrlName === 'services' || activeUrlName === 'staff_roles' || activeUrlName === 'notification_settings' || activeUrlName === 'role_permissions' || activeUrlName === 'departments' || activeUrlName === 'content_settings') {
-                const menu = document.getElementById('settings-dropdown-menu');
-                const btn = document.getElementById('settings-dropdown-btn');
-                const arrow = document.getElementById('settings-arrow');
-                if (menu && btn && arrow) {
-                    menu.classList.remove('hidden');
-                    btn.setAttribute('aria-expanded', 'true');
-                    arrow.style.transform = 'rotate(180deg)';
-                }
-            }
+            });
         });
     </script>
 

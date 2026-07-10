@@ -60,11 +60,25 @@ urlpatterns = [
     path('campaign/<int:campaign_id>/delete/', views.delete_campaign, name='delete_campaign'),
 
     # Lead Status Management
-    path('statuses/', views.lead_statuses_view, name='lead_statuses'),
+    
+    path('statuses/leads/', views.lead_status_settings, name='lead_status_settings'),
+    path('statuses/clients/', views.client_status_settings, name='client_status_settings'),
+    path('statuses/projects/', views.project_status_settings, name='project_status_settings'),
+    path('statuses/campaigns/', views.campaign_status_settings, name='campaign_status_settings'),
+    path('statuses/calendar/', views.calendar_status_settings, name='calendar_status_settings'),
+    path('statuses/tickets/', views.ticket_status_settings, name='ticket_status_settings'),
+    path('statuses/priority/', views.priority_status_settings, name='priority_status_settings'),
+
     path('statuses/add/', views.add_lead_status, name='add_lead_status'),
     path('statuses/<int:status_id>/edit/', views.edit_lead_status, name='edit_lead_status'),
     path('statuses/<int:status_id>/delete/', views.delete_lead_status, name='delete_lead_status'),
     path('statuses/reorder/', views.reorder_lead_statuses, name='reorder_lead_statuses'),
+
+    # Dynamic Status Management
+    path('statuses/category/<str:category>/add/', views.add_dynamic_status, name='add_dynamic_status'),
+    path('statuses/category/<str:category>/<int:status_id>/edit/', views.edit_dynamic_status, name='edit_dynamic_status'),
+    path('statuses/category/<str:category>/<int:status_id>/delete/', views.delete_dynamic_status, name='delete_dynamic_status'),
+    path('statuses/category/<str:category>/reorder/', views.reorder_dynamic_statuses, name='reorder_dynamic_statuses'),
     
     # Finance Payment Methods
     path('statuses/finance-method/add/', views.add_finance_method, name='add_finance_method'),

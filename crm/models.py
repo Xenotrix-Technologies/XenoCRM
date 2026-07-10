@@ -926,3 +926,93 @@ class PartnerPayout(models.Model):
 
     def __str__(self):
         return f"{self.payout_id} - {self.partner_name} - {self.status}"
+
+
+class StatusStyleMixin:
+    @property
+    def color_hex(self):
+        if getattr(self, 'color', '').startswith('#'):
+            return self.color
+        color_map = {
+            'blue': '#0053db', 'grey': '#64748b', 'green': '#10b981', 
+            'yellow': '#f59e0b', 'red': '#ef4444', 'orange': '#f97316', 
+            'purple': '#a855f7', 'pink': '#ec4899', 'teal': '#14b8a6',
+        }
+        return color_map.get(getattr(self, 'color', '').lower(), '#64748b')
+
+    @property
+    def badge_style(self):
+        hex_val = self.color_hex
+        return f"background-color: {hex_val}1a; color: {hex_val}; border: 1px solid {hex_val}33;"
+
+class ClientStatus(models.Model, StatusStyleMixin):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='client_statuses')
+    name = models.CharField(max_length=50)
+    color = models.CharField(max_length=20, default='#64748b')
+    position = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('organization', 'name')
+        ordering = ['position', 'id']
+        db_table = 'client_statuses'
+    def __str__(self): return self.name
+
+class ProjectStatus(models.Model, StatusStyleMixin):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='project_statuses')
+    name = models.CharField(max_length=50)
+    color = models.CharField(max_length=20, default='#64748b')
+    position = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('organization', 'name')
+        ordering = ['position', 'id']
+        db_table = 'project_statuses'
+    def __str__(self): return self.name
+
+class CampaignStatus(models.Model, StatusStyleMixin):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='campaign_statuses')
+    name = models.CharField(max_length=50)
+    color = models.CharField(max_length=20, default='#64748b')
+    position = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('organization', 'name')
+        ordering = ['position', 'id']
+        db_table = 'campaign_statuses'
+    def __str__(self): return self.name
+
+class CalendarStatus(models.Model, StatusStyleMixin):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='calendar_statuses')
+    name = models.CharField(max_length=50)
+    color = models.CharField(max_length=20, default='#64748b')
+    position = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('organization', 'name')
+        ordering = ['position', 'id']
+        db_table = 'calendar_statuses'
+    def __str__(self): return self.name
+
+class TicketStatus(models.Model, StatusStyleMixin):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='ticket_statuses')
+    name = models.CharField(max_length=50)
+    color = models.CharField(max_length=20, default='#64748b')
+    position = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('organization', 'name')
+        ordering = ['position', 'id']
+        db_table = 'ticket_statuses'
+    def __str__(self): return self.name
+
+class PriorityStatus(models.Model, StatusStyleMixin):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='priority_statuses')
+    name = models.CharField(max_length=50)
+    color = models.CharField(max_length=20, default='#64748b')
+    position = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('organization', 'name')
+        ordering = ['position', 'id']
+        db_table = 'priority_statuses'
+    def __str__(self): return self.name

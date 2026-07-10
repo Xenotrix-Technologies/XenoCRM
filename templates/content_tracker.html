@@ -101,7 +101,7 @@
         </div>
 
         <!-- Campaign Filter -->
-        <div>
+        <div class="lg:col-span-2">
           <select name="campaign_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
             <option value="">All Campaign Status</option>
             {% for opt in campaign_status_options %}
@@ -111,7 +111,7 @@
         </div>
 
         <!-- Date Range Filter -->
-        <div>
+        <div class="lg:col-span-2">
           <select name="date_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
             <option value="">All Dates</option>
             <option value="today" {% if date_filter == 'today' %}selected{% endif %}>Due Today</option>
@@ -125,7 +125,7 @@
         <input type="hidden" name="sort" value="{{ sort_by }}" />
 
         <!-- Actions -->
-        <div class="lg:col-span-2 flex gap-2">
+        <div class="lg:col-span-3 flex gap-2">
           <button type="submit" class="flex-1 bg-primary text-on-primary rounded-lg py-2 text-xs font-bold shadow hover:opacity-95 transition-all text-center">Apply Filters</button>
           <a href="{% url 'content_tracker' %}" class="flex-1 border border-outline-variant text-secondary rounded-lg py-2 text-xs font-bold hover:bg-slate-50 transition-all text-center">Reset</a>
         </div>
@@ -311,7 +311,7 @@
           <!-- Rows per page selector -->
           <div class="flex items-center gap-1.5">
             <span>Rows per page:</span>
-            <select onchange="changeLimit(this.value)" class="bg-white border border-outline-variant rounded px-1.5 py-0.5 text-xs focus:ring-primary focus:border-primary">
+            <select onchange="changeLimit(this.value)" class="bg-white border border-outline-variant rounded-md pl-2 pr-6 py-1 text-xs focus:ring-primary focus:border-primary outline-none">
               <option value="10" {% if limit == 10 %}selected{% endif %}>10</option>
               <option value="25" {% if limit == 25 %}selected{% endif %}>25</option>
               <option value="50" {% if limit == 50 %}selected{% endif %}>50</option>
