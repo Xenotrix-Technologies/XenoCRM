@@ -16,11 +16,11 @@
 <main class="pt-4 p-margin-edge min-h-screen">
     <div class="max-w-container-max mx-auto">
         <!-- Page Header / Breadcrumbs -->
-        <div class="flex items-center gap-2 mb-6 font-label-md text-outline">
-            <a href="{% url 'leads' %}" class="hover:underline">Leads</a>
-            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span class="text-primary font-bold">Contact Profile</span>
-        </div>
+        <h2 class="text-xl font-bold flex items-center text-on-background mb-6">
+            <a href="{% url 'clients' %}" class="text-secondary hover:text-primary transition-colors">Clients</a>
+            <span class="material-symbols-outlined mx-2 text-outline text-sm">chevron_right</span>
+            <span class="text-primary font-bold">Client Contact Profile</span>
+        </h2>
 
         <div class="grid grid-cols-12 gap-gutter-md">
             <!-- Left Column: Main Profile & Content -->
@@ -119,27 +119,17 @@
                                 </div>
 
                                 <!-- Lead / Client Status & Owner -->
-                                {% if lead.stage == 'Won' %}
                                 <div>
                                     <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Client Status</label>
                                     <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-success text-[18px]">verified</span>
-                                        <input type="text" value="Active Client" readonly class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary text-success font-bold"/>
-                                    </div>
-                                </div>
-                                {% else %}
-                                <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Lead Status</label>
-                                    <div class="relative flex items-center">
                                         <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">adjust</span>
                                         <select id="lead-status-select" name="status" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-                                            {% for s in statuses %}
+                                            {% for s in client_statuses %}
                                             <option value="{{ s.name }}" {% if lead.status == s.name %}selected{% endif %}>{{ s.name }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
                                 </div>
-                                {% endif %}
                                 <div>
                                     <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Assigned Employee (Owner)</label>
                                     <div class="relative flex items-center">

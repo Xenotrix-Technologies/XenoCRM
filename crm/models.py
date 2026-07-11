@@ -470,7 +470,7 @@ class Lead(models.Model):
     value = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, blank=True, null=True)
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, blank=True, null=True)
     owner = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='owned_leads')
-    service = models.ForeignKey('Service', on_delete=models.SET_NULL, null=True, blank=True, related_name='leads')
+    services = models.ManyToManyField('Service', blank=True, related_name='leads')
     lifecycle_stage = models.CharField(max_length=100, default='Prospect')
     annual_revenue = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
     health_score = models.IntegerField(default=50)
@@ -480,6 +480,7 @@ class Lead(models.Model):
     last_followup_date_time = models.DateTimeField(blank=True, null=True)
     last_activity = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_client = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'leads'
@@ -487,7 +488,10 @@ class Lead(models.Model):
     @property
     def status_badge_style(self):
         try:
-            status_obj = LeadStatus.objects.filter(organization=self.organization, name=self.status).first()
+            if self.is_client:
+                status_obj = ClientStatus.objects.filter(organization=self.organization, name=self.status).first()
+            else:
+                status_obj = LeadStatus.objects.filter(organization=self.organization, name=self.status).first()
             if status_obj:
                 return status_obj.badge_style
         except Exception:
@@ -499,6 +503,8 @@ class Lead(models.Model):
             'Qualified': '#0053db',
             'Cold Lead': '#ef4444',
             'Lost': '#ef4444',
+            'Active': '#10b981',
+            'Completed': '#0053db',
         }
         hex_val = color_map.get(self.status, '#0053db')
         return f"background-color: {hex_val}1a; color: {hex_val}; border: 1px solid {hex_val}33;"
@@ -508,7 +514,10 @@ class Lead(models.Model):
         if hasattr(self, '_badge_class'):
             return self._badge_class
         try:
-            status_obj = LeadStatus.objects.filter(organization=self.organization, name=self.status).first()
+            if self.is_client:
+                status_obj = ClientStatus.objects.filter(organization=self.organization, name=self.status).first()
+            else:
+                status_obj = LeadStatus.objects.filter(organization=self.organization, name=self.status).first()
             if status_obj:
                 self._badge_class = status_obj.badge_class
                 return self._badge_class

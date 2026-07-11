@@ -46,13 +46,18 @@
             </select>
           </div>
           <div>
-            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Service</label>
-            <select id="lead-service-select" name="service" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-              <option value="">None</option>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-2">Services</label>
+            <div id="lead-service-select" class="bg-surface-container-low border border-outline-variant rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
               {% for svc in services %}
-              <option value="{{ svc.id }}" {% if lead and lead.service.id == svc.id %}selected{% endif %}>{{ svc.name }}</option>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" name="services" value="{{ svc.id }}" class="w-4 h-4 text-primary bg-white border-outline-variant rounded focus:ring-primary focus:ring-2"
+                  {% if lead and svc in lead.services.all %}checked{% endif %}>
+                <span class="text-body-sm text-on-surface">{{ svc.name }}</span>
+              </label>
+              {% empty %}
+              <p class="text-xs text-secondary italic">No services available.</p>
               {% endfor %}
-            </select>
+            </div>
           </div>
           <div>
             <label class="block text-label-md font-label-md text-outline uppercase mb-1">Phone Number</label>

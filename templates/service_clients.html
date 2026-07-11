@@ -62,8 +62,10 @@
                         </td>
                         <td class="px-3 py-2.5 text-center">
                             <div class="relative inline-block w-full max-w-[130px]">
-                                <select data-current-stage="{{ client.leads.0.stage }}" onchange="updateClientStatus('{{ client.leads.0.id }}', this.value)" class="client-status-select w-full pl-3 pr-7 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight border appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 text-center bg-surface text-on-surface">
-                                    <option value="{{ client.leads.0.stage }}" selected>{{ client.leads.0.stage }}</option>
+                                <select onchange="updateClientStatus('{{ client.leads.0.id }}', this.value)" class="w-full pl-3 pr-7 py-1 rounded-full text-[10px] font-bold uppercase tracking-tight border appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/20 text-center" style="{{ client.leads.0.status_badge_style }}">
+                                    {% for status in client_statuses %}
+                                        <option value="{{ status.name }}" {% if client.leads.0.status == status.name %}selected{% endif %} class="bg-white text-on-surface">{{ status.name }}</option>
+                                    {% endfor %}
                                 </select>
                                 <span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-[14px] opacity-50">expand_more</span>
                             </div>
@@ -219,62 +221,5 @@ function updateClientStatus(leadId, newStage) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    let clientStatuses = [];
-    try {
-        clientStatuses = JSON.parse(localStorage.getItem('status_list_clients') || '[]');
-    } catch(e) {}
-    
-    // Default statuses if none defined in local storage
-    if (clientStatuses.length === 0) {
-        clientStatuses = [
-            { name: 'ACTIVE', color: '#10b981' },
-            { name: 'COMPLETED', color: '#0053db' }
-        ];
-    }
-    
-    const selects = document.querySelectorAll('.client-status-select');
-    selects.forEach(select => {
-        let currentStage = select.getAttribute('data-current-stage');
-        
-        // Map old defaults to new names
-        if (currentStage === 'Qualified') currentStage = 'ACTIVE';
-        if (currentStage === 'Won') currentStage = 'COMPLETED';
-        
-        select.innerHTML = ''; // clear options
-        
-        let found = false;
-        clientStatuses.forEach(status => {
-            const option = document.createElement('option');
-            option.value = status.name;
-            option.textContent = status.name;
-            option.className = "bg-white text-on-surface";
-            
-            if (currentStage && status.name.trim().toUpperCase() === currentStage.trim().toUpperCase()) {
-                option.selected = true;
-                found = true;
-                // apply color styling to the parent select element
-                select.style.backgroundColor = status.color + '1a';
-                select.style.color = status.color;
-                select.style.borderColor = status.color + '33';
-            }
-            select.appendChild(option);
-        });
-        
-        // If the current stage isn't in the list, still add it so it doesn't appear blank
-        if (!found && currentStage) {
-            const option = document.createElement('option');
-            option.value = currentStage;
-            option.textContent = currentStage;
-            option.selected = true;
-            option.className = "bg-white text-on-surface";
-            select.appendChild(option);
-            // Default styling
-            select.style.backgroundColor = '#64748b1a';
-            select.style.color = '#64748b';
-            select.style.borderColor = '#64748b33';
-        }
-    });
-});
 </script>
 {% endblock %}

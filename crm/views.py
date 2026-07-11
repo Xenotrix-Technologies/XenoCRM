@@ -45,7 +45,7 @@ def clients_view(request):
     org = request.user.profile.organization
     
     services_qs = Service.objects.filter(organization=org)
-    leads = Lead.objects.filter(organization=org, status='Qualified')
+    leads = Lead.objects.filter(organization=org, is_client=True)
     
     clients_dict = {}
     for lead in leads:
@@ -67,8 +67,10 @@ def clients_view(request):
         clients_dict[comp]['total_paid'] += float(lead.paid_amount or 0.0)
         clients_dict[comp]['avg_score'] += lead.score
         clients_dict[comp]['leads'].append(lead)
-        if lead.service:
-            clients_dict[comp]['service_ids'].add(lead.service.id)
+        lead_services = lead.services.all()
+        if lead_services.exists():
+            for s in lead_services:
+                clients_dict[comp]['service_ids'].add(s.id)
         else:
             clients_dict[comp]['service_ids'].add(0)
     
@@ -127,19 +129,19 @@ def service_clients_view(request, service_id):
     org = request.user.profile.organization
     
     # Fetch qualified leads
-    leads = Lead.objects.filter(organization=org, status='Qualified')
+    leads = Lead.objects.filter(organization=org, is_client=True)
     
     # Filter leads by service
     if service_id == 'all':
         service_name = "All Services"
     elif service_id == '0':
         service_name = "Uncategorized"
-        leads = leads.filter(service__isnull=True)
+        leads = leads.filter(services__isnull=True)
     else:
         try:
             service = Service.objects.get(id=int(service_id), organization=org)
             service_name = service.name
-            leads = leads.filter(service=service)
+            leads = leads.filter(services=service)
         except (ValueError, Service.DoesNotExist):
             messages.error(request, "Service not found.")
             return redirect('clients')
@@ -170,9 +172,12 @@ def service_clients_view(request, service_id):
             data['avg_score'] = int(data['avg_score'] / data['contacts_count'])
         clients_list.append(data)
 
+    client_statuses = get_or_create_dynamic_statuses(org, 'clients', ClientStatus)
+
     context = {
         'service_name': service_name,
         'clients': clients_list,
+        'client_statuses': client_statuses,
     }
     return render(request, 'service_clients.html', context)
 
@@ -710,7 +715,7 @@ def dashboard_view(request):
     org = request.user.profile.organization
     
     # Base leads query
-    leads_qs = Lead.objects.filter(organization=org)
+    leads_qs = Lead.objects.filter(organization=org, is_client=False)
     
     # 1. Total Revenue (Value of leads in 'Won' stage)
     won_leads = leads_qs.filter(stage='Won')
@@ -822,7 +827,7 @@ def dashboard_view(request):
     service_labels = []
     service_data = []
     for s in services_qs:
-        count = leads_qs.filter(service=s).count()
+        count = leads_qs.filter(services=s).count()
         if count > 0:
             service_labels.append(s.name)
             service_data.append(count)
@@ -903,7 +908,7 @@ def leads_view(request):
         writer = csv.writer(response)
         writer.writerow(['Name', 'Email', 'Company', 'Phone Number', 'Alt Phone Number', 'Date and Time', 'Status', 'Stage', 'Value', 'Owner', 'Lifecycle Stage', 'Annual Revenue', 'Health Score', 'Last Followup Date and Time'])
         
-        leads_export = Lead.objects.filter(organization=org).exclude(status='Qualified')
+        leads_export = Lead.objects.filter(organization=org, is_client=False)
         for lead in leads_export:
             owner_name = lead.owner.user.get_full_name() if lead.owner else 'None'
             writer.writerow([
@@ -937,7 +942,7 @@ def leads_view(request):
                 SystemNotification.objects.create(user=request.user, message=f"Successfully updated {count} leads to Qualified.", type='success')
         return redirect('leads')
 
-    leads_qs = Lead.objects.filter(organization=org).exclude(status='Qualified')
+    leads_qs = Lead.objects.filter(organization=org, is_client=False)
     
     # 1. Search Query
     q = request.GET.get('q', '').strip()
@@ -1003,7 +1008,7 @@ def leads_view(request):
 @login_required
 def pipeline_view(request):
     org = request.user.profile.organization
-    leads_qs = Lead.objects.filter(organization=org)
+    leads_qs = Lead.objects.filter(organization=org, is_client=False)
     
     # Calculate Forecast details
     total_pipeline = leads_qs.aggregate(Sum('value'))['value__sum'] or 0.00
@@ -1045,15 +1050,26 @@ def update_lead_stage(request):
         
         try:
             lead = Lead.objects.get(id=lead_id, organization=org)
-            old_stage = lead.stage
-            lead.stage = stage
-            # Align status
-            if stage in ['New', 'Qualified', 'Lost']:
+            old_stage = lead.status if lead.is_client else lead.stage
+            
+            if lead.is_client:
                 lead.status = stage
-            elif stage in ['Proposal', 'Negotiation']:
-                lead.status = 'Contacted'
-            elif stage == 'Won':
-                lead.status = 'Qualified'
+            else:
+                lead.stage = stage
+                # Align status
+                if stage in ['New', 'Qualified', 'Lost']:
+                    lead.status = stage
+                elif stage in ['Proposal', 'Negotiation']:
+                    lead.status = 'Contacted'
+                elif stage == 'Won':
+                    lead.status = 'Qualified'
+                    
+                if stage == 'Won' or stage == 'Qualified' or lead.status == 'Qualified':
+                    lead.is_client = True
+                    from .models import ClientStatus
+                    status_obj = ClientStatus.objects.filter(organization=org).first()
+                    lead.status = status_obj.name if status_obj else 'Active'
+                    
             lead.save()
             
             # Log activity
@@ -1075,6 +1091,8 @@ def contact_detail_view(request, lead_id):
     org = request.user.profile.organization
     try:
         lead = Lead.objects.get(id=lead_id, organization=org)
+        if lead.is_client:
+            return redirect('client_contact_detail', lead_id=lead.id)
         annotate_lead_badges(lead, org)
     except Lead.DoesNotExist:
         return redirect('leads')
@@ -1704,16 +1722,20 @@ def edit_lead(request, lead_id):
             lead.location = request.POST.get('location', '') or None
             lead.profile_image_url = request.POST.get('profile_image_url', '') or None
             
-            service_id = request.POST.get('service')
-            if service_id:
-                try:
-                    lead.service = Service.objects.get(id=service_id, organization=org)
-                except Service.DoesNotExist:
-                    lead.service = None
-            else:
-                lead.service = None
+            if lead.status == 'Qualified' and not lead.is_client:
+                lead.is_client = True
+                from .models import ClientStatus
+                status_obj = ClientStatus.objects.filter(organization=org).first()
+                lead.status = status_obj.name if status_obj else 'Active'
                 
             lead.save()
+            
+            service_ids = request.POST.getlist('services')
+            if service_ids:
+                services = Service.objects.filter(id__in=service_ids, organization=org)
+                lead.services.set(services)
+            else:
+                lead.services.clear()
             
             Activity.objects.create(
                 lead=lead,
@@ -1727,9 +1749,9 @@ def edit_lead(request, lead_id):
                     'message': f"Successfully updated lead '{lead.name}'."
                 })
             SystemNotification.objects.create(user=request.user, message=f"Successfully updated lead '{lead.name}'.", type='success')
-            if lead.status == 'Qualified':
-                return redirect('clients')
-            return redirect('leads')
+            if lead.is_client:
+                return redirect('client_contact_detail', lead_id=lead.id)
+            return redirect('contact_detail', lead_id=lead.id)
         except Exception as e:
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'error': str(e)})
@@ -4610,3 +4632,28 @@ def delete_service(request, service_id):
         service.delete()
         return JsonResponse({'success': True, 'message': 'Service deleted successfully.'})
     return JsonResponse({'success': False, 'error': 'Invalid request.'})
+
+@login_required
+def client_contact_detail_view(request, lead_id):
+    org = request.user.profile.organization
+    try:
+        lead = Lead.objects.get(id=lead_id, organization=org, is_client=True)
+        # Assuming ClientStatus objects have similar badge generation or it's handled in the template
+    except Lead.DoesNotExist:
+        return redirect('clients')
+        
+    activities = lead.activities.all().order_by('-timestamp')
+    tasks = lead.tasks.all().order_by('-created_at')
+    owners = UserProfile.objects.filter(organization=org)
+    client_statuses = get_or_create_dynamic_statuses(org, 'clients', ClientStatus)
+    services = Service.objects.filter(organization=org)
+    
+    context = {
+        'lead': lead,
+        'activities': activities,
+        'tasks': tasks,
+        'owners': owners,
+        'client_statuses': client_statuses,
+        'services': services,
+    }
+    return render(request, 'client_contact_detail.html', context)
