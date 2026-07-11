@@ -1350,7 +1350,8 @@ def calendar_view(request):
     """Display calendar with events for the user's organization."""
     org = request.user.profile.organization
     events = Event.objects.filter(organization=org).order_by('start_time')
-    return render(request, 'calendar.html', {'events': events})
+    calendar_statuses = get_or_create_dynamic_statuses(org, 'calendar', CalendarStatus)
+    return render(request, 'calendar.html', {'events': events, 'calendar_statuses': calendar_statuses})
 
 
 @login_required
@@ -1370,9 +1371,11 @@ def calendar_list_view(request):
             pass
             
     events = events.order_by('-start_time')
+    calendar_statuses = get_or_create_dynamic_statuses(org, 'calendar', CalendarStatus)
     return render(request, 'calendar_list.html', {
         'events': events,
-        'filter_date': date_str
+        'filter_date': date_str,
+        'calendar_statuses': calendar_statuses
     })
 
 

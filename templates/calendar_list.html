@@ -140,7 +140,15 @@
       <div>
         <label class="block text-label-md font-label-md text-outline uppercase mb-1">Category / Color</label>
         <select id="event-color" name="color" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-          <!-- Dynamically populated -->
+          {% for status in calendar_statuses %}
+          <option value="{{ status.color }}">{{ status.name }}</option>
+          {% empty %}
+          <option value="#004ac6">Meeting</option>
+          <option value="#10b981">Call</option>
+          <option value="#ef4444">Deadline</option>
+          <option value="#8b5cf6">Follow-up</option>
+          <option value="#f97316">Personal</option>
+          {% endfor %}
         </select>
       </div>
 
@@ -169,30 +177,7 @@
   const deleteBtn = document.getElementById('delete-event-btn');
   const modalTitle = document.getElementById('modal-title');
 
-  function renderCategoryDropdown() {
-      const defaultStatuses = [
-          { name: 'Meetings', color: '#004ac6' },
-          { name: 'Calls', color: '#10b981' },
-          { name: 'Deadlines', color: '#ef4444' },
-          { name: 'Follow-ups', color: '#8b5cf6' },
-          { name: 'Personal', color: '#f97316' }
-      ];
-      let list = defaultStatuses;
-      try {
-          const stored = localStorage.getItem('status_list_calendar');
-          if (stored) list = JSON.parse(stored);
-      } catch(e){}
 
-      if (colorSelect) {
-          colorSelect.innerHTML = '';
-          list.forEach(status => {
-              const opt = document.createElement('option');
-              opt.value = status.color;
-              opt.textContent = status.name;
-              colorSelect.appendChild(opt);
-          });
-      }
-  }
 
   function showModal() {
     modal.classList.remove('hidden');
@@ -211,7 +196,6 @@
   }
 
   function openAddModal() {
-    renderCategoryDropdown();
     eventIdInput.value = '';
     titleInput.value = '';
     descInput.value = '';
@@ -230,7 +214,6 @@
   }
 
   function triggerEdit(id, title, description, startStr, endStr, color, recurring) {
-    renderCategoryDropdown();
     eventIdInput.value = id;
     titleInput.value = title;
     descInput.value = description;
