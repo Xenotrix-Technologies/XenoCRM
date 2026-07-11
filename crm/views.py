@@ -1603,7 +1603,7 @@ def add_lead(request):
         
         service = None
         service_id = request.POST.get('service')
-        if status == 'Qualified' and service_id:
+        if service_id:
             try:
                 service = Service.objects.get(id=service_id, organization=org)
             except Service.DoesNotExist:
@@ -1702,7 +1702,7 @@ def edit_lead(request, lead_id):
             lead.profile_image_url = request.POST.get('profile_image_url', '') or None
             
             service_id = request.POST.get('service')
-            if lead.status == 'Qualified' and service_id:
+            if service_id:
                 try:
                     lead.service = Service.objects.get(id=service_id, organization=org)
                 except Service.DoesNotExist:
@@ -4492,14 +4492,13 @@ def generic_status_settings_view(request, category, model_class, category_title,
 @login_required
 @page_permission_required('lead_statuses')
 def lead_status_settings(request):
-    from django.urls import reverse
-    return generic_status_settings_view(
-        request, 'leads', LeadStatus, 'Leads',
-        reverse('add_lead_status'),
-        '/statuses/', # edit_url_prefix (will append <id>/edit/)
-        '/statuses/', # delete_url_prefix
-        reverse('reorder_lead_statuses')
-    )
+    org = request.user.profile.organization
+    statuses = get_or_create_default_statuses(org)
+    services = Service.objects.filter(organization=org).order_name_or_created() if hasattr(Service.objects, 'order_name_or_created') else Service.objects.filter(organization=org).order_by('name')
+    return render(request, 'lead_settings.html', {
+        'statuses': statuses,
+        'services': services
+    })
 
 @login_required
 @page_permission_required('clients')
@@ -4572,3 +4571,39 @@ def priority_status_settings(request):
         '/statuses/category/priority/',
         reverse('reorder_dynamic_statuses', args=['priority'])
     )
+
+@login_required
+def add_service(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        price_val = request.POST.get('price', 0.0)
+        if name:
+            Service.objects.create(
+                organization=request.user.profile.organization,
+                name=name,
+                price=safe_parse_decimal(price_val, 0.0)
+            )
+            return JsonResponse({'success': True, 'message': 'Service added successfully.'})
+    return JsonResponse({'success': False, 'error': 'Invalid request.'})
+
+@login_required
+def edit_service(request, service_id):
+    if request.method == 'POST':
+        service = get_object_or_404(Service, id=service_id, organization=request.user.profile.organization)
+        name = request.POST.get('name')
+        price_val = request.POST.get('price')
+        if name:
+            service.name = name
+            if price_val:
+                service.price = safe_parse_decimal(price_val, service.price)
+            service.save()
+            return JsonResponse({'success': True, 'message': 'Service updated successfully.'})
+    return JsonResponse({'success': False, 'error': 'Invalid request.'})
+
+@login_required
+def delete_service(request, service_id):
+    if request.method == 'POST':
+        service = get_object_or_404(Service, id=service_id, organization=request.user.profile.organization)
+        service.delete()
+        return JsonResponse({'success': True, 'message': 'Service deleted successfully.'})
+    return JsonResponse({'success': False, 'error': 'Invalid request.'})

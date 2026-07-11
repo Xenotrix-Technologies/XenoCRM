@@ -74,6 +74,11 @@ urlpatterns = [
     path('statuses/<int:status_id>/delete/', views.delete_lead_status, name='delete_lead_status'),
     path('statuses/reorder/', views.reorder_lead_statuses, name='reorder_lead_statuses'),
 
+    # Services Management
+    path('services/add/', views.add_service, name='add_service'),
+    path('services/<int:service_id>/edit/', views.edit_service, name='edit_service'),
+    path('services/<int:service_id>/delete/', views.delete_service, name='delete_service'),
+
     # Dynamic Status Management
     path('statuses/category/<str:category>/add/', views.add_dynamic_status, name='add_dynamic_status'),
     path('statuses/category/<str:category>/<int:status_id>/edit/', views.edit_dynamic_status, name='edit_dynamic_status'),
