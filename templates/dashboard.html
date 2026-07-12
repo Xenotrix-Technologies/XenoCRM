@@ -68,8 +68,7 @@
                 </div>
                 <span
                     class="{% if revenue_trend >= 0 %}bg-success/10 text-success{% else %}bg-danger/10 text-danger{% endif %} text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[14px]">{% if revenue_trend >= 0 %}trending_up{% else
-                        %}trending_down{% endif %}</span>
+                    <span class="material-symbols-outlined text-[14px]">{% if revenue_trend >= 0 %}trending_up{% else %}trending_down{% endif %}</span>
                     {% if revenue_trend >= 0 %}+{% endif %}{{ revenue_trend }}%
                 </span>
             </div>

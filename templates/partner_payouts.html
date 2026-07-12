@@ -24,27 +24,27 @@
     <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6 mt-4">
         <div class="glass-card p-4 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
             <h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Total Partners</h4>
-            <p class="text-xl font-bold text-primary">{{ total_partners }}</p>
+            <p class="text-xl font-bold text-primary">{{ total_partners|default:"0" }}</p>
         </div>
         <div class="glass-card p-4 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
             <h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Total Commission</h4>
-            <p class="text-xl font-bold text-primary">₹{{ total_commission }}</p>
+            <p class="text-xl font-bold text-primary">₹{{ total_commission|default:"0" }}</p>
         </div>
         <div class="glass-card p-4 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
             <h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Pending Payouts</h4>
-            <p class="text-xl font-bold text-warning">₹{{ pending_payouts }}</p>
+            <p class="text-xl font-bold text-warning">₹{{ pending_payouts|default:"0" }}</p>
         </div>
         <div class="glass-card p-4 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
             <h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Paid This Month</h4>
-            <p class="text-xl font-bold text-success">₹{{ paid_this_month }}</p>
+            <p class="text-xl font-bold text-success">₹{{ paid_this_month|default:"0" }}</p>
         </div>
         <div class="glass-card p-4 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
             <h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Processing Payments</h4>
-            <p class="text-xl font-bold text-info">₹{{ processing_payments }}</p>
+            <p class="text-xl font-bold text-info">₹{{ processing_payments|default:"0" }}</p>
         </div>
         <div class="glass-card p-4 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
             <h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-2">Total Paid</h4>
-            <p class="text-xl font-bold text-success">₹{{ total_paid }}</p>
+            <p class="text-xl font-bold text-success">₹{{ total_paid|default:"0" }}</p>
         </div>
     </div>
 

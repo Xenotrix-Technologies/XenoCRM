@@ -117,10 +117,9 @@
                 <label class="block text-[10px] font-bold text-outline uppercase tracking-wider">Status</label>
                 <select id="filter-status" onchange="applyFiltersAndSort()" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
                     <option value="all">All Statuses</option>
-                    <option value="Open">Open</option>
-                    <option value="Pending">Pending</option>
-                    <option value="Resolved">Resolved</option>
-                    <option value="Closed">Closed</option>
+                    {% for s in ticket_statuses %}
+                    <option value="{{ s.name }}">{{ s.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
@@ -129,9 +128,9 @@
                 <label class="block text-[10px] font-bold text-outline uppercase tracking-wider">Priority</label>
                 <select id="filter-priority" onchange="applyFiltersAndSort()" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
                     <option value="all">All Priorities</option>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
+                    {% for p in priority_statuses %}
+                    <option value="{{ p.name }}">{{ p.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
 
@@ -190,18 +189,17 @@
                 <div>
                     <label class="block text-label-md font-label-md text-outline uppercase mb-1">Priority</label>
                     <select name="priority" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-                        <option value="Low">Low</option>
-                        <option value="Medium" selected>Medium</option>
-                        <option value="High">High</option>
+                        {% for p in priority_statuses %}
+                        <option value="{{ p.name }}" {% if p.name == 'Medium' %}selected{% endif %}>{{ p.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div>
                     <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status</label>
                     <select name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-                        <option value="Open" selected>Open</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Resolved">Resolved</option>
-                        <option value="Closed">Closed</option>
+                        {% for s in ticket_statuses %}
+                        <option value="{{ s.name }}" {% if loop.first or s.name == 'Open' %}selected{% endif %}>{{ s.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </div>
@@ -257,18 +255,17 @@
                 <div>
                     <label class="block text-label-md font-label-md text-outline uppercase mb-1">Priority</label>
                     <select id="edit-priority" name="priority" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
+                        {% for p in priority_statuses %}
+                        <option value="{{ p.name }}">{{ p.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
                 <div>
                     <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status</label>
                     <select id="edit-status" name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-                        <option value="Open">Open</option>
-                        <option value="Pending">Pending</option>
-                        <option value="Resolved">Resolved</option>
-                        <option value="Closed">Closed</option>
+                        {% for s in ticket_statuses %}
+                        <option value="{{ s.name }}">{{ s.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </div>

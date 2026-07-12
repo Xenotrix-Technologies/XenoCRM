@@ -273,10 +273,16 @@ def customer_support_view(request):
     staff = UserProfile.objects.filter(organization=org)
     projects = Task.objects.filter(lead__organization=org)
     
+    from .models import TicketStatus, PriorityStatus
+    ticket_statuses = TicketStatus.objects.filter(organization=org)
+    priority_statuses = PriorityStatus.objects.filter(organization=org)
+    
     return render(request, 'customer_support.html', {
         'tickets': tickets,
         'staff': staff,
-        'projects': projects
+        'projects': projects,
+        'ticket_statuses': ticket_statuses,
+        'priority_statuses': priority_statuses
     })
 
 
@@ -2776,94 +2782,100 @@ def notifications_view(request):
     one_week_later = now + datetime.timedelta(days=7)
 
     unified_feed = []
+    profile = request.user.profile
 
     # 1. Calendar Events (Next 7 days)
-    calendar_events = Event.objects.filter(
-        organization=org,
-        start_time__gte=now,
-        start_time__lte=one_week_later
-    ).order_by('start_time')
-    
-    for event in calendar_events:
-        unified_feed.append({
-            'type': 'Event',
-            'title': event.title,
-            'description': f"{event.start_time.strftime('%I:%M %p')} - {event.end_time.strftime('%I:%M %p')}",
-            'date': event.start_time,
-            'icon': 'calendar_month',
-            'color_class': 'text-primary bg-primary/10 border-primary/30',
-            'url': reverse('calendar')
-        })
+    if profile.has_access_calendar:
+        calendar_events = Event.objects.filter(
+            organization=org,
+            start_time__gte=now,
+            start_time__lte=one_week_later
+        ).order_by('start_time')
+        
+        for event in calendar_events:
+            unified_feed.append({
+                'type': 'Event',
+                'title': event.title,
+                'description': f"{event.start_time.strftime('%I:%M %p')} - {event.end_time.strftime('%I:%M %p')}",
+                'date': event.start_time,
+                'icon': 'calendar_month',
+                'color_class': 'text-primary bg-primary/10 border-primary/30',
+                'url': reverse('calendar')
+            })
 
     # 2. Pending Tasks
-    pending_tasks = Task.objects.filter(
-        lead__organization=org,
-        completed=False
-    ).order_by('due_date')
-
-    for task in pending_tasks:
-        dt = timezone.make_aware(datetime.datetime.combine(task.due_date, datetime.time.min)) if not hasattr(task.due_date, 'hour') else task.due_date
-        unified_feed.append({
-            'type': 'Task',
-            'title': task.title,
-            'description': f"Lead: {task.lead.name}",
-            'date': dt,
-            'icon': 'rocket_launch',
-            'color_class': 'text-warning bg-warning/10 border-warning/30',
-            'url': reverse('contact_detail', args=[task.lead.id])
-        })
+    if profile.has_access_projects or profile.has_access_leads:
+        pending_tasks = Task.objects.filter(
+            lead__organization=org,
+            completed=False
+        ).order_by('due_date')
+    
+        for task in pending_tasks:
+            dt = timezone.make_aware(datetime.datetime.combine(task.due_date, datetime.time.min)) if not hasattr(task.due_date, 'hour') else task.due_date
+            unified_feed.append({
+                'type': 'Task',
+                'title': task.title,
+                'description': f"Lead: {task.lead.name}",
+                'date': dt,
+                'icon': 'rocket_launch',
+                'color_class': 'text-warning bg-warning/10 border-warning/30',
+                'url': reverse('contact_detail', args=[task.lead.id])
+            })
 
     # 3. Expiring Agreements (Next 30 days)
-    thirty_days_later = now.date() + datetime.timedelta(days=30)
-    expiring_agreements = Agreement.objects.filter(
-        organization=org,
-        end_date__lte=thirty_days_later
-    ).order_by('end_date')
-
-    for ag in expiring_agreements:
-        dt = timezone.make_aware(datetime.datetime.combine(ag.end_date, datetime.time.min))
-        unified_feed.append({
-            'type': 'Agreement',
-            'title': f"Agreement {ag.agreement_number}",
-            'description': f"Client: {ag.client_name}",
-            'date': dt,
-            'icon': 'contract',
-            'color_class': 'text-secondary bg-secondary/10 border-secondary/30',
-            'url': reverse('agreement_detail', args=[ag.id])
-        })
+    if profile.has_access_agreements or profile.has_access_projects:
+        thirty_days_later = now.date() + datetime.timedelta(days=30)
+        expiring_agreements = Agreement.objects.filter(
+            organization=org,
+            end_date__lte=thirty_days_later
+        ).order_by('end_date')
+    
+        for ag in expiring_agreements:
+            dt = timezone.make_aware(datetime.datetime.combine(ag.end_date, datetime.time.min))
+            unified_feed.append({
+                'type': 'Agreement',
+                'title': f"Agreement {ag.agreement_number}",
+                'description': f"Client: {ag.client_name}",
+                'date': dt,
+                'icon': 'contract',
+                'color_class': 'text-secondary bg-secondary/10 border-secondary/30',
+                'url': reverse('agreement_detail', args=[ag.id])
+            })
 
     # 4. Open Tickets
-    open_tickets = Ticket.objects.filter(
-        organization=org,
-        status__in=['Open', 'In Progress']
-    ).order_by('-created_at')
-
-    for ticket in open_tickets:
-        unified_feed.append({
-            'type': 'Support Ticket',
-            'title': ticket.subject,
-            'description': f"Status: {ticket.status}",
-            'date': ticket.created_at,
-            'icon': 'support_agent',
-            'color_class': 'text-tertiary bg-tertiary-container/30 border-tertiary/30',
-            'url': reverse('customer_support')
-        })
+    if profile.has_access_support:
+        open_tickets = Ticket.objects.filter(
+            organization=org,
+            status__in=['Open', 'In Progress']
+        ).order_by('-created_at')
+    
+        for ticket in open_tickets:
+            unified_feed.append({
+                'type': 'Support Ticket',
+                'title': ticket.subject,
+                'description': f"Status: {ticket.status}",
+                'date': ticket.created_at,
+                'icon': 'support_agent',
+                'color_class': 'text-tertiary bg-tertiary-container/30 border-tertiary/30',
+                'url': reverse('customer_support')
+            })
 
     # 5. Recent Activities
-    recent_activities = Activity.objects.filter(
-        lead__organization=org
-    ).order_by('-timestamp')[:20]
-
-    for act in recent_activities:
-        unified_feed.append({
-            'type': 'Activity',
-            'title': f"{act.type} - {act.lead.name}",
-            'description': act.description,
-            'date': act.timestamp,
-            'icon': 'history',
-            'color_class': 'text-on-surface bg-surface-variant/50 border-outline-variant',
-            'url': reverse('contact_detail', args=[act.lead.id])
-        })
+    if profile.has_access_leads:
+        recent_activities = Activity.objects.filter(
+            lead__organization=org
+        ).order_by('-timestamp')[:20]
+    
+        for act in recent_activities:
+            unified_feed.append({
+                'type': 'Activity',
+                'title': f"{act.type} - {act.lead.name}",
+                'description': act.description,
+                'date': act.timestamp,
+                'icon': 'history',
+                'color_class': 'text-on-surface bg-surface-variant/50 border-outline-variant',
+                'url': reverse('contact_detail', args=[act.lead.id])
+            })
 
     # 6. System Alerts
     system_alerts = SystemNotification.objects.filter(user=request.user).order_by('-created_at')
@@ -4576,14 +4588,14 @@ def calendar_status_settings(request):
 @login_required
 @page_permission_required('support')
 def ticket_status_settings(request):
-    from django.urls import reverse
-    return generic_status_settings_view(
-        request, 'tickets', TicketStatus, 'Tickets',
-        reverse('add_dynamic_status', args=['tickets']),
-        '/statuses/category/tickets/',
-        '/statuses/category/tickets/',
-        reverse('reorder_dynamic_statuses', args=['tickets'])
-    )
+    org = request.user.profile.organization
+    statuses = TicketStatus.objects.filter(organization=org)
+    priorities = PriorityStatus.objects.filter(organization=org)
+    
+    return render(request, 'ticket_settings.html', {
+        'statuses': statuses,
+        'priorities': priorities,
+    })
 
 @login_required
 @page_permission_required('support')

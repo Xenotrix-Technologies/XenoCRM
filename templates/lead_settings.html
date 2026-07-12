@@ -45,7 +45,7 @@
             </div>
             <h3 class="font-bold text-sm text-on-surface uppercase tracking-wider">Statuses</h3>
           </div>
-          <span class="text-[10px] font-bold text-outline bg-slate-200 rounded-full px-2 py-0.5">{{ statuses.count|default:statuses|length }}</span>
+          <span class="text-[10px] font-bold text-outline bg-slate-200 rounded-full px-2 py-0.5">{{ statuses|length }}</span>
         </div>
 
         <!-- Options List -->
@@ -101,7 +101,7 @@
             </div>
             <h3 class="font-bold text-sm text-on-surface uppercase tracking-wider">Services</h3>
           </div>
-          <span class="text-[10px] font-bold text-outline bg-slate-200 rounded-full px-2 py-0.5">{{ services.count|default:services|length }}</span>
+          <span class="text-[10px] font-bold text-outline bg-slate-200 rounded-full px-2 py-0.5">{{ services|length }}</span>
         </div>
 
         <!-- Options List -->
