@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Employee Directory - XenoCRM{% endblock %}
+
+{% block content %}
+<div class="pt-8 p-margin-edge min-h-screen bg-background">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h2 class="font-headline-lg text-headline-lg font-bold text-on-background">Employee Directory</h2>
+        <p class="text-secondary text-body-sm mt-1">Manage employee profiles, roles, and departmental assignments.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="document.getElementById('addEmployeeModal').classList.remove('hidden')" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm">
+          <span class="material-symbols-outlined text-[18px]">person_add</span>
+          Add Employee
+        </button>
+      </div>
+    </div>
+
+    {% if employees %}
+    <div class="bg-white rounded-2xl shadow-sm border border-outline-variant overflow-hidden">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-surface-variant/30 text-secondary text-sm">
+            <th class="p-4 font-bold border-b border-outline-variant">Employee</th>
+            <th class="p-4 font-bold border-b border-outline-variant">ID</th>
+            <th class="p-4 font-bold border-b border-outline-variant">Title</th>
+            <th class="p-4 font-bold border-b border-outline-variant">Joined Date</th>
+            <th class="p-4 font-bold border-b border-outline-variant text-right">Salary</th>
+          </tr>
+        </thead>
+        <tbody class="text-sm">
+          {% for emp in employees %}
+          <tr class="hover:bg-surface-variant/10 transition-colors border-b border-outline-variant last:border-b-0">
+            <td class="p-4 flex items-center gap-3">
+              {% if emp.user_profile.profile_image_url %}
+              <img src="{{ emp.user_profile.profile_image_url }}" alt="Profile" class="w-8 h-8 rounded-full object-cover">
+              {% else %}
+              <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+                {{ emp.user_profile.user.first_name|first|default:emp.user_profile.user.username|first|upper }}
+              </div>
+              {% endif %}
+              <span class="font-bold text-on-background">{{ emp.user_profile.user.get_full_name|default:emp.user_profile.user.username }}</span>
+            </td>
+            <td class="p-4 text-secondary">{{ emp.employee_id|default:"-" }}</td>
+            <td class="p-4 text-on-background">{{ emp.job_title|default:"-" }}</td>
+            <td class="p-4 text-secondary">{{ emp.date_of_joining|date:"M d, Y"|default:"-" }}</td>
+            <td class="p-4 text-right font-bold text-primary">${{ emp.salary_amount }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <!-- Empty State Content Area -->
+    <div class="glass-card rounded-2xl p-12 border border-outline-variant/30 shadow-sm bg-white flex flex-col items-center justify-center text-center mt-6">
+      <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+        <span class="material-symbols-outlined text-4xl text-primary">badge</span>
+      </div>
+      <h3 class="text-xl font-bold text-on-background mb-2">No Employees Found</h3>
+      <p class="text-secondary max-w-md mx-auto mb-6">There are currently no employee profiles in the system. Get started by adding your first employee.</p>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div id="addEmployeeModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-variant/10">
+      <h3 class="font-bold text-lg text-on-background">Add Employee Data</h3>
+      <button onclick="document.getElementById('addEmployeeModal').classList.add('hidden')" class="text-secondary hover:text-error transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="p-6 overflow-y-auto">
+      <form method="POST" class="space-y-4">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-4">
+            <label for="{{ field.id_for_label }}" class="block text-sm font-bold text-secondary mb-1">
+                {{ field.label }}
+            </label>
+            {{ field }}
+            {% if field.errors %}
+            <p class="text-error text-xs mt-1 font-medium">{{ field.errors.0 }}</p>
+            {% endif %}
+            {% if field.help_text %}
+            <p class="text-secondary text-xs mt-1">{{ field.help_text }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <div class="pt-4 flex justify-end gap-3">
+          <button type="button" onclick="document.getElementById('addEmployeeModal').classList.add('hidden')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg font-bold hover:bg-surface-variant/30 transition-all">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary/90 transition-all shadow-sm">Save Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

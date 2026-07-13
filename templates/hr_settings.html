@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}HR Settings - XenoCRM{% endblock %}
+
+{% block content %}
+<div class="pt-8 p-margin-edge min-h-screen bg-background">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h2 class="font-headline-lg text-headline-lg font-bold text-on-background">HR Settings</h2>
+        <p class="text-secondary text-body-sm mt-1">Configure leave types, attendance statuses, and payroll rules.</p>
+      </div>
+    </div>
+
+    <!-- Settings Tabs -->
+    <div class="flex flex-wrap gap-2 border-b border-outline-variant mt-6">
+        <button onclick="switchTab('leave')" id="tab-leave" class="tab-btn px-4 py-2 border-b-2 border-primary text-primary font-bold transition-all">Leave Types</button>
+        <button onclick="switchTab('leave_request')" id="tab-leave_request" class="tab-btn px-4 py-2 border-b-2 border-transparent text-secondary hover:text-on-background transition-all">Leave Request Statuses</button>
+        <button onclick="switchTab('attendance')" id="tab-attendance" class="tab-btn px-4 py-2 border-b-2 border-transparent text-secondary hover:text-on-background transition-all">Attendance Statuses</button>
+        <button onclick="switchTab('payroll')" id="tab-payroll" class="tab-btn px-4 py-2 border-b-2 border-transparent text-secondary hover:text-on-background transition-all">Payroll Rules</button>
+    </div>
+
+    <div class="glass-card rounded-2xl border border-outline-variant/30 shadow-sm bg-white mt-6 overflow-hidden">
+        
+        <!-- Leave Types Tab -->
+        <div id="content-leave" class="tab-content p-6 block">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-on-background">Leave Types</h3>
+                <button onclick="openModal('modal-leave')" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm text-sm">
+                    <span class="material-symbols-outlined text-[18px]">add</span> Add Type
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-outline-variant text-label-md text-outline">
+                            <th class="py-3 px-4 font-bold uppercase">Name</th>
+                            <th class="py-3 px-4 font-bold uppercase text-center">Status</th>
+                            <th class="py-3 px-4 font-bold uppercase text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in leave_types %}
+                        <tr class="border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+                            <td class="py-3 px-4 text-body-md font-medium text-on-surface">{{ item.name }}</td>
+                            <td class="py-3 px-4 text-center">
+                                {% if item.is_active %}
+                                <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">Active</span>
+                                {% else %}
+                                <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-right">
+                                <form method="POST" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_leave_type">
+                                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                                    <button type="submit" class="text-error hover:text-error/80" onclick="return confirm('Are you sure?')"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="py-8 text-center text-secondary">No leave types configured.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Leave Request Statuses Tab -->
+        <div id="content-leave_request" class="tab-content p-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-on-background">Leave Request Statuses</h3>
+                <button onclick="openModal('modal-leave_request')" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm text-sm">
+                    <span class="material-symbols-outlined text-[18px]">add</span> Add Status
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-outline-variant text-label-md text-outline">
+                            <th class="py-3 px-4 font-bold uppercase">Name</th>
+                            <th class="py-3 px-4 font-bold uppercase text-center">Status</th>
+                            <th class="py-3 px-4 font-bold uppercase text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in leave_request_statuses %}
+                        <tr class="border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+                            <td class="py-3 px-4 text-body-md font-medium text-on-surface">{{ item.name }}</td>
+                            <td class="py-3 px-4 text-center">
+                                {% if item.is_active %}
+                                <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">Active</span>
+                                {% else %}
+                                <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-right">
+                                <form method="POST" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_leave_request_status">
+                                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                                    <button type="submit" class="text-error hover:text-error/80" onclick="return confirm('Are you sure?')"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="py-8 text-center text-secondary">No leave request statuses configured.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Attendance Statuses Tab -->
+        <div id="content-attendance" class="tab-content p-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-on-background">Attendance Statuses</h3>
+                <button onclick="openModal('modal-attendance')" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm text-sm">
+                    <span class="material-symbols-outlined text-[18px]">add</span> Add Status
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-outline-variant text-label-md text-outline">
+                            <th class="py-3 px-4 font-bold uppercase">Name</th>
+                            <th class="py-3 px-4 font-bold uppercase text-center">Status</th>
+                            <th class="py-3 px-4 font-bold uppercase text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in attendance_statuses %}
+                        <tr class="border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+                            <td class="py-3 px-4 text-body-md font-medium text-on-surface">{{ item.name }}</td>
+                            <td class="py-3 px-4 text-center">
+                                {% if item.is_active %}
+                                <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">Active</span>
+                                {% else %}
+                                <span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-right">
+                                <form method="POST" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_attendance_status">
+                                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                                    <button type="submit" class="text-error hover:text-error/80" onclick="return confirm('Are you sure?')"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="py-8 text-center text-secondary">No attendance statuses configured.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Payroll Rules Tab -->
+        <div id="content-payroll" class="tab-content p-6 hidden">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-on-background">Payroll Rules</h3>
+                <button onclick="openModal('modal-payroll')" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm text-sm">
+                    <span class="material-symbols-outlined text-[18px]">add</span> Add Rule
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-outline-variant text-label-md text-outline">
+                            <th class="py-3 px-4 font-bold uppercase">Name</th>
+                            <th class="py-3 px-4 font-bold uppercase">Type</th>
+                            <th class="py-3 px-4 font-bold uppercase">Amount</th>
+                            <th class="py-3 px-4 font-bold uppercase text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in payroll_rules %}
+                        <tr class="border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors">
+                            <td class="py-3 px-4 text-body-md font-medium text-on-surface">{{ item.name }}</td>
+                            <td class="py-3 px-4 text-body-md">
+                                <span class="px-2 py-1 rounded text-xs font-bold {% if item.rule_type == 'Bonus' %}bg-green-100 text-green-700{% else %}bg-orange-100 text-orange-700{% endif %}">
+                                    {{ item.rule_type }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-body-md font-medium text-on-surface">
+                                {{ item.amount }} {% if item.is_percentage %}%{% else %}${% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-right">
+                                <form method="POST" style="display: inline;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_payroll_rule">
+                                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                                    <button type="submit" class="text-error hover:text-error/80" onclick="return confirm('Are you sure?')"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="py-8 text-center text-secondary">No payroll rules configured.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+
+<!-- Leave Type Modal -->
+<div id="modal-leave" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-on-background">Add Leave Type</h3>
+            <button onclick="closeModal('modal-leave')" class="text-secondary hover:text-error"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_leave_type">
+            <div class="space-y-4">
+                {{ leave_form.as_p }}
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button type="button" onclick="closeModal('modal-leave')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Leave Request Status Modal -->
+<div id="modal-leave_request" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-on-background">Add Leave Request Status</h3>
+            <button onclick="closeModal('modal-leave_request')" class="text-secondary hover:text-error"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_leave_request_status">
+            <div class="space-y-4">
+                {{ leave_request_status_form.as_p }}
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button type="button" onclick="closeModal('modal-leave_request')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Attendance Status Modal -->
+<div id="modal-attendance" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-on-background">Add Attendance Status</h3>
+            <button onclick="closeModal('modal-attendance')" class="text-secondary hover:text-error"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_attendance_status">
+            <div class="space-y-4">
+                {{ attendance_form.as_p }}
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button type="button" onclick="closeModal('modal-attendance')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Payroll Rule Modal -->
+<div id="modal-payroll" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-on-background">Add Payroll Rule</h3>
+            <button onclick="closeModal('modal-payroll')" class="text-secondary hover:text-error"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_payroll_rule">
+            <div class="space-y-4">
+                {{ payroll_rule_form.as_p }}
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button type="button" onclick="closeModal('modal-payroll')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function switchTab(tabId) {
+        // Hide all contents
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.replace('block', 'hidden'));
+        // Reset all tabs styles
+        document.querySelectorAll('.tab-btn').forEach(el => {
+            el.classList.remove('border-primary', 'text-primary');
+            el.classList.add('border-transparent', 'text-secondary');
+        });
+        
+        // Show selected
+        document.getElementById('content-' + tabId).classList.replace('hidden', 'block');
+        const btn = document.getElementById('tab-' + tabId);
+        btn.classList.remove('border-transparent', 'text-secondary');
+        btn.classList.add('border-primary', 'text-primary');
+    }
+
+    function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+    }
+</script>
+{% endblock %}

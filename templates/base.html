@@ -4,9 +4,11 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>{% block title %}XenoCRM{% endblock %}</title>
+{% load static %}
     <!-- Tailwind CSS with Forms and Container Queries -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     
+    <link href="{% static 'css/form_styles.css' %}" rel="stylesheet">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Geist:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@500&amp;display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -289,6 +291,47 @@
                 <span class="material-symbols-outlined">badge</span>
                 <span class="font-body-sm text-body-sm">Staff</span>
             </a>
+            {% endif %}
+
+            {% if request.user.profile.has_access_hr %}
+            <!-- Human Resources Dropdown Accordion -->
+            <div class="space-y-1">
+                <button type="button" aria-expanded="false" aria-controls="hr-dropdown-menu" id="hr-dropdown-btn"
+                    onclick="toggleSidebarDropdown('hr')"
+                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if 'hr' in request.resolver_match.url_name %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined">groups</span>
+                        <span class="font-body-sm text-body-sm">Human Resources</span>
+                    </div>
+                    <span id="hr-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
+                </button>
+                <div id="hr-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="hr-dropdown-btn">
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_dashboard' %}">
+                        <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                        <span>Overview</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_employees' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_employees' %}">
+                        <span class="material-symbols-outlined text-[20px]">badge</span>
+                        <span>Employees</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_attendance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_attendance' %}">
+                        <span class="material-symbols-outlined text-[20px]">event_available</span>
+                        <span>Attendance</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_leaves' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_leaves' %}">
+                        <span class="material-symbols-outlined text-[20px]">sick</span>
+                        <span>Leaves</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_payroll' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_payroll' %}">
+                        <span class="material-symbols-outlined text-[20px]">payments</span>
+                        <span>Payroll</span>
+                    </a>
+                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_settings' %}">
+                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                        <span>Settings</span>
+                    </a>
+                </div>
+            </div>
             {% endif %}
 
             {% if request.user.profile.has_access_campaigns %}

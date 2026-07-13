@@ -1,0 +1,11 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.hr_dashboard, name='hr_dashboard'),
+    path('employees/', views.hr_employees, name='hr_employees'),
+    path('attendance/', views.hr_attendance, name='hr_attendance'),
+    path('leaves/', views.hr_leaves, name='hr_leaves'),
+    path('payroll/', views.hr_payroll, name='hr_payroll'),
+    path('settings/', views.hr_settings, name='hr_settings'),
+]

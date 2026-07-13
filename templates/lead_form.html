@@ -21,7 +21,7 @@
         </p>
       </div>
 
-      <form method="POST" action="{{ action_url }}" class="space-y-6">
+      <div class="form-card"><form method="POST" action="{{ action_url }}" class="space-y-6">
         {% csrf_token %}
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -45,18 +45,27 @@
               {% endfor %}
             </select>
           </div>
-          <div>
-            <label class="block text-label-md font-label-md text-outline uppercase mb-2">Services</label>
-            <div id="lead-service-select" class="bg-surface-container-low border border-outline-variant rounded-lg p-3 space-y-2 max-h-48 overflow-y-auto">
-              {% for svc in services %}
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="services" value="{{ svc.id }}" class="w-4 h-4 text-primary bg-white border-outline-variant rounded focus:ring-primary focus:ring-2"
-                  {% if lead and svc in lead.services.all %}checked{% endif %}>
-                <span class="text-body-sm text-on-surface">{{ svc.name }}</span>
-              </label>
-              {% empty %}
-              <p class="text-xs text-secondary italic">No services available.</p>
-              {% endfor %}
+          <div class="relative" id="custom-multiselect-container">
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Services</label>
+            <!-- Custom Dropdown Button -->
+            <div id="multiselect-display" tabindex="0" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary cursor-pointer flex flex-wrap gap-2 items-center min-h-[42px]">
+              <span id="multiselect-placeholder" class="text-secondary">Select services...</span>
+            </div>
+            
+            <!-- Dropdown Menu -->
+            <div id="multiselect-menu" class="absolute z-10 w-full mt-1 bg-white border border-outline-variant rounded-lg shadow-xl max-h-60 overflow-y-auto overflow-x-hidden hidden">
+              <div class="p-2 space-y-1">
+                {% for svc in services %}
+                <label class="flex items-center gap-3 p-2.5 hover:bg-slate-50 rounded-md cursor-pointer transition-colors border border-transparent hover:border-outline-variant/30 group w-full">
+                  <input type="checkbox" name="services" value="{{ svc.id }}" data-name="{{ svc.name|escapejs }}" class="service-checkbox text-primary bg-white border border-outline-variant rounded focus:ring-primary focus:ring-2 cursor-pointer m-0 appearance-none checked:bg-primary checked:border-primary checked:after:content-['✔'] checked:after:text-white checked:after:text-[10px] checked:after:flex checked:after:items-center checked:after:justify-center"
+                    style="width: 16px !important; height: 16px !important; min-width: 16px !important; min-height: 16px !important; flex: 0 0 16px !important; border-radius: 4px !important;"
+                    {% if lead and svc in lead.services.all %}checked{% endif %}>
+                  <span class="text-body-sm text-on-surface font-medium group-hover:text-primary transition-colors whitespace-nowrap overflow-hidden text-ellipsis select-none flex-1">{{ svc.name }}</span>
+                </label>
+                {% empty %}
+                <p class="text-xs text-secondary italic p-2">No services available.</p>
+                {% endfor %}
+              </div>
             </div>
           </div>
           <div>
@@ -114,7 +123,7 @@
             </button>
           </div>
         </div>
-      </form>
+      </form></div>
     </div>
   </div>
 </main>
@@ -133,5 +142,66 @@
   }
 </script>
 {% endif %}
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const container = document.getElementById("custom-multiselect-container");
+    const display = document.getElementById("multiselect-display");
+    const menu = document.getElementById("multiselect-menu");
+    const placeholder = document.getElementById("multiselect-placeholder");
+    const checkboxes = document.querySelectorAll(".service-checkbox");
+
+    // Toggle menu visibility
+    display.addEventListener("click", () => {
+      menu.classList.toggle("hidden");
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!container.contains(e.target)) {
+        menu.classList.add("hidden");
+      }
+    });
+
+    // Update display when checkboxes change
+    function updateDisplay() {
+      const selected = Array.from(checkboxes).filter(cb => cb.checked);
+      
+      // Clear current pills
+      display.innerHTML = "";
+      
+      if (selected.length === 0) {
+        display.appendChild(placeholder);
+        placeholder.style.display = "block";
+      } else {
+        placeholder.style.display = "none";
+        selected.forEach(cb => {
+          const pill = document.createElement("span");
+          pill.className = "inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary font-bold text-xs";
+          pill.innerHTML = `
+            ${cb.dataset.name}
+            <span class="material-symbols-outlined text-[14px] hover:text-error ml-1" style="cursor: pointer;">close</span>
+          `;
+          
+          // Handle clicking the 'x' on the pill
+          pill.querySelector("span").addEventListener("click", (e) => {
+            e.stopPropagation(); // Prevent dropdown from toggling
+            cb.checked = false;
+            updateDisplay();
+          });
+          
+          display.appendChild(pill);
+        });
+      }
+    }
+
+    checkboxes.forEach(cb => {
+      cb.addEventListener("change", updateDisplay);
+    });
+
+    // Initialize display on load
+    updateDisplay();
+  });
+</script>
 
 {% endblock %}

@@ -127,6 +127,10 @@ class UserProfile(models.Model):
         return self.check_page_permission('campaigns')
 
     @property
+    def has_access_hr(self):
+        return self.check_page_permission('hr')
+
+    @property
     def has_access_staff(self):
         return self.check_page_permission('staff')
 

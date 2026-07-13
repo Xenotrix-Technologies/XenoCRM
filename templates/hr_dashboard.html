@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Human Resources Dashboard - XenoCRM{% endblock %}
+
+{% block content %}
+<div class="pt-8 p-margin-edge min-h-screen bg-background">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Header Section -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h2 class="font-headline-lg text-headline-lg font-bold text-on-background">Human Resources</h2>
+        <p class="text-secondary text-body-sm mt-1">Manage employees, track attendance, and oversee payroll from this centralized dashboard.</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm">
+          <span class="material-symbols-outlined text-[18px]">add</span>
+          Add Employee
+        </button>
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="glass-card p-5 rounded-2xl border border-outline-variant/30 shadow-sm bg-white">
+        <div class="flex justify-between items-start mb-4">
+          <div class="flex items-center gap-2">
+            <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+              <span class="material-symbols-outlined">badge</span>
+            </div>
+            <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Total Employees</span>
+          </div>
+        </div>
+        <h3 class="text-3xl font-display-lg font-black text-on-background mt-2">0</h3>
+      </div>
+
+      <div class="glass-card p-5 rounded-2xl border border-outline-variant/30 shadow-sm bg-white">
+        <div class="flex justify-between items-start mb-4">
+          <div class="flex items-center gap-2">
+            <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+              <span class="material-symbols-outlined">event_available</span>
+            </div>
+            <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Present Today</span>
+          </div>
+        </div>
+        <h3 class="text-3xl font-display-lg font-black text-on-background mt-2">0</h3>
+      </div>
+
+      <div class="glass-card p-5 rounded-2xl border border-outline-variant/30 shadow-sm bg-white">
+        <div class="flex justify-between items-start mb-4">
+          <div class="flex items-center gap-2">
+            <div class="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
+              <span class="material-symbols-outlined">sick</span>
+            </div>
+            <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">On Leave</span>
+          </div>
+        </div>
+        <h3 class="text-3xl font-display-lg font-black text-on-background mt-2">0</h3>
+      </div>
+
+      <div class="glass-card p-5 rounded-2xl border border-outline-variant/30 shadow-sm bg-white">
+        <div class="flex justify-between items-start mb-4">
+          <div class="flex items-center gap-2">
+            <div class="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
+              <span class="material-symbols-outlined">payments</span>
+            </div>
+            <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Pending Payroll</span>
+          </div>
+        </div>
+        <h3 class="text-3xl font-display-lg font-black text-on-background mt-2">0</h3>
+      </div>
+    </div>
+
+    <!-- Empty State Content Area -->
+    <div class="glass-card rounded-2xl p-12 border border-outline-variant/30 shadow-sm bg-white flex flex-col items-center justify-center text-center mt-6">
+      <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+        <span class="material-symbols-outlined text-4xl text-primary">groups</span>
+      </div>
+      <h3 class="text-xl font-bold text-on-background mb-2">No Employee Data Found</h3>
+      <p class="text-secondary max-w-md mx-auto mb-6">The Human Resources module is active, but there is no employee data to display yet. Add employees to start tracking attendance, leaves, and payroll.</p>
+      <button class="px-6 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm inline-flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">add_circle</span>
+        Add First Employee
+      </button>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
