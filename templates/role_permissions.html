@@ -86,9 +86,9 @@
           <div class="flex items-center justify-between px-4 pb-1">
             <span class="text-xs font-bold uppercase tracking-wider text-outline">Page</span>
             <div class="flex items-center gap-4">
-              <span class="text-xs font-bold uppercase tracking-wider text-outline w-[52px] text-center">View</span>
-              <span class="text-xs font-bold uppercase tracking-wider text-outline w-[52px] text-center">Edit</span>
-              <span class="text-xs font-bold uppercase tracking-wider text-outline w-[52px] text-center">Delete</span>
+              <label class="flex items-center gap-1"><input type="checkbox" id="select-all-view" class="w-5 h-5" onclick="toggleSelectAllView(this.checked)" /> <span class="text-xs font-bold uppercase tracking-wider text-outline w-[52px] text-center">View</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="select-all-edit" class="w-5 h-5" onclick="toggleSelectAllEdit(this.checked)" /> <span class="text-xs font-bold uppercase tracking-wider text-outline w-[52px] text-center">Edit</span></label>
+              <label class="flex items-center gap-1"><input type="checkbox" id="select-all-delete" class="w-5 h-5" onclick="toggleSelectAllDelete(this.checked)" /> <span class="text-xs font-bold uppercase tracking-wider text-outline w-[52px] text-center">Delete</span></label>
             </div>
           </div>
 
@@ -404,6 +404,7 @@
               </div>
             </div>
 
+            
             <!-- Row: Departments -->
             <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
               <div class="flex items-center gap-3.5">
@@ -419,6 +420,287 @@
                 <input type="checkbox" id="perm-departments" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
                 <input type="checkbox" id="perm-departments-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
                 <input type="checkbox" id="perm-departments-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <div class="pt-4 pb-1">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-outline">Human Resources</h4>
+            </div>
+            <!-- Row: HR Dashboard -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">HR Dashboard</span>
+                  <span class="block text-[11px] text-secondary">Access to HR statistics and overview.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-hr_dashboard" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-hr_dashboard-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-hr_dashboard-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: Employees -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">badge</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Employees</span>
+                  <span class="block text-[11px] text-secondary">Manage organization employees.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-hr_employees" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-hr_employees-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-hr_employees-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: Attendance -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">event_available</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Attendance</span>
+                  <span class="block text-[11px] text-secondary">Manage staff attendance records.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-hr_attendance" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-hr_attendance-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-hr_attendance-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: Leaves -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">sick</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Leaves</span>
+                  <span class="block text-[11px] text-secondary">Manage time off requests.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-hr_leaves" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-hr_leaves-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-hr_leaves-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: Payroll -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">payments</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Payroll</span>
+                  <span class="block text-[11px] text-secondary">Manage salaries and payroll records.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-hr_payroll" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-hr_payroll-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-hr_payroll-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: HR Settings -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">settings</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">HR Settings</span>
+                  <span class="block text-[11px] text-secondary">Configure HR module settings.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-hr_settings" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-hr_settings-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-hr_settings-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <div class="pt-4 pb-1">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-outline">Finance</h4>
+            </div>
+            <!-- Row: Finance Dashboard -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">speed</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Finance Dashboard</span>
+                  <span class="block text-[11px] text-secondary">Access to finance statistics.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-finance_dashboard" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-finance_dashboard-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-finance_dashboard-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: Income -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">trending_up</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Income</span>
+                  <span class="block text-[11px] text-secondary">Manage revenue and income streams.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-finance_income" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-finance_income-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-finance_income-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: Expenses -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">trending_down</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Expenses</span>
+                  <span class="block text-[11px] text-secondary">Manage organizational expenses.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-finance_expenses" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-finance_expenses-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-finance_expenses-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: Financial Reports -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">assessment</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Financial Reports</span>
+                  <span class="block text-[11px] text-secondary">Generate and view financial reports.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-finance_reports" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-finance_reports-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-finance_reports-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: Partner Payouts -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">payments</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Partner Payouts</span>
+                  <span class="block text-[11px] text-secondary">Manage affiliate and partner payouts.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-partner_payouts" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-partner_payouts-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-partner_payouts-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: Finance Settings -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">settings</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Finance Settings</span>
+                  <span class="block text-[11px] text-secondary">Configure financial settings.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-finance_settings" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-finance_settings-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-finance_settings-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <div class="pt-4 pb-1">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-outline">CMS & Campaigns Subpages</h4>
+            </div>
+            <!-- Row: Editor Dashboard -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">analytics</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Editor Dashboard</span>
+                  <span class="block text-[11px] text-secondary">Access editor statistics.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-editor_dashboard" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-editor_dashboard-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-editor_dashboard-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: Editor Board -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">edit_square</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Editor Board</span>
+                  <span class="block text-[11px] text-secondary">Access content production kanban.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-editor_board" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-editor_board-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-editor_board-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: Post Management -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">campaign</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Post Management</span>
+                  <span class="block text-[11px] text-secondary">Manage social media posts.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-post_management" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-post_management-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-post_management-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+              </div>
+            </div>
+            <!-- Row: Campaign Settings -->
+            <div class="flex items-center justify-between p-4 rounded-xl border border-outline-variant/20 bg-slate-50/30 hover:bg-slate-50 transition-colors">
+              <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-lg bg-primary-container/10 flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[20px]">settings</span>
+                </div>
+                <div>
+                  <span class="block text-sm font-bold text-on-surface">Campaign Settings</span>
+                  <span class="block text-[11px] text-secondary">Configure campaign statuses.</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-4">
+                <input type="checkbox" id="perm-campaign_status_settings" class="perm-switch perm-toggle-view w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-campaign_status_settings-edit" class="perm-switch-edit perm-toggle-edit w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-primary transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
+                <input type="checkbox" id="perm-campaign_status_settings-delete" class="perm-switch-delete perm-toggle-delete w-9 h-5 bg-surface-variant rounded-full appearance-none cursor-pointer relative checked:bg-error transition-all duration-300 before:content-[''] before:absolute before:w-4 before:h-4 before:rounded-full before:bg-white before:top-0.5 before:left-0.5 checked:before:left-4.5 before:transition-all before:duration-300 shadow-inner border border-outline-variant" />
               </div>
             </div>
           </div>
@@ -445,7 +727,7 @@
   const staffList = JSON.parse('{{ staff_list_json|escapejs }}');
   const staffPermissions = JSON.parse('{{ staff_permissions_json|escapejs }}');
 
-  const pages = ['dashboard', 'leads', 'calendar', 'clients', 'support', 'projects', 'agreements', 'campaigns', 'staff', 'content_tracker', 'settings', 'content_settings', 'lead_statuses', 'services', 'staff_roles', 'notification_settings', 'role_permissions', 'departments'];
+  const pages = ['dashboard', 'leads', 'calendar', 'clients', 'support', 'projects', 'agreements', 'campaigns', 'staff', 'content_tracker', 'settings', 'content_settings', 'lead_statuses', 'services', 'staff_roles', 'notification_settings', 'role_permissions', 'departments', 'hr_dashboard', 'hr_employees', 'hr_attendance', 'hr_leaves', 'hr_payroll', 'hr_settings', 'finance_dashboard', 'finance_income', 'finance_expenses', 'finance_reports', 'partner_payouts', 'finance_settings', 'editor_dashboard', 'editor_board', 'post_management', 'campaign_status_settings'];
   const settingsSubpages = ['content_settings', 'lead_statuses', 'services', 'staff_roles', 'notification_settings', 'role_permissions', 'departments'];
 
   // Load and pre-select first role on load
@@ -607,7 +889,19 @@
       processStaffSelectionState();
   }
 
-  function toggleStaffSelection(staffId, staffName, isChecked) {
+  function toggleSelectAllView(isChecked) {
+    document.querySelectorAll('.perm-toggle-view').forEach(cb => cb.checked = isChecked);
+}
+
+function toggleSelectAllEdit(isChecked) {
+    document.querySelectorAll('.perm-toggle-edit').forEach(cb => cb.checked = isChecked);
+}
+
+function toggleSelectAllDelete(isChecked) {
+    document.querySelectorAll('.perm-toggle-delete').forEach(cb => cb.checked = isChecked);
+}
+
+function toggleStaffSelection(staffId, staffName, isChecked) {
       if (isChecked) {
           if (!currentSelectedStaffIds.includes(staffId)) {
               currentSelectedStaffIds.push(staffId);

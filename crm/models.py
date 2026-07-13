@@ -170,6 +170,117 @@ class UserProfile(models.Model):
     def has_access_departments(self):
         return self.check_page_permission('departments')
 
+
+    @property
+
+    def has_access_finance(self):
+
+        return self.check_page_permission('finance')
+
+    @property
+
+    def has_access_partner_payouts(self):
+
+        return self.check_page_permission('partner_payouts')
+
+    @property
+
+    def has_access_cms(self):
+
+        return self.check_page_permission('cms')
+
+    @property
+
+    def has_access_hr_dashboard(self):
+
+        return self.check_page_permission('hr_dashboard')
+
+    @property
+
+    def has_access_hr_employees(self):
+
+        return self.check_page_permission('hr_employees')
+
+    @property
+
+    def has_access_hr_attendance(self):
+
+        return self.check_page_permission('hr_attendance')
+
+    @property
+
+    def has_access_hr_leaves(self):
+
+        return self.check_page_permission('hr_leaves')
+
+    @property
+
+    def has_access_hr_payroll(self):
+
+        return self.check_page_permission('hr_payroll')
+
+    @property
+
+    def has_access_hr_settings(self):
+
+        return self.check_page_permission('hr_settings')
+
+    @property
+
+    def has_access_finance_dashboard(self):
+
+        return self.check_page_permission('finance_dashboard')
+
+    @property
+
+    def has_access_finance_income(self):
+
+        return self.check_page_permission('finance_income')
+
+    @property
+
+    def has_access_finance_expenses(self):
+
+        return self.check_page_permission('finance_expenses')
+
+    @property
+
+    def has_access_finance_reports(self):
+
+        return self.check_page_permission('finance_reports')
+
+    @property
+
+    def has_access_finance_settings(self):
+
+        return self.check_page_permission('finance_settings')
+
+    @property
+
+    def has_access_editor_dashboard(self):
+
+        return self.check_page_permission('editor_dashboard')
+
+    @property
+
+    def has_access_editor_board(self):
+
+        return self.check_page_permission('editor_board')
+
+    @property
+
+    def has_access_post_management(self):
+
+        return self.check_page_permission('post_management')
+
+    @property
+
+    def has_access_campaign_status_settings(self):
+
+        return self.check_page_permission('campaign_status_settings')
+
+
+
     def check_edit_permission(self, page_name):
         """Check whether the user's role has edit access for a given page."""
         from crm.models import StaffRole
@@ -273,6 +384,117 @@ class UserProfile(models.Model):
     def has_edit_departments(self):
         return self.check_edit_permission('departments')
 
+
+    @property
+
+    def has_edit_finance(self):
+
+        return self.check_edit_permission('finance')
+
+    @property
+
+    def has_edit_partner_payouts(self):
+
+        return self.check_edit_permission('partner_payouts')
+
+    @property
+
+    def has_edit_cms(self):
+
+        return self.check_edit_permission('cms')
+
+    @property
+
+    def has_edit_hr_dashboard(self):
+
+        return self.check_edit_permission('hr_dashboard')
+
+    @property
+
+    def has_edit_hr_employees(self):
+
+        return self.check_edit_permission('hr_employees')
+
+    @property
+
+    def has_edit_hr_attendance(self):
+
+        return self.check_edit_permission('hr_attendance')
+
+    @property
+
+    def has_edit_hr_leaves(self):
+
+        return self.check_edit_permission('hr_leaves')
+
+    @property
+
+    def has_edit_hr_payroll(self):
+
+        return self.check_edit_permission('hr_payroll')
+
+    @property
+
+    def has_edit_hr_settings(self):
+
+        return self.check_edit_permission('hr_settings')
+
+    @property
+
+    def has_edit_finance_dashboard(self):
+
+        return self.check_edit_permission('finance_dashboard')
+
+    @property
+
+    def has_edit_finance_income(self):
+
+        return self.check_edit_permission('finance_income')
+
+    @property
+
+    def has_edit_finance_expenses(self):
+
+        return self.check_edit_permission('finance_expenses')
+
+    @property
+
+    def has_edit_finance_reports(self):
+
+        return self.check_edit_permission('finance_reports')
+
+    @property
+
+    def has_edit_finance_settings(self):
+
+        return self.check_edit_permission('finance_settings')
+
+    @property
+
+    def has_edit_editor_dashboard(self):
+
+        return self.check_edit_permission('editor_dashboard')
+
+    @property
+
+    def has_edit_editor_board(self):
+
+        return self.check_edit_permission('editor_board')
+
+    @property
+
+    def has_edit_post_management(self):
+
+        return self.check_edit_permission('post_management')
+
+    @property
+
+    def has_edit_campaign_status_settings(self):
+
+        return self.check_edit_permission('campaign_status_settings')
+
+
+
     def check_delete_permission(self, page_name):
         """Check whether the user's role has delete access for a given page."""
         from crm.models import StaffRole
@@ -375,6 +597,117 @@ class UserProfile(models.Model):
     @property
     def has_delete_departments(self):
         return self.check_delete_permission('departments')
+
+
+    @property
+
+    def has_delete_finance(self):
+
+        return self.check_delete_permission('finance')
+
+    @property
+
+    def has_delete_partner_payouts(self):
+
+        return self.check_delete_permission('partner_payouts')
+
+    @property
+
+    def has_delete_cms(self):
+
+        return self.check_delete_permission('cms')
+
+    @property
+
+    def has_delete_hr_dashboard(self):
+
+        return self.check_delete_permission('hr_dashboard')
+
+    @property
+
+    def has_delete_hr_employees(self):
+
+        return self.check_delete_permission('hr_employees')
+
+    @property
+
+    def has_delete_hr_attendance(self):
+
+        return self.check_delete_permission('hr_attendance')
+
+    @property
+
+    def has_delete_hr_leaves(self):
+
+        return self.check_delete_permission('hr_leaves')
+
+    @property
+
+    def has_delete_hr_payroll(self):
+
+        return self.check_delete_permission('hr_payroll')
+
+    @property
+
+    def has_delete_hr_settings(self):
+
+        return self.check_delete_permission('hr_settings')
+
+    @property
+
+    def has_delete_finance_dashboard(self):
+
+        return self.check_delete_permission('finance_dashboard')
+
+    @property
+
+    def has_delete_finance_income(self):
+
+        return self.check_delete_permission('finance_income')
+
+    @property
+
+    def has_delete_finance_expenses(self):
+
+        return self.check_delete_permission('finance_expenses')
+
+    @property
+
+    def has_delete_finance_reports(self):
+
+        return self.check_delete_permission('finance_reports')
+
+    @property
+
+    def has_delete_finance_settings(self):
+
+        return self.check_delete_permission('finance_settings')
+
+    @property
+
+    def has_delete_editor_dashboard(self):
+
+        return self.check_delete_permission('editor_dashboard')
+
+    @property
+
+    def has_delete_editor_board(self):
+
+        return self.check_delete_permission('editor_board')
+
+    @property
+
+    def has_delete_post_management(self):
+
+        return self.check_delete_permission('post_management')
+
+    @property
+
+    def has_delete_campaign_status_settings(self):
+
+        return self.check_delete_permission('campaign_status_settings')
+
+
 
     @property
     def has_any_settings_access(self):

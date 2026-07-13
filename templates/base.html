@@ -306,30 +306,42 @@
                     <span id="hr-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="hr-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="hr-dropdown-btn">
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_dashboard' %}">
+                    {% if request.user.profile.has_access_hr_dashboard %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_dashboard' %}">
                         <span class="material-symbols-outlined text-[20px]">dashboard</span>
                         <span>Overview</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_employees' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_employees' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_hr_employees %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_employees' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_employees' %}">
                         <span class="material-symbols-outlined text-[20px]">badge</span>
                         <span>Employees</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_attendance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_attendance' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_hr_attendance %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_attendance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_attendance' %}">
                         <span class="material-symbols-outlined text-[20px]">event_available</span>
                         <span>Attendance</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_leaves' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_leaves' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_hr_leaves %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_leaves' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_leaves' %}">
                         <span class="material-symbols-outlined text-[20px]">sick</span>
                         <span>Leaves</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_payroll' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_payroll' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_hr_payroll %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_payroll' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_payroll' %}">
                         <span class="material-symbols-outlined text-[20px]">payments</span>
                         <span>Payroll</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_settings' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_hr_settings %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_settings' %}">
                         <span class="material-symbols-outlined text-[20px]">settings</span>
                         <span>Settings</span>
                     </a>
+{% endif %}
                 </div>
             </div>
             {% endif %}
@@ -347,23 +359,29 @@
                     <span id="campaigns-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="campaigns-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="campaigns-dropdown-btn">
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'campaign' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'campaign' %}">
+                    {% if request.user.profile.has_access_campaign %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'campaign' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'campaign' %}">
                         <span class="material-symbols-outlined text-[20px]">list</span>
                         <span>Overview</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'post_management' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'post_management' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_post_management %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'post_management' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'post_management' %}">
                         <span class="material-symbols-outlined text-[20px]">campaign</span>
                         <span>Post Management</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'campaigns' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'campaign_status_settings' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_campaign_status_settings %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'campaigns' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'campaign_status_settings' %}">
                         <span class="material-symbols-outlined text-[20px]">settings</span>
                         <span>Status Settings</span>
                     </a>
+{% endif %}
                 </div>
             </div>
             {% endif %}
 
-            {% if request.user.profile.has_access_content_tracker %}
+            {% if request.user.profile.has_access_cms %}
             <!-- Content Tracker Dropdown Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="content-dropdown-menu" id="content-dropdown-btn"
@@ -376,18 +394,24 @@
                     <span id="content-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="content-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="content-dropdown-btn">
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'content_tracker' or request.resolver_match.url_name == 'add_content_item' or request.resolver_match.url_name == 'edit_content_item' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'content_tracker' %}">
+                    {% if request.user.profile.has_access_content_tracker %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'content_tracker' or request.resolver_match.url_name == 'add_content_item' or request.resolver_match.url_name == 'edit_content_item' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'content_tracker' %}">
                         <span class="material-symbols-outlined text-[20px]">table_chart</span>
                         <span>Overview</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'editor_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'editor_dashboard' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_editor_dashboard %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'editor_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'editor_dashboard' %}">
                         <span class="material-symbols-outlined text-[20px]">analytics</span>
                         <span>Editor Dashboard</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'editor_board' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'editor_board' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_editor_board %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'editor_board' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'editor_board' %}">
                         <span class="material-symbols-outlined text-[20px]">edit_square</span>
                         <span>Editor Board</span>
                     </a>
+{% endif %}
                     {% if request.user.profile.has_access_content_settings %}
                     <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'content_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'content_settings' %}">
                         <span class="material-symbols-outlined text-[20px]">video_settings</span>
@@ -398,6 +422,7 @@
             </div>
             {% endif %}
 
+            {% if request.user.profile.has_access_finance %}
             <!-- Finance Dropdown Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="finance-dropdown-menu" id="finance-dropdown-btn"
@@ -410,33 +435,46 @@
                     <span id="finance-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="finance-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="finance-dropdown-btn">
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_dashboard' %}">
+                    {% if request.user.profile.has_access_finance_dashboard %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_dashboard' %}">
                         <span class="material-symbols-outlined text-[20px]">speed</span>
                         <span>Finance Dashboard</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_income' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_income' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_finance_income %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_income' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_income' %}">
                         <span class="material-symbols-outlined text-[20px]">trending_up</span>
                         <span>Income</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_expenses' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_expenses' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_finance_expenses %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_expenses' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_expenses' %}">
                         <span class="material-symbols-outlined text-[20px]">trending_down</span>
                         <span>Expenses</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_reports' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_reports' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_finance_reports %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_reports' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_reports' %}">
                         <span class="material-symbols-outlined text-[20px]">assessment</span>
                         <span>Financial Reports</span>
                     </a>
+{% endif %}
 
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'partner_payouts' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'partner_payouts' %}">
+                    {% if request.user.profile.has_access_partner_payouts %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'partner_payouts' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'partner_payouts' %}">
                         <span class="material-symbols-outlined text-[20px]">payments</span>
                         <span>Partner Payouts</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'finance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_settings' %}">
+{% endif %}
+                    {% if request.user.profile.has_access_finance_settings %}
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'finance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_settings' %}">
                         <span class="material-symbols-outlined text-[20px]">settings</span>
                         <span>Status Settings</span>
                     </a>
+{% endif %}
                 </div>
             </div>
+            {% endif %}
 
             {% if request.user.profile.has_any_settings_access %}
             <!-- Settings Dropdown Accordion -->
