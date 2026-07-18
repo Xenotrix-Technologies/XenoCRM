@@ -1,11 +1,23 @@
 from django.db import models
-from crm.models import UserProfile, Organization
+from crm.models import UserProfile, Organization, Department
+
+class Designation(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='designations')
+    name = models.CharField(max_length=100)
+    
+    class Meta:
+        db_table = 'hr_designations'
+        
+    def __str__(self):
+        return self.name
 
 class EmployeeProfile(models.Model):
     user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='employee_profile')
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='employee_profiles')
     employee_id = models.CharField(max_length=50, unique=True, blank=True, null=True)
     job_title = models.CharField(max_length=150, blank=True, null=True)
+    department = models.ForeignKey(Department, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
+    designation = models.ForeignKey(Designation, on_delete=models.SET_NULL, null=True, blank=True, related_name='employees')
     date_of_joining = models.DateField(blank=True, null=True)
     salary_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     bank_account_details = models.TextField(blank=True, null=True)

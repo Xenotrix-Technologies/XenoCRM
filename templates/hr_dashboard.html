@@ -13,10 +13,10 @@
         <p class="text-secondary text-body-sm mt-1">Manage employees, track attendance, and oversee payroll from this centralized dashboard.</p>
       </div>
       <div class="flex items-center gap-3">
-        <button class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm">
+        <a href="{% url 'add_employee' %}" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm">
           <span class="material-symbols-outlined text-[18px]">add</span>
           Add Employee
-        </button>
+        </a>
       </div>
     </div>
 
@@ -78,10 +78,10 @@
       </div>
       <h3 class="text-xl font-bold text-on-background mb-2">No Employee Data Found</h3>
       <p class="text-secondary max-w-md mx-auto mb-6">The Human Resources module is active, but there is no employee data to display yet. Add employees to start tracking attendance, leaves, and payroll.</p>
-      <button class="px-6 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm inline-flex items-center gap-2">
+      <a href="{% url 'add_employee' %}" class="px-6 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm inline-flex items-center gap-2">
         <span class="material-symbols-outlined text-[20px]">add_circle</span>
         Add First Employee
-      </button>
+      </a>
     </div>
 
   </div>

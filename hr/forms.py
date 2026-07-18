@@ -1,10 +1,11 @@
 from django import forms
-from .models import EmployeeProfile, Attendance, LeaveRequest, Payroll, LeaveType, AttendanceStatus, PayrollRule, LeaveRequestStatus
+from crm.models import Department
+from .models import EmployeeProfile, Attendance, LeaveRequest, Payroll, LeaveType, AttendanceStatus, PayrollRule, LeaveRequestStatus, Designation
 
 class EmployeeProfileForm(forms.ModelForm):
     class Meta:
         model = EmployeeProfile
-        fields = ['user_profile', 'employee_id', 'job_title', 'date_of_joining', 'salary_amount', 'bank_account_details']
+        fields = ['user_profile', 'employee_id', 'department', 'designation', 'job_title', 'date_of_joining', 'salary_amount', 'bank_account_details']
         widgets = {
             'date_of_joining': forms.DateInput(attrs={'type': 'date'}),
             'bank_account_details': forms.Textarea(attrs={'rows': 3}),
@@ -15,6 +16,8 @@ class EmployeeProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if org:
             self.fields['user_profile'].queryset = self.fields['user_profile'].queryset.filter(organization=org)
+            self.fields['department'].queryset = self.fields['department'].queryset.filter(organization=org)
+            self.fields['designation'].queryset = self.fields['designation'].queryset.filter(organization=org)
             
         # Add Tailwind classes
         for field in self.fields.values():
@@ -142,3 +145,34 @@ class LeaveRequestStatusForm(forms.ModelForm):
                 field.widget.attrs.update({
                     'class': 'w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all'
                 })
+
+class DepartmentForm(forms.ModelForm):
+    class Meta:
+        model = Department
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Enter department name'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({
+                'class': 'w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all'
+            })
+
+
+class DesignationForm(forms.ModelForm):
+    class Meta:
+        model = Designation
+        fields = ['name']
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Enter designation name'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({
+                'class': 'w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all'
+            })

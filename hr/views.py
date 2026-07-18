@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from crm.views import page_permission_required
-from .models import EmployeeProfile, Attendance, LeaveRequest, Payroll, LeaveType, AttendanceStatus, PayrollRule, LeaveRequestStatus
-from .forms import EmployeeProfileForm, AttendanceForm, LeaveRequestForm, PayrollForm, LeaveTypeForm, AttendanceStatusForm, PayrollRuleForm, LeaveRequestStatusForm
+from crm.models import Department
+from .models import EmployeeProfile, Attendance, LeaveRequest, Payroll, LeaveType, AttendanceStatus, PayrollRule, LeaveRequestStatus, Designation
+from .forms import EmployeeProfileForm, AttendanceForm, LeaveRequestForm, PayrollForm, LeaveTypeForm, AttendanceStatusForm, PayrollRuleForm, LeaveRequestStatusForm, DepartmentForm, DesignationForm
 
 @login_required
 @page_permission_required('hr')
@@ -24,6 +25,18 @@ def hr_dashboard(request):
 def hr_employees(request):
     org = request.user.profile.organization
     
+    employees = EmployeeProfile.objects.filter(organization=org)
+    
+    return render(request, 'hr_employees.html', {
+        'page_title': 'Employee Directory',
+        'employees': employees,
+    })
+
+@login_required
+@page_permission_required('hr')
+def add_employee(request):
+    org = request.user.profile.organization
+    
     if request.method == 'POST':
         form = EmployeeProfileForm(request.POST, organization=org)
         if form.is_valid():
@@ -35,11 +48,8 @@ def hr_employees(request):
     else:
         form = EmployeeProfileForm(organization=org)
         
-    employees = EmployeeProfile.objects.filter(organization=org)
-    
-    return render(request, 'hr_employees.html', {
-        'page_title': 'Employee Directory',
-        'employees': employees,
+    return render(request, 'hr_add_employee.html', {
+        'page_title': 'Add Employee',
         'form': form
     })
 
@@ -128,6 +138,8 @@ def hr_settings(request):
     attendance_form = AttendanceStatusForm()
     payroll_rule_form = PayrollRuleForm()
     leave_request_status_form = LeaveRequestStatusForm()
+    department_form = DepartmentForm()
+    designation_form = DesignationForm()
     
     # Handle POST
     if request.method == 'POST':
@@ -192,12 +204,44 @@ def hr_settings(request):
             PayrollRule.objects.filter(id=item_id, organization=org).delete()
             messages.success(request, 'Payroll Rule deleted.')
             return redirect('hr_settings')
+            
+        elif action == 'add_department':
+            department_form = DepartmentForm(request.POST)
+            if department_form.is_valid():
+                obj = department_form.save(commit=False)
+                obj.organization = org
+                obj.save()
+                messages.success(request, 'Department added successfully.')
+                return redirect('hr_settings')
+                
+        elif action == 'delete_department':
+            item_id = request.POST.get('item_id')
+            Department.objects.filter(id=item_id, organization=org).delete()
+            messages.success(request, 'Department deleted.')
+            return redirect('hr_settings')
+            
+        elif action == 'add_designation':
+            designation_form = DesignationForm(request.POST)
+            if designation_form.is_valid():
+                obj = designation_form.save(commit=False)
+                obj.organization = org
+                obj.save()
+                messages.success(request, 'Designation added successfully.')
+                return redirect('hr_settings')
+                
+        elif action == 'delete_designation':
+            item_id = request.POST.get('item_id')
+            Designation.objects.filter(id=item_id, organization=org).delete()
+            messages.success(request, 'Designation deleted.')
+            return redirect('hr_settings')
 
     # Querysets
     leave_types = LeaveType.objects.filter(organization=org)
     attendance_statuses = AttendanceStatus.objects.filter(organization=org)
     payroll_rules = PayrollRule.objects.filter(organization=org)
     leave_request_statuses = LeaveRequestStatus.objects.filter(organization=org)
+    departments = Department.objects.filter(organization=org)
+    designations = Designation.objects.filter(organization=org)
 
     return render(request, 'hr_settings.html', {
         'page_title': 'HR Settings',
@@ -205,8 +249,12 @@ def hr_settings(request):
         'attendance_statuses': attendance_statuses,
         'payroll_rules': payroll_rules,
         'leave_request_statuses': leave_request_statuses,
+        'departments': departments,
+        'designations': designations,
         'leave_form': leave_form,
         'attendance_form': attendance_form,
         'payroll_rule_form': payroll_rule_form,
         'leave_request_status_form': leave_request_status_form,
+        'department_form': department_form,
+        'designation_form': designation_form,
     })

@@ -13,10 +13,10 @@
         <p class="text-secondary text-body-sm mt-1">Manage employee profiles, roles, and departmental assignments.</p>
       </div>
       <div class="flex items-center gap-3">
-        <button onclick="document.getElementById('addEmployeeModal').classList.remove('hidden')" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm">
+        <a href="{% url 'add_employee' %}" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm">
           <span class="material-symbols-outlined text-[18px]">person_add</span>
           Add Employee
-        </button>
+        </a>
       </div>
     </div>
 
@@ -27,7 +27,8 @@
           <tr class="bg-surface-variant/30 text-secondary text-sm">
             <th class="p-4 font-bold border-b border-outline-variant">Employee</th>
             <th class="p-4 font-bold border-b border-outline-variant">ID</th>
-            <th class="p-4 font-bold border-b border-outline-variant">Title</th>
+            <th class="p-4 font-bold border-b border-outline-variant">Department</th>
+            <th class="p-4 font-bold border-b border-outline-variant">Designation</th>
             <th class="p-4 font-bold border-b border-outline-variant">Joined Date</th>
             <th class="p-4 font-bold border-b border-outline-variant text-right">Salary</th>
           </tr>
@@ -46,7 +47,8 @@
               <span class="font-bold text-on-background">{{ emp.user_profile.user.get_full_name|default:emp.user_profile.user.username }}</span>
             </td>
             <td class="p-4 text-secondary">{{ emp.employee_id|default:"-" }}</td>
-            <td class="p-4 text-on-background">{{ emp.job_title|default:"-" }}</td>
+            <td class="p-4 text-on-background">{{ emp.department.name|default:"-" }}</td>
+            <td class="p-4 text-on-background">{{ emp.designation.name|default:emp.job_title|default:"-" }}</td>
             <td class="p-4 text-secondary">{{ emp.date_of_joining|date:"M d, Y"|default:"-" }}</td>
             <td class="p-4 text-right font-bold text-primary">${{ emp.salary_amount }}</td>
           </tr>
@@ -68,38 +70,5 @@
   </div>
 </div>
 
-<!-- Add Modal -->
-<div id="addEmployeeModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
-    <div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-variant/10">
-      <h3 class="font-bold text-lg text-on-background">Add Employee Data</h3>
-      <button onclick="document.getElementById('addEmployeeModal').classList.add('hidden')" class="text-secondary hover:text-error transition-colors">
-        <span class="material-symbols-outlined">close</span>
-      </button>
-    </div>
-    <div class="p-6 overflow-y-auto">
-      <form method="POST" class="space-y-4">
-        {% csrf_token %}
-        {% for field in form %}
-        <div class="mb-4">
-            <label for="{{ field.id_for_label }}" class="block text-sm font-bold text-secondary mb-1">
-                {{ field.label }}
-            </label>
-            {{ field }}
-            {% if field.errors %}
-            <p class="text-error text-xs mt-1 font-medium">{{ field.errors.0 }}</p>
-            {% endif %}
-            {% if field.help_text %}
-            <p class="text-secondary text-xs mt-1">{{ field.help_text }}</p>
-            {% endif %}
-        </div>
-        {% endfor %}
-        <div class="pt-4 flex justify-end gap-3">
-          <button type="button" onclick="document.getElementById('addEmployeeModal').classList.add('hidden')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg font-bold hover:bg-surface-variant/30 transition-all">Cancel</button>
-          <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary/90 transition-all shadow-sm">Save Employee</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
+
 {% endblock %}
