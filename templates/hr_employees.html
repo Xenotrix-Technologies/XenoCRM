@@ -28,7 +28,7 @@
             <th class="p-4 font-bold border-b border-outline-variant">Employee</th>
             <th class="p-4 font-bold border-b border-outline-variant">ID</th>
             <th class="p-4 font-bold border-b border-outline-variant">Department</th>
-            <th class="p-4 font-bold border-b border-outline-variant">Designation</th>
+            <th class="p-4 font-bold border-b border-outline-variant">Staff Role</th>
             <th class="p-4 font-bold border-b border-outline-variant">Joined Date</th>
             <th class="p-4 font-bold border-b border-outline-variant text-right">Salary</th>
           </tr>
@@ -48,7 +48,7 @@
             </td>
             <td class="p-4 text-secondary">{{ emp.employee_id|default:"-" }}</td>
             <td class="p-4 text-on-background">{{ emp.department.name|default:"-" }}</td>
-            <td class="p-4 text-on-background">{{ emp.designation.name|default:emp.job_title|default:"-" }}</td>
+            <td class="p-4 text-on-background">{{ emp.user_profile.role|default:"-" }}</td>
             <td class="p-4 text-secondary">{{ emp.date_of_joining|date:"M d, Y"|default:"-" }}</td>
             <td class="p-4 text-right font-bold text-primary">${{ emp.salary_amount }}</td>
           </tr>

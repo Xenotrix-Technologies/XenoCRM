@@ -1,11 +1,13 @@
 from django import forms
-from crm.models import Department
-from .models import EmployeeProfile, Attendance, LeaveRequest, Payroll, LeaveType, AttendanceStatus, PayrollRule, LeaveRequestStatus, Designation
+from crm.models import Department, StaffRole
+from .models import EmployeeProfile, Attendance, LeaveRequest, Payroll, LeaveType, AttendanceStatus, PayrollRule, LeaveRequestStatus
 
 class EmployeeProfileForm(forms.ModelForm):
+    job_role = forms.ChoiceField(choices=[], required=False)
+
     class Meta:
         model = EmployeeProfile
-        fields = ['user_profile', 'employee_id', 'department', 'designation', 'job_title', 'date_of_joining', 'salary_amount', 'bank_account_details']
+        fields = ['user_profile', 'employee_id', 'department', 'job_role', 'date_of_joining', 'salary_amount', 'bank_account_details']
         widgets = {
             'date_of_joining': forms.DateInput(attrs={'type': 'date'}),
             'bank_account_details': forms.Textarea(attrs={'rows': 3}),
@@ -17,8 +19,11 @@ class EmployeeProfileForm(forms.ModelForm):
         if org:
             self.fields['user_profile'].queryset = self.fields['user_profile'].queryset.filter(organization=org)
             self.fields['department'].queryset = self.fields['department'].queryset.filter(organization=org)
-            self.fields['designation'].queryset = self.fields['designation'].queryset.filter(organization=org)
+            roles = StaffRole.objects.filter(organization=org).values_list('name', 'name')
+            self.fields['job_role'].choices = [('', '---------')] + list(roles)
             
+        if self.instance and self.instance.pk and self.instance.user_profile:
+            self.fields['job_role'].initial = self.instance.user_profile.role
         # Add Tailwind classes
         for field in self.fields.values():
             field.widget.attrs.update({
@@ -162,17 +167,4 @@ class DepartmentForm(forms.ModelForm):
             })
 
 
-class DesignationForm(forms.ModelForm):
-    class Meta:
-        model = Designation
-        fields = ['name']
-        widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'Enter designation name'})
-        }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field in self.fields.values():
-            field.widget.attrs.update({
-                'class': 'w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all'
-            })

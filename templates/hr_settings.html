@@ -22,7 +22,7 @@
         <button onclick="switchTab('attendance')" id="tab-attendance" class="tab-btn px-4 py-2 border-b-2 border-transparent text-secondary hover:text-on-background transition-all">Attendance Statuses</button>
         <button onclick="switchTab('payroll')" id="tab-payroll" class="tab-btn px-4 py-2 border-b-2 border-transparent text-secondary hover:text-on-background transition-all">Payroll Rules</button>
         <button onclick="switchTab('department')" id="tab-department" class="tab-btn px-4 py-2 border-b-2 border-transparent text-secondary hover:text-on-background transition-all">Departments</button>
-        <button onclick="switchTab('designation')" id="tab-designation" class="tab-btn px-4 py-2 border-b-2 border-transparent text-secondary hover:text-on-background transition-all">Designations</button>
+
     </div>
 
     <div class="glass-card rounded-2xl border border-outline-variant/30 shadow-sm bg-white mt-6 overflow-hidden">
@@ -251,43 +251,6 @@
             </div>
         </div>
 
-        <!-- Designation Tab -->
-        <div id="content-designation" class="tab-content p-6 hidden">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold text-on-background">Designations</h3>
-                <button onclick="openModal('modal-designation')" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm text-sm">
-                    <span class="material-symbols-outlined text-[18px]">add</span> Add Designation
-                </button>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="border-b border-outline-variant text-label-md text-outline">
-                            <th class="py-3 px-4 font-bold uppercase">Name</th>
-                            <th class="py-3 px-4 font-bold uppercase text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in designations %}
-                        <tr class="border-b border-outline-variant/50 hover:bg-surface-container-low transition-colors">
-                            <td class="py-3 px-4 text-body-md font-medium text-on-surface">{{ item.name }}</td>
-                            <td class="py-3 px-4 text-right">
-                                <form method="POST" style="display: inline;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="delete_designation">
-                                    <input type="hidden" name="item_id" value="{{ item.id }}">
-                                    <button type="submit" class="text-error hover:text-error/80" onclick="return confirm('Are you sure?')"><span class="material-symbols-outlined text-[20px]">delete</span></button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="2" class="py-8 text-center text-secondary">No designations configured.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
 
     </div>
   </div>
@@ -400,26 +363,6 @@
     </div>
 </div>
 
-<!-- Designation Modal -->
-<div id="modal-designation" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-on-background">Add Designation</h3>
-            <button onclick="closeModal('modal-designation')" class="text-secondary hover:text-error"><span class="material-symbols-outlined">close</span></button>
-        </div>
-        <form method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="add_designation">
-            <div class="space-y-4">
-                {{ designation_form.as_p }}
-            </div>
-            <div class="mt-6 flex justify-end gap-2">
-                <button type="button" onclick="closeModal('modal-designation')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold">Save</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <script>
     function switchTab(tabId) {
