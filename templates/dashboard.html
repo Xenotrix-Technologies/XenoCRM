@@ -74,12 +74,6 @@
             </div>
             <h3 class="text-3xl font-display-lg font-black text-on-background mt-2">₹{{ total_revenue|floatformat:0 }}
             </h3>
-            <div class="mt-4 flex items-center gap-3">
-                <div class="flex-1 h-1.5 bg-surface-variant rounded-full overflow-hidden">
-                    <div class="h-full bg-primary rounded-full" style="width: 75%"></div>
-                </div>
-                <span class="text-[10px] text-outline font-bold">75% to goal</span>
-            </div>
         </div>
 
         <!-- KPI: Leads -->
@@ -95,7 +89,7 @@
                 </div>
                 <span
                     class="bg-surface-variant/50 text-secondary text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                    +{{ new_leads.count }} Today
+                    +{{ leads_this_month }} This Month
                 </span>
             </div>
             <h3 class="text-3xl font-display-lg font-black text-on-background mt-2">{{ total_leads }}</h3>
@@ -132,7 +126,6 @@
             <div class="flex items-end justify-between mt-2">
                 <div>
                     <h3 class="text-3xl font-display-lg font-black text-on-background">{{ conversion_rate|floatformat:1 }}%</h3>
-                    <p class="text-xs text-outline mt-2 font-medium">Industry Avg: 10.2%</p>
                 </div>
                 <div class="relative w-16 h-16">
                     <svg class="w-16 h-16 transform -rotate-90">
@@ -184,58 +177,31 @@
             </div>
         </div>
 
-        <!-- KPI: Customer Satisfaction -->
+        <!-- KPI: Total Clients -->
         <div class="glass-card-premium p-6 relative overflow-hidden">
             <div class="flex justify-between items-start mb-4 relative z-10">
                 <div class="flex items-center gap-2">
                     <div class="p-2.5 bg-success/10 text-success rounded-xl">
-                        <span class="material-symbols-outlined">sentiment_very_satisfied</span>
+                        <span class="material-symbols-outlined">groups</span>
                     </div>
-                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Customer
-                        Sat.</span>
+                    <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Total Clients</span>
                 </div>
             </div>
-            <h3 class="text-3xl font-display-lg font-black text-success mt-2">{{ customer_satisfaction }}%</h3>
-            <div class="mt-4 flex items-center gap-2">
-                <div class="h-2 flex-1 flex bg-surface-variant rounded-full overflow-hidden">
-                    <div class="h-full bg-danger" style="width: 10%"></div>
-                    <div class="h-full bg-warning" style="width: 20%"></div>
-                    <div class="h-full bg-success" style="width: 70%"></div>
-                </div>
-                <span class="text-[10px] font-bold text-outline">NPS Score</span>
+            <h3 class="text-3xl font-display-lg font-black text-success mt-2">{{ total_clients_count }}</h3>
+            <div
+                class="flex justify-between mt-4 text-xs font-medium text-outline bg-surface-container-low p-2 rounded-lg">
+                <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                    Active: {{ active_clients_count }}</span>
+                <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-primary"></span> New
+                    This Month: {{ new_clients_this_month }}</span>
             </div>
         </div>
     </div>
 
     <!-- Middle Grids: AI & Charts -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <!-- AI Insights Panel -->
-        <div class="lg:col-span-1 glass-card-premium p-6 bg-gradient-to-br from-white to-primary/5">
-            <div class="flex items-center gap-3 mb-6">
-                <div class="p-2 bg-primary text-white rounded-xl shadow-lg shadow-primary/20">
-                    <span class="material-symbols-outlined">auto_awesome</span>
-                </div>
-                <h4 class="font-headline-md text-xl font-bold text-on-background">AI Business Insights</h4>
-            </div>
-            <div class="space-y-4">
-                {% for insight in ai_insights %}
-                <div
-                    class="flex items-start gap-3 p-3 bg-white rounded-xl shadow-sm border border-outline-variant/30 transition-transform hover:-translate-y-1">
-                    <div
-                        class="p-1.5 rounded-lg {% if insight.type == 'SUCCESS' %}bg-success/10 text-success{% elif insight.type == 'WARNING' %}bg-warning/10 text-warning{% elif insight.type == 'DANGER' %}bg-danger/10 text-danger{% else %}bg-primary/10 text-primary{% endif %}">
-                        <span class="material-symbols-outlined text-[16px]">{{ insight.icon }}</span>
-                    </div>
-                    <div>
-                        <p class="text-sm font-bold text-on-surface leading-tight mb-1">{{ insight.description }}</p>
-                        <p class="text-[10px] text-outline">{{ insight.time }}</p>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
         <!-- Revenue Analytics Chart -->
-        <div class="lg:col-span-2 glass-card-premium p-6">
+        <div class="lg:col-span-3 glass-card-premium p-6">
             <div class="flex justify-between items-center mb-6">
                 <div>
                     <h4 class="font-headline-md text-xl font-bold text-on-background">Revenue Analytics</h4>

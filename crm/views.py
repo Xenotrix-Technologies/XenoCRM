@@ -721,17 +721,18 @@ def dashboard_view(request):
     org = request.user.profile.organization
     
     # Base leads query
-    leads_qs = Lead.objects.filter(organization=org, is_client=False)
+    leads_qs = Lead.objects.filter(organization=org)
     
     # 1. Total Revenue (Value of leads in 'Won' stage)
     won_leads = leads_qs.filter(stage='Won')
     total_revenue = won_leads.aggregate(Sum('value'))['value__sum'] or 0.00
     
     # 2. Total Leads Count
-    total_leads = leads_qs.count()
+    total_leads = leads_qs.filter(is_client=False).count()
     
-    # 3. Conversion Rate (Won Leads / Total Leads)
-    conversion_rate = (won_leads.count() / total_leads * 100) if total_leads > 0 else 0.0
+    # 3. Conversion Rate (Won Leads / Total Leads + Won Leads)
+    base_for_conversion = leads_qs.filter(is_client=False).count() + won_leads.count()
+    conversion_rate = (won_leads.count() / base_for_conversion * 100) if base_for_conversion > 0 else 0.0
     
     # 4. Pending Tasks count
     tasks_qs = Task.objects.filter(lead__organization=org)
@@ -742,15 +743,16 @@ def dashboard_view(request):
     task_completion_rate = (completed_tasks_count / total_tasks_count * 100) if total_tasks_count > 0 else 0.0
     
     # 4b. Active Deals
-    active_deals_qs = leads_qs.exclude(stage__in=['Won', 'Lost'])
+    active_deals_qs = leads_qs.filter(is_client=False).exclude(stage__in=['Won', 'Lost'])
     active_deals_count = active_deals_qs.count()
     active_deals_value = active_deals_qs.aggregate(Sum('value'))['value__sum'] or 0.00
     
-    # 4c. Customer Satisfaction (Mock for design)
-    customer_satisfaction = 96
+    # 4c. Client Details
+    total_clients_count = leads_qs.filter(is_client=True).count()
+    active_clients_count = leads_qs.filter(is_client=True).exclude(status='Lost').count()
     
     # 5. New Leads (ordered by created_at desc)
-    new_leads = leads_qs.order_by('-created_at')
+    new_leads = leads_qs.filter(is_client=False).order_by('-created_at')
     
     # 6. Recent activities
     recent_activities = Activity.objects.filter(lead__organization=org).order_by('-timestamp')[:5]
@@ -811,10 +813,12 @@ def dashboard_view(request):
     last_day_last_month = first_day_this_month - timedelta(days=1)
     first_day_last_month = last_day_last_month.replace(day=1)
 
-    leads_this_month = leads_qs.filter(created_at__gte=first_day_this_month).count()
-    leads_last_month = leads_qs.filter(created_at__gte=first_day_last_month, created_at__lt=first_day_this_month).count()
+    leads_this_month = leads_qs.filter(is_client=False, created_at__gte=first_day_this_month).count()
+    leads_last_month = leads_qs.filter(is_client=False, created_at__gte=first_day_last_month, created_at__lt=first_day_this_month).count()
     
     leads_trend = ((leads_this_month - leads_last_month) / leads_last_month * 100) if leads_last_month > 0 else (100.0 if leads_this_month > 0 else 0.0)
+    
+    new_clients_this_month = leads_qs.filter(is_client=True, created_at__gte=first_day_this_month).count()
 
     won_this_month = leads_qs.filter(stage='Won', created_at__gte=first_day_this_month)
     won_last_month = leads_qs.filter(stage='Won', created_at__gte=first_day_last_month, created_at__lt=first_day_this_month)
@@ -842,35 +846,7 @@ def dashboard_view(request):
         service_labels = ["Uncategorized"]
         service_data = [leads_qs.count() or 1]
 
-    # Dynamically compute AI Insights
-    ai_insights = []
-    
-    if revenue_trend > 0:
-        ai_insights.append({"title": "Revenue increase", "description": f"Revenue increased by {revenue_trend:.1f}% compared to last month", "type": "SUCCESS", "time": "Just now", "icon": "trending_up"})
-    elif revenue_trend < 0:
-        ai_insights.append({"title": "Revenue decrease", "description": f"Revenue decreased by {abs(revenue_trend):.1f}% compared to last month", "type": "DANGER", "time": "Just now", "icon": "trending_down"})
-    else:
-        ai_insights.append({"title": "Revenue stable", "description": "Revenue is unchanged compared to last month", "type": "PRIMARY", "time": "Just now", "icon": "trending_flat"})
 
-    hot_leads_count = active_deals_qs.filter(score__gte=80).count()
-    if hot_leads_count > 0:
-        ai_insights.append({"title": "Hot Leads", "description": f"{hot_leads_count} hot leads need immediate follow-up", "type": "WARNING", "time": "Just now", "icon": "local_fire_department"})
-    else:
-        ai_insights.append({"title": "Hot Leads", "description": "No hot leads at the moment", "type": "SUCCESS", "time": "Just now", "icon": "local_fire_department"})
-
-    if conversion_trend > 0:
-        ai_insights.append({"title": "Conversion Rate", "description": f"Conversion improved by {conversion_trend:.1f}% this month", "type": "SUCCESS", "time": "Just now", "icon": "analytics"})
-    elif conversion_trend < 0:
-        ai_insights.append({"title": "Conversion Rate", "description": f"Conversion dropped by {abs(conversion_trend):.1f}% this month", "type": "DANGER", "time": "Just now", "icon": "analytics"})
-    else:
-        ai_insights.append({"title": "Conversion Rate", "description": "Conversion rate is stable this month", "type": "PRIMARY", "time": "Just now", "icon": "analytics"})
-
-    fourteen_days_ago = timezone.now() - timedelta(days=14)
-    inactive_clients_count = active_deals_qs.filter(last_activity__lt=fourteen_days_ago, value__gte=1000).count()
-    if inactive_clients_count > 0:
-        ai_insights.append({"title": "Churn Risk", "description": f"{inactive_clients_count} high-value leads inactive for 14+ days", "type": "DANGER", "time": "Just now", "icon": "warning"})
-    else:
-        ai_insights.append({"title": "Churn Risk", "description": "No immediate churn risk detected", "type": "SUCCESS", "time": "Just now", "icon": "check_circle"})
 
     import json
 
@@ -887,8 +863,9 @@ def dashboard_view(request):
         'task_completion_rate': task_completion_rate,
         'active_deals_count': active_deals_count,
         'active_deals_value': active_deals_value,
-        'customer_satisfaction': customer_satisfaction,
-        'ai_insights': ai_insights,
+        'total_clients_count': total_clients_count,
+        'active_clients_count': active_clients_count,
+        'new_clients_this_month': new_clients_this_month,
         'new_leads': new_leads,
         'recent_activities': recent_activities,
         'upcoming_meetings': upcoming_meetings,
