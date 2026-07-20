@@ -1,4 +1,6 @@
-{% extends 'base.html' %}
+import os
+
+new_html = """{% extends 'base.html' %}
 {% block title %}Permissions Management - XenoCRM{% endblock %}
 
 {% block content %}
@@ -98,7 +100,7 @@
                 <div class="space-y-2 overflow-y-auto custom-scrollbar flex-1 pr-1 hidden" id="staff-container">
                     {% for staff in staff_members %}
                     <button type="button" 
-                            onclick="selectTarget('staff', '{{ staff.id }}', '{{ staff.user.get_full_name|default:staff.user.username|escapejs }}', '{{ staff.role|escapejs }}')"
+                            onclick="selectTarget('staff', '{{ staff.id }}', '{{ staff.user.get_full_name|default:staff.user.username|escapejs }}', '{{ staff.role.name|default:"Employee"|escapejs }}')"
                             id="target-staff-{{ staff.id }}" 
                             class="target-card target-staff w-full flex items-center justify-between p-3 rounded-xl border border-transparent hover:border-outline-variant/50 hover:bg-slate-50 transition-all text-left group">
                         <div class="flex items-center gap-3">
@@ -107,7 +109,7 @@
                             </div>
                             <div>
                                 <span class="block font-bold text-sm text-on-surface target-name">{{ staff.user.get_full_name|default:staff.user.username }}</span>
-                                <span class="block text-[10px] text-outline font-semibold uppercase">{{ staff.role|default:"No Role" }}</span>
+                                <span class="block text-[10px] text-outline font-semibold uppercase">{{ staff.role.name|default:"No Role" }}</span>
                             </div>
                         </div>
                     </button>
@@ -352,11 +354,9 @@
   </div>
 </main>
 
-
 <script>
     let currentType = 'role';
     let currentId = null;
-    let currentRolePrefix = '';
     
     document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll('.matrix-toggle').forEach(el => el.checked = false);
@@ -414,13 +414,6 @@
         currentType = type;
         currentId = id;
         
-        // Base Role determines the JSON keys for permissions
-        if (type === 'role') {
-            currentRolePrefix = id.toLowerCase();
-        } else {
-            currentRolePrefix = (subText || 'employee').toLowerCase();
-        }
-        
         // Update Sidebar UI
         document.querySelectorAll('.target-card').forEach(el => {
             el.classList.remove('border-primary', 'bg-primary/5');
@@ -447,7 +440,7 @@
             document.getElementById('selected-target-desc').innerText = "System access configuration for this role.";
         } else {
             document.getElementById('selected-target-badge1').innerText = "Employee";
-            document.getElementById('selected-target-badge2').innerText = subText || "No Role";
+            document.getElementById('selected-target-badge2').innerText = subText; // Base role name
             document.getElementById('override-alert').classList.remove('hidden');
             document.getElementById('selected-target-desc').innerText = "Custom override permissions for this employee.";
         }
@@ -456,11 +449,6 @@
         loadPermissionsForTarget();
     }
 
-    const pagesList = [
-        'dashboard', 'leads', 'calendar', 'clients', 'support', 'projects', 'agreements', 
-        'staff', 'hr', 'campaigns', 'content_tracker', 'finance', 'settings', 'role_permissions'
-    ];
-
     function loadPermissionsForTarget() {
         if (!currentId) return;
         
@@ -468,19 +456,65 @@
         
         const p = currentType === 'role' ? (rolePermissionsData[currentId] || {}) : (staffPermissionsData[currentId] || {});
         
-        pagesList.forEach(page => {
-            const viewKey = `${currentRolePrefix}_${page}`;
-            const editKey = `${currentRolePrefix}_${page}_edit`;
-            const deleteKey = `${currentRolePrefix}_${page}_delete`;
-            
-            const viewCb = document.getElementById(`perm-${page}`);
-            const editCb = document.getElementById(`perm-${page}-edit`);
-            const deleteCb = document.getElementById(`perm-${page}-delete`);
-            
-            if (viewCb && p[viewKey] !== undefined) viewCb.checked = p[viewKey] === true || p[viewKey] === 'true';
-            if (editCb && p[editKey] !== undefined) editCb.checked = p[editKey] === true || p[editKey] === 'true';
-            if (deleteCb && p[deleteKey] !== undefined) deleteCb.checked = p[deleteKey] === true || p[deleteKey] === 'true';
-        });
+        // Simple mapping function
+        const mapPerm = (id, val) => {
+            const el = document.getElementById(id);
+            if(el) el.checked = val === true;
+        };
+        
+        mapPerm('perm-dashboard', p.can_view_dashboard);
+        
+        mapPerm('perm-leads', p.can_view_leads);
+        mapPerm('perm-leads-edit', p.can_edit_leads);
+        mapPerm('perm-leads-delete', p.can_delete_leads);
+        
+        mapPerm('perm-calendar', p.can_view_calendar);
+        mapPerm('perm-calendar-edit', p.can_edit_calendar);
+        mapPerm('perm-calendar-delete', p.can_delete_calendar);
+        
+        mapPerm('perm-clients', p.can_view_clients);
+        mapPerm('perm-clients-edit', p.can_edit_clients);
+        mapPerm('perm-clients-delete', p.can_delete_clients);
+        
+        mapPerm('perm-support', p.can_view_support);
+        mapPerm('perm-support-edit', p.can_edit_support);
+        mapPerm('perm-support-delete', p.can_delete_support);
+        
+        mapPerm('perm-projects', p.can_view_projects);
+        mapPerm('perm-projects-edit', p.can_edit_projects);
+        mapPerm('perm-projects-delete', p.can_delete_projects);
+        
+        mapPerm('perm-agreements', p.can_view_agreements);
+        mapPerm('perm-agreements-edit', p.can_edit_agreements);
+        mapPerm('perm-agreements-delete', p.can_delete_agreements);
+        
+        mapPerm('perm-staff', p.can_view_staff);
+        mapPerm('perm-staff-edit', p.can_edit_staff);
+        mapPerm('perm-staff-delete', p.can_delete_staff);
+
+        mapPerm('perm-hr', p.can_view_hr);
+        mapPerm('perm-hr-edit', p.can_edit_hr);
+        mapPerm('perm-hr-delete', p.can_delete_hr);
+        
+        mapPerm('perm-campaigns', p.can_view_campaigns);
+        mapPerm('perm-campaigns-edit', p.can_edit_campaigns);
+        mapPerm('perm-campaigns-delete', p.can_delete_campaigns);
+        
+        mapPerm('perm-content_tracker', p.can_view_content_tracker);
+        mapPerm('perm-content_tracker-edit', p.can_edit_content_tracker);
+        mapPerm('perm-content_tracker-delete', p.can_delete_content_tracker);
+
+        mapPerm('perm-finance', p.can_view_finance);
+        mapPerm('perm-finance-edit', p.can_edit_finance);
+        mapPerm('perm-finance-delete', p.can_delete_finance);
+        
+        mapPerm('perm-settings', p.can_view_settings);
+        mapPerm('perm-settings-edit', p.can_edit_settings);
+        mapPerm('perm-settings-delete', p.can_delete_settings);
+        
+        mapPerm('perm-role_permissions', p.can_view_role_permissions);
+        mapPerm('perm-role_permissions-edit', p.can_edit_role_permissions);
+        mapPerm('perm-role_permissions-delete', p.can_delete_role_permissions);
         
         updateCount();
     }
@@ -491,21 +525,70 @@
         const overlay = document.getElementById('loading-overlay');
         overlay.classList.remove('hidden');
 
-        const perms = {};
-        pagesList.forEach(page => {
-            const viewCb = document.getElementById(`perm-${page}`);
-            const editCb = document.getElementById(`perm-${page}-edit`);
-            const deleteCb = document.getElementById(`perm-${page}-delete`);
-            
-            if (viewCb) perms[`${currentRolePrefix}_${page}`] = viewCb.checked;
-            if (editCb) perms[`${currentRolePrefix}_${page}_edit`] = editCb.checked;
-            if (deleteCb) perms[`${currentRolePrefix}_${page}_delete`] = deleteCb.checked;
-        });
+        // Collect permissions
+        const getVal = id => {
+            const el = document.getElementById(id);
+            return el ? el.checked : false;
+        };
 
         const payload = {
             type: currentType,
             id: currentId,
-            permissions: perms
+            permissions: {
+                can_view_dashboard: getVal('perm-dashboard'),
+                
+                can_view_leads: getVal('perm-leads'),
+                can_edit_leads: getVal('perm-leads-edit'),
+                can_delete_leads: getVal('perm-leads-delete'),
+                
+                can_view_calendar: getVal('perm-calendar'),
+                can_edit_calendar: getVal('perm-calendar-edit'),
+                can_delete_calendar: getVal('perm-calendar-delete'),
+                
+                can_view_clients: getVal('perm-clients'),
+                can_edit_clients: getVal('perm-clients-edit'),
+                can_delete_clients: getVal('perm-clients-delete'),
+                
+                can_view_support: getVal('perm-support'),
+                can_edit_support: getVal('perm-support-edit'),
+                can_delete_support: getVal('perm-support-delete'),
+                
+                can_view_projects: getVal('perm-projects'),
+                can_edit_projects: getVal('perm-projects-edit'),
+                can_delete_projects: getVal('perm-projects-delete'),
+                
+                can_view_agreements: getVal('perm-agreements'),
+                can_edit_agreements: getVal('perm-agreements-edit'),
+                can_delete_agreements: getVal('perm-agreements-delete'),
+                
+                can_view_staff: getVal('perm-staff'),
+                can_edit_staff: getVal('perm-staff-edit'),
+                can_delete_staff: getVal('perm-staff-delete'),
+
+                can_view_hr: getVal('perm-hr'),
+                can_edit_hr: getVal('perm-hr-edit'),
+                can_delete_hr: getVal('perm-hr-delete'),
+                
+                can_view_campaigns: getVal('perm-campaigns'),
+                can_edit_campaigns: getVal('perm-campaigns-edit'),
+                can_delete_campaigns: getVal('perm-campaigns-delete'),
+                
+                can_view_content_tracker: getVal('perm-content_tracker'),
+                can_edit_content_tracker: getVal('perm-content_tracker-edit'),
+                can_delete_content_tracker: getVal('perm-content_tracker-delete'),
+
+                can_view_finance: getVal('perm-finance'),
+                can_edit_finance: getVal('perm-finance-edit'),
+                can_delete_finance: getVal('perm-finance-delete'),
+                
+                can_view_settings: getVal('perm-settings'),
+                can_edit_settings: getVal('perm-settings-edit'),
+                can_delete_settings: getVal('perm-settings-delete'),
+                
+                can_view_role_permissions: getVal('perm-role_permissions'),
+                can_edit_role_permissions: getVal('perm-role_permissions-edit'),
+                can_delete_role_permissions: getVal('perm-role_permissions-delete')
+            }
         };
 
         fetch("{% url 'role_permissions' %}", {
@@ -520,12 +603,14 @@
         .then(res => {
             overlay.classList.add('hidden');
             if(res.success) {
+                // Update local data cache
                 if (currentType === 'role') {
                     rolePermissionsData[currentId] = payload.permissions;
                 } else {
                     staffPermissionsData[currentId] = payload.permissions;
                 }
                 
+                // Flash success (simple feedback)
                 const saveBtn = document.querySelector('button[onclick="savePermissions()"]');
                 const origText = saveBtn.innerText;
                 saveBtn.innerText = "Saved!";
@@ -546,6 +631,7 @@
     }
 
     function filterCategory(cat) {
+        // Update tabs styling
         document.querySelectorAll('.perm-tab').forEach(el => {
             el.classList.remove('text-primary', 'border-primary');
             el.classList.add('text-secondary', 'border-transparent');
@@ -554,6 +640,7 @@
         activeTab.classList.remove('text-secondary', 'border-transparent');
         activeTab.classList.add('text-primary', 'border-primary');
 
+        // Filter rows
         document.querySelectorAll('.matrix-row').forEach(row => {
             if (cat === 'All' || row.dataset.category === cat) {
                 row.style.display = 'table-row';
@@ -570,6 +657,7 @@
             row.style.display = name.includes(query) ? 'table-row' : 'none';
         });
         
+        // Reset tabs to All if searching
         if(query) {
             document.querySelectorAll('.perm-tab').forEach(el => {
                 el.classList.remove('text-primary', 'border-primary');
@@ -582,6 +670,7 @@
 
     function toggleColumn(type, checked) {
         document.querySelectorAll(`.perm-${type}`).forEach(toggle => {
+            // Only toggle visible rows
             const row = toggle.closest('.matrix-row');
             if(row.style.display !== 'none') {
                 toggle.checked = checked;
@@ -595,5 +684,8 @@
         document.getElementById('active-perms-count').innerText = active;
     }
 </script>
-
 {% endblock %}
+"""
+
+with open('templates/role_permissions.html', 'w', encoding='utf-8') as f:
+    f.write(new_html)

@@ -1,33 +1,21 @@
-{% extends 'base.html' %}
-{% load static %}
+import re
 
-{% block title %}HR Settings - XenoCRM{% endblock %}
+with open('templates/hr_settings.html', 'r', encoding='utf-8') as f:
+    content = f.read()
 
-{% block content %}
-<div class="pt-8 p-margin-edge min-h-screen bg-background">
-  <div class="max-w-7xl mx-auto space-y-6">
-
-    <!-- Header Section -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div>
-        <h2 class="font-headline-lg text-headline-lg font-bold text-on-background">HR Settings</h2>
-        <p class="text-secondary text-body-sm mt-1">Configure leave types, attendance statuses, and payroll rules.</p>
-      </div>
-    </div>
-
-        <!-- Main Content Panels -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-6 mt-6">
+new_layout = """    <!-- Main Content Panels -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-6">
         
         <!-- Leave Types Card -->
         <div class="bg-white dark:bg-surface-container rounded-[24px] p-6 shadow-sm border border-outline-variant/50">
             <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-indigo-50 text-indigo-500 rounded-xl flex items-center justify-center">
                         <span class="material-symbols-outlined text-[20px]">beach_access</span>
                     </div>
-                    <h3 class="font-bold text-sm tracking-widest text-on-surface uppercase leading-tight">Leave Types</h3>
+                    <h3 class="font-bold text-sm tracking-widest text-on-surface uppercase">Leave Types</h3>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center gap-2">
                     <button type="button" onclick="openModal('modal-leave')" class="w-7 h-7 rounded-full bg-surface-variant/50 hover:bg-surface-variant flex items-center justify-center text-secondary hover:text-primary transition-colors">
                         <span class="material-symbols-outlined text-[16px]">add</span>
                     </button>
@@ -37,7 +25,7 @@
             <ul class="space-y-4">
                 {% for item in leave_types %}
                 <li class="group flex items-center justify-between">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-3">
                         <div class="w-2 h-2 rounded-full {% if item.is_active %}bg-emerald-400{% else %}bg-red-400{% endif %}"></div>
                         <span class="text-sm text-on-surface font-medium">{{ item.name }}</span>
                     </div>
@@ -61,13 +49,13 @@
         <!-- Leave Request Statuses Card -->
         <div class="bg-white dark:bg-surface-container rounded-[24px] p-6 shadow-sm border border-outline-variant/50">
             <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center">
                         <span class="material-symbols-outlined text-[20px]">approval</span>
                     </div>
-                    <h3 class="font-bold text-sm tracking-widest text-on-surface uppercase leading-tight">Leave Statuses</h3>
+                    <h3 class="font-bold text-sm tracking-widest text-on-surface uppercase">Leave Statuses</h3>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center gap-2">
                     <button type="button" onclick="openModal('modal-leave_request')" class="w-7 h-7 rounded-full bg-surface-variant/50 hover:bg-surface-variant flex items-center justify-center text-secondary hover:text-primary transition-colors">
                         <span class="material-symbols-outlined text-[16px]">add</span>
                     </button>
@@ -77,7 +65,7 @@
             <ul class="space-y-4">
                 {% for item in leave_request_statuses %}
                 <li class="group flex items-center justify-between">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-3">
                         <div class="w-2 h-2 rounded-full {% if item.is_active %}bg-emerald-400{% else %}bg-red-400{% endif %}"></div>
                         <span class="text-sm text-on-surface font-medium">{{ item.name }}</span>
                     </div>
@@ -101,13 +89,13 @@
         <!-- Attendance Statuses Card -->
         <div class="bg-white dark:bg-surface-container rounded-[24px] p-6 shadow-sm border border-outline-variant/50">
             <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-xl flex items-center justify-center">
                         <span class="material-symbols-outlined text-[20px]">fact_check</span>
                     </div>
-                    <h3 class="font-bold text-sm tracking-widest text-on-surface uppercase leading-tight">Attendance</h3>
+                    <h3 class="font-bold text-sm tracking-widest text-on-surface uppercase">Attendance</h3>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center gap-2">
                     <button type="button" onclick="openModal('modal-attendance')" class="w-7 h-7 rounded-full bg-surface-variant/50 hover:bg-surface-variant flex items-center justify-center text-secondary hover:text-primary transition-colors">
                         <span class="material-symbols-outlined text-[16px]">add</span>
                     </button>
@@ -117,7 +105,7 @@
             <ul class="space-y-4">
                 {% for item in attendance_statuses %}
                 <li class="group flex items-center justify-between">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-3">
                         <div class="w-2 h-2 rounded-full {% if item.is_active %}bg-emerald-400{% else %}bg-red-400{% endif %}"></div>
                         <span class="text-sm text-on-surface font-medium">{{ item.name }}</span>
                     </div>
@@ -141,13 +129,13 @@
         <!-- Payroll Rules Card -->
         <div class="bg-white dark:bg-surface-container rounded-[24px] p-6 shadow-sm border border-outline-variant/50">
             <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-purple-50 text-purple-500 rounded-xl flex items-center justify-center">
                         <span class="material-symbols-outlined text-[20px]">payments</span>
                     </div>
-                    <h3 class="font-bold text-sm tracking-widest text-on-surface uppercase leading-tight">Payroll Rules</h3>
+                    <h3 class="font-bold text-sm tracking-widest text-on-surface uppercase">Payroll Rules</h3>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center gap-2">
                     <button type="button" onclick="openModal('modal-payroll')" class="w-7 h-7 rounded-full bg-surface-variant/50 hover:bg-surface-variant flex items-center justify-center text-secondary hover:text-primary transition-colors">
                         <span class="material-symbols-outlined text-[16px]">add</span>
                     </button>
@@ -157,7 +145,7 @@
             <ul class="space-y-4">
                 {% for item in payroll_rules %}
                 <li class="group flex items-center justify-between">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-3">
                         <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
                         <span class="text-sm text-on-surface font-medium">{{ item.name }}</span>
                         <span class="text-xs text-secondary ml-1 bg-surface-variant/50 px-2 rounded">{{ item.amount }}{% if item.is_percentage %}%{% else %}${% endif %}</span>
@@ -182,13 +170,13 @@
         <!-- Departments Card -->
         <div class="bg-white dark:bg-surface-container rounded-[24px] p-6 shadow-sm border border-outline-variant/50">
             <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-3">
                     <div class="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center">
                         <span class="material-symbols-outlined text-[20px]">domain</span>
                     </div>
-                    <h3 class="font-bold text-sm tracking-widest text-on-surface uppercase leading-tight">Departments</h3>
+                    <h3 class="font-bold text-sm tracking-widest text-on-surface uppercase">Departments</h3>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
+                <div class="flex items-center gap-2">
                     <button type="button" onclick="openModal('modal-department')" class="w-7 h-7 rounded-full bg-surface-variant/50 hover:bg-surface-variant flex items-center justify-center text-secondary hover:text-primary transition-colors">
                         <span class="material-symbols-outlined text-[16px]">add</span>
                     </button>
@@ -198,7 +186,7 @@
             <ul class="space-y-4">
                 {% for item in departments %}
                 <li class="group flex items-center justify-between">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-3">
                         <div class="w-2 h-2 rounded-full bg-emerald-400"></div>
                         <span class="text-sm text-on-surface font-medium">{{ item.name }}</span>
                     </div>
@@ -219,127 +207,14 @@
             </ul>
         </div>
         
-    </div>
-  </div>
-</div>
-  </div>
-</div>
+    </div>"""
 
-<!-- Modals -->
+pattern = re.compile(r'<!-- Settings Tabs -->.*?</div>\s*</div>\s*</div>', re.DOTALL)
+new_content = re.sub(pattern, new_layout + '\n  </div>\n</div>', content)
 
-<!-- Leave Type Modal -->
-<div id="modal-leave" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-on-background">Add Leave Type</h3>
-            <button onclick="closeModal('modal-leave')" class="text-secondary hover:text-error"><span class="material-symbols-outlined">close</span></button>
-        </div>
-        <form method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="add_leave_type">
-            <div class="space-y-4">
-                {{ leave_form.as_p }}
-            </div>
-            <div class="mt-6 flex justify-end gap-2">
-                <button type="button" onclick="closeModal('modal-leave')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold">Save</button>
-            </div>
-        </form>
-    </div>
-</div>
+# Remove the switchTab script as it's no longer needed
+script_pattern = re.compile(r'function switchTab\(tabId\) \{.*?\}.*?(function openModal)', re.DOTALL)
+new_content = re.sub(script_pattern, r'\1', new_content)
 
-<!-- Leave Request Status Modal -->
-<div id="modal-leave_request" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-on-background">Add Leave Request Status</h3>
-            <button onclick="closeModal('modal-leave_request')" class="text-secondary hover:text-error"><span class="material-symbols-outlined">close</span></button>
-        </div>
-        <form method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="add_leave_request_status">
-            <div class="space-y-4">
-                {{ leave_request_status_form.as_p }}
-            </div>
-            <div class="mt-6 flex justify-end gap-2">
-                <button type="button" onclick="closeModal('modal-leave_request')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold">Save</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Attendance Status Modal -->
-<div id="modal-attendance" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-on-background">Add Attendance Status</h3>
-            <button onclick="closeModal('modal-attendance')" class="text-secondary hover:text-error"><span class="material-symbols-outlined">close</span></button>
-        </div>
-        <form method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="add_attendance_status">
-            <div class="space-y-4">
-                {{ attendance_form.as_p }}
-            </div>
-            <div class="mt-6 flex justify-end gap-2">
-                <button type="button" onclick="closeModal('modal-attendance')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold">Save</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Payroll Rule Modal -->
-<div id="modal-payroll" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-on-background">Add Payroll Rule</h3>
-            <button onclick="closeModal('modal-payroll')" class="text-secondary hover:text-error"><span class="material-symbols-outlined">close</span></button>
-        </div>
-        <form method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="add_payroll_rule">
-            <div class="space-y-4">
-                {{ payroll_rule_form.as_p }}
-            </div>
-            <div class="mt-6 flex justify-end gap-2">
-                <button type="button" onclick="closeModal('modal-payroll')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold">Save</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Department Modal -->
-<div id="modal-department" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm">
-    <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-xl font-bold text-on-background">Add Department</h3>
-            <button onclick="closeModal('modal-department')" class="text-secondary hover:text-error"><span class="material-symbols-outlined">close</span></button>
-        </div>
-        <form method="POST">
-            {% csrf_token %}
-            <input type="hidden" name="action" value="add_department">
-            <div class="space-y-4">
-                {{ department_form.as_p }}
-            </div>
-            <div class="mt-6 flex justify-end gap-2">
-                <button type="button" onclick="closeModal('modal-department')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-primary text-white rounded-lg font-bold">Save</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-
-<script>
-    function openModal(id) {
-        document.getElementById(id).classList.remove('hidden');
-    }
-
-    function closeModal(id) {
-        document.getElementById(id).classList.add('hidden');
-    }
-</script>
-{% endblock %}
+with open('templates/hr_settings.html', 'w', encoding='utf-8') as f:
+    f.write(new_content)

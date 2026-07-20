@@ -84,8 +84,8 @@
                     "spacing": {
                         "container-max": "1440px",
                         "unit": "4px",
-                        "sidebar-collapsed": "72px",
-                        "sidebar-width": "260px",
+                        "sidebar-collapsed": "64px",
+                        "sidebar-width": "220px",
                         "gutter-md": "16px",
                         "margin-edge": "24px"
                     },
@@ -155,12 +155,12 @@
         
         /* Prevent content from squishing to maintain perfect alignment */
         aside > div, aside > nav {
-            width: 260px;
+            width: 220px;
         }
 
-        /* Show submenu icons perfectly aligned when collapsed */
+        /* Hide submenus completely when collapsed since they no longer have icons */
         .sidebar-collapsed aside [id$="-dropdown-menu"] {
-            padding-left: 0 !important;
+            display: none !important;
         }
 
         /* Distinct color for submenu mini icons */
@@ -178,13 +178,13 @@
         }
 
         .sidebar-collapsed aside {
-            width: 72px;
+            width: 64px;
         }
         .sidebar-collapsed main {
-            margin-left: 72px;
+            margin-left: 64px;
         }
         .sidebar-collapsed header {
-            width: calc(100% - 72px);
+            width: calc(100% - 64px);
         }
         main, header {
             transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -213,19 +213,18 @@
     {% if user.is_authenticated %}
     <!-- SideNavBar Shell -->
     <aside class="fixed left-0 top-0 h-full w-sidebar-width bg-secondary-fixed-dim dark:bg-on-secondary-fixed border-r border-outline-variant dark:border-outline shadow-sm z-50 flex flex-col h-full py-4">
-        <div class="px-4 mb-8 flex items-center gap-3">
-            <button onclick="toggleSidebarState(event)" class="material-symbols-outlined text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50 p-2 rounded-lg flex-shrink-0 transition-colors">menu</button>
+        <div class="px-4 mb-8 flex items-center gap-2">
+            <button onclick="toggleSidebarState(event)" class="material-symbols-outlined text-[20px] text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50 p-2 rounded-lg flex-shrink-0 transition-colors">menu</button>
             <div class="flex-1 overflow-hidden">
                 <h1 class="font-headline-md text-headline-md font-bold text-on-secondary-fixed dark:text-primary-fixed-dim leading-none truncate">XenoCRM</h1>
-                <p class="text-label-md font-label-md opacity-70 mt-1 truncate">Enterprise Edition</p>
             </div>
         </div>
-        <nav class="flex-1 overflow-y-auto px-3 space-y-1 custom-scrollbar">
+        <nav class="flex-1 overflow-y-auto px-2.5 space-y-1 custom-scrollbar">
             <!-- Navigation Items with Active States -->
             {% if request.user.profile.has_access_dashboard %}
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'dashboard' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'dashboard' %}">
-                <span class="material-symbols-outlined">dashboard</span>
-                <span class="font-body-sm text-body-sm">Dashboard</span>
+            <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors {% if request.resolver_match.url_name == 'dashboard' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'dashboard' %}">
+                <span class="material-symbols-outlined text-[20px]">dashboard</span>
+                <span class="text-[13px] font-body-sm text-[13px] truncate">Dashboard</span>
             </a>
             {% endif %}
             {% if request.user.profile.has_access_leads %}
@@ -233,20 +232,18 @@
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="leads-dropdown-menu" id="leads-dropdown-btn"
                     onclick="toggleSidebarDropdown('leads')"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'leads' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'leads' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined">leaderboard</span>
-                        <span class="font-body-sm text-body-sm">Leads</span>
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if request.resolver_match.url_name == 'leads' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'leads' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
+                        <span class="material-symbols-outlined text-[20px]">leaderboard</span>
+                        <span class="text-[13px] font-body-sm text-[13px] truncate">Leads</span>
                     </div>
                     <span id="leads-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="leads-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="leads-dropdown-btn">
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'leads' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'leads' %}">
-                        <span class="material-symbols-outlined text-[20px]">list</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'leads' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'leads' %}">
                         <span>Overview</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'leads' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'lead_status_settings' %}?tab=leads">
-                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'leads' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'lead_status_settings' %}?tab=leads">
                         <span>Settings</span>
                     </a>
                 </div>
@@ -257,20 +254,18 @@
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="calendar-dropdown-menu" id="calendar-dropdown-btn"
                     onclick="toggleSidebarDropdown('calendar')"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'calendar' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'calendar' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined">event</span>
-                        <span class="font-body-sm text-body-sm">Calendar</span>
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if request.resolver_match.url_name == 'calendar' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'calendar' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
+                        <span class="material-symbols-outlined text-[20px]">event</span>
+                        <span class="text-[13px] font-body-sm text-[13px] truncate">Calendar</span>
                     </div>
                     <span id="calendar-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="calendar-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="calendar-dropdown-btn">
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'calendar' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'calendar' %}">
-                        <span class="material-symbols-outlined text-[20px]">event</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'calendar' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'calendar' %}">
                         <span>Overview</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'calendar' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'calendar_status_settings' %}">
-                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'calendar' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'calendar_status_settings' %}">
                         <span>Status Settings</span>
                     </a>
                 </div>
@@ -282,20 +277,18 @@
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="clients-dropdown-menu" id="clients-dropdown-btn"
                     onclick="toggleSidebarDropdown('clients')"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'clients' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'clients' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined">people</span>
-                        <span class="font-body-sm text-body-sm">Clients</span>
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if request.resolver_match.url_name == 'clients' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'clients' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
+                        <span class="material-symbols-outlined text-[20px]">people</span>
+                        <span class="text-[13px] font-body-sm text-[13px] truncate">Clients</span>
                     </div>
                     <span id="clients-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="clients-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="clients-dropdown-btn">
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'clients' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'clients' %}">
-                        <span class="material-symbols-outlined text-[20px]">people</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'clients' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'clients' %}">
                         <span>Overview</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'clients' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'client_status_settings' %}">
-                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'clients' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'client_status_settings' %}">
                         <span>Status Settings</span>
                     </a>
                 </div>
@@ -307,20 +300,18 @@
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="support-dropdown-menu" id="support-dropdown-btn"
                     onclick="toggleSidebarDropdown('support')"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'customer_support' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'tickets' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined">support_agent</span>
-                        <span class="font-body-sm text-body-sm">Customer Support</span>
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if request.resolver_match.url_name == 'customer_support' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'tickets' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
+                        <span class="material-symbols-outlined text-[20px]">support_agent</span>
+                        <span class="text-[13px] font-body-sm text-[13px] truncate">Customer Support</span>
                     </div>
                     <span id="support-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="support-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="support-dropdown-btn">
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'customer_support' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'customer_support' %}">
-                        <span class="material-symbols-outlined text-[20px]">support_agent</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'customer_support' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'customer_support' %}">
                         <span>Overview</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'tickets' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'ticket_status_settings' %}">
-                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'tickets' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'ticket_status_settings' %}">
                         <span>Ticket Status</span>
                     </a>
                 </div>
@@ -331,36 +322,34 @@
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="projects-dropdown-menu" id="projects-dropdown-btn"
                     onclick="toggleSidebarDropdown('projects')"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'projects' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'projects' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined">assignment</span>
-                        <span class="font-body-sm text-body-sm">Projects</span>
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if request.resolver_match.url_name == 'projects' or request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'projects' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
+                        <span class="material-symbols-outlined text-[20px]">assignment</span>
+                        <span class="text-[13px] font-body-sm text-[13px] truncate">Projects</span>
                     </div>
                     <span id="projects-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="projects-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="projects-dropdown-btn">
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'projects' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'projects' %}">
-                        <span class="material-symbols-outlined text-[20px]">assignment</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'projects' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'projects' %}">
                         <span>Overview</span>
                     </a>
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'projects' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'project_status_settings' %}">
-                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'projects' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'project_status_settings' %}">
                         <span>Status Settings</span>
                     </a>
                 </div>
             </div>
             {% endif %}
             {% if request.user.profile.has_access_agreements %}
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'agreements' or request.resolver_match.url_name == 'create_agreement' or request.resolver_match.url_name == 'edit_agreement' or request.resolver_match.url_name == 'agreement_detail' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'agreements' %}">
-                <span class="material-symbols-outlined">history_edu</span>
-                <span class="font-body-sm text-body-sm">Agreements</span>
+            <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors {% if request.resolver_match.url_name == 'agreements' or request.resolver_match.url_name == 'create_agreement' or request.resolver_match.url_name == 'edit_agreement' or request.resolver_match.url_name == 'agreement_detail' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'agreements' %}">
+                <span class="material-symbols-outlined text-[20px]">history_edu</span>
+                <span class="text-[13px] font-body-sm text-[13px] truncate">Agreements</span>
             </a>
             {% endif %}
 
             {% if request.user.profile.has_access_staff %}
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors {% if request.resolver_match.url_name == 'staff' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'staff' %}">
-                <span class="material-symbols-outlined">badge</span>
-                <span class="font-body-sm text-body-sm">Staff</span>
+            <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors {% if request.resolver_match.url_name == 'staff' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}" href="{% url 'staff' %}">
+                <span class="material-symbols-outlined text-[20px]">badge</span>
+                <span class="text-[13px] font-body-sm text-[13px] truncate">Staff</span>
             </a>
             {% endif %}
 
@@ -369,47 +358,41 @@
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="hr-dropdown-menu" id="hr-dropdown-btn"
                     onclick="toggleSidebarDropdown('hr')"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if 'hr' in request.resolver_match.url_name %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined">groups</span>
-                        <span class="font-body-sm text-body-sm">Human Resources</span>
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if 'hr' in request.resolver_match.url_name %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
+                        <span class="material-symbols-outlined text-[20px]">groups</span>
+                        <span class="text-[13px] font-body-sm text-[13px] truncate">Human Resources</span>
                     </div>
                     <span id="hr-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="hr-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="hr-dropdown-btn">
                     {% if request.user.profile.has_access_hr_dashboard %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_dashboard' %}">
-                        <span class="material-symbols-outlined text-[20px]">dashboard</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'hr_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_dashboard' %}">
                         <span>Overview</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_hr_employees %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_employees' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_employees' %}">
-                        <span class="material-symbols-outlined text-[20px]">badge</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'hr_employees' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_employees' %}">
                         <span>Employees</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_hr_attendance %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_attendance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_attendance' %}">
-                        <span class="material-symbols-outlined text-[20px]">event_available</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'hr_attendance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_attendance' %}">
                         <span>Attendance</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_hr_leaves %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_leaves' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_leaves' %}">
-                        <span class="material-symbols-outlined text-[20px]">sick</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'hr_leaves' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_leaves' %}">
                         <span>Leaves</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_hr_payroll %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_payroll' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_payroll' %}">
-                        <span class="material-symbols-outlined text-[20px]">payments</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'hr_payroll' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_payroll' %}">
                         <span>Payroll</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_hr_settings %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'hr_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_settings' %}">
-                        <span class="material-symbols-outlined text-[20px]">settings</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'hr_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'hr_settings' %}">
                         <span>Settings</span>
                     </a>
 {% endif %}
@@ -422,29 +405,26 @@
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="campaigns-dropdown-menu" id="campaigns-dropdown-btn"
                     onclick="toggleSidebarDropdown('campaigns')"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'campaign' or request.resolver_match.url_name == 'post_management' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined">ads_click</span>
-                        <span class="font-body-sm text-body-sm">Campaigns</span>
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if request.resolver_match.url_name == 'campaign' or request.resolver_match.url_name == 'post_management' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
+                        <span class="material-symbols-outlined text-[20px]">ads_click</span>
+                        <span class="text-[13px] font-body-sm text-[13px] truncate">Campaigns</span>
                     </div>
                     <span id="campaigns-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="campaigns-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="campaigns-dropdown-btn">
                     {% if request.user.profile.has_access_campaign %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'campaign' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'campaign' %}">
-                        <span class="material-symbols-outlined text-[20px]">list</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'campaign' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'campaign' %}">
                         <span>Overview</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_post_management %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'post_management' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'post_management' %}">
-                        <span class="material-symbols-outlined text-[20px]">campaign</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'post_management' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'post_management' %}">
                         <span>Post Management</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_campaign_status_settings %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'campaigns' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'campaign_status_settings' %}">
-                        <span class="material-symbols-outlined text-[20px]">settings</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'campaigns' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'campaign_status_settings' %}">
                         <span>Status Settings</span>
                     </a>
 {% endif %}
@@ -457,35 +437,31 @@
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="content-dropdown-menu" id="content-dropdown-btn"
                     onclick="toggleSidebarDropdown('content')"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'content_tracker' or request.resolver_match.url_name == 'add_content_item' or request.resolver_match.url_name == 'edit_content_item' or request.resolver_match.url_name == 'editor_dashboard' or request.resolver_match.url_name == 'editor_board' or request.resolver_match.url_name == 'content_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined">video_library</span>
-                        <span class="font-body-sm text-body-sm">CMS</span>
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if request.resolver_match.url_name == 'content_tracker' or request.resolver_match.url_name == 'add_content_item' or request.resolver_match.url_name == 'edit_content_item' or request.resolver_match.url_name == 'editor_dashboard' or request.resolver_match.url_name == 'editor_board' or request.resolver_match.url_name == 'content_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
+                        <span class="material-symbols-outlined text-[20px]">video_library</span>
+                        <span class="text-[13px] font-body-sm text-[13px] truncate">CMS</span>
                     </div>
                     <span id="content-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="content-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="content-dropdown-btn">
                     {% if request.user.profile.has_access_content_tracker %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'content_tracker' or request.resolver_match.url_name == 'add_content_item' or request.resolver_match.url_name == 'edit_content_item' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'content_tracker' %}">
-                        <span class="material-symbols-outlined text-[20px]">table_chart</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'content_tracker' or request.resolver_match.url_name == 'add_content_item' or request.resolver_match.url_name == 'edit_content_item' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'content_tracker' %}">
                         <span>Overview</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_editor_dashboard %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'editor_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'editor_dashboard' %}">
-                        <span class="material-symbols-outlined text-[20px]">analytics</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'editor_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'editor_dashboard' %}">
                         <span>Editor Dashboard</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_editor_board %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'editor_board' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'editor_board' %}">
-                        <span class="material-symbols-outlined text-[20px]">edit_square</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'editor_board' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'editor_board' %}">
                         <span>Editor Board</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_content_settings %}
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'content_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'content_settings' %}">
-                        <span class="material-symbols-outlined text-[20px]">video_settings</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'content_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'content_settings' %}">
                         <span>Content Settings</span>
                     </a>
                     {% endif %}
@@ -498,48 +474,42 @@
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="finance-dropdown-menu" id="finance-dropdown-btn"
                     onclick="toggleSidebarDropdown('finance')"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'finance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined">payments</span>
-                        <span class="font-body-sm text-body-sm">Finance</span>
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if request.resolver_match.url_name == 'finance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
+                        <span class="material-symbols-outlined text-[20px]">payments</span>
+                        <span class="text-[13px] font-body-sm text-[13px] truncate">Finance</span>
                     </div>
                     <span id="finance-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="finance-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="finance-dropdown-btn">
                     {% if request.user.profile.has_access_finance_dashboard %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_dashboard' %}">
-                        <span class="material-symbols-outlined text-[20px]">speed</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'finance_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_dashboard' %}">
                         <span>Finance Dashboard</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_finance_income %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_income' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_income' %}">
-                        <span class="material-symbols-outlined text-[20px]">trending_up</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'finance_income' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_income' %}">
                         <span>Income</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_finance_expenses %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_expenses' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_expenses' %}">
-                        <span class="material-symbols-outlined text-[20px]">trending_down</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'finance_expenses' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_expenses' %}">
                         <span>Expenses</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_finance_reports %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'finance_reports' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_reports' %}">
-                        <span class="material-symbols-outlined text-[20px]">assessment</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'finance_reports' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_reports' %}">
                         <span>Financial Reports</span>
                     </a>
 {% endif %}
 
                     {% if request.user.profile.has_access_partner_payouts %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'partner_payouts' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'partner_payouts' %}">
-                        <span class="material-symbols-outlined text-[20px]">payments</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'partner_payouts' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'partner_payouts' %}">
                         <span>Partner Payouts</span>
                     </a>
 {% endif %}
                     {% if request.user.profile.has_access_finance_settings %}
-<a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'finance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_settings' %}">
-                        <span class="material-symbols-outlined text-[20px]">settings</span>
+<a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'finance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'finance_settings' %}">
                         <span>Status Settings</span>
                     </a>
 {% endif %}
@@ -552,42 +522,37 @@
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="settings-dropdown-menu" id="settings-dropdown-btn"
                     onclick="toggleSidebarDropdown('settings')"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all {% if request.resolver_match.url_name == 'services' or request.resolver_match.url_name == 'staff_roles' or request.resolver_match.url_name == 'notification_settings' or request.resolver_match.url_name == 'role_permissions' or request.resolver_match.url_name == 'departments' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
-                    <div class="flex items-center gap-3">
-                        <span class="material-symbols-outlined">settings</span>
-                        <span class="font-body-sm text-body-sm">Settings</span>
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if request.resolver_match.url_name == 'services' or request.resolver_match.url_name == 'staff_roles' or request.resolver_match.url_name == 'notification_settings' or request.resolver_match.url_name == 'role_permissions' or request.resolver_match.url_name == 'departments' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    <div class="flex items-center gap-2 flex-1 overflow-hidden">
+                        <span class="material-symbols-outlined text-[20px]">settings</span>
+                        <span class="text-[13px] font-body-sm text-[13px] truncate">Settings</span>
                     </div>
                     <span id="settings-arrow" class="material-symbols-outlined text-[16px] transition-transform duration-200">expand_more</span>
                 </button>
                 <div id="settings-dropdown-menu" class="pl-8 space-y-1 hidden transition-all duration-200" role="region" aria-labelledby="settings-dropdown-btn">
 
                     {% if request.user.profile.has_access_services %}
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'services' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'services' %}">
-                        <span class="material-symbols-outlined text-[20px]">design_services</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'services' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'services' %}">
                         <span>Service Page</span>
                     </a>
                     {% endif %}
                     {% if request.user.profile.has_access_staff_roles %}
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'staff_roles' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'staff_roles' %}">
-                        <span class="material-symbols-outlined text-[20px]">groups</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'staff_roles' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'staff_roles' %}">
                         <span>Manage Roles</span>
                     </a>
                     {% endif %}
                     {% if request.user.profile.has_access_notification_settings %}
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'notification_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'notification_settings' %}">
-                        <span class="material-symbols-outlined text-[20px]">notifications</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'notification_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'notification_settings' %}">
                         <span>Notification Settings</span>
                     </a>
                     {% endif %}
                     {% if request.user.profile.has_access_role_permissions %}
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'role_permissions' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'role_permissions' %}">
-                        <span class="material-symbols-outlined text-[20px]">rule</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'role_permissions' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'role_permissions' %}">
                         <span>Role Permissions</span>
                     </a>
                     {% endif %}
                     {% if request.user.profile.has_access_departments %}
-                    <a class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm {% if request.resolver_match.url_name == 'departments' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'departments' %}">
-                        <span class="material-symbols-outlined text-[20px]">corporate_fare</span>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'departments' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}" href="{% url 'departments' %}">
                         <span>Departments</span>
                     </a>
                     {% endif %}
@@ -596,11 +561,11 @@
             {% endif %}
         </nav>
         
-        <div class="px-3 pt-4 mt-4 border-t border-outline-variant/30">
+        <div class="px-2.5 pt-4 mt-4 border-t border-outline-variant/30">
             <div class="space-y-1">
-                <a class="flex items-center gap-3 px-3 py-2 text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50 rounded-lg transition-colors" href="{% url 'logout' %}">
-                    <span class="material-symbols-outlined text-error">logout</span>
-                    <span class="font-body-sm text-body-sm">Log Out</span>
+                <a class="w-full flex items-center gap-2 px-2.5 py-1.5 text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50 rounded-lg transition-colors" href="{% url 'logout' %}">
+                    <span class="material-symbols-outlined text-[20px] text-error">logout</span>
+                    <span class="text-[13px] font-body-sm text-[13px] truncate">Log Out</span>
                 </a>
             </div>
         </div>
@@ -619,7 +584,6 @@
             
             <div class="flex items-center gap-4">
                 <button onclick="document.getElementById('quick-create-modal').classList.remove('hidden')" class="flex items-center gap-2 px-4 py-2 bg-primary-container/10 text-primary font-button rounded-lg hover:bg-primary-container/20 transition-all">
-                    <span class="material-symbols-outlined text-[20px]">add</span>
                     Quick Create
                 </button>
                 <div class="h-6 w-px bg-outline-variant"></div>
@@ -935,24 +899,17 @@
                 });
             }
 
-            // Expand sidebar if user clicks inside it while collapsed
+            // Expand sidebar on hover
             const aside = document.querySelector('aside');
             if (aside) {
-                aside.addEventListener('click', function(e) {
+                aside.addEventListener('mouseenter', function(e) {
                     const body = document.getElementById('app-body');
                     if (body.classList.contains('sidebar-collapsed')) {
-                        // Exclude the toggle button itself
-                        if(!e.target.closest('button[onclick*="toggleSidebarState"]')) {
-                            body.classList.remove('sidebar-collapsed');
-                        }
+                        body.classList.remove('sidebar-collapsed');
                     }
                 });
-            }
 
-            // Collapse sidebar if user clicks on the main content area
-            const mainContent = document.querySelector('main');
-            if (mainContent) {
-                mainContent.addEventListener('click', function() {
+                aside.addEventListener('mouseleave', function(e) {
                     const body = document.getElementById('app-body');
                     if (!body.classList.contains('sidebar-collapsed')) {
                         body.classList.add('sidebar-collapsed');

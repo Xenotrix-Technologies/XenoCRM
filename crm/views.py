@@ -2901,19 +2901,28 @@ def role_permissions_view(request):
     
     import json
     from django.http import JsonResponse
-    from crm.models import StaffRole
+    from crm.models import StaffRole, UserProfile
 
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            role_name = data.get('role')
+            target_type = data.get('type')
+            target_id = data.get('id')
             perms = data.get('permissions')
-            if role_name:
-                role_obj = StaffRole.objects.get(organization=org, name=role_name)
+            
+            if target_type == 'role' and target_id:
+                role_obj = StaffRole.objects.get(organization=org, name=target_id)
                 role_obj.permissions_json = json.dumps(perms)
                 role_obj.save()
-                return JsonResponse({'success': True, 'message': f"Permissions for role '{role_name}' updated successfully."})
-            return JsonResponse({'success': False, 'error': 'Role name is missing.'})
+                return JsonResponse({'success': True, 'message': f"Permissions for role '{target_id}' updated successfully."})
+            
+            elif target_type == 'staff' and target_id:
+                staff_obj = UserProfile.objects.get(organization=org, id=target_id)
+                staff_obj.custom_permissions_json = json.dumps(perms)
+                staff_obj.save()
+                return JsonResponse({'success': True, 'message': f"Permissions for staff updated successfully."})
+
+            return JsonResponse({'success': False, 'error': 'Missing type or id.'})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
 
@@ -2924,10 +2933,21 @@ def role_permissions_view(request):
             role_permissions_map[role.name] = json.loads(role.permissions_json or '{}')
         except Exception:
             role_permissions_map[role.name] = {}
+            
+    # Serialize staff permissions
+    staff_members = UserProfile.objects.filter(organization=org).select_related('user')
+    staff_permissions_map = {}
+    for staff in staff_members:
+        try:
+            staff_permissions_map[staff.id] = json.loads(staff.custom_permissions_json or '{}')
+        except Exception:
+            staff_permissions_map[staff.id] = {}
 
     context = {
         'roles': roles,
+        'staff_members': staff_members,
         'role_permissions_json': json.dumps(role_permissions_map),
+        'staff_permissions_json': json.dumps(staff_permissions_map),
     }
     return render(request, 'role_permissions.html', context)
 
