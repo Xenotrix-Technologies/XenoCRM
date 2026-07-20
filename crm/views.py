@@ -4016,9 +4016,34 @@ def editor_dashboard_view(request):
 @login_required
 def finance_dashboard_view(request):
     org = request.user.profile.organization
+    today = timezone.now().date()
     
     total_revenue = Income.objects.filter(organization=org).aggregate(Sum('amount'))['amount__sum'] or 0
     monthly_expenses = Expense.objects.filter(organization=org).aggregate(Sum('amount'))['amount__sum'] or 0
+    
+    revenue_this_month = Income.objects.filter(organization=org, date__year=today.year, date__month=today.month).aggregate(Sum('amount'))['amount__sum'] or 0
+    revenue_this_year = Income.objects.filter(organization=org, date__year=today.year).aggregate(Sum('amount'))['amount__sum'] or 0
+    
+    months_labels = []
+    revenue_data = []
+    
+    for i in range(5, -1, -1):
+        target_month = today.month - i
+        target_year = today.year
+        while target_month <= 0:
+            target_month += 12
+            target_year -= 1
+        months_labels.append(f"{calendar.month_abbr[target_month]}")
+        inc = Income.objects.filter(organization=org, date__year=target_year, date__month=target_month).aggregate(total=Sum('amount'))['total'] or 0
+        revenue_data.append(float(inc))
+        
+    client_incomes = Income.objects.filter(organization=org).values('client_name').annotate(total=Sum('amount')).order_by('-total')[:5]
+    client_labels = [c['client_name'] for c in client_incomes]
+    client_revenue = [float(c['total']) for c in client_incomes]
+    
+    service_incomes = Income.objects.filter(organization=org, project_name__isnull=False).exclude(project_name='').values('project_name').annotate(total=Sum('amount')).order_by('-total')[:5]
+    service_labels = [s['project_name'] for s in service_incomes]
+    service_revenue = [float(s['total']) for s in service_incomes]
     
     context = {
         'total_revenue': total_revenue,
@@ -4029,14 +4054,14 @@ def finance_dashboard_view(request):
         'net_profit': float(total_revenue) - float(monthly_expenses),
         'active_clients': Lead.objects.filter(organization=org).count(),
         'total_invoices': Income.objects.filter(organization=org).count(),
-        'revenue_this_month': 0,
-        'revenue_this_year': total_revenue,
-        'trend_labels': json.dumps(["Jan", "Feb", "Mar", "Apr", "May", "Jun"]),
-        'trend_data': json.dumps([0, 0, 0, 0, 0, 0]),
-        'client_revenue_labels': json.dumps([]),
-        'client_revenue_data': json.dumps([]),
-        'service_labels': json.dumps([]),
-        'service_revenue': json.dumps([]),
+        'revenue_this_month': revenue_this_month,
+        'revenue_this_year': revenue_this_year,
+        'trend_labels': json.dumps(months_labels),
+        'trend_data': json.dumps(revenue_data),
+        'client_revenue_labels': json.dumps(client_labels),
+        'client_revenue_data': json.dumps(client_revenue),
+        'service_labels': json.dumps(service_labels),
+        'service_revenue': json.dumps(service_revenue),
     }
     return render(request, 'finance_dashboard.html', context)
 
@@ -4349,9 +4374,65 @@ def finance_edit_expense(request, expense_id):
             
     return redirect('finance_expenses')
 
+import json
+import calendar
+
 @login_required
 def finance_reports_view(request):
-    return render(request, 'finance_reports.html')
+    org = request.user.profile.organization
+    today = timezone.now().date()
+    
+    months_labels = []
+    revenue_data = []
+    expenses_data = []
+    profit_data = []
+    
+    for i in range(5, -1, -1):
+        target_month = today.month - i
+        target_year = today.year
+        while target_month <= 0:
+            target_month += 12
+            target_year -= 1
+            
+        months_labels.append(f"{calendar.month_abbr[target_month]} {target_year}")
+        
+        inc = Income.objects.filter(organization=org, date__year=target_year, date__month=target_month).aggregate(total=Sum('amount'))['total'] or 0
+        exp = Expense.objects.filter(organization=org, date__year=target_year, date__month=target_month).aggregate(total=Sum('amount'))['total'] or 0
+        
+        revenue_data.append(float(inc))
+        expenses_data.append(float(exp))
+        profit_data.append(float(inc - exp))
+        
+    client_incomes = Income.objects.filter(organization=org).values('client_name').annotate(total=Sum('amount')).order_by('-total')[:5]
+    client_labels = [c['client_name'] for c in client_incomes]
+    client_revenue = [float(c['total']) for c in client_incomes]
+    
+    total_inc = Income.objects.filter(organization=org).aggregate(total=Sum('amount'))['total'] or 0
+    total_exp = Expense.objects.filter(organization=org).aggregate(total=Sum('amount'))['total'] or 0
+    
+    pm_incomes = Income.objects.filter(organization=org, payment_method__isnull=False).values('payment_method__name').annotate(total=Sum('amount'))
+    pay_methods_labels = [pm['payment_method__name'] for pm in pm_incomes]
+    pay_methods_data = [float(pm['total']) for pm in pm_incomes]
+    
+    context = {
+        'months': json.dumps(months_labels),
+        'revenue_data': json.dumps(revenue_data),
+        'expenses_data': json.dumps(expenses_data),
+        'profit_data': json.dumps(profit_data),
+        'client_labels': json.dumps(client_labels),
+        'client_revenue': json.dumps(client_revenue),
+        'cash_flow_labels': json.dumps(['Week 1', 'Week 2', 'Week 3', 'Week 4']),
+        'cash_flow_data': json.dumps([0, 0, 0, 0]),
+        'inc_exp_labels': json.dumps(['Income', 'Expense']),
+        'inc_exp_data': json.dumps([float(total_inc), float(total_exp)]),
+        'inv_status_labels': json.dumps(['Paid', 'Pending', 'Overdue']),
+        'inv_status_data': json.dumps([0, 0, 0]),
+        'pay_methods_labels': json.dumps(pay_methods_labels),
+        'pay_methods_data': json.dumps(pay_methods_data),
+        'receivables': [],
+    }
+    
+    return render(request, 'finance_reports.html', context)
 
 @login_required
 def partner_payout_view(request):

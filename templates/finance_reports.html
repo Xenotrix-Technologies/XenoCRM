@@ -70,37 +70,11 @@
             </div>
         </div>
 
-        <!-- 6. Invoice Status (Doughnut) -->
-        <div class="glass-card p-5 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
-            <h4 class="font-headline-sm text-on-surface mb-4 font-bold text-sm uppercase tracking-wider">Invoice Status</h4>
-            <div class="relative h-64">
-                <canvas id="invStatusChart"></canvas>
-            </div>
-        </div>
-
         <!-- 7. Payment Methods (Pie) -->
         <div class="glass-card p-5 rounded-xl shadow-sm border border-outline-variant/30 bg-surface">
             <h4 class="font-headline-sm text-on-surface mb-4 font-bold text-sm uppercase tracking-wider">Payment Methods</h4>
             <div class="relative h-64">
                 <canvas id="payMethodChart"></canvas>
-            </div>
-        </div>
-
-        <!-- 8. Outstanding Receivables (List/KPIs) -->
-        <div class="glass-card p-5 rounded-xl shadow-sm border border-outline-variant/30 bg-surface flex flex-col">
-            <h4 class="font-headline-sm text-on-surface mb-4 font-bold text-sm uppercase tracking-wider">Outstanding Receivables</h4>
-            <div class="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                <ul class="space-y-4">
-                    {% for rec in receivables %}
-                    <li class="flex justify-between items-center border-b border-outline-variant/30 pb-3 last:border-0">
-                        <div>
-                            <p class="font-bold text-on-surface text-sm">{{ rec.client }}</p>
-                            <p class="text-xs text-error font-medium mt-1">{{ rec.days }}</p>
-                        </div>
-                        <span class="font-bold text-primary">₹{{ rec.amount }}</span>
-                    </li>
-                    {% endfor %}
-                </ul>
             </div>
         </div>
 
@@ -197,19 +171,6 @@ document.addEventListener('DOMContentLoaded', function() {
         options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
     });
 
-    // 6. Invoice Status
-    new Chart(document.getElementById('invStatusChart').getContext('2d'), {
-        type: 'doughnut',
-        data: {
-            labels: {{ inv_status_labels|default:"[]"|safe }},
-            datasets: [{
-                data: {{ inv_status_data|default:"[]"|safe }},
-                backgroundColor: ['#22C55E', '#F59E0B', '#EF4444'],
-                borderWidth: 0
-            }]
-        },
-        options: { responsive: true, maintainAspectRatio: false, cutout: '65%' }
-    });
 
     // 7. Payment Methods
     new Chart(document.getElementById('payMethodChart').getContext('2d'), {

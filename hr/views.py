@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
 from django.contrib import messages
 from crm.views import page_permission_required
 from crm.models import Department, UserProfile
@@ -14,10 +15,19 @@ def hr_dashboard(request):
     """
     org = request.user.profile.organization
     employees_count = UserProfile.objects.filter(organization=org).count()
-    # Simple dashboard context for now
+    
+    today = timezone.now().date()
+    
+    present_today = Attendance.objects.filter(organization=org, date=today, status__name__icontains='Present').count()
+    on_leave = LeaveRequest.objects.filter(organization=org, start_date__lte=today, end_date__gte=today, status__name__iexact='Approved').count()
+    pending_payroll = Payroll.objects.filter(organization=org, status='Draft').count()
+    
     return render(request, 'hr_dashboard.html', {
         'page_title': 'Human Resources',
         'employees_count': employees_count,
+        'present_today': present_today,
+        'on_leave': on_leave,
+        'pending_payroll': pending_payroll,
     })
 
 
