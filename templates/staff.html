@@ -39,47 +39,47 @@
         <div class="overflow-x-auto custom-scrollbar">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="border-b border-outline-variant/30 bg-surface-container-low text-label-md font-label-md text-outline uppercase">
-                        <th class="p-4">Employee</th>
-                        <th class="p-4">Username</th>
-                        <th class="p-4">Email</th>
-                        <th class="p-4">Role</th>
-                        <th class="p-4 text-right">Actions</th>
+                    <tr class="border-b border-outline-variant/30 bg-surface-container-low text-[11px] font-bold text-outline uppercase tracking-wider">
+                        <th class="px-4 py-3">Employee</th>
+                        <th class="px-4 py-3">Username</th>
+                        <th class="px-4 py-3">Email</th>
+                        <th class="px-4 py-3">Role</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-outline-variant/20">
                     {% for profile in staff_members %}
                     <tr class="hover:bg-primary-container/5 transition-colors group" id="staff-row-{{ profile.id }}">
-                        <td class="p-4">
+                        <td class="px-4 py-2.5">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant flex-shrink-0">
+                                <div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant flex-shrink-0 shadow-sm">
                                     {% if profile.profile_image_url %}
                                     <img class="w-full h-full object-cover" src="{{ profile.profile_image_url }}" alt="Profile image"/>
                                     {% else %}
-                                    <div class="w-full h-full bg-primary-container/20 text-primary flex items-center justify-center font-bold text-sm">
+                                    <div class="w-full h-full bg-primary-container/20 text-primary flex items-center justify-center font-bold text-xs">
                                         {{ profile.user.username|slice:":2"|upper }}
                                     </div>
                                     {% endif %}
                                 </div>
                                 <div>
-                                    <div class="font-body-sm font-semibold text-on-surface">
+                                    <div class="text-[13px] font-semibold text-on-surface">
                                         {{ profile.user.get_full_name|default:profile.user.username }}
                                         {% if profile.user == request.user %}
-                                        <span class="ml-1 text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-bold">You</span>
+                                        <span class="ml-1 text-[9px] bg-primary/10 text-primary border border-primary/20 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">You</span>
                                         {% endif %}
                                     </div>
-                                    <div class="text-[12px] text-secondary">Joined {{ profile.user.date_joined|date:"M d, Y" }}</div>
+                                    <div class="text-[11px] text-secondary">Joined {{ profile.user.date_joined|date:"M d, Y" }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="p-4 text-body-sm text-on-surface-variant font-label-md">{{ profile.user.username }}</td>
-                        <td class="p-4 text-body-sm text-on-surface-variant">{{ profile.user.email }}</td>
-                        <td class="p-4">
-                            <span class="px-2.5 py-1 rounded-full text-[12px] font-semibold border bg-surface-variant text-on-surface-variant border-outline-variant/40">
+                        <td class="px-4 py-2.5 text-xs text-on-surface-variant font-medium">{{ profile.user.username }}</td>
+                        <td class="px-4 py-2.5 text-xs text-on-surface-variant">{{ profile.user.email }}</td>
+                        <td class="px-4 py-2.5">
+                            <span class="px-2 py-1 rounded-full text-[11px] font-semibold border bg-surface-variant text-on-surface-variant border-outline-variant/40">
                                 {{ profile.role }}
                             </span>
                         </td>
-                        <td class="p-4 text-right">
+                        <td class="px-4 py-2.5 text-right">
                             <div class="flex items-center justify-end gap-2">
                                 <a href="{% url 'edit_staff' profile.id %}" class="p-2 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-all" title="Edit staff member">
                                     <span class="material-symbols-outlined text-[18px]">edit</span>
