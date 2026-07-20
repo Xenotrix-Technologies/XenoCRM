@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from crm.views import page_permission_required
-from crm.models import Department
+from crm.models import Department, UserProfile
 from .models import EmployeeProfile, Attendance, LeaveRequest, Payroll, LeaveType, AttendanceStatus, PayrollRule, LeaveRequestStatus
 from .forms import EmployeeProfileForm, AttendanceForm, LeaveRequestForm, PayrollForm, LeaveTypeForm, AttendanceStatusForm, PayrollRuleForm, LeaveRequestStatusForm, DepartmentForm
 
@@ -13,51 +13,14 @@ def hr_dashboard(request):
     Main dashboard for Human Resources department.
     """
     org = request.user.profile.organization
-    employees_count = EmployeeProfile.objects.filter(organization=org).count()
+    employees_count = UserProfile.objects.filter(organization=org).count()
     # Simple dashboard context for now
     return render(request, 'hr_dashboard.html', {
         'page_title': 'Human Resources',
         'employees_count': employees_count,
     })
 
-@login_required
-@page_permission_required('hr')
-def hr_employees(request):
-    org = request.user.profile.organization
-    
-    employees = EmployeeProfile.objects.filter(organization=org)
-    
-    return render(request, 'hr_employees.html', {
-        'page_title': 'Employee Directory',
-        'employees': employees,
-    })
 
-@login_required
-@page_permission_required('hr')
-def add_employee(request):
-    org = request.user.profile.organization
-    
-    if request.method == 'POST':
-        form = EmployeeProfileForm(request.POST, organization=org)
-        if form.is_valid():
-            employee = form.save(commit=False)
-            employee.organization = org
-            employee.save()
-            
-            job_role = form.cleaned_data.get('job_role')
-            if job_role and employee.user_profile:
-                employee.user_profile.role = job_role
-                employee.user_profile.save()
-                
-            messages.success(request, 'Employee added successfully.')
-            return redirect('hr_employees')
-    else:
-        form = EmployeeProfileForm(organization=org)
-        
-    return render(request, 'hr_add_employee.html', {
-        'page_title': 'Add Employee',
-        'form': form
-    })
 
 @login_required
 @page_permission_required('hr')

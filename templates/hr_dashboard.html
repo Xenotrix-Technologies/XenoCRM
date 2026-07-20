@@ -13,7 +13,7 @@
         <p class="text-secondary text-body-sm mt-1">Manage employees, track attendance, and oversee payroll from this centralized dashboard.</p>
       </div>
       <div class="flex items-center gap-3">
-        <a href="{% url 'add_employee' %}" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm">
+        <a href="{% url 'add_staff' %}" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm">
           <span class="material-symbols-outlined text-[18px]">add</span>
           Add Employee
         </a>
@@ -31,7 +31,7 @@
             <span class="text-secondary font-label-md font-bold uppercase tracking-wider text-xs">Total Employees</span>
           </div>
         </div>
-        <h3 class="text-3xl font-display-lg font-black text-on-background mt-2">0</h3>
+        <h3 class="text-3xl font-display-lg font-black text-on-background mt-2">{{ employees_count }}</h3>
       </div>
 
       <div class="glass-card p-5 rounded-2xl border border-outline-variant/30 shadow-sm bg-white">
@@ -72,17 +72,26 @@
     </div>
 
     <!-- Empty State Content Area -->
+    {% if employees_count == 0 %}
     <div class="glass-card rounded-2xl p-12 border border-outline-variant/30 shadow-sm bg-white flex flex-col items-center justify-center text-center mt-6">
       <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
         <span class="material-symbols-outlined text-4xl text-primary">groups</span>
       </div>
       <h3 class="text-xl font-bold text-on-background mb-2">No Employee Data Found</h3>
       <p class="text-secondary max-w-md mx-auto mb-6">The Human Resources module is active, but there is no employee data to display yet. Add employees to start tracking attendance, leaves, and payroll.</p>
-      <a href="{% url 'add_employee' %}" class="px-6 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm inline-flex items-center gap-2">
+      <a href="{% url 'add_staff' %}" class="px-6 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm inline-flex items-center gap-2">
         <span class="material-symbols-outlined text-[20px]">add_circle</span>
         Add First Employee
       </a>
     </div>
+    {% else %}
+    <div class="glass-card rounded-2xl p-8 border border-outline-variant/30 shadow-sm bg-white mt-6">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-bold text-on-background">Recent Activity</h3>
+      </div>
+      <p class="text-secondary text-body-sm">Check back later for attendance and payroll updates.</p>
+    </div>
+    {% endif %}
 
   </div>
 </div>

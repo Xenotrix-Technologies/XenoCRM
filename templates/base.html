@@ -396,20 +396,12 @@
             </a>
             {% endif %}
 
-            {% if request.user.profile.has_access_staff %}
-            <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors {% if request.resolver_match.url_name == 'staff' %}text-primary dark:text-primary-fixed font-bold border-l-4 border-primary dark:border-primary-fixed bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}"
-                href="{% url 'staff' %}">
-                <span class="material-symbols-outlined text-[20px]">badge</span>
-                <span class="text-[13px] font-body-sm text-[13px] truncate">Staff</span>
-            </a>
-            {% endif %}
-
             {% if request.user.profile.has_access_hr %}
             <!-- Human Resources Dropdown Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="hr-dropdown-menu" id="hr-dropdown-btn"
                     onclick="toggleSidebarDropdown('hr')"
-                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if 'hr' in request.resolver_match.url_name %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if 'hr' in request.resolver_match.url_name or request.resolver_match.url_name == 'staff' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
                     <div class="flex items-center gap-2 flex-1 overflow-hidden">
                         <span class="material-symbols-outlined text-[20px]">groups</span>
                         <span class="text-[13px] font-body-sm text-[13px] truncate">Human Resources</span>
@@ -425,9 +417,9 @@
                         <span>Overview</span>
                     </a>
                     {% endif %}
-                    {% if request.user.profile.has_access_hr_employees %}
-                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'hr_employees' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
-                        href="{% url 'hr_employees' %}">
+                    {% if request.user.profile.has_access_staff %}
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'staff' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
+                        href="{% url 'staff' %}">
                         <span>Employees</span>
                     </a>
                     {% endif %}

@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
-{% block title %}XenoCRM | Staff Management{% endblock %}
+{% block title %}XenoCRM | Employees{% endblock %}
 
 {% block content %}
 <main class="pt-4 p-margin-edge min-h-screen flex flex-col bg-background">
     <!-- Header & Action Bar -->
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
-            <h2 class="font-headline-lg text-headline-lg text-on-background">Staff Management</h2>
+            <h2 class="font-headline-lg text-headline-lg text-on-background">Employees</h2>
             <div class="flex items-center gap-2 text-body-sm text-secondary">
-                <span>{{ staff_members.count }} Total Staff Members</span>
+                <span>{{ staff_members.count }} Total Employees</span>
                 <span class="w-1 h-1 rounded-full bg-outline-variant"></span>
                 <span class="text-primary font-semibold">Active organization space</span>
             </div>
@@ -17,7 +17,7 @@
         <div class="flex items-center gap-3">
             <a href="{% url 'add_staff' %}" class="bg-primary text-on-primary px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:opacity-90 transition-all shadow-md">
                 <span class="material-symbols-outlined text-[18px]">person_add</span>
-                Add Staff Member
+                Add Employee
             </a>
         </div>
     </div>
@@ -40,7 +40,7 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="border-b border-outline-variant/30 bg-surface-container-low text-label-md font-label-md text-outline uppercase">
-                        <th class="p-4">Staff Member</th>
+                        <th class="p-4">Employee</th>
                         <th class="p-4">Username</th>
                         <th class="p-4">Email</th>
                         <th class="p-4">Role</th>

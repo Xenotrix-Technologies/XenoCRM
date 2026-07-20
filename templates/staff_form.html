@@ -7,17 +7,17 @@
   <div class="max-w-3xl mx-auto">
     <!-- Breadcrumbs -->
     <div class="flex items-center gap-2 mb-6 font-label-md text-outline">
-      <a href="{% url 'staff' %}" class="hover:underline">Staff Management</a>
+      <a href="{% url 'staff' %}" class="hover:underline">Employees</a>
       <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-      <span class="text-primary font-bold">{{ title }}</span>
+      <span class="text-primary font-bold">{% if profile %}Edit Employee{% else %}Add New Employee{% endif %}</span>
     </div>
 
     <!-- Form Card -->
     <div class="glass-card rounded-2xl p-8 border border-outline-variant/30 shadow-xl bg-white space-y-6 mb-8">
       <div>
-        <h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">{{ title }}</h2>
+        <h2 class="font-headline-lg text-headline-lg font-bold text-on-surface">{% if profile %}Edit Employee{% else %}Add New Employee{% endif %}</h2>
         <p class="text-secondary text-body-sm mt-1">
-          {% if profile %}Update staff details, assign roles, or change profile photo.{% else %}Provide details below to invite/add a new staff member to your organization.{% endif %}
+          {% if profile %}Update employee details, assign roles, or change profile photo.{% else %}Provide details below to invite/add a new employee to your organization.{% endif %}
         </p>
       </div>
 
@@ -103,7 +103,7 @@
         <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-6">
           <a href="{% url 'staff' %}" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</a>
           <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">
-            {% if profile %}Save Changes{% else %}Add Staff Member{% endif %}
+            {% if profile %}Save Changes{% else %}Add Employee{% endif %}
           </button>
         </div>
       </form>
