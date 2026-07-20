@@ -146,11 +146,11 @@
                     <div class="flex gap-4">
                         <div class="bg-white border border-outline-variant/50 rounded-xl px-4 py-2 text-center shadow-sm">
                             <span class="block text-[10px] font-bold uppercase tracking-wider text-outline mb-0.5">Total Modules</span>
-                            <span class="block font-bold text-lg text-on-surface">15</span>
+                            <span class="block font-bold text-lg text-on-surface" id="total-modules-count">0</span>
                         </div>
                         <div class="bg-white border border-outline-variant/50 rounded-xl px-4 py-2 text-center shadow-sm">
                             <span class="block text-[10px] font-bold uppercase tracking-wider text-outline mb-0.5">Total Perms</span>
-                            <span class="block font-bold text-lg text-on-surface">45</span>
+                            <span class="block font-bold text-lg text-on-surface" id="total-perms-count">0</span>
                         </div>
                         <div class="bg-white border border-outline-variant/50 rounded-xl px-4 py-2 text-center shadow-sm">
                             <span class="block text-[10px] font-bold uppercase tracking-wider text-primary mb-0.5">Active Perms</span>
@@ -158,14 +158,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Override Alert -->
-                <div id="override-alert" class="mt-4 p-3 rounded-lg bg-orange-50 border border-orange-200 flex items-start gap-3 hidden">
-                    <span class="material-symbols-outlined text-orange-500">warning</span>
-                    <div>
-                        <span class="block text-sm font-bold text-orange-800">Employee Overrides</span>
-                        <span class="block text-xs text-orange-700">These permissions will override the employee's base role permissions. Leaving them unchecked removes access.</span>
-                    </div>
-                </div>
+
             </div>
 
             <!-- Permission Tabs -->
@@ -232,12 +225,28 @@
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-leads-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
                         </tr>
 
+                        <!-- CRM: Leads Settings -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="CRM" data-name="Leads Settings">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">settings</span><div><span class="block text-sm font-bold text-on-surface">Leads Settings</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-leads_settings" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-leads_settings-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-leads_settings-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
                         <!-- CRM: Calendar -->
                         <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="CRM" data-name="Calendar">
                             <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">event</span><div><span class="block text-sm font-bold text-on-surface">Calendar</span></div></div></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-calendar" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-calendar-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-calendar-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- CRM: Calendar Status -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="CRM" data-name="Calendar Status Settings">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">settings</span><div><span class="block text-sm font-bold text-on-surface">Calendar Status Settings</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-calendar_status" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-calendar_status-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-calendar_status-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
                         </tr>
 
                         <!-- CRM: Clients -->
@@ -248,12 +257,28 @@
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-clients-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
                         </tr>
 
+                        <!-- CRM: Clients Status -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="CRM" data-name="Clients Status Settings">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">settings</span><div><span class="block text-sm font-bold text-on-surface">Clients Status Settings</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-clients_status" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-clients_status-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-clients_status-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
                         <!-- CRM: Customer Support -->
                         <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="CRM" data-name="Customer Support">
                             <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">support_agent</span><div><span class="block text-sm font-bold text-on-surface">Customer Support</span></div></div></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-support" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-support-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-support-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- CRM: Support Ticket Status -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="CRM" data-name="Support Ticket Status">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">settings</span><div><span class="block text-sm font-bold text-on-surface">Support Ticket Status</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-support_status" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-support_status-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-support_status-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
                         </tr>
                         
                         <!-- CRM: Projects -->
@@ -262,6 +287,14 @@
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-projects" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-projects-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-projects-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- CRM: Projects Status -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="CRM" data-name="Projects Status Settings">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">settings</span><div><span class="block text-sm font-bold text-on-surface">Projects Status Settings</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-projects_status" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-projects_status-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-projects_status-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
                         </tr>
 
                         <!-- CRM: Agreements -->
@@ -288,12 +321,28 @@
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
                         </tr>
 
+                        <!-- HR: HR Settings -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="HR" data-name="HR Settings">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">settings</span><div><span class="block text-sm font-bold text-on-surface">HR Settings</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_settings" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_settings-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_settings-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
                         <!-- Marketing: Campaigns -->
                         <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Marketing" data-name="Campaigns">
                             <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">ads_click</span><div><span class="block text-sm font-bold text-on-surface">Campaigns</span></div></div></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-campaigns" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-campaigns-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-campaigns-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- Marketing: Campaigns Status Settings -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Marketing" data-name="Campaigns Status Settings">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">settings</span><div><span class="block text-sm font-bold text-on-surface">Campaigns Status Settings</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-campaigns_status" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-campaigns_status-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-campaigns_status-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
                         </tr>
 
                         <!-- CMS: Content Tracker -->
@@ -304,12 +353,28 @@
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-content_tracker-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
                         </tr>
 
+                        <!-- CMS: Content Settings -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="CMS" data-name="Content Settings">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">settings</span><div><span class="block text-sm font-bold text-on-surface">Content Settings</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-cms_settings" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-cms_settings-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-cms_settings-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
                         <!-- Finance: Finance -->
                         <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Finance" data-name="Finance">
                             <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">payments</span><div><span class="block text-sm font-bold text-on-surface">Finance</span><span class="block text-[11px] text-secondary">Income, Expenses, Partner Payouts.</span></div></div></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- Finance: Finance Status Settings -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Finance" data-name="Finance Status Settings">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">settings</span><div><span class="block text-sm font-bold text-on-surface">Finance Status Settings</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_status" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_status-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_status-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
                         </tr>
 
                         <!-- Settings -->
@@ -333,7 +398,6 @@
 
             <!-- Action Buttons Footer -->
             <div class="px-6 py-4 bg-white border-t border-outline-variant/30 flex justify-end gap-3 z-20">
-                <button type="button" class="px-4 py-2 text-sm font-bold text-secondary bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">Clone Config</button>
                 <button type="button" onclick="loadPermissionsForTarget()" class="px-4 py-2 text-sm font-bold text-error border border-error/30 hover:bg-error/5 rounded-xl transition-colors">Reset</button>
                 <button type="button" onclick="savePermissions()" class="px-6 py-2 text-sm font-bold text-white bg-primary hover:bg-primary/90 shadow rounded-xl transition-all">Save Permissions</button>
             </div>
@@ -360,6 +424,16 @@
     
     document.addEventListener("DOMContentLoaded", () => {
         document.querySelectorAll('.matrix-toggle').forEach(el => el.checked = false);
+        
+        // Calculate totals dynamically
+        const totalModules = document.querySelectorAll('.matrix-row').length;
+        const totalPerms = document.querySelectorAll('.matrix-toggle').length;
+        
+        const totalModulesEl = document.getElementById('total-modules-count');
+        if (totalModulesEl) totalModulesEl.innerText = totalModules;
+        
+        const totalPermsEl = document.getElementById('total-perms-count');
+        if (totalPermsEl) totalPermsEl.innerText = totalPerms;
     });
 
     function switchViewMode(mode) {
@@ -443,12 +517,10 @@
         if (type === 'role') {
             document.getElementById('selected-target-badge1').innerText = "Active";
             document.getElementById('selected-target-badge2').innerText = "System Role";
-            document.getElementById('override-alert').classList.add('hidden');
             document.getElementById('selected-target-desc').innerText = "System access configuration for this role.";
         } else {
             document.getElementById('selected-target-badge1').innerText = "Employee";
             document.getElementById('selected-target-badge2').innerText = subText || "No Role";
-            document.getElementById('override-alert').classList.remove('hidden');
             document.getElementById('selected-target-desc').innerText = "Custom override permissions for this employee.";
         }
         
@@ -457,8 +529,9 @@
     }
 
     const pagesList = [
-        'dashboard', 'leads', 'calendar', 'clients', 'support', 'projects', 'agreements', 
-        'staff', 'hr', 'campaigns', 'content_tracker', 'finance', 'settings', 'role_permissions'
+        'dashboard', 'leads', 'leads_settings', 'calendar', 'calendar_status', 
+        'clients', 'clients_status', 'support', 'support_status', 'projects', 'projects_status', 'agreements', 
+        'staff', 'hr', 'hr_settings', 'campaigns', 'campaigns_status', 'content_tracker', 'cms_settings', 'finance', 'finance_status', 'settings', 'role_permissions'
     ];
 
     function loadPermissionsForTarget() {
