@@ -797,8 +797,8 @@ class Lead(models.Model):
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='leads')
     name = models.CharField(max_length=255)
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    phone_number = models.CharField(max_length=50)
     alt_phone_number = models.CharField(max_length=50, blank=True, null=True)
     company = models.CharField(max_length=255)
     score = models.IntegerField(default=50) # Lead score 0-100

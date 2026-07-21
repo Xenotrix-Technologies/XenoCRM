@@ -1,5 +1,7 @@
+from crm.models import *
 from django.db import models
 from django.contrib.auth.models import User
+from crm.models import Lead, UserProfile, Organization, StatusStyleMixin
 
 class Activity(models.Model):
     TYPE_CHOICES = [

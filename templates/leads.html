@@ -9,11 +9,28 @@
         <div>
             <h2 class="font-headline-lg text-headline-lg text-on-background">Lead Management</h2>
         </div>
+        
+        <!-- Import Instructions -->
+        <div class="flex-1 px-4 hidden md:flex items-center justify-end">
+            <div class="bg-surface-container-low text-secondary text-body-sm px-4 py-2 rounded-lg border border-outline-variant flex items-center gap-2">
+                <span class="material-symbols-outlined text-[16px] text-primary">info</span>
+                <span><strong>CSV Import:</strong> File must include <em>Name</em>, <em>Phone Number</em>, and <em>Company</em> columns.</span>
+            </div>
+        </div>
+
         <div class="flex items-center gap-3">
-            <a href="{% url 'import_leads' %}" class="bg-surface-container-lowest border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-surface-container-low transition-all">
+            <button type="button" id="import-leads-btn" class="bg-surface-container-lowest border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-surface-container-low transition-all">
                 <span class="material-symbols-outlined text-[18px]">upload</span>
                 Import
+            </button>
+            <a href="{% url 'download_lead_template' %}" class="bg-surface-container-lowest border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-surface-container-low transition-all" title="Download Template">
+                <span class="material-symbols-outlined text-[18px]">description</span>
+                Template
             </a>
+            <form id="import-leads-form" class="hidden">
+                {% csrf_token %}
+                <input type="file" id="import-leads-input" name="file" accept=".csv" data-url="{% url 'import_leads' %}">
+            </form>
 
             <a href="{% url 'add_lead' %}" class="bg-primary text-on-primary px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:opacity-90 transition-all shadow-md">
                 <span class="material-symbols-outlined text-[18px]">add</span>
@@ -214,6 +231,54 @@
 
     // Run on initial load
     bindTableEvents();
+
+    const importBtn = document.getElementById('import-leads-btn');
+    const importInput = document.getElementById('import-leads-input');
+    const importForm = document.getElementById('import-leads-form');
+
+    if (importBtn && importInput) {
+        importBtn.addEventListener('click', () => {
+            importInput.click();
+        });
+
+        importInput.addEventListener('change', function() {
+            if (!this.files.length) return;
+            
+            const formData = new FormData(importForm);
+            const url = this.getAttribute('data-url');
+            
+            // Show loading state
+            const originalText = importBtn.innerHTML;
+            importBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span> Importing...';
+            importBtn.disabled = true;
+
+            fetch(url, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Import successful! ${data.imported} leads imported. ${data.failed} failed.`);
+                    window.location.reload();
+                } else {
+                    alert('Import failed: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during import.');
+            })
+            .finally(() => {
+                importBtn.innerHTML = originalText;
+                importBtn.disabled = false;
+                this.value = '';
+            });
+        });
+    }
 </script>
 {% endblock %}
 

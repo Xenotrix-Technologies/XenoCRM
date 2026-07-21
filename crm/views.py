@@ -889,17 +889,15 @@ def leads_view(request):
         response['Content-Disposition'] = 'attachment; filename="leads_export.csv"'
         
         writer = csv.writer(response)
-        writer.writerow(['Name', 'Email', 'Company', 'Phone Number', 'Alt Phone Number', 'Date and Time', 'Status', 'Stage', 'Value', 'Owner', 'Lifecycle Stage', 'Annual Revenue', 'Health Score', 'Last Followup Date and Time'])
+        writer.writerow(['Name', 'Email', 'Company', 'Phone Number', 'Alt Phone Number', 'Date and Time', 'Status', 'Last Followup Date and Time'])
         
         leads_export = Lead.objects.filter(organization=org, is_client=False)
         for lead in leads_export:
-            owner_name = lead.owner.user.get_full_name() if lead.owner else 'None'
             writer.writerow([
                 lead.name, lead.email, lead.company,
                 lead.phone_number or '', lead.alt_phone_number or '',
                 lead.date_time.strftime('%Y-%m-%d %H:%M') if lead.date_time else '',
-                lead.status, lead.stage, lead.value, owner_name, lead.lifecycle_stage,
-                lead.annual_revenue, lead.health_score,
+                lead.status,
                 lead.last_followup_date_time.strftime('%Y-%m-%d %H:%M') if lead.last_followup_date_time else ''
             ])
         return response
@@ -1614,11 +1612,17 @@ def add_lead(request):
                 pass
 
         try:
+            if not name or not company or not phone_number:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                    return JsonResponse({'success': False, 'error': 'Name, Company, and Phone Number are required fields.'})
+                messages.error(request, "Name, Company, and Phone Number are required fields.")
+                return redirect('leads')
+                
             lead = Lead.objects.create(
                 organization=org,
                 name=name,
                 company=company,
-                email=email,
+                email=email if email else None,
                 phone_number=phone_number,
                 alt_phone_number=alt_phone_number,
                 date_time=date_time,
@@ -2151,9 +2155,21 @@ def safe_parse_datetime(val):
     return None
 
 @login_required
+def download_lead_template(request):
+    import csv
+    from django.http import HttpResponse
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="lead_import_template.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Name', 'Phone Number', 'Company', 'Email', 'Alt Phone Number', 'Score', 'Annual Revenue'])
+    return response
+
+@login_required
 def import_leads(request):
     if request.method != 'POST':
-        return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+        from django.contrib import messages
+        messages.error(request, 'Invalid request method. Please use the Import button on the Leads page.')
+        return redirect('leads')
         
     csv_file = request.FILES.get('file')
     if not csv_file:
@@ -2181,12 +2197,12 @@ def import_leads(request):
     headers = reader.fieldnames
     mapped = map_headers(headers)
     
-    required_fields = ['name', 'email', 'company']
+    required_fields = ['name', 'phone_number', 'company']
     missing_fields = [f for f in required_fields if f not in mapped]
     if missing_fields:
         return JsonResponse({
             'success': False, 
-            'error': f'Missing required columns: {", ".join([f.capitalize() for f in missing_fields])}. Please ensure your CSV has Name, Email, and Company columns.'
+            'error': f'Missing required columns: {", ".join([f.replace("_", " ").capitalize() for f in missing_fields])}. Please ensure your CSV has Name, Phone Number, and Company columns.'
         })
         
     org = request.user.profile.organization
@@ -2197,29 +2213,29 @@ def import_leads(request):
     
     for row_idx, row in enumerate(reader, start=2):
         name = row.get(mapped['name'], '')
-        email = row.get(mapped['email'], '')
+        email = row.get(mapped.get('email'), '') if 'email' in mapped else ''
+        phone_number = row.get(mapped['phone_number'], '')
         company = row.get(mapped['company'], '')
         
         name = name.strip() if name else ''
         email = email.strip() if email else ''
+        phone_number = phone_number.strip() if phone_number else ''
         company = company.strip() if company else ''
         
         errors = []
         if not name:
             errors.append('Name is required')
-        if not email:
-            errors.append('Email is required')
-        elif not is_valid_email(email):
+        if not phone_number:
+            errors.append('Phone Number is required')
+        if email and not is_valid_email(email):
             errors.append(f'Invalid email format: {email}')
         if not company:
             errors.append('Company is required')
             
         if errors:
-            failed_rows.append({'row': row_idx, 'errors': errors, 'data': f'{name or "N/A"} ({email or "N/A"})'})
+            failed_rows.append({'row': row_idx, 'errors': errors, 'data': f'{name or "N/A"} ({phone_number or "N/A"})'})
             continue
             
-        phone_number = row.get(mapped.get('phone_number', ''), '')
-        phone_number = phone_number.strip() if phone_number else None
         
         alt_phone_number = row.get(mapped.get('alt_phone_number', ''), '')
         alt_phone_number = alt_phone_number.strip() if alt_phone_number else None

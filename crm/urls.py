@@ -11,6 +11,7 @@ urlpatterns = [
     path('leads/', views.leads_view, name='leads'),
     path('leads/add/', views.add_lead, name='add_lead'),
     path('leads/import/', views.import_leads, name='import_leads'),
+    path('leads/import/template/', views.download_lead_template, name='download_lead_template'),
     path('leads/<int:lead_id>/edit/', views.edit_lead, name='edit_lead'),
     path('leads/<int:lead_id>/delete/', views.delete_lead, name='delete_lead'),
     path('leads/<int:lead_id>/json/', views.lead_json_view, name='lead_json'),
