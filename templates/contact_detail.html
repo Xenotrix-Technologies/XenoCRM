@@ -218,31 +218,7 @@
                         </div>
                         
 
-                    <!-- Activity Timeline (Compact Preview) -->
-                    <div class="col-span-2 glass-card rounded-xl p-6 border border-outline-variant/30">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="font-headline-md text-[18px] font-bold">Recent Activity</h3>
-                            <button onclick="switchTab(null, 'tab-timeline')" class="text-primary font-button text-sm">View All</button>
-                        </div>
-                        <div id="activity-list-container" class="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[1px] before:bg-outline-variant/30">
-                            {% for activity in activities|slice:":3" %}
-                            <div class="relative pl-10">
-                                <div class="absolute left-0 top-0 w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary z-10">
-                                    <span class="material-symbols-outlined text-[18px]">
-                                        {% if activity.type == 'Email' %}mail{% elif activity.type == 'Call' %}call{% elif activity.type == 'Meeting' %}calendar_today{% else %}description{% endif %}
-                                    </span>
-                                </div>
-                                <div>
-                                    <p class="font-body-sm font-bold">{{ activity.type }} Logged</p>
-                                    <p class="text-sm text-secondary">{{ activity.description }}</p>
-                                    <p class="text-xs text-outline mt-1">{{ activity.timestamp|timesince }} ago</p>
-                                </div>
-                            </div>
-                            {% empty %}
-                            <p class="text-xs text-outline text-center py-4">No recent activity.</p>
-                            {% endfor %}
-                        </div>
-                    </div>
+
                     </div>
                 </form>
 
@@ -320,6 +296,31 @@
                     </div>
                 </div>
 
+                <!-- Activity Timeline (Compact Preview) -->
+                <div class="glass-card rounded-xl p-6 border border-outline-variant/30">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="font-headline-md text-[18px] font-bold">Recent Activity</h3>
+                        <button onclick="switchTab(null, 'tab-timeline')" class="text-primary font-button text-sm">View All</button>
+                    </div>
+                    <div id="activity-list-container" class="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[1px] before:bg-outline-variant/30">
+                        {% for activity in activities|slice:":3" %}
+                        <div class="relative pl-10">
+                            <div class="absolute left-0 top-0 w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary z-10">
+                                <span class="material-symbols-outlined text-[18px]">
+                                    {% if activity.type == 'Email' %}mail{% elif activity.type == 'Call' %}call{% elif activity.type == 'Meeting' %}calendar_today{% else %}description{% endif %}
+                                </span>
+                            </div>
+                            <div>
+                                <p class="font-body-sm font-bold">{{ activity.type }} Logged</p>
+                                <p class="text-sm text-secondary">{{ activity.description }}</p>
+                                <p class="text-xs text-outline mt-1">{{ activity.timestamp|timesince }} ago</p>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p class="text-xs text-outline text-center py-4">No recent activity.</p>
+                        {% endfor %}
+                    </div>
+                </div>
 
             </div>
         </div>

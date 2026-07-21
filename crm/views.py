@@ -1632,7 +1632,6 @@ def add_lead(request):
                 date_time=date_time,
                 status=status,
                 owner=owner,
-                service=service,
                 last_followup_date_time=last_followup_date_time,
                 stage=status,
                 value=value,
@@ -1640,7 +1639,9 @@ def add_lead(request):
                 profile_image_url=profile_image_url if profile_image_url else None,
                 health_score=80
             )
-            
+            if service:
+                lead.services.add(service)
+                
             Activity.objects.create(
                 lead=lead,
                 type='Creation',
