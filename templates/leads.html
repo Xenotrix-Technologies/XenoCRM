@@ -60,7 +60,7 @@
             </select>
 
             <select name="owner" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
-                <option value="">All Owners</option>
+                <option value="">All Agents</option>
                 {% for owner in owners %}
                 <option value="{{ owner.id }}" {% if owner_filter == owner.id|stringformat:"i" %}selected{% endif %}>{{ owner.user.get_full_name|default:owner.user.username }}</option>
                 {% endfor %}
