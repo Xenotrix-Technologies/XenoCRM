@@ -12,6 +12,7 @@
                         </th>
                         <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider whitespace-nowrap">Lead Name</th>
                         <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider whitespace-nowrap">Company</th>
+                        <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider whitespace-nowrap">Location</th>
                         <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider">Phone / Alt Phone</th>
                         <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider">Registered On</th>
                         <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider whitespace-nowrap">Status</th>
@@ -42,6 +43,7 @@
                             </div>
                         </td>
                         <td class="py-2 px-2 text-on-surface-variant">{{ lead.company }}</td>
+                        <td class="py-2 px-2 text-on-surface-variant">{{ lead.location|default:"-" }}</td>
                         <td class="py-2 px-2 text-on-surface-variant">
                             <div>{{ lead.phone_number|default:"-" }}</div>
                             {% if lead.alt_phone_number %}
