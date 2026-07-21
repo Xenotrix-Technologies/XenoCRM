@@ -184,15 +184,12 @@
     function bindTableEvents() {
         const selectAll = document.getElementById('select-all');
         const checkboxes = document.querySelectorAll('.lead-checkbox');
-        const bulkBtns = document.querySelectorAll('.bulk-btn');
-        const bulkForm = document.getElementById('bulk-form');
-        const actionTypeInput = document.getElementById('action-type-input');
-
+        
         if (!selectAll) return;
 
         function updateBulkState() {
             const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-            bulkBtns.forEach(btn => {
+            document.querySelectorAll('.bulk-btn').forEach(btn => {
                 btn.disabled = !anyChecked;
                 if (anyChecked) {
                     btn.classList.remove('opacity-50');
@@ -213,21 +210,30 @@
             cb.addEventListener('change', updateBulkState);
         });
 
-        bulkBtns.forEach(btn => {
-            const newBtn = btn.cloneNode(true);
-            btn.parentNode.replaceChild(newBtn, btn);
-            newBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const action = this.getAttribute('value');
-                if (action === 'delete') {
-                    if (!confirm("Are you sure you want to delete the selected leads?")) return;
-                }
-                actionTypeInput.name = "bulk_action";
-                actionTypeInput.value = action;
-                bulkForm.submit();
-            });
-        });
+        // Initialize state
+        updateBulkState();
     }
+
+    // Bind bulk action buttons ONCE outside of bindTableEvents
+    document.querySelectorAll('.bulk-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const action = this.getAttribute('value');
+            if (action === 'delete') {
+                if (!confirm("Are you sure you want to delete the selected leads?")) return;
+            }
+            
+            // Fetch the current form and input from the DOM (they might have been replaced by AJAX)
+            const currentBulkForm = document.getElementById('bulk-form');
+            const currentActionInput = document.getElementById('action-type-input');
+            
+            if (currentBulkForm && currentActionInput) {
+                currentActionInput.name = "bulk_action";
+                currentActionInput.value = action;
+                currentBulkForm.submit();
+            }
+        });
+    });
 
     // Run on initial load
     bindTableEvents();

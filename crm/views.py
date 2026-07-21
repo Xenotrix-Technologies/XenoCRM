@@ -1576,7 +1576,7 @@ def add_lead(request):
         alt_phone_number = request.POST.get('alt_phone_number')
         
         date_time_val = request.POST.get('date_time')
-        date_time = date_time_val if date_time_val else None
+        date_time = date_time_val if date_time_val else timezone.now()
         
         status = request.POST.get('status')
         if not status:
@@ -2057,7 +2057,8 @@ def map_headers(headers):
         'annual_revenue': ['annual revenue', 'revenue'],
         'lifecycle_stage': ['lifecycle stage', 'lifecycle'],
         'last_followup': ['last followup', 'last followup date and time', 'last followup date/time', 'last followup datetime'],
-        'date_time': ['date and time', 'date/time', 'date', 'datetime', 'date time']
+        'date_time': ['date and time', 'date/time', 'date', 'datetime', 'date time'],
+        'location': ['location', 'address', 'city']
     }
     
     mapped = {}
@@ -2161,7 +2162,7 @@ def download_lead_template(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="lead_import_template.csv"'
     writer = csv.writer(response)
-    writer.writerow(['Name', 'Phone Number', 'Company', 'Email', 'Alt Phone Number', 'Score', 'Annual Revenue'])
+    writer.writerow(['Name', 'Phone Number', 'Company', 'Email', 'Alt Phone Number', 'Score', 'Annual Revenue', 'Location'])
     return response
 
 @login_required
@@ -2257,6 +2258,9 @@ def import_leads(request):
         
         raw_date_time = row.get(mapped.get('date_time', ''), '')
         date_time = safe_parse_datetime(raw_date_time)
+        if not date_time:
+            from django.utils import timezone
+            date_time = timezone.now()
         
         raw_followup = row.get(mapped.get('last_followup', ''), '')
         last_followup_date_time = safe_parse_datetime(raw_followup)
@@ -2307,6 +2311,9 @@ def import_leads(request):
             if not matched:
                 stage = 'New'
                 
+        location = row.get(mapped.get('location', ''), '')
+        location = location.strip() if location else None
+                
         try:
             with transaction.atomic():
                 lead = Lead.objects.create(
@@ -2325,7 +2332,8 @@ def import_leads(request):
                     annual_revenue=annual_revenue,
                     health_score=health_score,
                     date_time=date_time,
-                    last_followup_date_time=last_followup_date_time
+                    last_followup_date_time=last_followup_date_time,
+                    location=location
                 )
                 Activity.objects.create(
                     lead=lead,

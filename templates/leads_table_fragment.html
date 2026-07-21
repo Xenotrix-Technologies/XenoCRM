@@ -53,6 +53,8 @@
                         <td class="py-2 px-2 text-on-surface-variant">
                             {% if lead.date_time %}
                             {{ lead.date_time|date:"Y-m-d H:i" }}
+                            {% elif lead.created_at %}
+                            {{ lead.created_at|date:"Y-m-d H:i" }}
                             {% else %}
                             -
                             {% endif %}
