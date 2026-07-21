@@ -230,81 +230,27 @@
                 <span class="material-symbols-outlined text-outline">filter_alt</span>
             </div>
             <div class="space-y-4">
+                {% for item in funnel_items %}
                 <div class="relative">
                     <div class="flex justify-between text-xs font-bold mb-1.5">
-                        <span class="text-on-surface">Prospects</span>
-                        <span class="text-primary">{{ funnel_data.New }}</span>
+                        <span class="text-on-surface">{{ item.name }}</span>
+                        <span style="color: {{ item.color }}">{{ item.count }}</span>
                     </div>
                     <div class="h-8 bg-surface-container rounded-lg w-full flex items-center relative overflow-hidden">
-                        <div class="h-full bg-primary/20 absolute left-0" style="width: 100%"></div>
-                        <div class="h-full bg-primary absolute left-0 rounded-r-lg" style="width: 100%"></div>
-                        <span class="relative z-10 text-[10px] font-bold text-white px-4">100%</span>
-                    </div>
-                </div>
-                <div class="w-0.5 h-4 bg-outline-variant/30 mx-auto"></div>
-                <div class="relative">
-                    <div class="flex justify-between text-xs font-bold mb-1.5">
-                        <span class="text-on-surface">Qualified</span>
-                        <span class="text-primary">{{ funnel_data.Qualified }}</span>
-                    </div>
-                    <div class="h-8 bg-surface-container rounded-lg w-full flex items-center relative overflow-hidden">
-                        <div class="h-full bg-primary/20 absolute left-0" style="width: 100%"></div>
-                        <div class="h-full bg-primary absolute left-0 rounded-r-lg transition-all duration-1000"
-                            style="width: {{ funnel_rates.Qualified|default:0|floatformat:0 }}%"></div>
+                        <div class="h-full absolute left-0" style="background-color: {{ item.color }}33; width: 100%"></div>
+                        <div class="h-full absolute left-0 rounded-r-lg transition-all duration-1000"
+                            style="background-color: {{ item.color }}; width: {{ item.rate|default:0|floatformat:0 }}%"></div>
                         <span
-                            class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Qualified > 15 %}text-white{% else %}text-primary{% endif %}">
-                            {{ funnel_rates.Qualified|floatformat:0 }}%
+                            class="relative z-10 text-[10px] font-bold px-4 {% if item.rate > 15 %}text-white{% endif %}"
+                            {% if item.rate <= 15 %}style="color: {{ item.color }}"{% endif %}>
+                            {{ item.rate|floatformat:0 }}%
                         </span>
                     </div>
                 </div>
+                {% if not forloop.last %}
                 <div class="w-0.5 h-4 bg-outline-variant/30 mx-auto"></div>
-                <div class="relative">
-                    <div class="flex justify-between text-xs font-bold mb-1.5">
-                        <span class="text-on-surface">Proposal</span>
-                        <span class="text-primary">{{ funnel_data.Proposal }}</span>
-                    </div>
-                    <div class="h-8 bg-surface-container rounded-lg w-full flex items-center relative overflow-hidden">
-                        <div class="h-full bg-primary/20 absolute left-0" style="width: 100%"></div>
-                        <div class="h-full bg-primary absolute left-0 rounded-r-lg transition-all duration-1000"
-                            style="width: {{ funnel_rates.Proposal|default:0|floatformat:0 }}%"></div>
-                        <span
-                            class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Proposal > 15 %}text-white{% else %}text-primary{% endif %}">
-                            {{ funnel_rates.Proposal|floatformat:0 }}%
-                        </span>
-                    </div>
-                </div>
-                <div class="w-0.5 h-4 bg-outline-variant/30 mx-auto"></div>
-                <div class="relative">
-                    <div class="flex justify-between text-xs font-bold mb-1.5">
-                        <span class="text-on-surface">Negotiation</span>
-                        <span class="text-primary">{{ funnel_data.Negotiation }}</span>
-                    </div>
-                    <div class="h-8 bg-surface-container rounded-lg w-full flex items-center relative overflow-hidden">
-                        <div class="h-full bg-primary/20 absolute left-0" style="width: 100%"></div>
-                        <div class="h-full bg-primary absolute left-0 rounded-r-lg transition-all duration-1000"
-                            style="width: {{ funnel_rates.Negotiation|default:0|floatformat:0 }}%"></div>
-                        <span
-                            class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Negotiation > 15 %}text-white{% else %}text-primary{% endif %}">
-                            {{ funnel_rates.Negotiation|floatformat:0 }}%
-                        </span>
-                    </div>
-                </div>
-                <div class="w-0.5 h-4 bg-outline-variant/30 mx-auto"></div>
-                <div class="relative">
-                    <div class="flex justify-between text-xs font-bold mb-1.5">
-                        <span class="text-on-surface">Closed Won</span>
-                        <span class="text-success">{{ funnel_data.Won }}</span>
-                    </div>
-                    <div class="h-8 bg-surface-container rounded-lg w-full flex items-center relative overflow-hidden">
-                        <div class="h-full bg-success/20 absolute left-0" style="width: 100%"></div>
-                        <div class="h-full bg-success absolute left-0 rounded-r-lg transition-all duration-1000"
-                            style="width: {{ funnel_rates.Won|default:0|floatformat:0 }}%"></div>
-                        <span
-                            class="relative z-10 text-[10px] font-bold px-4 {% if funnel_rates.Won > 15 %}text-white{% else %}text-success{% endif %}">
-                            {{ funnel_rates.Won|floatformat:0 }}%
-                        </span>
-                    </div>
-                </div>
+                {% endif %}
+                {% endfor %}
             </div>
         </div>
 

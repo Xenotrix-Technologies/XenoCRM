@@ -764,19 +764,30 @@ def dashboard_view(request):
         color__in=['#004ac6', '#10b981']
     ).order_by('start_time')[:3]
     
-    # 8. Sales Funnel stats (stage counts)
-    stages = ['New', 'Qualified', 'Proposal', 'Negotiation', 'Won']
-    funnel_data = {}
-    for st in stages:
-        funnel_data[st] = leads_qs.filter(stage=st).count()
+    # 8. Sales Funnel stats (status counts)
+    lead_statuses = get_or_create_default_statuses(org)
+    funnel_items = []
+    
+    # Calculate prospects base (first status or sum)
+    # usually funnel uses first stage as base
+    prospects_count = 0
+    if lead_statuses.exists():
+        prospects_count = leads_qs.filter(status=lead_statuses.first().name).count()
         
-    prospects_count = funnel_data['New']
-    funnel_rates = {}
-    for st in stages:
-        if prospects_count > 0:
-            funnel_rates[st] = (funnel_data[st] / prospects_count) * 100
+    for idx, ls in enumerate(lead_statuses):
+        count = leads_qs.filter(status=ls.name).count()
+        
+        if idx == 0:
+            rate = 100.0 if count > 0 else 0.0
         else:
-            funnel_rates[st] = 0.0 if st != 'New' else 100.0
+            rate = (count / prospects_count * 100) if prospects_count > 0 else 0.0
+            
+        funnel_items.append({
+            'name': ls.name,
+            'color': ls.color_hex,
+            'count': count,
+            'rate': rate
+        })
 
 
 
@@ -869,8 +880,7 @@ def dashboard_view(request):
         'new_leads': new_leads,
         'recent_activities': recent_activities,
         'upcoming_meetings': upcoming_meetings,
-        'funnel_data': funnel_data,
-        'funnel_rates': funnel_rates,
+        'funnel_items': funnel_items,
         'trend_labels': json.dumps(trend_labels),
         'trend_values': json.dumps(trend_values),
         'service_labels': json.dumps(service_labels),
