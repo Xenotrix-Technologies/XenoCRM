@@ -765,17 +765,17 @@ def dashboard_view(request):
     ).order_by('start_time')[:3]
     
     # 8. Sales Funnel stats (status counts)
-    lead_statuses = get_or_create_default_statuses(org)
+    client_statuses = get_or_create_dynamic_statuses(org, 'clients', ClientStatus)
     funnel_items = []
     
     # Calculate prospects base (first status or sum)
     # usually funnel uses first stage as base
     prospects_count = 0
-    if lead_statuses.exists():
-        prospects_count = leads_qs.filter(status=lead_statuses.first().name).count()
+    if client_statuses.exists():
+        prospects_count = leads_qs.filter(is_client=True, status=client_statuses.first().name).count()
         
-    for idx, ls in enumerate(lead_statuses):
-        count = leads_qs.filter(status=ls.name).count()
+    for idx, cs in enumerate(client_statuses):
+        count = leads_qs.filter(is_client=True, status=cs.name).count()
         
         if idx == 0:
             rate = 100.0 if count > 0 else 0.0
@@ -783,8 +783,8 @@ def dashboard_view(request):
             rate = (count / prospects_count * 100) if prospects_count > 0 else 0.0
             
         funnel_items.append({
-            'name': ls.name,
-            'color': ls.color_hex,
+            'name': cs.name,
+            'color': cs.color_hex,
             'count': count,
             'rate': rate
         })
@@ -938,13 +938,7 @@ def leads_view(request):
     # 1. Search Query
     q = request.GET.get('q', '').strip()
     if q:
-        leads_qs = leads_qs.filter(
-            Q(name__icontains=q) | 
-            Q(company__icontains=q) | 
-            Q(email__icontains=q) |
-            Q(phone_number__icontains=q) |
-            Q(alt_phone_number__icontains=q)
-        )
+        leads_qs = leads_qs.filter(name__icontains=q)
         
     # 2. Filters
     status_filter = request.GET.get('status', '').strip()

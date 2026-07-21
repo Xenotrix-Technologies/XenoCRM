@@ -92,7 +92,13 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" class="p-8 text-center text-outline">No leads found matching current filters.</td>
+                        <td colspan="9" class="p-8 text-center text-outline">
+                            {% if q %}
+                                No leads found matching "{{ q }}".
+                            {% else %}
+                                No leads found matching current filters.
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>

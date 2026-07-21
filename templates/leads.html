@@ -45,11 +45,16 @@
     </div>
 
     <!-- Filter Bar Form -->
-    <form method="GET" action="{% url 'leads' %}" class="glass-panel rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+    <form id="lead-filter-form" method="GET" action="{% url 'leads' %}" class="glass-panel rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3">
             <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-outline">filter_list</span>
                 <span class="font-label-md text-label-md text-outline">FILTERS:</span>
+            </div>
+
+            <div class="relative flex items-center">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-[18px]">search</span>
+                <input type="search" name="q" id="lead-search-input" value="{{ q|default_if_none:'' }}" placeholder="Search leads..." class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-9 pr-4 focus:ring-primary focus:border-primary w-48 md:w-64 transition-all appearance-none">
             </div>
 
             <select name="status" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
@@ -120,14 +125,10 @@
     }
 
     function updateFilters(page) {
-        const filterForm = document.querySelector('form[method="GET"]');
+        const filterForm = document.getElementById('lead-filter-form');
         if (!filterForm) return;
 
         const formData = new FormData(filterForm);
-        const searchInput = document.querySelector('header input[name="q"]');
-        if (searchInput) {
-            formData.set('q', searchInput.value);
-        }
 
         const params = new URLSearchParams(formData);
         if (page) {
@@ -141,7 +142,7 @@
 
     // Debounce function
     let searchDebounceTimeout;
-    const globalSearch = document.querySelector('header input[name="q"]');
+    const globalSearch = document.getElementById('lead-search-input');
     if (globalSearch) {
         globalSearch.addEventListener('input', function() {
             clearTimeout(searchDebounceTimeout);
@@ -160,14 +161,17 @@
     }
 
     // Bind event listeners to filter dropdowns
-    document.querySelectorAll('form[method="GET"] select').forEach(select => {
+    document.querySelectorAll('#lead-filter-form select').forEach(select => {
         select.addEventListener('change', () => updateFilters());
     });
 
-    document.querySelector('form[method="GET"]').addEventListener('submit', (e) => {
-        e.preventDefault();
-        updateFilters();
-    });
+    const leadFilterFormEl = document.getElementById('lead-filter-form');
+    if (leadFilterFormEl) {
+        leadFilterFormEl.addEventListener('submit', (e) => {
+            e.preventDefault();
+            updateFilters();
+        });
+    }
 
     // Intercept pagination clicks
     document.getElementById('leads-table-container').addEventListener('click', function(e) {
