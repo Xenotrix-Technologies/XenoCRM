@@ -25,26 +25,28 @@
         <div class="invoice-section flex-between">
             <div class="brand-info">
                 <h3>{{ profile.organization.name }}</h3>
-                <p>Invoice Generation</p>
+                <p>{% if invoice %}Edit Invoice{% else %}Invoice Generation{% endif %}</p>
             </div>
             <div class="basic-info text-right">
                 <div class="form-group inline">
                     <label>Invoice No:</label>
-                    <input type="text" id="invoice_number" class="premium-input text-right" value="{{ default_inv_number }}" readonly>
+                    <input type="text" id="invoice_number" class="premium-input text-right" value="{% if invoice %}{{ invoice.invoice_number }}{% else %}{{ default_inv_number }}{% endif %}" readonly>
                 </div>
                 <div class="form-group inline">
                     <label>Date:</label>
-                    <input type="date" id="invoice_date" class="premium-input text-right" value="{{ today }}">
+                    <input type="date" id="invoice_date" class="premium-input text-right" value="{% if invoice %}{{ invoice.invoice_date|date:'Y-m-d' }}{% else %}{{ today }}{% endif %}">
                 </div>
                 <div class="form-group inline">
                     <label>Due Date:</label>
-                    <input type="date" id="due_date" class="premium-input text-right" value="{{ today }}">
+                    <input type="date" id="due_date" class="premium-input text-right" value="{% if invoice %}{{ invoice.due_date|date:'Y-m-d' }}{% else %}{{ today }}{% endif %}">
                 </div>
                 <div class="form-group inline">
                     <label>Status:</label>
                     <select id="status" class="premium-input text-right">
-                        <option value="Pending">Pending</option>
-                        <option value="Paid">Paid</option>
+                        <option value="Pending" {% if invoice and invoice.status == 'Pending' %}selected{% endif %}>Pending</option>
+                        <option value="Paid" {% if invoice and invoice.status == 'Paid' %}selected{% endif %}>Paid</option>
+                        <option value="Draft" {% if invoice and invoice.status == 'Draft' %}selected{% endif %}>Draft</option>
+                        <option value="Overdue" {% if invoice and invoice.status == 'Overdue' %}selected{% endif %}>Overdue</option>
                     </select>
                 </div>
             </div>
@@ -57,25 +59,25 @@
             <div>
                 <h4 class="section-title">Bill To:</h4>
                 <div class="form-group">
-                    <input type="text" id="customer_name" class="premium-input w-full" placeholder="Customer Name *" required>
+                    <input type="text" id="customer_name" class="premium-input w-full" placeholder="Customer Name *" value="{{ invoice.customer_name|default:'' }}" required>
                 </div>
                 <div class="form-group">
-                    <input type="text" id="company_name" class="premium-input w-full" placeholder="Company Name">
+                    <input type="text" id="company_name" class="premium-input w-full" placeholder="Company Name" value="{{ invoice.company_name|default:'' }}">
                 </div>
                 <div class="form-group">
-                    <input type="email" id="email_address" class="premium-input w-full" placeholder="Email Address">
+                    <input type="email" id="email_address" class="premium-input w-full" placeholder="Email Address" value="{{ invoice.email_address|default:'' }}">
                 </div>
                 <div class="form-group">
-                    <input type="text" id="phone_number" class="premium-input w-full" placeholder="Phone Number">
+                    <input type="text" id="phone_number" class="premium-input w-full" placeholder="Phone Number" value="{{ invoice.phone_number|default:'' }}">
                 </div>
             </div>
             <div>
                 <h4 class="section-title">Address & Details:</h4>
                 <div class="form-group">
-                    <textarea id="billing_address" class="premium-input w-full" rows="3" placeholder="Billing Address"></textarea>
+                    <textarea id="billing_address" class="premium-input w-full" rows="3" placeholder="Billing Address">{{ invoice.billing_address|default:'' }}</textarea>
                 </div>
                 <div class="form-group">
-                    <input type="text" id="gst_number" class="premium-input w-full" placeholder="GST / Tax Number">
+                    <input type="text" id="gst_number" class="premium-input w-full" placeholder="GST / Tax Number" value="{{ invoice.gst_number|default:'' }}">
                 </div>
             </div>
         </div>
@@ -97,7 +99,28 @@
                     </tr>
                 </thead>
                 <tbody id="itemsBody">
-                    <!-- Dynamic Rows Here -->
+                    {% if invoice %}
+                        {% for item in invoice.items.all %}
+                        <tr data-line-total="{{ item.line_total|floatformat:2 }}">
+                            <td>
+                                <input type="text" class="premium-input item-name mb-2" placeholder="Item Name" value="{{ item.product_name }}" required>
+                                <input type="text" class="premium-input item-desc text-small" placeholder="Description (Optional)" value="{{ item.description|default:'' }}">
+                            </td>
+                            <td><input type="number" class="premium-input item-qty text-right" value="{{ item.quantity|floatformat:2 }}" min="1" step="1"></td>
+                            <td><input type="number" class="premium-input item-price text-right" value="{{ item.unit_price|floatformat:2 }}" min="0" step="0.01"></td>
+                            <td><input type="number" class="premium-input item-tax text-right" value="{{ item.tax_percentage|floatformat:2 }}" min="0" step="0.1"></td>
+                            <td><input type="number" class="premium-input item-disc text-right" value="{{ item.discount_percentage|floatformat:2 }}" min="0" step="0.1"></td>
+                            <td class="text-right"><span class="item-total font-bold">${{ item.line_total|floatformat:2 }}</span></td>
+                            <td class="text-center">
+                                <button class="btn-remove-row text-red bg-transparent" style="border:none;cursor:pointer;" title="Remove">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Dynamic Rows Here -->
+                    {% endif %}
                 </tbody>
             </table>
             <button class="btn-outline add-row-btn" id="btnAddRow">+ Add Item</button>
@@ -108,35 +131,35 @@
             <div>
                 <h4 class="section-title">Payment Info:</h4>
                 <div class="form-group">
-                    <input type="text" id="payment_method" class="premium-input w-full mb-2" placeholder="Payment Method (e.g. Bank Transfer)">
+                    <input type="text" id="payment_method" class="premium-input w-full mb-2" placeholder="Payment Method (e.g. Bank Transfer)" value="{{ invoice.payment_method|default:'' }}">
                 </div>
                 <div class="form-group">
-                    <textarea id="bank_account_details" class="premium-input w-full mb-2" rows="2" placeholder="Bank Account Details"></textarea>
+                    <textarea id="bank_account_details" class="premium-input w-full mb-2" rows="2" placeholder="Bank Account Details">{{ invoice.bank_account_details|default:'' }}</textarea>
                 </div>
                 <div class="form-group">
-                    <input type="text" id="upi_id" class="premium-input w-full mb-2" placeholder="UPI ID">
+                    <input type="text" id="upi_id" class="premium-input w-full mb-2" placeholder="UPI ID" value="{{ invoice.upi_id|default:'' }}">
                 </div>
             </div>
             <div class="calculation-panel">
                 <div class="calc-row">
                     <span>Subtotal</span>
-                    <span id="lblSubtotal">$0.00</span>
+                    <span id="lblSubtotal" data-val="{{ invoice.subtotal|default:0|floatformat:2 }}">${{ invoice.subtotal|default:0|floatformat:2 }}</span>
                 </div>
                 <div class="calc-row text-red">
                     <span>Discount</span>
-                    <span id="lblTotalDiscount">-$0.00</span>
+                    <span id="lblTotalDiscount" data-val="{{ invoice.total_discount|default:0|floatformat:2 }}">-${{ invoice.total_discount|default:0|floatformat:2 }}</span>
                 </div>
                 <div class="calc-row">
                     <span>Tax</span>
-                    <span id="lblTotalTax">+$0.00</span>
+                    <span id="lblTotalTax" data-val="{{ invoice.total_tax|default:0|floatformat:2 }}">+${{ invoice.total_tax|default:0|floatformat:2 }}</span>
                 </div>
                 <div class="calc-row form-group-inline mb-2">
-                    <span style="display:flex; align-items:center;">Shipping Charge <input type="number" id="shipping_charge" class="premium-input w-24 ml-2 text-right" value="0.00" step="0.01"></span>
+                    <span style="display:flex; align-items:center;">Shipping Charge <input type="number" id="shipping_charge" class="premium-input w-24 ml-2 text-right" value="{{ invoice.shipping_charge|default:0|floatformat:2 }}" step="0.01"></span>
                 </div>
                 <hr>
                 <div class="calc-row grand-total">
                     <span>Grand Total</span>
-                    <span id="lblGrandTotal">$0.00</span>
+                    <span id="lblGrandTotal" data-val="{{ invoice.grand_total|default:0|floatformat:2 }}">${{ invoice.grand_total|default:0|floatformat:2 }}</span>
                 </div>
             </div>
         </div>
@@ -147,11 +170,11 @@
         <div class="invoice-section grid-2">
             <div class="form-group">
                 <label>Notes</label>
-                <textarea id="notes" class="premium-input w-full" rows="2" placeholder="Thanks for your business."></textarea>
+                <textarea id="notes" class="premium-input w-full" rows="2" placeholder="Thanks for your business.">{{ invoice.notes|default:'' }}</textarea>
             </div>
             <div class="form-group">
                 <label>Terms & Conditions</label>
-                <textarea id="terms_conditions" class="premium-input w-full" rows="2" placeholder="Payment is due within 15 days."></textarea>
+                <textarea id="terms_conditions" class="premium-input w-full" rows="2" placeholder="Payment is due within 15 days.">{{ invoice.terms_conditions|default:'' }}</textarea>
             </div>
         </div>
 

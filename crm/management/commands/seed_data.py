@@ -16,7 +16,7 @@ class Command(BaseCommand):
         Meeting.objects.all().delete()
 
         self.stdout.write('Creating organization...')
-        org = Organization.objects.create(name="XENO CRM")
+        org = Organization.objects.create(name="Xenotrix Technologies")
 
         self.stdout.write('Creating users and profiles...')
         # Create users

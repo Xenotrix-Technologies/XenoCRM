@@ -161,4 +161,6 @@ urlpatterns = [
     path('finance/invoices/', invoice_views.invoice_dashboard, name='invoice_dashboard'),
     path('finance/invoices/create/', invoice_views.invoice_create, name='invoice_create'),
     path('finance/invoices/<int:invoice_id>/', invoice_views.invoice_detail, name='invoice_detail'),
+    path('finance/invoices/<int:invoice_id>/edit/', invoice_views.invoice_edit, name='invoice_edit'),
+    path('finance/invoices/<int:invoice_id>/delete/', invoice_views.invoice_delete, name='invoice_delete'),
 ]

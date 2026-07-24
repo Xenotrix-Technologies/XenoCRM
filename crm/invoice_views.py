@@ -36,6 +36,8 @@ def invoice_dashboard(request):
     }
     return render(request, 'finance/invoice_dashboard.html', context)
 
+from django.db import transaction
+
 @login_required
 def invoice_create(request):
     user_profile = UserProfile.objects.get(user=request.user)
@@ -44,46 +46,47 @@ def invoice_create(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            # Create Invoice
-            invoice = Invoice.objects.create(
-                organization=organization,
-                customer_name=data.get('customer_name', ''),
-                company_name=data.get('company_name', ''),
-                phone_number=data.get('phone_number', ''),
-                email_address=data.get('email_address', ''),
-                billing_address=data.get('billing_address', ''),
-                gst_number=data.get('gst_number', ''),
-                invoice_number=data.get('invoice_number', f"INV-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"),
-                invoice_date=data.get('invoice_date') or timezone.now().date(),
-                due_date=data.get('due_date') or timezone.now().date(),
-                status=data.get('status', 'Pending'),
-                currency=data.get('currency', 'USD'),
-                subtotal=data.get('subtotal', 0),
-                total_tax=data.get('total_tax', 0),
-                total_discount=data.get('total_discount', 0),
-                shipping_charge=data.get('shipping_charge', 0),
-                grand_total=data.get('grand_total', 0),
-                payment_method=data.get('payment_method', ''),
-                bank_account_details=data.get('bank_account_details', ''),
-                upi_id=data.get('upi_id', ''),
-                payment_notes=data.get('payment_notes', ''),
-                notes=data.get('notes', ''),
-                terms_conditions=data.get('terms_conditions', '')
-            )
-            
-            # Create Items
-            items = data.get('items', [])
-            for item in items:
-                InvoiceItem.objects.create(
-                    invoice=invoice,
-                    product_name=item.get('product_name', ''),
-                    description=item.get('description', ''),
-                    quantity=item.get('quantity', 1),
-                    unit_price=item.get('unit_price', 0),
-                    tax_percentage=item.get('tax_percentage', 0),
-                    discount_percentage=item.get('discount_percentage', 0),
-                    line_total=item.get('line_total', 0)
+            with transaction.atomic():
+                # Create Invoice
+                invoice = Invoice.objects.create(
+                    organization=organization,
+                    customer_name=data.get('customer_name', ''),
+                    company_name=data.get('company_name', ''),
+                    phone_number=data.get('phone_number', ''),
+                    email_address=data.get('email_address', ''),
+                    billing_address=data.get('billing_address', ''),
+                    gst_number=data.get('gst_number', ''),
+                    invoice_number=data.get('invoice_number', f"INV-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"),
+                    invoice_date=data.get('invoice_date') or timezone.now().date(),
+                    due_date=data.get('due_date') or timezone.now().date(),
+                    status=data.get('status', 'Pending'),
+                    currency=data.get('currency', 'USD'),
+                    subtotal=data.get('subtotal') or 0,
+                    total_tax=data.get('total_tax') or 0,
+                    total_discount=data.get('total_discount') or 0,
+                    shipping_charge=data.get('shipping_charge') or 0,
+                    grand_total=data.get('grand_total') or 0,
+                    payment_method=data.get('payment_method', ''),
+                    bank_account_details=data.get('bank_account_details', ''),
+                    upi_id=data.get('upi_id', ''),
+                    payment_notes=data.get('payment_notes', ''),
+                    notes=data.get('notes', ''),
+                    terms_conditions=data.get('terms_conditions', '')
                 )
+                
+                # Create Items
+                items = data.get('items', [])
+                for item in items:
+                    InvoiceItem.objects.create(
+                        invoice=invoice,
+                        product_name=item.get('product_name', ''),
+                        description=item.get('description', ''),
+                        quantity=item.get('quantity') or 1,
+                        unit_price=item.get('unit_price') or 0,
+                        tax_percentage=item.get('tax_percentage') or 0,
+                        discount_percentage=item.get('discount_percentage') or 0,
+                        line_total=item.get('line_total') or 0
+                    )
             
             return JsonResponse({'success': True, 'invoice_id': invoice.id})
         except Exception as e:
@@ -105,3 +108,72 @@ def invoice_detail(request, invoice_id):
         'invoice': invoice,
         'profile': user_profile
     })
+
+@login_required
+def invoice_edit(request, invoice_id):
+    user_profile = UserProfile.objects.get(user=request.user)
+    organization = user_profile.organization
+    invoice = get_object_or_404(Invoice, id=invoice_id, organization=organization)
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            with transaction.atomic():
+                # Update Invoice
+                invoice.customer_name = data.get('customer_name', '')
+                invoice.company_name = data.get('company_name', '')
+                invoice.phone_number = data.get('phone_number', '')
+                invoice.email_address = data.get('email_address', '')
+                invoice.billing_address = data.get('billing_address', '')
+                invoice.gst_number = data.get('gst_number', '')
+                invoice.invoice_date = data.get('invoice_date') or invoice.invoice_date
+                invoice.due_date = data.get('due_date') or invoice.due_date
+                invoice.status = data.get('status', invoice.status)
+                invoice.subtotal = data.get('subtotal') or 0
+                invoice.total_tax = data.get('total_tax') or 0
+                invoice.total_discount = data.get('total_discount') or 0
+                invoice.shipping_charge = data.get('shipping_charge') or 0
+                invoice.grand_total = data.get('grand_total') or 0
+                invoice.payment_method = data.get('payment_method', '')
+                invoice.bank_account_details = data.get('bank_account_details', '')
+                invoice.upi_id = data.get('upi_id', '')
+                invoice.payment_notes = data.get('payment_notes', '')
+                invoice.notes = data.get('notes', '')
+                invoice.terms_conditions = data.get('terms_conditions', '')
+                invoice.save()
+                
+                # Update Items (Delete old, recreate new to handle edits/deletions easily)
+                invoice.items.all().delete()
+                
+                items = data.get('items', [])
+                for item in items:
+                    InvoiceItem.objects.create(
+                        invoice=invoice,
+                        product_name=item.get('product_name', ''),
+                        description=item.get('description', ''),
+                        quantity=item.get('quantity') or 1,
+                        unit_price=item.get('unit_price') or 0,
+                        tax_percentage=item.get('tax_percentage') or 0,
+                        discount_percentage=item.get('discount_percentage') or 0,
+                        line_total=item.get('line_total') or 0
+                    )
+            
+            return JsonResponse({'success': True, 'invoice_id': invoice.id})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return render(request, 'finance/invoice_form.html', {
+        'profile': user_profile,
+        'invoice': invoice,
+    })
+
+@login_required
+def invoice_delete(request, invoice_id):
+    user_profile = UserProfile.objects.get(user=request.user)
+    invoice = get_object_or_404(Invoice, id=invoice_id, organization=user_profile.organization)
+    
+    if request.method == 'POST':
+        invoice.delete()
+        return redirect('invoice_dashboard')
+    
+    return redirect('invoice_dashboard')

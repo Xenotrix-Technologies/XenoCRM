@@ -3,9 +3,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const btnAddRow = document.getElementById('btnAddRow');
     const shippingInput = document.getElementById('shipping_charge');
     
-    // Add first row by default
+    // Add first row by default or hook up existing rows
     if (itemsBody) {
-        addRow();
+        if (itemsBody.children.length === 0) {
+            addRow();
+        } else {
+            // Hook up listeners to pre-rendered rows
+            const rows = itemsBody.querySelectorAll('tr');
+            rows.forEach(tr => {
+                const inputs = tr.querySelectorAll('input');
+                inputs.forEach(input => input.addEventListener('input', calculateTotals));
+                tr.querySelector('.btn-remove-row').addEventListener('click', function() {
+                    if (itemsBody.children.length > 1) {
+                        tr.remove();
+                        calculateTotals();
+                    } else {
+                        alert("You must have at least one item.");
+                    }
+                });
+            });
+            // Recalculate totals on load to ensure DOM matches the saved data
+            calculateTotals();
+        }
         
         btnAddRow.addEventListener('click', addRow);
         shippingInput.addEventListener('input', calculateTotals);
@@ -48,6 +67,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert("You must have at least one item.");
             }
         });
+        
+        calculateTotals();
     }
 
     function calculateTotals() {
