@@ -60,12 +60,7 @@
                 <p>{{ overdue_invoices }}</p>
             </div>
         </div>
-        <div class="stat-card revenue-card">
-            <div class="stat-info">
-                <h4>Monthly Revenue</h4>
-                <p class="revenue-amount">${{ monthly_revenue|floatformat:2 }}</p>
-            </div>
-        </div>
+
     </div>
 
     <!-- Invoice History Section -->
@@ -97,7 +92,7 @@
                         {% if inv.company_name %}<br><span class="text-small">{{ inv.company_name }}</span>{% endif %}
                     </td>
                     <td>{{ inv.invoice_date }}</td>
-                    <td>${{ inv.grand_total|floatformat:2 }}</td>
+                    <td>₹{{ inv.grand_total|floatformat:2 }}</td>
                     <td>
                         <span class="status-badge status-{{ inv.status|lower }}">{{ inv.status }}</span>
                     </td>
@@ -129,4 +124,35 @@
         </table>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('invoiceSearch');
+    const tableBody = document.querySelector('.premium-table tbody');
+    const rows = tableBody.querySelectorAll('tr');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+            
+            rows.forEach(row => {
+                // If the row has colspan="6" it's the "No items" row, don't hide if it's the only one shown, or just leave it
+                if(row.children.length === 1 && row.children[0].hasAttribute('colspan')) return;
+
+                const clientCell = row.querySelector('td:nth-child(2)');
+                if (clientCell) {
+                    const clientName = clientCell.textContent.toLowerCase();
+                    if (clientName.includes(query)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            });
+        });
+    }
+});
+</script>
 {% endblock %}

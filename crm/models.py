@@ -257,6 +257,12 @@ class UserProfile(models.Model):
 
     @property
 
+    def has_access_finance_invoices(self):
+
+        return self.check_page_permission('finance_invoices')
+
+    @property
+
     def has_access_editor_dashboard(self):
 
         return self.check_page_permission('editor_dashboard')
@@ -1386,7 +1392,7 @@ class Invoice(models.Model):
     invoice_date = models.DateField()
     due_date = models.DateField()
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
-    currency = models.CharField(max_length=10, default='USD')
+    currency = models.CharField(max_length=10, default='INR')
     
     # Calculation totals
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
@@ -1420,7 +1426,7 @@ class InvoiceItem(models.Model):
     quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1)
     unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     tax_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
-    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     line_total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     
     class Meta:

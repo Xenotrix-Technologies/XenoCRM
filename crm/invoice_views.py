@@ -56,7 +56,7 @@ def invoice_create(request):
                     email_address=data.get('email_address', ''),
                     billing_address=data.get('billing_address', ''),
                     gst_number=data.get('gst_number', ''),
-                    invoice_number=data.get('invoice_number', f"INV-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"),
+                    invoice_number=data.get('invoice_number') or f"INV-{Invoice.objects.filter(organization=organization).count() + 1:06d}",
                     invoice_date=data.get('invoice_date') or timezone.now().date(),
                     due_date=data.get('due_date') or timezone.now().date(),
                     status=data.get('status', 'Pending'),
@@ -84,7 +84,7 @@ def invoice_create(request):
                         quantity=item.get('quantity') or 1,
                         unit_price=item.get('unit_price') or 0,
                         tax_percentage=item.get('tax_percentage') or 0,
-                        discount_percentage=item.get('discount_percentage') or 0,
+                        discount_amount=item.get('discount_amount') or 0,
                         line_total=item.get('line_total') or 0
                     )
             
@@ -92,7 +92,9 @@ def invoice_create(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
 
-    default_inv_number = f"INV-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+    invoice_count = Invoice.objects.filter(organization=organization).count()
+    default_inv_number = f"INV-{invoice_count + 1:06d}"
+
     return render(request, 'finance/invoice_form.html', {
         'profile': user_profile,
         'default_inv_number': default_inv_number,
@@ -154,7 +156,7 @@ def invoice_edit(request, invoice_id):
                         quantity=item.get('quantity') or 1,
                         unit_price=item.get('unit_price') or 0,
                         tax_percentage=item.get('tax_percentage') or 0,
-                        discount_percentage=item.get('discount_percentage') or 0,
+                        discount_amount=item.get('discount_amount') or 0,
                         line_total=item.get('line_total') or 0
                     )
             

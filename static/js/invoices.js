@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const itemsBody = document.getElementById('itemsBody');
     const btnAddRow = document.getElementById('btnAddRow');
-    const shippingInput = document.getElementById('shipping_charge');
     
     // Add first row by default or hook up existing rows
     if (itemsBody) {
@@ -27,7 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         btnAddRow.addEventListener('click', addRow);
-        shippingInput.addEventListener('input', calculateTotals);
         
         // Save handlers
         document.getElementById('btnSaveDraft').addEventListener('click', () => saveInvoice('Draft'));
@@ -45,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td><input type="number" class="premium-input item-price text-right" value="0.00" min="0" step="0.01"></td>
             <td><input type="number" class="premium-input item-tax text-right" value="0" min="0" step="0.1"></td>
             <td><input type="number" class="premium-input item-disc text-right" value="0" min="0" step="0.1"></td>
-            <td class="text-right"><span class="item-total font-bold">$0.00</span></td>
+            <td class="text-right"><span class="item-total font-bold">₹0.00</span></td>
             <td class="text-center">
                 <button class="btn-remove-row text-red bg-transparent" style="border:none;cursor:pointer;" title="Remove">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -81,16 +79,16 @@ document.addEventListener('DOMContentLoaded', function() {
             const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
             const price = parseFloat(row.querySelector('.item-price').value) || 0;
             const taxPct = parseFloat(row.querySelector('.item-tax').value) || 0;
-            const discPct = parseFloat(row.querySelector('.item-disc').value) || 0;
+            const discAmt = parseFloat(row.querySelector('.item-disc').value) || 0;
 
             const baseLineTotal = qty * price;
-            const lineDisc = baseLineTotal * (discPct / 100);
+            const lineDisc = discAmt;
             const lineTotalAfterDisc = baseLineTotal - lineDisc;
             const lineTax = lineTotalAfterDisc * (taxPct / 100);
             
             const lineTotal = lineTotalAfterDisc + lineTax;
 
-            row.querySelector('.item-total').textContent = '$' + lineTotal.toFixed(2);
+            row.querySelector('.item-total').textContent = '₹' + lineTotal.toFixed(2);
             row.dataset.lineTotal = lineTotal.toFixed(2);
 
             subtotal += baseLineTotal;
@@ -98,13 +96,12 @@ document.addEventListener('DOMContentLoaded', function() {
             totalTax += lineTax;
         });
 
-        const shipping = parseFloat(shippingInput.value) || 0;
-        const grandTotal = subtotal - totalDiscount + totalTax + shipping;
+        const grandTotal = subtotal - totalDiscount + totalTax;
 
-        document.getElementById('lblSubtotal').textContent = '$' + subtotal.toFixed(2);
-        document.getElementById('lblTotalDiscount').textContent = '-$' + totalDiscount.toFixed(2);
-        document.getElementById('lblTotalTax').textContent = '+$' + totalTax.toFixed(2);
-        document.getElementById('lblGrandTotal').textContent = '$' + grandTotal.toFixed(2);
+        document.getElementById('lblSubtotal').textContent = '₹' + subtotal.toFixed(2);
+        document.getElementById('lblTotalDiscount').textContent = '-₹' + totalDiscount.toFixed(2);
+        document.getElementById('lblTotalTax').textContent = '+₹' + totalTax.toFixed(2);
+        document.getElementById('lblGrandTotal').textContent = '₹' + grandTotal.toFixed(2);
 
         // Store values for submission
         document.getElementById('lblSubtotal').dataset.val = subtotal;
@@ -139,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     quantity: row.querySelector('.item-qty').value,
                     unit_price: row.querySelector('.item-price').value,
                     tax_percentage: row.querySelector('.item-tax').value,
-                    discount_percentage: row.querySelector('.item-disc').value,
+                    discount_amount: row.querySelector('.item-disc').value,
                     line_total: row.dataset.lineTotal
                 });
             }
@@ -161,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function() {
             subtotal: document.getElementById('lblSubtotal').dataset.val || 0,
             total_discount: document.getElementById('lblTotalDiscount').dataset.val || 0,
             total_tax: document.getElementById('lblTotalTax').dataset.val || 0,
-            shipping_charge: document.getElementById('shipping_charge').value || 0,
+            shipping_charge: 0,
             grand_total: document.getElementById('lblGrandTotal').dataset.val || 0,
             
             payment_method: document.getElementById('payment_method').value,

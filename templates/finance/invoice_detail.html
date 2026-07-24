@@ -82,8 +82,8 @@
                         {% if item.description %}<br><span class="text-secondary" style="font-size: 0.875rem;">{{ item.description }}</span>{% endif %}
                     </td>
                     <td style="padding: 1rem; text-align: right;">{{ item.quantity|floatformat:2 }}</td>
-                    <td style="padding: 1rem; text-align: right;">${{ item.unit_price|floatformat:2 }}</td>
-                    <td style="padding: 1rem; text-align: right;">${{ item.line_total|floatformat:2 }}</td>
+                    <td style="padding: 1rem; text-align: right;">₹{{ item.unit_price|floatformat:2 }}</td>
+                    <td style="padding: 1rem; text-align: right;">₹{{ item.line_total|floatformat:2 }}</td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -109,27 +109,27 @@
             <div style="width: 300px;">
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                     <span class="text-secondary">Subtotal</span>
-                    <span>${{ invoice.subtotal|floatformat:2 }}</span>
+                    <span>₹{{ invoice.subtotal|floatformat:2 }}</span>
                 </div>
                 {% if invoice.total_discount > 0 %}
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--error);">
                     <span>Discount</span>
-                    <span>-${{ invoice.total_discount|floatformat:2 }}</span>
+                    <span>-₹{{ invoice.total_discount|floatformat:2 }}</span>
                 </div>
                 {% endif %}
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                     <span class="text-secondary">Tax</span>
-                    <span>${{ invoice.total_tax|floatformat:2 }}</span>
+                    <span>₹{{ invoice.total_tax|floatformat:2 }}</span>
                 </div>
                 {% if invoice.shipping_charge > 0 %}
                 <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
                     <span class="text-secondary">Shipping</span>
-                    <span>${{ invoice.shipping_charge|floatformat:2 }}</span>
+                    <span>₹{{ invoice.shipping_charge|floatformat:2 }}</span>
                 </div>
                 {% endif %}
                 <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--outline); font-weight: 700; font-size: 1.25rem;">
                     <span>Grand Total</span>
-                    <span>${{ invoice.grand_total|floatformat:2 }}</span>
+                    <span>₹{{ invoice.grand_total|floatformat:2 }}</span>
                 </div>
             </div>
         </div>

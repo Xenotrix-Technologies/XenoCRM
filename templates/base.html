@@ -563,6 +563,12 @@
                         <span>Finance Dashboard</span>
                     </a>
                     {% endif %}
+                    {% if request.user.profile.has_access_finance_invoices %}
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'invoice_dashboard' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
+                        href="{% url 'invoice_dashboard' %}">
+                        <span>Invoices</span>
+                    </a>
+                    {% endif %}
                     {% if request.user.profile.has_access_finance_income %}
                     <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'finance_income' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
                         href="{% url 'finance_income' %}">
