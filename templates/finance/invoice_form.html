@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}XenoCRM | Create Invoice{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/invoices.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="invoice-container p-margin-edge flex-1 flex flex-col overflow-y-auto custom-scrollbar" id="invoiceApp">
+    <div class="invoice-header">
+        <div>
+            <a href="{% url 'invoice_dashboard' %}" class="back-link">&larr; Back to Invoices</a>
+            <h2 class="invoice-title">Create New Invoice</h2>
+        </div>
+        <div class="invoice-actions">
+            <button class="btn-outline" id="btnSaveDraft">Save as Draft</button>
+            <button class="btn-premium" id="btnGenerate">Generate Invoice</button>
+        </div>
+    </div>
+
+    <div class="invoice-paper">
+        <!-- Brand & Basic Info -->
+        <div class="invoice-section flex-between">
+            <div class="brand-info">
+                <h3>{{ profile.organization.name }}</h3>
+                <p>Invoice Generation</p>
+            </div>
+            <div class="basic-info text-right">
+                <div class="form-group inline">
+                    <label>Invoice No:</label>
+                    <input type="text" id="invoice_number" class="premium-input text-right" value="{{ default_inv_number }}" readonly>
+                </div>
+                <div class="form-group inline">
+                    <label>Date:</label>
+                    <input type="date" id="invoice_date" class="premium-input text-right" value="{{ today }}">
+                </div>
+                <div class="form-group inline">
+                    <label>Due Date:</label>
+                    <input type="date" id="due_date" class="premium-input text-right" value="{{ today }}">
+                </div>
+                <div class="form-group inline">
+                    <label>Status:</label>
+                    <select id="status" class="premium-input text-right">
+                        <option value="Pending">Pending</option>
+                        <option value="Paid">Paid</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <hr class="invoice-divider">
+
+        <!-- Customer Info -->
+        <div class="invoice-section grid-2">
+            <div>
+                <h4 class="section-title">Bill To:</h4>
+                <div class="form-group">
+                    <input type="text" id="customer_name" class="premium-input w-full" placeholder="Customer Name *" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="company_name" class="premium-input w-full" placeholder="Company Name">
+                </div>
+                <div class="form-group">
+                    <input type="email" id="email_address" class="premium-input w-full" placeholder="Email Address">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="phone_number" class="premium-input w-full" placeholder="Phone Number">
+                </div>
+            </div>
+            <div>
+                <h4 class="section-title">Address & Details:</h4>
+                <div class="form-group">
+                    <textarea id="billing_address" class="premium-input w-full" rows="3" placeholder="Billing Address"></textarea>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="gst_number" class="premium-input w-full" placeholder="GST / Tax Number">
+                </div>
+            </div>
+        </div>
+
+        <hr class="invoice-divider">
+
+        <!-- Items Table -->
+        <div class="invoice-section">
+            <table class="premium-table items-table" id="itemsTable">
+                <thead>
+                    <tr>
+                        <th width="35%">Item & Description</th>
+                        <th width="10%">Qty</th>
+                        <th width="15%">Unit Price</th>
+                        <th width="10%">Tax (%)</th>
+                        <th width="10%">Disc (%)</th>
+                        <th width="15%">Line Total</th>
+                        <th width="5%"></th>
+                    </tr>
+                </thead>
+                <tbody id="itemsBody">
+                    <!-- Dynamic Rows Here -->
+                </tbody>
+            </table>
+            <button class="btn-outline add-row-btn" id="btnAddRow">+ Add Item</button>
+        </div>
+
+        <!-- Totals & Payment -->
+        <div class="invoice-section grid-2 totals-section">
+            <div>
+                <h4 class="section-title">Payment Info:</h4>
+                <div class="form-group">
+                    <input type="text" id="payment_method" class="premium-input w-full mb-2" placeholder="Payment Method (e.g. Bank Transfer)">
+                </div>
+                <div class="form-group">
+                    <textarea id="bank_account_details" class="premium-input w-full mb-2" rows="2" placeholder="Bank Account Details"></textarea>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="upi_id" class="premium-input w-full mb-2" placeholder="UPI ID">
+                </div>
+            </div>
+            <div class="calculation-panel">
+                <div class="calc-row">
+                    <span>Subtotal</span>
+                    <span id="lblSubtotal">$0.00</span>
+                </div>
+                <div class="calc-row text-red">
+                    <span>Discount</span>
+                    <span id="lblTotalDiscount">-$0.00</span>
+                </div>
+                <div class="calc-row">
+                    <span>Tax</span>
+                    <span id="lblTotalTax">+$0.00</span>
+                </div>
+                <div class="calc-row form-group-inline mb-2">
+                    <span style="display:flex; align-items:center;">Shipping Charge <input type="number" id="shipping_charge" class="premium-input w-24 ml-2 text-right" value="0.00" step="0.01"></span>
+                </div>
+                <hr>
+                <div class="calc-row grand-total">
+                    <span>Grand Total</span>
+                    <span id="lblGrandTotal">$0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="invoice-divider">
+        
+        <!-- Notes & Terms -->
+        <div class="invoice-section grid-2">
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="notes" class="premium-input w-full" rows="2" placeholder="Thanks for your business."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Terms & Conditions</label>
+                <textarea id="terms_conditions" class="premium-input w-full" rows="2" placeholder="Payment is due within 15 days."></textarea>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const csrfToken = '{{ csrf_token }}';
+</script>
+<script src="{% static 'js/invoices.js' %}"></script>
+{% endblock %}

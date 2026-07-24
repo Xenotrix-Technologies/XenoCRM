@@ -1362,3 +1362,69 @@ class PriorityStatus(models.Model, StatusStyleMixin):
         ordering = ['position', 'id']
         db_table = 'priority_statuses'
     def __str__(self): return self.name
+
+class Invoice(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Paid', 'Paid'),
+        ('Partial', 'Partial'),
+        ('Overdue', 'Overdue'),
+    ]
+    
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='invoices')
+    
+    # Customer Info
+    customer_name = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255, blank=True, null=True)
+    phone_number = models.CharField(max_length=50, blank=True, null=True)
+    email_address = models.EmailField(blank=True, null=True)
+    billing_address = models.TextField(blank=True, null=True)
+    gst_number = models.CharField(max_length=100, blank=True, null=True)
+    
+    # Invoice Info
+    invoice_number = models.CharField(max_length=100, unique=True)
+    invoice_date = models.DateField()
+    due_date = models.DateField()
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
+    currency = models.CharField(max_length=10, default='USD')
+    
+    # Calculation totals
+    subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    total_tax = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    total_discount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    shipping_charge = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    grand_total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    
+    # Payment Info
+    payment_method = models.CharField(max_length=100, blank=True, null=True)
+    bank_account_details = models.TextField(blank=True, null=True)
+    upi_id = models.CharField(max_length=100, blank=True, null=True)
+    payment_notes = models.TextField(blank=True, null=True)
+    
+    # Extra
+    notes = models.TextField(blank=True, null=True)
+    terms_conditions = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'invoices'
+        ordering = ['-invoice_date', '-created_at']
+
+    def __str__(self):
+        return f"{self.invoice_number} - {self.customer_name}"
+
+class InvoiceItem(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items')
+    product_name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1)
+    unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    tax_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    discount_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    line_total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    
+    class Meta:
+        db_table = 'invoice_items'
+
+    def __str__(self):
+        return f"{self.invoice.invoice_number} - {self.product_name}"

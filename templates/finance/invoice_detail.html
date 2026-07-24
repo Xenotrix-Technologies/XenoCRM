@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}XenoCRM | Invoice {{ invoice.invoice_number }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/invoices.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="invoice-container p-margin-edge flex-1 flex flex-col overflow-y-auto custom-scrollbar">
+    <div class="invoice-header">
+        <div>
+            <a href="{% url 'invoice_dashboard' %}" class="back-link">&larr; Back to Invoices</a>
+            <h2 class="invoice-title">Invoice #{{ invoice.invoice_number }}</h2>
+        </div>
+        <div class="invoice-actions no-print">
+            <button class="btn-outline" onclick="window.print()">Print Invoice</button>
+            <button class="btn-premium" id="btnDownloadPdf">Download PDF</button>
+        </div>
+    </div>
+
+    <div class="invoice-paper" id="invoicePdfContent">
+        <!-- Header -->
+        <div class="flex-between mb-8">
+            <div>
+                <h1 style="font-size: 2.5rem; color: var(--primary); font-weight: 700;">INVOICE</h1>
+                <p class="text-secondary">{{ invoice.invoice_number }}</p>
+            </div>
+            <div class="text-right">
+                <h3 style="font-size: 1.5rem; font-weight: 600;">{{ profile.organization.name }}</h3>
+                <p class="text-secondary">Generated on: {{ invoice.invoice_date }}</p>
+                <p class="text-secondary">Due Date: {{ invoice.due_date }}</p>
+            </div>
+        </div>
+        
+        <hr class="mb-8">
+
+        <!-- Bill To -->
+        <div class="mb-8">
+            <h4 class="text-secondary mb-2" style="font-weight: 600;">Bill To:</h4>
+            <p style="font-weight: 600; font-size: 1.1rem;">{{ invoice.customer_name }}</p>
+            {% if invoice.company_name %}<p>{{ invoice.company_name }}</p>{% endif %}
+            {% if invoice.billing_address %}<p>{{ invoice.billing_address }}</p>{% endif %}
+            {% if invoice.email_address %}<p>{{ invoice.email_address }}</p>{% endif %}
+            {% if invoice.phone_number %}<p>{{ invoice.phone_number }}</p>{% endif %}
+        </div>
+
+        <!-- Items Table -->
+        <table class="premium-table mb-8 w-full" style="width: 100%;">
+            <thead>
+                <tr style="background-color: var(--surface-variant); border-bottom: 2px solid var(--outline);">
+                    <th style="padding: 1rem; text-align: left;">Description</th>
+                    <th style="padding: 1rem; text-align: right;">Qty</th>
+                    <th style="padding: 1rem; text-align: right;">Unit Price</th>
+                    <th style="padding: 1rem; text-align: right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in invoice.items.all %}
+                <tr style="border-bottom: 1px solid var(--outline-variant);">
+                    <td style="padding: 1rem;">
+                        <strong>{{ item.product_name }}</strong>
+                        {% if item.description %}<br><span class="text-secondary" style="font-size: 0.875rem;">{{ item.description }}</span>{% endif %}
+                    </td>
+                    <td style="padding: 1rem; text-align: right;">{{ item.quantity|floatformat:2 }}</td>
+                    <td style="padding: 1rem; text-align: right;">${{ item.unit_price|floatformat:2 }}</td>
+                    <td style="padding: 1rem; text-align: right;">${{ item.line_total|floatformat:2 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 1rem;">No items</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 2rem;">
+            <div style="width: 300px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span class="text-secondary">Subtotal</span>
+                    <span>${{ invoice.subtotal|floatformat:2 }}</span>
+                </div>
+                {% if invoice.total_discount > 0 %}
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--error);">
+                    <span>Discount</span>
+                    <span>-${{ invoice.total_discount|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span class="text-secondary">Tax</span>
+                    <span>${{ invoice.total_tax|floatformat:2 }}</span>
+                </div>
+                {% if invoice.shipping_charge > 0 %}
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span class="text-secondary">Shipping</span>
+                    <span>${{ invoice.shipping_charge|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--outline); font-weight: 700; font-size: 1.25rem;">
+                    <span>Grand Total</span>
+                    <span>${{ invoice.grand_total|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if invoice.notes or invoice.terms_conditions %}
+        <hr class="mb-4">
+        <div class="grid-2 gap-4 text-small text-secondary">
+            {% if invoice.notes %}
+            <div>
+                <strong>Notes:</strong>
+                <p>{{ invoice.notes }}</p>
+            </div>
+            {% endif %}
+            {% if invoice.terms_conditions %}
+            <div>
+                <strong>Terms & Conditions:</strong>
+                <p>{{ invoice.terms_conditions }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+document.getElementById('btnDownloadPdf').addEventListener('click', function() {
+    const element = document.getElementById('invoicePdfContent');
+    const opt = {
+        margin:       1,
+        filename:     '{{ invoice.invoice_number }}.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+});
+</script>
+{% endblock %}

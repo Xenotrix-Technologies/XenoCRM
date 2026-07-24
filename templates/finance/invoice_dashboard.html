@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}XenoCRM | Invoices & Bills{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/invoices.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="invoice-container p-margin-edge flex-1 flex flex-col overflow-y-auto custom-scrollbar">
+    <div class="invoice-header">
+        <div>
+            <h2 class="invoice-title">Invoices & Bills</h2>
+            <p class="invoice-subtitle">Manage your invoicing, billing, and payments</p>
+        </div>
+        <div>
+            <a href="{% url 'invoice_create' %}" class="btn-premium">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Create Invoice
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="invoice-stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-blue">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </div>
+            <div class="stat-info">
+                <h4>Total Invoices</h4>
+                <p>{{ total_invoices }}</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-green">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <div class="stat-info">
+                <h4>Paid Invoices</h4>
+                <p>{{ paid_invoices }}</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-yellow">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div class="stat-info">
+                <h4>Pending Invoices</h4>
+                <p>{{ pending_invoices }}</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-red">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <div class="stat-info">
+                <h4>Overdue Invoices</h4>
+                <p>{{ overdue_invoices }}</p>
+            </div>
+        </div>
+        <div class="stat-card revenue-card">
+            <div class="stat-info">
+                <h4>Monthly Revenue</h4>
+                <p class="revenue-amount">${{ monthly_revenue|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice History Section -->
+    <div class="invoice-table-container">
+        <div class="table-header">
+            <h3>Invoice History</h3>
+            <div class="table-actions">
+                <input type="text" id="invoiceSearch" class="premium-input" placeholder="Search Invoices...">
+            </div>
+        </div>
+        
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th>Invoice No</th>
+                    <th>Customer / Company</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for inv in invoices %}
+                <tr>
+                    <td><strong>{{ inv.invoice_number }}</strong></td>
+                    <td>
+                        {{ inv.customer_name }}
+                        {% if inv.company_name %}<br><span class="text-small">{{ inv.company_name }}</span>{% endif %}
+                    </td>
+                    <td>{{ inv.invoice_date }}</td>
+                    <td>${{ inv.grand_total|floatformat:2 }}</td>
+                    <td>
+                        <span class="status-badge status-{{ inv.status|lower }}">{{ inv.status }}</span>
+                    </td>
+                    <td class="action-cell">
+                        <a href="{% url 'invoice_detail' inv.id %}" class="action-link" title="View/Print">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 3rem;">
+                        <p class="text-secondary">No invoices found. Create your first invoice!</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

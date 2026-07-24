@@ -16,7 +16,7 @@ class Command(BaseCommand):
         Meeting.objects.all().delete()
 
         self.stdout.write('Creating organization...')
-        org = Organization.objects.create(name="Lumina Enterprise")
+        org = Organization.objects.create(name="XENO CRM")
 
         self.stdout.write('Creating users and profiles...')
         # Create users
@@ -55,7 +55,7 @@ class Command(BaseCommand):
         for ud in users_data:
             user = User.objects.create_user(
                 username=ud['username'],
-                email=f"{ud['username']}@lumina.com",
+                email=f"{ud['username']}@xenocrm.com",
                 password='password123',
                 first_name=ud['first_name'],
                 last_name=ud['last_name']

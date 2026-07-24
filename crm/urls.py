@@ -1,6 +1,7 @@
 from django.urls import path
 from django.shortcuts import redirect
 from . import views
+from . import invoice_views
 
 urlpatterns = [
     path('', lambda r: redirect('dashboard'), name='root'),
@@ -155,4 +156,9 @@ urlpatterns = [
     path('finance/partner-payouts/', views.partner_payout_view, name='partner_payouts'),
     path('finance/partner-payouts/add/', views.partner_payout_add_view, name='partner_payout_add'),
     path('finance/settings/', views.finance_settings_view, name='finance_settings'),
+    
+    # Invoices & Bills
+    path('finance/invoices/', invoice_views.invoice_dashboard, name='invoice_dashboard'),
+    path('finance/invoices/create/', invoice_views.invoice_create, name='invoice_create'),
+    path('finance/invoices/<int:invoice_id>/', invoice_views.invoice_detail, name='invoice_detail'),
 ]
