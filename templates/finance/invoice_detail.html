@@ -127,9 +127,25 @@
                     <span>₹{{ invoice.shipping_charge|floatformat:2 }}</span>
                 </div>
                 {% endif %}
+                {% if invoice.extra_discount > 0 %}
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--error);">
+                    <span>Extra Discount</span>
+                    <span>-₹{{ invoice.extra_discount|floatformat:2 }}</span>
+                </div>
+                {% endif %}
                 <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--outline); font-weight: 700; font-size: 1.25rem;">
                     <span>Grand Total</span>
                     <span>₹{{ invoice.grand_total|floatformat:2 }}</span>
+                </div>
+                {% if invoice.amount_paid > 0 %}
+                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                    <span class="text-secondary">Already Paid</span>
+                    <span>₹{{ invoice.amount_paid|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-weight: 700; font-size: 1.25rem; color: var(--error);">
+                    <span>Balance Due</span>
+                    <span>₹{{ invoice.balance_due|floatformat:2 }}</span>
                 </div>
             </div>
         </div>

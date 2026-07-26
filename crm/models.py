@@ -1398,8 +1398,12 @@ class Invoice(models.Model):
     subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     total_tax = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     total_discount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    extra_discount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     shipping_charge = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     grand_total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    
+    amount_paid = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    balance_due = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     
     # Payment Info
     payment_method = models.CharField(max_length=100, blank=True, null=True)

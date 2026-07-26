@@ -96,12 +96,20 @@ document.addEventListener('DOMContentLoaded', function() {
             totalTax += lineTax;
         });
 
-        const grandTotal = subtotal - totalDiscount + totalTax;
+        const extraDiscount = parseFloat(document.getElementById('extra_discount')?.value) || 0;
+        const amountPaid = parseFloat(document.getElementById('amount_paid')?.value) || 0;
+
+        const grandTotal = subtotal - totalDiscount + totalTax - extraDiscount;
+        const balanceDue = grandTotal - amountPaid;
 
         document.getElementById('lblSubtotal').textContent = '₹' + subtotal.toFixed(2);
         document.getElementById('lblTotalDiscount').textContent = '-₹' + totalDiscount.toFixed(2);
         document.getElementById('lblTotalTax').textContent = '+₹' + totalTax.toFixed(2);
         document.getElementById('lblGrandTotal').textContent = '₹' + grandTotal.toFixed(2);
+        if (document.getElementById('lblBalanceDue')) {
+            document.getElementById('lblBalanceDue').textContent = '₹' + balanceDue.toFixed(2);
+            document.getElementById('lblBalanceDue').dataset.val = balanceDue;
+        }
 
         // Store values for submission
         document.getElementById('lblSubtotal').dataset.val = subtotal;
@@ -110,6 +118,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('lblGrandTotal').dataset.val = grandTotal;
     }
 
+    if (document.getElementById('extra_discount')) {
+        document.getElementById('extra_discount').addEventListener('input', calculateTotals);
+    }
+    if (document.getElementById('amount_paid')) {
+        document.getElementById('amount_paid').addEventListener('input', calculateTotals);
+    }
     async function saveInvoice(saveStatus) {
         // Basic Validation
         const customerName = document.getElementById('customer_name').value;
@@ -158,8 +172,11 @@ document.addEventListener('DOMContentLoaded', function() {
             subtotal: document.getElementById('lblSubtotal').dataset.val || 0,
             total_discount: document.getElementById('lblTotalDiscount').dataset.val || 0,
             total_tax: document.getElementById('lblTotalTax').dataset.val || 0,
+            extra_discount: document.getElementById('extra_discount') ? document.getElementById('extra_discount').value || 0 : 0,
             shipping_charge: 0,
             grand_total: document.getElementById('lblGrandTotal').dataset.val || 0,
+            amount_paid: document.getElementById('amount_paid') ? document.getElementById('amount_paid').value || 0 : 0,
+            balance_due: document.getElementById('lblBalanceDue') ? document.getElementById('lblBalanceDue').dataset.val || 0 : 0,
             
             payment_method: document.getElementById('payment_method').value,
             bank_account_details: document.getElementById('bank_account_details').value,
