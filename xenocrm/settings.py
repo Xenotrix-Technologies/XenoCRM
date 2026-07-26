@@ -34,16 +34,20 @@ SECRET_KEY = env('SECRET_KEY', default='django-insecure-8hy1oc1j-%q^tw30p=az*gml
 DEBUG = env('DEBUG', default=True)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
-ALLOWED_HOSTS.append('.onrender.com')
+ALLOWED_HOSTS.extend(['.onrender.com', 'xeno.xenotrix.in', 'www.xeno.xenotrix.in'])
 RENDER_EXTERNAL_HOSTNAME = env('RENDER_EXTERNAL_HOSTNAME', default=None)
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+CSRF_TRUSTED_ORIGINS.extend(['https://xeno.xenotrix.in', 'https://www.xeno.xenotrix.in'])
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
 if not DEBUG:
+    # Tell Django it's secure if Render's proxy forwards it as HTTPS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    
     SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=True)
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
