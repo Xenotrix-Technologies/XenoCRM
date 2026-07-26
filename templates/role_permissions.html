@@ -707,13 +707,21 @@
 
         fetch("{% url 'role_permissions' %}", {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify(payload)
         })
-        .then(res => res.json())
+        .then(async res => {
+            if (!res.ok) {
+                const text = await res.text();
+                throw new Error(`HTTP error! status: ${res.status}, body: ${text.substring(0, 100)}`);
+            }
+            return res.json();
+        })
         .then(res => {
             overlay.classList.add('hidden');
             if(res.success) {
@@ -738,7 +746,7 @@
         .catch(err => {
             overlay.classList.add('hidden');
             console.error("Save error:", err);
-            alert("Error saving permissions.");
+            alert("Error saving permissions: " + err.message);
         });
     }
 
