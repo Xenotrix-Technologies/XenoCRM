@@ -138,14 +138,39 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+import whitenoise.storage
+_orig_url_converter = whitenoise.storage.CompressedManifestStaticFilesStorage.url_converter
+def _patched_url_converter(self, name, hashed_files, template=None):
+    _converter = _orig_url_converter(self, name, hashed_files, template)
+    def _safe_converter(matchobj):
+        try:
+            return _converter(matchobj)
+        except ValueError:
+            return matchobj.groupdict()["matched"]
+    return _safe_converter
+whitenoise.storage.CompressedManifestStaticFilesStorage.url_converter = _patched_url_converter
+
+_orig_compress = whitenoise.storage.CompressedManifestStaticFilesStorage.compress_files
+def _safe_compress(self, paths):
+    iterator = _orig_compress(self, paths)
+    while True:
+        try:
+            yield next(iterator)
+        except StopIteration:
+            break
+        except FileNotFoundError:
+            pass
+whitenoise.storage.CompressedManifestStaticFilesStorage.compress_files = _safe_compress
+
 STORAGES = {
     'default': {
         'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
     },
     'staticfiles': {
-        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
 }
+WHITENOISE_MANIFEST_STRICT = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
