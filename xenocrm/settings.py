@@ -59,8 +59,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
     'cloudinary',
     'crm',
     'hr',
@@ -138,6 +138,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 import whitenoise.storage
 _orig_url_converter = whitenoise.storage.CompressedManifestStaticFilesStorage.url_converter
 def _patched_url_converter(self, name, hashed_files, template=None):
