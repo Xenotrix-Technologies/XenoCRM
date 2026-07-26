@@ -329,6 +329,46 @@
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_settings-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
                         </tr>
 
+                        <!-- HR: HR Dashboard -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="HR" data-name="HR Dashboard">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">dashboard</span><div><span class="block text-sm font-bold text-on-surface">HR Dashboard</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_dashboard" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_dashboard-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_dashboard-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- HR: HR Employees -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="HR" data-name="HR Employees">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">people</span><div><span class="block text-sm font-bold text-on-surface">HR Employees</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_employees" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_employees-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_employees-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- HR: HR Attendance -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="HR" data-name="HR Attendance">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">schedule</span><div><span class="block text-sm font-bold text-on-surface">HR Attendance</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_attendance" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_attendance-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_attendance-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- HR: HR Leaves -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="HR" data-name="HR Leaves">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">event_busy</span><div><span class="block text-sm font-bold text-on-surface">HR Leaves</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_leaves" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_leaves-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_leaves-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- HR: HR Payroll -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="HR" data-name="HR Payroll">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">payments</span><div><span class="block text-sm font-bold text-on-surface">HR Payroll</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_payroll" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_payroll-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-hr_payroll-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
                         <!-- Marketing: Campaigns -->
                         <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Marketing" data-name="Campaigns">
                             <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">ads_click</span><div><span class="block text-sm font-bold text-on-surface">Campaigns</span></div></div></td>
@@ -361,6 +401,30 @@
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-cms_settings-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
                         </tr>
 
+                        <!-- CMS: Editor Dashboard -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="CMS" data-name="Editor Dashboard">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">dashboard</span><div><span class="block text-sm font-bold text-on-surface">Editor Dashboard</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-editor_dashboard" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-editor_dashboard-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-editor_dashboard-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- CMS: Editor Board -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="CMS" data-name="Editor Board">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">edit_note</span><div><span class="block text-sm font-bold text-on-surface">Editor Board</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-editor_board" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-editor_board-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-editor_board-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- CMS: Post Management -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="CMS" data-name="Post Management">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">post_add</span><div><span class="block text-sm font-bold text-on-surface">Post Management</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-post_management" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-post_management-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-post_management-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
                         <!-- Finance: Finance -->
                         <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Finance" data-name="Finance">
                             <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">payments</span><div><span class="block text-sm font-bold text-on-surface">Finance</span><span class="block text-[11px] text-secondary">Income, Expenses, Partner Payouts.</span></div></div></td>
@@ -375,6 +439,62 @@
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_status" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_status-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
                             <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_status-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- Finance: Finance Dashboard -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Finance" data-name="Finance Dashboard">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">dashboard</span><div><span class="block text-sm font-bold text-on-surface">Finance Dashboard</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_dashboard" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_dashboard-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_dashboard-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- Finance: Finance Income -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Finance" data-name="Finance Income">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">account_balance_wallet</span><div><span class="block text-sm font-bold text-on-surface">Finance Income</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_income" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_income-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_income-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- Finance: Finance Expenses -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Finance" data-name="Finance Expenses">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">receipt_long</span><div><span class="block text-sm font-bold text-on-surface">Finance Expenses</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_expenses" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_expenses-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_expenses-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- Finance: Finance Reports -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Finance" data-name="Finance Reports">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">analytics</span><div><span class="block text-sm font-bold text-on-surface">Finance Reports</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_reports" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_reports-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_reports-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- Finance: Finance Settings -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Finance" data-name="Finance Settings">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">settings</span><div><span class="block text-sm font-bold text-on-surface">Finance Settings</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_settings" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_settings-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_settings-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- Finance: Finance Invoices -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Finance" data-name="Finance Invoices">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">description</span><div><span class="block text-sm font-bold text-on-surface">Finance Invoices</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_invoices" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_invoices-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-finance_invoices-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
+                        </tr>
+
+                        <!-- Finance: Partner Payouts -->
+                        <tr class="border-b border-outline-variant/20 hover:bg-slate-50 transition-colors matrix-row" data-category="Finance" data-name="Partner Payouts">
+                            <td class="py-3 px-6"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-outline text-[18px]">handshake</span><div><span class="block text-sm font-bold text-on-surface">Partner Payouts</span></div></div></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-partner_payouts" class="matrix-toggle perm-view" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-partner_payouts-edit" class="matrix-toggle perm-edit" onchange="updateCount()" /></td>
+                            <td class="py-3 px-4 text-center"><input type="checkbox" id="perm-partner_payouts-delete" class="matrix-toggle toggle-delete perm-delete" onchange="updateCount()" /></td>
                         </tr>
 
                         <!-- Settings -->
@@ -531,7 +651,11 @@
     const pagesList = [
         'dashboard', 'leads', 'leads_settings', 'calendar', 'calendar_status', 
         'clients', 'clients_status', 'support', 'support_status', 'projects', 'projects_status', 'agreements', 
-        'staff', 'hr', 'hr_settings', 'campaigns', 'campaigns_status', 'content_tracker', 'cms_settings', 'finance', 'finance_status', 'settings', 'role_permissions'
+        'staff', 'hr', 'hr_settings', 'hr_dashboard', 'hr_employees', 'hr_attendance', 'hr_leaves', 'hr_payroll', 
+        'campaigns', 'campaigns_status', 
+        'content_tracker', 'cms_settings', 'editor_dashboard', 'editor_board', 'post_management',
+        'finance', 'finance_status', 'finance_dashboard', 'finance_income', 'finance_expenses', 'finance_reports', 'finance_settings', 'finance_invoices', 'partner_payouts', 
+        'settings', 'role_permissions'
     ];
 
     function loadPermissionsForTarget() {
