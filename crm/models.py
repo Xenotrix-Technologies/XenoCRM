@@ -184,10 +184,11 @@ class UserProfile(models.Model):
         return self.check_page_permission('partner_payouts')
 
     @property
-
     def has_access_cms(self):
-
-        return self.check_page_permission('cms')
+        return (self.check_page_permission('content_tracker') or 
+                self.check_page_permission('cms_settings') or 
+                self.check_page_permission('editor_dashboard') or 
+                self.check_page_permission('editor_board'))
 
     @property
 
