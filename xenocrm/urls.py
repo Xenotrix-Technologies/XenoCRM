@@ -20,12 +20,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-from .views import health_check
+from .views import health_check, cloudinary_test_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('hr/', include('hr.urls')),
     path('health/', health_check, name='health_check'),
+    path('cloudinary-test/', cloudinary_test_view, name='cloudinary_test'),
     path('', include('crm.urls')),
 ]
 

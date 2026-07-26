@@ -1466,7 +1466,7 @@ def profile_edit_view(request):
                 from django.conf import settings
                 import os
                 path = default_storage.save(os.path.join('avatars', f"user_{user.id}_{profile_file.name}"), ContentFile(profile_file.read()))
-                profile_obj.profile_image_url = settings.MEDIA_URL + path
+                profile_obj.profile_image_url = default_storage.url(path)
                 
             profile_obj.save()
             SystemNotification.objects.create(user=request.user, message='Profile updated successfully.', type='success')
@@ -2398,7 +2398,7 @@ def add_staff_view(request):
             from django.conf import settings
             import os
             path = default_storage.save(os.path.join('avatars', f"staff_{username}_{profile_file.name}"), ContentFile(profile_file.read()))
-            profile_image_url = settings.MEDIA_URL + path
+            profile_image_url = default_storage.url(path)
         phone_number = request.POST.get('phone_number', '').strip()
         location = request.POST.get('location', '').strip()
 
@@ -2499,7 +2499,7 @@ def edit_staff_view(request, profile_id):
             from django.conf import settings
             import os
             path = default_storage.save(os.path.join('avatars', f"staff_{username}_{profile_file.name}"), ContentFile(profile_file.read()))
-            profile_image_url = settings.MEDIA_URL + path
+            profile_image_url = default_storage.url(path)
         phone_number = request.POST.get('phone_number', '').strip()
         location = request.POST.get('location', '').strip()
 
