@@ -137,12 +137,10 @@
                     <span>Grand Total</span>
                     <span>₹{{ invoice.grand_total|floatformat:2 }}</span>
                 </div>
-                {% if invoice.amount_paid > 0 %}
                 <div style="display: flex; justify-content: space-between; margin-top: 0.25rem;">
                     <span class="text-secondary">Already Paid</span>
                     <span>₹{{ invoice.amount_paid|floatformat:2 }}</span>
                 </div>
-                {% endif %}
                 <div style="display: flex; justify-content: space-between; margin-top: 0.25rem; font-weight: 700; font-size: 1.1rem; color: var(--error);">
                     <span>Balance Due</span>
                     <span>₹{{ invoice.balance_due|floatformat:2 }}</span>
@@ -150,8 +148,21 @@
             </div>
         </div>
 
-        {% if invoice.notes or invoice.terms_conditions %}
+        {% if invoice.notes or invoice.terms_conditions or invoice.payment_method or invoice.bank_account_details or invoice.upi_id %}
         <hr class="mb-4">
+        
+        {% if invoice.payment_method or invoice.bank_account_details or invoice.upi_id %}
+        <div class="mb-4 text-small text-secondary">
+            <strong style="font-size: 1rem; color: var(--on-surface);">Payment Info:</strong>
+            <div style="margin-top: 0.25rem;">
+                {% if invoice.payment_method %}<p style="margin: 0;"><strong>Method:</strong> {{ invoice.payment_method }}</p>{% endif %}
+                {% if invoice.bank_account_details %}<p style="margin: 0;"><strong>Bank Details:</strong> {{ invoice.bank_account_details }}</p>{% endif %}
+                {% if invoice.upi_id %}<p style="margin: 0;"><strong>UPI ID:</strong> {{ invoice.upi_id }}</p>{% endif %}
+                {% if invoice.payment_notes %}<p style="margin: 0;"><strong>Payment Notes:</strong> {{ invoice.payment_notes }}</p>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="grid-2 gap-4 text-small text-secondary">
             {% if invoice.notes %}
             <div>
