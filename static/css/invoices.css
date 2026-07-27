@@ -231,7 +231,7 @@
 
 .flex-between { display: flex; justify-content: space-between; align-items: flex-start; }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-.text-right { text-align: right; }
+.text-right { text-align: right !important; }
 .text-red { color: var(--inv-danger); }
 .text-secondary { color: var(--inv-text-muted); }
 .text-small { font-size: 0.85rem; }

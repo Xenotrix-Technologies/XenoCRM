@@ -66,29 +66,29 @@
             </div>
 
             <!-- Items Table -->
-            <table class="premium-table mb-4 w-full" style="width: 100%; border-collapse: collapse;">
+            <table class="premium-table mb-4 w-full">
                 <thead>
-                    <tr style="background-color: var(--surface-variant); border-bottom: 1px solid var(--outline);">
-                        <th style="padding: 0.5rem; text-align: left;">Description</th>
-                        <th style="padding: 0.5rem; text-align: right;">Qty</th>
-                        <th style="padding: 0.5rem; text-align: right;">Unit Price</th>
-                        <th style="padding: 0.5rem; text-align: right;">Total</th>
+                    <tr>
+                        <th>Description</th>
+                        <th class="text-right">Qty</th>
+                        <th class="text-right">Unit Price</th>
+                        <th class="text-right">Total</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in invoice.items.all %}
-                    <tr style="border-bottom: 1px solid var(--outline-variant);">
-                        <td style="padding: 0.5rem;">
+                    <tr>
+                        <td>
                             <strong>{{ item.product_name }}</strong>
                             {% if item.description %}<br><span class="text-secondary" style="font-size: 0.875rem;">{{ item.description }}</span>{% endif %}
                         </td>
-                        <td style="padding: 0.5rem; text-align: right;">{{ item.quantity|floatformat:2 }}</td>
-                        <td style="padding: 0.5rem; text-align: right;">₹{{ item.unit_price|floatformat:2 }}</td>
-                        <td style="padding: 0.5rem; text-align: right;">₹{{ item.line_total|floatformat:2 }}</td>
+                        <td class="text-right">{{ item.quantity|floatformat:2 }}</td>
+                        <td class="text-right">₹{{ item.unit_price|floatformat:2 }}</td>
+                        <td class="text-right">₹{{ item.line_total|floatformat:2 }}</td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="4" style="text-align: center; padding: 0.5rem;">No items</td>
+                        <td colspan="4" style="text-align: center;">No items</td>
                     </tr>
                     {% endfor %}
                 </tbody>
