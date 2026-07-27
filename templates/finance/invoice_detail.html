@@ -189,6 +189,13 @@
 <script>
 document.getElementById('btnDownloadPdf').addEventListener('click', function() {
     const element = document.getElementById('invoicePdfContent');
+    
+    // Temporarily remove margin to fix html2canvas capturing white space on the left
+    const originalMargin = element.style.margin;
+    const originalMaxWidth = element.style.maxWidth;
+    element.style.margin = '0';
+    element.style.maxWidth = '100%';
+    
     const opt = {
         margin:       0,
         filename:     '{{ invoice.invoice_number }}.pdf',
@@ -196,7 +203,12 @@ document.getElementById('btnDownloadPdf').addEventListener('click', function() {
         html2canvas:  { scale: 2 },
         jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
-    html2pdf().set(opt).from(element).save();
+    
+    html2pdf().set(opt).from(element).save().then(() => {
+        // Restore styles
+        element.style.margin = originalMargin;
+        element.style.maxWidth = originalMaxWidth;
+    });
 });
 </script>
 {% endblock %}
