@@ -137,8 +137,11 @@ def invoice_edit(request, invoice_id):
                 invoice.subtotal = data.get('subtotal') or 0
                 invoice.total_tax = data.get('total_tax') or 0
                 invoice.total_discount = data.get('total_discount') or 0
+                invoice.extra_discount = data.get('extra_discount') or 0
                 invoice.shipping_charge = data.get('shipping_charge') or 0
                 invoice.grand_total = data.get('grand_total') or 0
+                invoice.amount_paid = data.get('amount_paid') or 0
+                invoice.balance_due = data.get('balance_due') or 0
                 invoice.payment_method = data.get('payment_method', '')
                 invoice.bank_account_details = data.get('bank_account_details', '')
                 invoice.upi_id = data.get('upi_id', '')
