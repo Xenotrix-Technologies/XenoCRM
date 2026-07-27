@@ -52,10 +52,10 @@
             </div>
         </div>
         
-        <hr class="mb-8">
+        <hr class="mb-4">
 
         <!-- Bill To -->
-        <div class="mb-8">
+        <div class="mb-4">
             <h4 class="text-secondary mb-2" style="font-weight: 600;">Bill To:</h4>
             <p style="font-weight: 600; font-size: 1.1rem;">{{ invoice.customer_name }}</p>
             {% if invoice.company_name %}<p>{{ invoice.company_name }}</p>{% endif %}
@@ -65,85 +65,85 @@
         </div>
 
         <!-- Items Table -->
-        <table class="premium-table mb-8 w-full" style="width: 100%;">
+        <table class="premium-table mb-4 w-full" style="width: 100%; border-collapse: collapse;">
             <thead>
-                <tr style="background-color: var(--surface-variant); border-bottom: 2px solid var(--outline);">
-                    <th style="padding: 1rem; text-align: left;">Description</th>
-                    <th style="padding: 1rem; text-align: right;">Qty</th>
-                    <th style="padding: 1rem; text-align: right;">Unit Price</th>
-                    <th style="padding: 1rem; text-align: right;">Total</th>
+                <tr style="background-color: var(--surface-variant); border-bottom: 1px solid var(--outline);">
+                    <th style="padding: 0.5rem; text-align: left;">Description</th>
+                    <th style="padding: 0.5rem; text-align: right;">Qty</th>
+                    <th style="padding: 0.5rem; text-align: right;">Unit Price</th>
+                    <th style="padding: 0.5rem; text-align: right;">Total</th>
                 </tr>
             </thead>
             <tbody>
                 {% for item in invoice.items.all %}
                 <tr style="border-bottom: 1px solid var(--outline-variant);">
-                    <td style="padding: 1rem;">
+                    <td style="padding: 0.5rem;">
                         <strong>{{ item.product_name }}</strong>
                         {% if item.description %}<br><span class="text-secondary" style="font-size: 0.875rem;">{{ item.description }}</span>{% endif %}
                     </td>
-                    <td style="padding: 1rem; text-align: right;">{{ item.quantity|floatformat:2 }}</td>
-                    <td style="padding: 1rem; text-align: right;">₹{{ item.unit_price|floatformat:2 }}</td>
-                    <td style="padding: 1rem; text-align: right;">₹{{ item.line_total|floatformat:2 }}</td>
+                    <td style="padding: 0.5rem; text-align: right;">{{ item.quantity|floatformat:2 }}</td>
+                    <td style="padding: 0.5rem; text-align: right;">₹{{ item.unit_price|floatformat:2 }}</td>
+                    <td style="padding: 0.5rem; text-align: right;">₹{{ item.line_total|floatformat:2 }}</td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" style="text-align: center; padding: 1rem;">No items</td>
+                    <td colspan="4" style="text-align: center; padding: 0.5rem;">No items</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
 
         <!-- Totals & Seal -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1rem; margin-top: 1rem;">
             
             <!-- Seal Area -->
             <div style="width: 250px; text-align: center;">
-                <div style="margin: 0 auto 0.75rem auto; display: flex; align-items: center; justify-content: center;">
-                    <img src="{% static 'images/seal.png' %}" alt="Company Seal" style="max-width: 90px; max-height: 90px; object-fit: contain;">
+                <div style="margin: 0 auto 0.5rem auto; display: flex; align-items: center; justify-content: center;">
+                    <img src="{% static 'images/seal.png' %}" alt="Company Seal" style="max-width: 80px; max-height: 80px; object-fit: contain;">
                 </div>
-                <hr style="border: none; border-top: 1px solid #cbd5e1; margin-bottom: 0.5rem; width: 150px; margin-left: auto; margin-right: auto;">
+                <hr style="border: none; border-top: 1px solid #cbd5e1; margin-bottom: 0.25rem; width: 150px; margin-left: auto; margin-right: auto;">
                 <span class="text-secondary" style="font-size: 0.875rem;">Authorized Signatory</span>
             </div>
 
             <!-- Totals -->
             <div style="width: 300px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                     <span class="text-secondary">Subtotal</span>
                     <span>₹{{ invoice.subtotal|floatformat:2 }}</span>
                 </div>
                 {% if invoice.total_discount > 0 %}
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--error);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; color: var(--error);">
                     <span>Discount</span>
                     <span>-₹{{ invoice.total_discount|floatformat:2 }}</span>
                 </div>
                 {% endif %}
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                     <span class="text-secondary">Tax</span>
                     <span>₹{{ invoice.total_tax|floatformat:2 }}</span>
                 </div>
                 {% if invoice.shipping_charge > 0 %}
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
                     <span class="text-secondary">Shipping</span>
                     <span>₹{{ invoice.shipping_charge|floatformat:2 }}</span>
                 </div>
                 {% endif %}
                 {% if invoice.extra_discount > 0 %}
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: var(--error);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; color: var(--error);">
                     <span>Extra Discount</span>
                     <span>-₹{{ invoice.extra_discount|floatformat:2 }}</span>
                 </div>
                 {% endif %}
-                <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid var(--outline); font-weight: 700; font-size: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid var(--outline); font-weight: 700; font-size: 1.1rem;">
                     <span>Grand Total</span>
                     <span>₹{{ invoice.grand_total|floatformat:2 }}</span>
                 </div>
                 {% if invoice.amount_paid > 0 %}
-                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-top: 0.25rem;">
                     <span class="text-secondary">Already Paid</span>
                     <span>₹{{ invoice.amount_paid|floatformat:2 }}</span>
                 </div>
                 {% endif %}
-                <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-weight: 700; font-size: 1.25rem; color: var(--error);">
+                <div style="display: flex; justify-content: space-between; margin-top: 0.25rem; font-weight: 700; font-size: 1.1rem; color: var(--error);">
                     <span>Balance Due</span>
                     <span>₹{{ invoice.balance_due|floatformat:2 }}</span>
                 </div>
