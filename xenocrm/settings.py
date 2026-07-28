@@ -216,3 +216,6 @@ LOGGING = {
         },
     },
 }
+
+# Output emails to the console for local development (useful for password resets)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
