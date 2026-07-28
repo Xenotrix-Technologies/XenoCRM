@@ -704,6 +704,11 @@ def login_view(request):
         user = authenticate(request, username=u, password=p)
         if user is not None:
             login(request, user)
+            
+            remember_me = request.POST.get('remember_me')
+            if not remember_me:
+                request.session.set_expiry(0)
+                
             return redirect('dashboard')
         else:
             messages.error(request, "Invalid username or password.")
