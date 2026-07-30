@@ -75,8 +75,9 @@ class ProfileForm(forms.ModelForm):
                 'placeholder': 'e.g. New York, USA'
             }),
             'role': forms.TextInput(attrs={
-                'class': 'w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary',
-                'placeholder': 'e.g. Sales Director'
+                'class': 'w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary opacity-70 cursor-not-allowed',
+                'placeholder': 'e.g. Sales Director',
+                'readonly': 'readonly'
             })
         }
 
