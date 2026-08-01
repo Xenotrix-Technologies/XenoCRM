@@ -94,7 +94,13 @@
                     <td>{{ inv.invoice_date }}</td>
                     <td>₹{{ inv.grand_total|floatformat:2 }}</td>
                     <td>
-                        <span class="status-badge status-{{ inv.status|lower }}">{{ inv.status }}</span>
+                        <select class="premium-input status-select status-badge status-{{ inv.status|lower }}" data-invoice-id="{{ inv.id }}" style="padding: 4px 8px; font-size: 0.85rem; border-radius: 4px; width: auto; appearance: auto; cursor: pointer; height: auto;">
+                            <option value="Pending" {% if inv.status == 'Pending' %}selected{% endif %}>Pending</option>
+                            <option value="Paid" {% if inv.status == 'Paid' %}selected{% endif %}>Paid</option>
+                            <option value="Draft" {% if inv.status == 'Draft' %}selected{% endif %}>Draft</option>
+                            <option value="Overdue" {% if inv.status == 'Overdue' %}selected{% endif %}>Overdue</option>
+                            <option value="Partial" {% if inv.status == 'Partial' %}selected{% endif %}>Partial</option>
+                        </select>
                     </td>
                     <td class="action-cell">
                         <div style="display: flex; gap: 0.5rem;">
@@ -151,8 +157,34 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
             });
+    const statusSelects = document.querySelectorAll('.status-select');
+    statusSelects.forEach(select => {
+        select.addEventListener('change', async function() {
+            const invoiceId = this.dataset.invoiceId;
+            const newStatus = this.value;
+            
+            // Update the class color based on new status
+            this.className = `premium-input status-select status-badge status-${newStatus.toLowerCase()}`;
+            
+            try {
+                const response = await fetch(`/finance/invoices/${invoiceId}/update-status/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                const data = await response.json();
+                if (!data.success) {
+                    alert('Error updating status: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Network error occurred while updating status.');
+            }
         });
-    }
+    });
 });
 </script>
 {% endblock %}
