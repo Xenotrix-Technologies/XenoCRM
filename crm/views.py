@@ -1293,7 +1293,8 @@ def quick_create_lead(request):
         name = request.POST.get('name')
         email = request.POST.get('email')
         company = request.POST.get('company')
-        value = request.POST.get('value', 0)
+        phone_number = request.POST.get('phone_number', '')
+        value = 0
         score = request.POST.get('score', 50)
         
         org = request.user.profile.organization
@@ -1313,6 +1314,7 @@ def quick_create_lead(request):
                 name=name,
                 email=email,
                 company=company,
+                phone_number=phone_number,
                 value=value,
                 score=score,
                 owner=owner,
