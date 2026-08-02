@@ -83,6 +83,7 @@ class Lead(models.Model):
     last_followup_date_time = models.DateTimeField(blank=True, null=True)
     last_activity = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True, null=True)
     is_client = models.BooleanField(default=False)
 
     class Meta:

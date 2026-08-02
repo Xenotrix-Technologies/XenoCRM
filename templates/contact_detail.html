@@ -190,6 +190,13 @@
                                         <input type="url" name="profile_image_url" value="{{ lead.profile_image_url|default:'' }}" placeholder="https://example.com/image.png" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
                                     </div>
                                 </div>
+
+                                <div class="md:col-span-2">
+                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Notes</label>
+                                    <div class="relative">
+                                        <textarea name="notes" rows="4" placeholder="Enter notes here..." class="bg-surface-container-low border border-outline-variant rounded-xl p-3 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">{{ lead.notes|default:'' }}</textarea>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="flex justify-end gap-3 pt-6 border-t border-outline-variant/20">

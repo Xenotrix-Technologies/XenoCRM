@@ -1720,6 +1720,7 @@ def edit_lead(request, lead_id):
             lead.paid_amount = safe_parse_decimal(request.POST.get('paid_amount', '0.00'), 0.00)
             lead.location = request.POST.get('location', '') or None
             lead.profile_image_url = request.POST.get('profile_image_url', '') or None
+            lead.notes = request.POST.get('notes', '')
             
             if lead.status == 'Qualified' and not lead.is_client:
                 lead.is_client = True
