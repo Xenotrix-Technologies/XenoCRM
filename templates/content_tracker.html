@@ -161,17 +161,21 @@
               </th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('id')">ID</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('client__name')">Client</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('client_month')">Client Month</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('video_title')">Video Title</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('editor__user__username')">Editor</th>
-              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('date_received')">Date Recd</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('editor_month')">Editor Month</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('date_received')">Date Received</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('due_date')">Due Date</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('status')">Status</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('platform')">Platform</th>
-              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('due_date')">Publish Date</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('upload_date')">Upload Date</th>
               <th class="p-4">Post Type</th>
-              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('campaign_status')">Campaign</th>
-              <th class="p-4">Link</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('campaign_run_date')">Campaign Run Date</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('campaign_status')">Campaign Status</th>
+              <th class="p-4">Video Link</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('priority')">Priority</th>
+              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('salary')">Salary</th>
               <th class="p-4">Notes</th>
               {% if request.user.profile.has_edit_content_tracker or request.user.profile.has_delete_content_tracker %}
               <th class="p-4 text-center w-20">Actions</th>
@@ -190,6 +194,7 @@
               </td>
               <td class="p-4 font-mono font-bold text-outline">#{{ item.id }}</td>
               <td class="p-4 font-bold text-on-surface">{{ item.client.name }}</td>
+              <td class="p-4">{{ item.client_month|default:"-" }}</td>
               <td class="p-4 font-semibold text-primary max-w-[160px] truncate" title="{{ item.video_title }}">{{ item.video_title }}</td>
               <td class="p-4 font-medium">
                 {% if item.editor %}
@@ -198,6 +203,7 @@
                   <span class="text-outline/60 italic">Unassigned</span>
                 {% endif %}
               </td>
+              <td class="p-4">{{ item.editor_month|default:"-" }}</td>
               <td class="p-4 text-secondary">{{ item.date_received|date:"Y-m-d"|default:"-" }}</td>
               <td class="p-4 text-secondary font-bold">{{ item.due_date|date:"Y-m-d"|default:"-" }}</td>
               <td class="p-4">
@@ -217,6 +223,7 @@
               <td class="p-4 font-semibold text-secondary">{{ item.platform }}</td>
               <td class="p-4 text-secondary">{{ item.upload_date|date:"Y-m-d"|default:"-" }}</td>
               <td class="p-4 text-secondary">{{ item.post_type }}</td>
+              <td class="p-4 text-secondary">{{ item.campaign_run_date|date:"Y-m-d"|default:"-" }}</td>
               <td class="p-4">
                 {% if item.campaign_status == 'Not Started' %}
                   <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 text-[9px] font-bold">Not Started</span>
@@ -252,6 +259,7 @@
                   <span class="text-rose-600 font-extrabold animate-pulse">• Urgent</span>
                 {% endif %}
               </td>
+              <td class="p-4 text-secondary">{{ item.salary|default:"-" }}</td>
               <td class="p-4 max-w-[120px] truncate text-secondary cursor-help relative group" title="{{ item.notes }}">
                 {{ item.notes|default:"-" }}
               </td>
@@ -265,7 +273,7 @@
                   <div id="dropdown-menu-{{ item.id }}" class="hidden absolute right-0 mt-1 w-36 rounded-lg bg-white border border-outline-variant/30 shadow-lg z-[40] divide-y divide-outline-variant/10 text-xs">
                     {% if request.user.profile.has_edit_content_tracker %}
                     <div class="py-1">
-                      <a href="{% url 'edit_content_item' item.id %}" class="w-full text-left px-3 py-2 text-on-surface hover:bg-slate-50 flex items-center gap-2">
+                      <a href="#" onclick="openEditModal({{ item.id }}, '{{ item.client.id|escapejs }}', '{{ item.video_title|escapejs }}', '{{ item.editor.id|default:''|escapejs }}', '{{ item.date_received|date:'Y-m-d'|escapejs }}', '{{ item.due_date|date:'Y-m-d'|escapejs }}', '{{ item.status|escapejs }}', '{{ item.platform|escapejs }}', '{{ item.upload_date|date:'Y-m-d'|escapejs }}', '{{ item.post_type|escapejs }}', '{{ item.campaign_status|escapejs }}', '{{ item.video_link|escapejs }}', '{{ item.priority|escapejs }}', '{{ item.notes|escapejs }}', '{{ item.client_month|escapejs }}', '{{ item.editor_month|escapejs }}', '{{ item.campaign_run_date|date:'Y-m-d'|escapejs }}', '{{ item.salary|escapejs }}')" class="w-full text-left px-3 py-2 text-on-surface hover:bg-slate-50 flex items-center gap-2">
                         <span class="material-symbols-outlined text-[14px]">edit</span> Edit
                       </a>
                       <button onclick="duplicateItem({{ item.id }})" class="w-full text-left px-3 py-2 text-on-surface hover:bg-slate-50 flex items-center gap-2">
@@ -477,6 +485,24 @@
         <textarea name="notes" id="form-notes" rows="3" placeholder="Add specific editing, transitions, or copy instructions..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"></textarea>
       </div>
 
+      <!-- Additional Fields -->
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Client Month</label>
+        <input type="text" name="client_month" id="form-client-month" placeholder="e.g. Jan 2024" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+      </div>
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Editor Month</label>
+        <input type="text" name="editor_month" id="form-editor-month" placeholder="e.g. Jan 2024" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+      </div>
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Campaign Run Date</label>
+        <input type="date" name="campaign_run_date" id="form-campaign-run-date" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+      </div>
+      <div>
+        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Salary</label>
+        <input type="number" step="0.01" name="salary" id="form-salary" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+      </div>
+
       <div class="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-outline-variant/20 sticky bottom-0 bg-white">
         <button type="button" onclick="closeModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
         <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Changes</button>
@@ -527,7 +553,7 @@
       document.getElementById('content-modal').classList.remove('hidden');
   }
 
-  function openEditModal(id, clientId, title, editorId, dateRecd, dueDate, status, platform, uploadDate, postType, campaignStatus, videoLink, priority, notes) {
+  function openEditModal(id, clientId, title, editorId, dateRecd, dueDate, status, platform, uploadDate, postType, campaignStatus, videoLink, priority, notes, clientMonth, editorMonth, campaignRunDate, salary) {
       document.getElementById('form-item-id').value = id;
       document.getElementById('form-client-id').value = clientId;
       document.getElementById('form-video-title').value = title;
@@ -542,6 +568,10 @@
       document.getElementById('form-video-link').value = videoLink || '';
       document.getElementById('form-priority').value = priority;
       document.getElementById('form-notes').value = notes || '';
+      document.getElementById('form-client-month').value = clientMonth || '';
+      document.getElementById('form-editor-month').value = editorMonth || '';
+      document.getElementById('form-campaign-run-date').value = campaignRunDate || '';
+      document.getElementById('form-salary').value = salary || '';
       
       document.getElementById('modal-title').innerText = 'Edit Content Item';
       document.getElementById('content-modal').classList.remove('hidden');
@@ -765,9 +795,10 @@
   // Download Import Template
   function downloadTemplate() {
       const headers = [
-          "Client", "Video Title", "Editor", "Date Received", "Due Date", 
-          "Status", "Platform", "Upload Date", "Post Type", "Campaign Status", 
-          "Video Link", "Priority", "Notes"
+          "ID", "Client", "Client Month", "Video Title", "Editor", "Editer Month", 
+          "Date Received", "Due Date", "Status", "Platform", "Upload Date", 
+          "Post Type", "campaign run date", "Campaign status", "Video Link", 
+          "Priority", "Salary", "Notes"
       ];
       const csvContent = headers.join(",") + "\n";
       

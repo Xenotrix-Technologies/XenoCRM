@@ -1137,6 +1137,10 @@ class ContentItem(models.Model):
     video_link = models.URLField(max_length=1000, blank=True, null=True)
     priority = models.CharField(max_length=50, choices=PRIORITY_CHOICES, default='Medium')
     notes = models.TextField(blank=True, null=True)
+    client_month = models.CharField(max_length=50, blank=True, null=True)
+    editor_month = models.CharField(max_length=50, blank=True, null=True)
+    campaign_run_date = models.DateField(null=True, blank=True)
+    salary = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
