@@ -1171,8 +1171,6 @@ class ContentDropdownOption(models.Model):
         ('priority', 'Priority'),
         ('editor_status', 'Editor Board Status'),
         ('marketer_status', 'Post Management Status'),
-        ('client_month', 'Client Month'),
-        ('editor_month', 'Editor Month'),
     ]
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='content_dropdown_options')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
