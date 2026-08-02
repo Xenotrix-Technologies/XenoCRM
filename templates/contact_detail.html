@@ -153,22 +153,7 @@
                                     </div>
                                 </div>
 
-                                <!-- Deal Value & Service Interest -->
-                                <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Contract Value ($)</label>
-                                    <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">attach_money</span>
-                                        <input type="number" step="0.01" name="value" value="{% if lead.value %}{{ lead.value }}{% endif %}" placeholder="" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Paid Amount ($)</label>
-                                    <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">payments</span>
-                                        <input type="number" step="0.01" name="paid_amount" value="{{ lead.paid_amount|default:'0.00' }}" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
-                                    </div>
-                                </div>
-                                <div>
+
                                     <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-2">Service Interest</label>
                                     <div id="lead-service-select" class="bg-surface-container-low border border-outline-variant rounded-xl p-3 space-y-2 max-h-48 overflow-y-auto">
                                         {% for svc in services %}
