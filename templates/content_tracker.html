@@ -20,6 +20,10 @@
       <!-- Action Buttons -->
       <div class="flex items-center gap-2 flex-nowrap shrink-0">
         {% if request.user.profile.has_edit_content_tracker %}
+        <button onclick="downloadTemplate()" class="bg-surface-container border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-slate-50 transition-all shadow-sm">
+          <span class="material-symbols-outlined text-[18px]">description</span>
+          Template
+        </button>
         <a href="{% url 'add_content_item' %}" class="bg-primary text-on-primary px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:opacity-90 transition-all shadow-md">
           <span class="material-symbols-outlined text-[18px]">add_circle</span>
           Add Content
@@ -756,6 +760,26 @@
       document.body.appendChild(downloadLink);
       downloadLink.click();
       document.body.removeChild(downloadLink);
+  }
+
+  // Download Import Template
+  function downloadTemplate() {
+      const headers = [
+          "Client", "Video Title", "Editor", "Date Received", "Due Date", 
+          "Status", "Platform", "Upload Date", "Post Type", "Campaign Status", 
+          "Video Link", "Priority", "Notes"
+      ];
+      const csvContent = headers.join(",") + "\n";
+      
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "ContentTracker_Import_Template.csv");
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
   }
 
   // Import Content from CSV
