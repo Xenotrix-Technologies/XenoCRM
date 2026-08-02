@@ -185,3 +185,19 @@ def invoice_delete(request, invoice_id):
         return redirect('invoice_dashboard')
     
     return redirect('invoice_dashboard')
+
+@login_required
+def invoice_update_status(request, invoice_id):
+    if request.method == 'POST':
+        user_profile = UserProfile.objects.get(user=request.user)
+        invoice = get_object_or_404(Invoice, id=invoice_id, organization=user_profile.organization)
+        try:
+            data = json.loads(request.body)
+            new_status = data.get('status')
+            if new_status:
+                invoice.status = new_status
+                invoice.save(update_fields=['status'])
+                return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
