@@ -3230,6 +3230,10 @@ def add_content_item(request):
         video_link = request.POST.get('video_link', '').strip()
         priority = request.POST.get('priority', 'Medium')
         notes = request.POST.get('notes', '').strip()
+        client_month = request.POST.get('client_month', '').strip()
+        editor_month = request.POST.get('editor_month', '').strip()
+        campaign_run_date = request.POST.get('campaign_run_date') or None
+        salary = request.POST.get('salary') or None
 
         form_data = {
             'client_id': client_id, 'video_title': video_title, 'editor_id': editor_id,
@@ -3237,6 +3241,8 @@ def add_content_item(request):
             'status': status, 'platform': platform, 'post_type': post_type,
             'campaign_status': campaign_status, 'video_link': video_link,
             'priority': priority, 'notes': notes,
+            'client_month': client_month, 'editor_month': editor_month,
+            'campaign_run_date': campaign_run_date or '', 'salary': salary or '',
         }
 
         if not client_id or not video_title:
@@ -3258,6 +3264,8 @@ def add_content_item(request):
                 status=status, platform=platform, upload_date=upload_date,
                 post_type=post_type, campaign_status=campaign_status,
                 video_link=video_link or None, priority=priority, notes=notes,
+                client_month=client_month, editor_month=editor_month,
+                campaign_run_date=campaign_run_date, salary=salary,
             )
             SystemNotification.objects.create(user=request.user, message=f"Content item '{video_title}' created successfully.", type='success')
             return redirect('content_tracker')
@@ -3311,13 +3319,18 @@ def edit_content_item(request, item_id):
         video_link = request.POST.get('video_link', '').strip()
         priority = request.POST.get('priority', 'Medium')
         notes = request.POST.get('notes', '').strip()
-
+        client_month = request.POST.get('client_month', '').strip()
+        editor_month = request.POST.get('editor_month', '').strip()
+        campaign_run_date = request.POST.get('campaign_run_date') or None
+        salary = request.POST.get('salary') or None
         form_data = {
             'client_id': client_id, 'video_title': video_title, 'editor_id': editor_id,
             'date_received': date_received or '', 'due_date': due_date or '', 'upload_date': upload_date or '',
             'status': status, 'platform': platform, 'post_type': post_type,
             'campaign_status': campaign_status, 'video_link': video_link,
             'priority': priority, 'notes': notes,
+            'client_month': client_month, 'editor_month': editor_month,
+            'campaign_run_date': campaign_run_date or '', 'salary': salary or '',
         }
 
         if not client_id or not video_title:
@@ -3346,6 +3359,10 @@ def edit_content_item(request, item_id):
             item.video_link = video_link or None
             item.priority = priority
             item.notes = notes
+            item.client_month = client_month
+            item.editor_month = editor_month
+            item.campaign_run_date = campaign_run_date
+            item.salary = salary
             item.save()
             SystemNotification.objects.create(user=request.user, message=f"Content item '{video_title}' updated successfully.", type='success')
             return redirect('content_tracker')
@@ -3371,6 +3388,10 @@ def edit_content_item(request, item_id):
         'video_link': item.video_link or '',
         'priority': item.priority,
         'notes': item.notes or '',
+        'client_month': item.client_month or '',
+        'editor_month': item.editor_month or '',
+        'campaign_run_date': str(item.campaign_run_date) if item.campaign_run_date else '',
+        'salary': str(item.salary) if item.salary else '',
     }
     context = {
         'title': f'Edit: {item.video_title}',
@@ -3501,6 +3522,10 @@ def import_content_items(request):
         'video_link': ['video link', 'video_link', 'link', 'url', 'video url', 'video_url'],
         'priority': ['priority', 'urgency', 'importance'],
         'notes': ['notes', 'note', 'comments', 'comment', 'description', 'remarks'],
+        'client_month': ['client month', 'client_month'],
+        'editor_month': ['editor month', 'editor_month', 'editer month'],
+        'campaign_run_date': ['campaign run date', 'campaign_run_date'],
+        'salary': ['salary', 'pay', 'amount'],
     }
 
     for field, aliases in header_aliases.items():
@@ -3653,6 +3678,21 @@ def import_content_items(request):
 
         video_link = row.get(mapped.get('video_link', ''), '').strip() or None
         notes = row.get(mapped.get('notes', ''), '').strip() or None
+        
+        client_month = row.get(mapped.get('client_month', ''), '').strip() or None
+        editor_month = row.get(mapped.get('editor_month', ''), '').strip() or None
+        campaign_run_date = safe_parse_date(row.get(mapped.get('campaign_run_date', ''), ''))
+        
+        raw_salary = row.get(mapped.get('salary', ''), '').strip()
+        salary = None
+        if raw_salary:
+            import re
+            try:
+                # Remove currency symbols and commas before conversion
+                cleaned_salary = re.sub(r'[^\d.]', '', raw_salary)
+                salary = float(cleaned_salary) if cleaned_salary else None
+            except ValueError:
+                pass
 
         try:
             with transaction.atomic():
@@ -3671,6 +3711,10 @@ def import_content_items(request):
                     video_link=video_link,
                     priority=priority,
                     notes=notes,
+                    client_month=client_month,
+                    editor_month=editor_month,
+                    campaign_run_date=campaign_run_date,
+                    salary=salary,
                 )
                 imported_count += 1
         except Exception as ex:
