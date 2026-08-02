@@ -1781,6 +1781,39 @@ def delete_lead(request, lead_id):
             return JsonResponse({'success': True, 'message': f"Successfully deleted lead '{name}'."})
         SystemNotification.objects.create(user=request.user, message=f"Successfully deleted lead '{name}'.", type='success')
         return redirect('leads')
+
+
+@login_required
+def send_lead_email(request):
+    if request.method == 'POST':
+        lead_id = request.POST.get('lead_id')
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+        to_email = request.POST.get('to_email')
+        
+        org = request.user.profile.organization
+        try:
+            lead = Lead.objects.get(id=lead_id, organization=org)
+            
+            # Send Email logic here
+            from django.core.mail import send_mail
+            from django.conf import settings
+            
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@xenocrm.com')
+            send_mail(subject, message, from_email, [to_email], fail_silently=True)
+            
+            # Log Activity
+            Activity.objects.create(
+                lead=lead,
+                type='Email',
+                description=f"Sent email: {subject}\n\n{message}"
+            )
+            
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+            
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
         
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponse({'success': False, 'error': 'Invalid request method.'})
