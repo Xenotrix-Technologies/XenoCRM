@@ -23,6 +23,7 @@ urlpatterns = [
     path('leads/<int:lead_id>/edit/', views.edit_lead, name='edit_lead'),
     path('leads/<int:lead_id>/delete/', views.delete_lead, name='delete_lead'),
     path('leads/<int:lead_id>/json/', views.lead_json_view, name='lead_json'),
+    path('leads/send-email/', views.send_lead_email, name='send_lead_email'),
     path('pipeline/', views.pipeline_view, name='pipeline'),
     path('pipeline/update-stage/', views.update_lead_stage, name='update_lead_stage'),
     path('leads/<int:lead_id>/', views.contact_detail_view, name='contact_detail'),
