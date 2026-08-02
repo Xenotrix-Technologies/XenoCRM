@@ -46,6 +46,8 @@
       {% for cat_key, cat_data in all_options.items %}
       <div class="glass-card rounded-2xl border border-outline-variant/30 shadow-sm bg-white overflow-hidden flex flex-col">
         <!-- Category Header -->
+        <div class="flex items-center justify-between p-5 border-b border-outline-variant/20 bg-slate-50/50">
+          <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg flex items-center justify-center
               {% if cat_key == 'platform' %}bg-blue-100 text-blue-600
               {% elif cat_key == 'post_type' %}bg-purple-100 text-purple-600
