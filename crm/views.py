@@ -3091,7 +3091,13 @@ from datetime import date, timedelta
 def content_tracker_view(request):
     """Render the central Content Tracker dashboard page with filters, sorting, and pagination."""
     org = request.user.profile.organization
-    clients = Lead.objects.filter(organization=org, status='Qualified')
+    raw_clients = Lead.objects.filter(organization=org, is_client=True)
+    seen_companies = set()
+    clients = []
+    for c in raw_clients:
+        if c.company and c.company not in seen_companies:
+            seen_companies.add(c.company)
+            clients.append(c)
     editors = org.members.filter(role__iexact='Editor').select_related('user')
     
     # Base Query
@@ -3147,7 +3153,7 @@ def content_tracker_view(request):
     # Sorting
     sort_by = request.GET.get('sort', '-due_date')
     allowed_sort_fields = [
-        'id', '-id', 'client__name', '-client__name', 'video_title', '-video_title',
+        'id', '-id', 'client__company', '-client__company', 'video_title', '-video_title',
         'editor__user__username', '-editor__user__username', 'date_received', '-date_received',
         'due_date', '-due_date', 'status', '-status', 'platform', '-platform',
         'priority', '-priority', 'campaign_status', '-campaign_status'
@@ -3212,7 +3218,13 @@ def content_tracker_view(request):
 def add_content_item(request):
     """Add a new client video content item via dedicated form page."""
     org = request.user.profile.organization
-    clients = Lead.objects.filter(organization=org, status='Qualified')
+    raw_clients = Lead.objects.filter(organization=org, is_client=True)
+    seen_companies = set()
+    clients = []
+    for c in raw_clients:
+        if c.company and c.company not in seen_companies:
+            seen_companies.add(c.company)
+            clients.append(c)
     editors = org.members.filter(role__iexact='Editor').select_related('user')
     platforms = _get_content_options(org, 'platform')
     post_types = _get_content_options(org, 'post_type')
@@ -3296,7 +3308,7 @@ def edit_content_item(request, item_id):
     """Edit a content item via dedicated form page."""
     org = request.user.profile.organization
     from crm.models import ContentItem
-    clients = Lead.objects.filter(organization=org, status='Qualified')
+    clients = Lead.objects.filter(organization=org, is_client=True)
     editors = org.members.filter(role__iexact='Editor').select_related('user')
     platforms = _get_content_options(org, 'platform')
     post_types = _get_content_options(org, 'post_type')
