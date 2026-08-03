@@ -394,12 +394,145 @@ def projects_view(request):
     staff = UserProfile.objects.filter(organization=org)
     leads = Lead.objects.filter(organization=org)
     project_statuses = ProjectStatus.objects.filter(organization=org).order_by('position')
+    
+    today = timezone.now().date()
+    total_projects = tasks.count()
+    completed_projects = tasks.filter(Q(completed=True) | Q(status__name__iexact='Completed')).count()
+    overdue_projects = tasks.filter(completed=False, due_date__lt=today).exclude(status__name__iexact='Completed').count()
+    
+    in_progress_projects = tasks.filter(
+        Q(completed=False) & (Q(status__name__iexact='In Progress') | Q(status__isnull=True))
+    ).exclude(due_date__lt=today).count()
+    
+    if in_progress_projects == 0 and total_projects > (completed_projects + overdue_projects):
+        in_progress_projects = total_projects - completed_projects - overdue_projects
+
+    team_members_count = staff.count()
+    
+    # Task collections by status for Kanban Board & dynamic views
+    backlog_tasks = tasks.filter(status__name__iexact='Backlog')
+    todo_tasks = tasks.filter(status__name__iexact='Todo')
+    in_progress_tasks = tasks.filter(Q(status__name__iexact='In Progress') | (Q(status__isnull=True) & Q(completed=False)))
+    review_tasks = tasks.filter(status__name__iexact='Review')
+    completed_tasks = tasks.filter(Q(completed=True) | Q(status__name__iexact='Completed'))
+    
+    task_activities = Activity.objects.filter(
+        Q(lead__organization=org) | Q(lead__isnull=True),
+        type='Task'
+    ).order_by('-timestamp')[:15]
+    
+    active_tab = request.GET.get('tab', 'overview')
+
     return render(request, 'projects.html', {
         'tasks': tasks,
         'staff': staff,
         'leads': leads,
-        'project_statuses': project_statuses
+        'project_statuses': project_statuses,
+        'total_projects': total_projects,
+        'completed_projects': completed_projects,
+        'overdue_projects': overdue_projects,
+        'in_progress_projects': in_progress_projects,
+        'team_members_count': team_members_count,
+        'backlog_tasks': backlog_tasks,
+        'todo_tasks': todo_tasks,
+        'in_progress_tasks': in_progress_tasks,
+        'review_tasks': review_tasks,
+        'completed_tasks': completed_tasks,
+        'task_activities': task_activities,
+        'active_tab': active_tab
     })
+
+
+@login_required
+def project_board_view(request):
+    org = request.user.profile.organization
+    tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
+    staff = UserProfile.objects.filter(organization=org)
+    leads = Lead.objects.filter(organization=org)
+    project_statuses = ProjectStatus.objects.filter(organization=org).order_by('position')
+    
+    today = timezone.now().date()
+    total_projects = tasks.count()
+    completed_projects = tasks.filter(Q(completed=True) | Q(status__name__iexact='Completed')).count()
+    overdue_projects = tasks.filter(completed=False, due_date__lt=today).exclude(status__name__iexact='Completed').count()
+    in_progress_projects = tasks.filter(
+        Q(completed=False) & (Q(status__name__iexact='In Progress') | Q(status__isnull=True))
+    ).exclude(due_date__lt=today).count()
+    team_members_count = staff.count()
+
+    backlog_tasks = tasks.filter(status__name__iexact='Backlog')
+    todo_tasks = tasks.filter(status__name__iexact='Todo')
+    in_progress_tasks = tasks.filter(Q(status__name__iexact='In Progress') | (Q(status__isnull=True) & Q(completed=False)))
+    review_tasks = tasks.filter(status__name__iexact='Review')
+    completed_tasks = tasks.filter(Q(completed=True) | Q(status__name__iexact='Completed'))
+
+    return render(request, 'project_board.html', {
+        'tasks': tasks,
+        'staff': staff,
+        'leads': leads,
+        'project_statuses': project_statuses,
+        'total_projects': total_projects,
+        'completed_projects': completed_projects,
+        'overdue_projects': overdue_projects,
+        'in_progress_projects': in_progress_projects,
+        'team_members_count': team_members_count,
+        'backlog_tasks': backlog_tasks,
+        'todo_tasks': todo_tasks,
+        'in_progress_tasks': in_progress_tasks,
+        'review_tasks': review_tasks,
+        'completed_tasks': completed_tasks,
+    })
+
+
+@login_required
+def project_timeline_view(request):
+    org = request.user.profile.organization
+    tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
+    staff = UserProfile.objects.filter(organization=org)
+    leads = Lead.objects.filter(organization=org)
+    project_statuses = ProjectStatus.objects.filter(organization=org).order_by('position')
+
+    return render(request, 'project_timeline.html', {
+        'tasks': tasks,
+        'staff': staff,
+        'leads': leads,
+        'project_statuses': project_statuses,
+    })
+
+
+@login_required
+def project_reports_view(request):
+    org = request.user.profile.organization
+    tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org))
+    staff = UserProfile.objects.filter(organization=org)
+    
+    today = timezone.now().date()
+    total_projects = tasks.count()
+    completed_projects = tasks.filter(Q(completed=True) | Q(status__name__iexact='Completed')).count()
+    overdue_projects = tasks.filter(completed=False, due_date__lt=today).exclude(status__name__iexact='Completed').count()
+    in_progress_projects = total_projects - completed_projects - overdue_projects
+    if in_progress_projects < 0:
+        in_progress_projects = 0
+
+    high_priority_count = tasks.filter(priority='High').count()
+    medium_priority_count = tasks.filter(priority='Medium').count()
+    low_priority_count = tasks.filter(priority='Low').count()
+
+    completion_rate = round((completed_projects / total_projects * 100), 1) if total_projects > 0 else 0
+
+    return render(request, 'project_reports.html', {
+        'tasks': tasks,
+        'staff': staff,
+        'total_projects': total_projects,
+        'completed_projects': completed_projects,
+        'overdue_projects': overdue_projects,
+        'in_progress_projects': in_progress_projects,
+        'high_priority_count': high_priority_count,
+        'medium_priority_count': medium_priority_count,
+        'low_priority_count': low_priority_count,
+        'completion_rate': completion_rate,
+    })
+
 
 
 @login_required
