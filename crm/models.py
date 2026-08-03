@@ -909,6 +909,7 @@ class Task(models.Model):
     start_date = models.DateField(blank=True, null=True)
     due_date = models.DateField()
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Medium')
+    status = models.ForeignKey('ProjectStatus', on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
     completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
