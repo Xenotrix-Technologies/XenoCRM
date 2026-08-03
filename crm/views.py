@@ -4311,7 +4311,26 @@ def finance_income_view(request):
             
         return redirect('finance_income')
 
-    incomes = Income.objects.filter(organization=request.user.profile.organization).order_by('-date')
+    incomes = Income.objects.filter(organization=request.user.profile.organization)
+    
+    day = request.GET.get('day')
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+    sort_by = request.GET.get('sort')
+
+    if day:
+        incomes = incomes.filter(date__day=day)
+    if month:
+        incomes = incomes.filter(date__month=month)
+    if year:
+        incomes = incomes.filter(date__year=year)
+        
+    if sort_by == 'highest':
+        incomes = incomes.order_by('-amount')
+    elif sort_by == 'lowest':
+        incomes = incomes.order_by('amount')
+    else:
+        incomes = incomes.order_by('-date')
     finance_methods = FinancePaymentMethod.objects.filter(organization=request.user.profile.organization).order_by('name')
     context = {'incomes': incomes, 'finance_methods': finance_methods}
     return render(request, 'finance_income.html', context)
@@ -4472,7 +4491,29 @@ def finance_expenses_view(request):
             
         return redirect('finance_expenses')
 
-    expenses = Expense.objects.filter(organization=request.user.profile.organization).order_by('-date')
+    expenses = Expense.objects.filter(organization=request.user.profile.organization)
+    
+    day = request.GET.get('day')
+    month = request.GET.get('month')
+    year = request.GET.get('year')
+    cost_center = request.GET.get('cost_center')
+    sort_by = request.GET.get('sort')
+
+    if day:
+        expenses = expenses.filter(date__day=day)
+    if month:
+        expenses = expenses.filter(date__month=month)
+    if year:
+        expenses = expenses.filter(date__year=year)
+    if cost_center:
+        expenses = expenses.filter(cost_center__icontains=cost_center)
+        
+    if sort_by == 'highest':
+        expenses = expenses.order_by('-amount')
+    elif sort_by == 'lowest':
+        expenses = expenses.order_by('amount')
+    else:
+        expenses = expenses.order_by('-date')
     finance_methods = FinancePaymentMethod.objects.filter(organization=request.user.profile.organization).order_by('name')
     finance_categories = FinanceExpenseCategory.objects.filter(organization=request.user.profile.organization).order_by('name')
     context = {'expenses': expenses, 'finance_methods': finance_methods, 'finance_categories': finance_categories}

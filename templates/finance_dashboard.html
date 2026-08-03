@@ -7,10 +7,11 @@
     .chart-gradient-rev {
         background: linear-gradient(180deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0) 100%);
     }
+
     .chart-gradient-exp {
         background: linear-gradient(180deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0) 100%);
     }
-    
+
     .ceo-glass {
         background: rgba(255, 255, 255, 0.7);
         backdrop-filter: blur(16px);
@@ -18,7 +19,7 @@
         border: 1px solid rgba(255, 255, 255, 0.8);
         box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
     }
-    
+
     .text-gradient {
         background-clip: text;
         -webkit-background-clip: text;
@@ -30,15 +31,20 @@
 
 {% block content %}
 <div class="p-margin-edge flex-1 flex flex-col bg-slate-50 overflow-y-auto custom-scrollbar relative">
-    
+
     <!-- Decorative background blobs -->
-    <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none -z-10"></div>
-    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-tertiary/10 via-transparent to-transparent rounded-full blur-3xl pointer-events-none -z-10"></div>
+    <div
+        class="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none -z-10">
+    </div>
+    <div
+        class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-tertiary/10 via-transparent to-transparent rounded-full blur-3xl pointer-events-none -z-10">
+    </div>
 
     <!-- Dashboard Header -->
     <div class="flex justify-between items-end mb-8 relative z-10">
         <div>
-            <h2 class="font-headline-lg text-headline-lg text-on-background font-bold tracking-tight">Executive Finance Dashboard</h2>
+            <h2 class="font-headline-lg text-headline-lg text-on-background font-bold tracking-tight">Executive Finance
+                Dashboard</h2>
             <p class="text-secondary font-body-md mt-1">High-level financial overview and cash flow insights.</p>
         </div>
         <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100">
@@ -49,7 +55,7 @@
 
     <!-- 8 KPI Bento Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8 relative z-10">
-        
+
         <!-- KPI: Total Revenue -->
         <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
             <div class="flex justify-between items-start mb-4">
@@ -58,7 +64,8 @@
                 </div>
             </div>
             <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Total Revenue</p>
-            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ total_revenue|floatformat:0 }}</h3>
+            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ total_revenue|floatformat:0 }}
+            </h3>
         </div>
 
         <!-- KPI: Monthly Expenses -->
@@ -69,7 +76,8 @@
                 </div>
             </div>
             <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Total Expenses</p>
-            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ total_expenses|floatformat:0 }}</h3>
+            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ total_expenses|floatformat:0 }}
+            </h3>
         </div>
 
         <!-- KPI: Net Profit -->
@@ -82,16 +90,18 @@
             <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Net Profit</p>
             <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ net_profit|floatformat:0 }}</h3>
         </div>
-        
+
         <!-- KPI: Profit Margin -->
         <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
             <div class="flex justify-between items-start mb-4">
-                <div class="p-2.5 bg-gradient-to-br from-tertiary/20 to-tertiary/5 rounded-xl border border-tertiary/10">
+                <div
+                    class="p-2.5 bg-gradient-to-br from-tertiary/20 to-tertiary/5 rounded-xl border border-tertiary/10">
                     <span class="material-symbols-outlined text-tertiary">pie_chart</span>
                 </div>
             </div>
             <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Profit Margin</p>
-            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">{{ profit_margin|floatformat:1 }}%</h3>
+            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">{{ profit_margin|floatformat:1 }}%
+            </h3>
         </div>
 
         <!-- KPI: Outstanding Invoices -->
@@ -101,7 +111,8 @@
                     <span class="material-symbols-outlined text-warning">receipt_long</span>
                 </div>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Outstanding Invoices</p>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Outstanding Invoices
+            </p>
             <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">{{ outstanding_invoices }}</h3>
         </div>
 
@@ -112,10 +123,11 @@
                     <span class="material-symbols-outlined text-error">hourglass_bottom</span>
                 </div>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Pending Payments (AR)</p>
-            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ pending_payments|floatformat:0 }}</h3>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Pending Payments</p>
+            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ pending_payments|floatformat:0 }}
+            </h3>
         </div>
-        
+
         <!-- KPI: Active Clients -->
         <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
             <div class="flex justify-between items-start mb-4">
@@ -130,33 +142,39 @@
         <!-- KPI: Total Invoices -->
         <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
             <div class="flex justify-between items-start mb-4">
-                <div class="p-2.5 bg-gradient-to-br from-tertiary/20 to-tertiary/5 rounded-xl border border-tertiary/10">
+                <div
+                    class="p-2.5 bg-gradient-to-br from-tertiary/20 to-tertiary/5 rounded-xl border border-tertiary/10">
                     <span class="material-symbols-outlined text-tertiary">description</span>
                 </div>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Total Invoices Raised</p>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Total Invoices Raised
+            </p>
             <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">{{ total_invoices }}</h3>
         </div>
     </div>
 
     <!-- MoM Analytics Row -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 relative z-10">
-        <div class="ceo-glass p-6 rounded-2xl flex justify-between items-center bg-gradient-to-r from-success/5 to-transparent border-l-4 border-l-success">
+        <div
+            class="ceo-glass p-6 rounded-2xl flex justify-between items-center bg-gradient-to-r from-success/5 to-transparent border-l-4 border-l-success">
             <div>
-                <h4 class="font-headline-sm text-secondary font-bold text-sm uppercase tracking-wide">Revenue This Month</h4>
+                <h4 class="font-headline-sm text-secondary font-bold text-sm uppercase tracking-wide">Revenue This Month
+                </h4>
                 <div class="flex items-end gap-3 mt-1">
-                    <h2 class="text-5xl font-display-lg text-success font-bold">₹{{ revenue_this_month|floatformat:0 }}</h2>
+                    <h2 class="text-5xl font-display-lg text-success font-bold">₹{{ revenue_this_month|floatformat:0 }}
+                    </h2>
                     {% if revenue_mom > 0 %}
-                    <span class="flex items-center text-success bg-success/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
+                    <span
+                        class="flex items-center text-success bg-success/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
                         <span class="material-symbols-outlined text-[16px]">arrow_upward</span>
                         {{ revenue_mom|floatformat:1 }}%
                     </span>
-                    {% elif revenue_mom < 0 %}
-                    <span class="flex items-center text-error bg-error/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
+                    {% elif revenue_mom < 0 %} <span
+                        class="flex items-center text-error bg-error/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
                         <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
                         {{ revenue_mom|floatformat:1 }}%
-                    </span>
-                    {% endif %}
+                        </span>
+                        {% endif %}
                 </div>
             </div>
             <div class="p-4 bg-success/10 rounded-full">
@@ -164,22 +182,25 @@
             </div>
         </div>
 
-        <div class="ceo-glass p-6 rounded-2xl flex justify-between items-center bg-gradient-to-r from-error/5 to-transparent border-l-4 border-l-error">
+        <div
+            class="ceo-glass p-6 rounded-2xl flex justify-between items-center bg-gradient-to-r from-error/5 to-transparent border-l-4 border-l-error">
             <div>
-                <h4 class="font-headline-sm text-secondary font-bold text-sm uppercase tracking-wide">Expenses This Month</h4>
+                <h4 class="font-headline-sm text-secondary font-bold text-sm uppercase tracking-wide">Expenses This
+                    Month</h4>
                 <div class="flex items-end gap-3 mt-1">
-                    <h2 class="text-5xl font-display-lg text-error font-bold">₹{{ expenses_this_month|floatformat:0 }}</h2>
+                    <h2 class="text-5xl font-display-lg text-error font-bold">₹{{ expenses_this_month|floatformat:0 }}
+                    </h2>
                     {% if expenses_mom > 0 %}
                     <span class="flex items-center text-error bg-error/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
                         <span class="material-symbols-outlined text-[16px]">arrow_upward</span>
                         {{ expenses_mom|floatformat:1 }}%
                     </span>
-                    {% elif expenses_mom < 0 %}
-                    <span class="flex items-center text-success bg-success/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
+                    {% elif expenses_mom < 0 %} <span
+                        class="flex items-center text-success bg-success/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
                         <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
                         {{ expenses_mom|floatformat:1 }}%
-                    </span>
-                    {% endif %}
+                        </span>
+                        {% endif %}
                 </div>
             </div>
             <div class="p-4 bg-error/10 rounded-full">
@@ -190,7 +211,7 @@
 
     <!-- Charts Section: Cash Flow & Breakdowns -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 relative z-10">
-        
+
         <!-- Cash Flow Trend (Dual Line Chart) -->
         <div class="ceo-glass p-6 rounded-2xl lg:col-span-2">
             <div class="flex justify-between items-center mb-6">
@@ -200,7 +221,7 @@
                 <canvas id="cashFlowChart"></canvas>
             </div>
         </div>
-        
+
         <!-- Revenue by Service (Doughnut Chart) -->
         <div class="ceo-glass p-6 rounded-2xl">
             <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Revenue by Service</h4>
@@ -231,110 +252,110 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    
-    Chart.defaults.font.family = "'Inter', sans-serif";
-    Chart.defaults.color = '#64748b'; // slate-500
+    document.addEventListener('DOMContentLoaded', function () {
 
-    // 1. Cash Flow Trend (Dual Line Chart)
-    const cfCtx = document.getElementById('cashFlowChart').getContext('2d');
-    
-    let gradRev = cfCtx.createLinearGradient(0, 0, 0, 400);
-    gradRev.addColorStop(0, 'rgba(34, 197, 94, 0.2)'); // success
-    gradRev.addColorStop(1, 'rgba(34, 197, 94, 0)');
+        Chart.defaults.font.family = "'Inter', sans-serif";
+        Chart.defaults.color = '#64748b'; // slate-500
 
-    let gradExp = cfCtx.createLinearGradient(0, 0, 0, 400);
-    gradExp.addColorStop(0, 'rgba(239, 68, 68, 0.2)'); // error
-    gradExp.addColorStop(1, 'rgba(239, 68, 68, 0)');
+        // 1. Cash Flow Trend (Dual Line Chart)
+        const cfCtx = document.getElementById('cashFlowChart').getContext('2d');
 
-    new Chart(cfCtx, {
-        type: 'line',
-        data: {
-            labels: {{ trend_labels|safe }},
-            datasets: [
-                {
-                    label: 'Revenue (₹)',
-                    data: {{ trend_data|safe }},
-                    borderColor: '#22c55e', // success
-                    backgroundColor: gradRev,
-                    borderWidth: 3,
-                    pointBackgroundColor: '#22c55e',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    fill: true,
-                    tension: 0.4
+        let gradRev = cfCtx.createLinearGradient(0, 0, 0, 400);
+        gradRev.addColorStop(0, 'rgba(34, 197, 94, 0.2)'); // success
+        gradRev.addColorStop(1, 'rgba(34, 197, 94, 0)');
+
+        let gradExp = cfCtx.createLinearGradient(0, 0, 0, 400);
+        gradExp.addColorStop(0, 'rgba(239, 68, 68, 0.2)'); // error
+        gradExp.addColorStop(1, 'rgba(239, 68, 68, 0)');
+
+        new Chart(cfCtx, {
+            type: 'line',
+            data: {
+                labels: {{ trend_labels| safe }},
+        datasets: [
+        {
+            label: 'Revenue (₹)',
+            data: {{ trend_data| safe }},
+        borderColor: '#22c55e', // success
+        backgroundColor: gradRev,
+        borderWidth: 3,
+        pointBackgroundColor: '#22c55e',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        fill: true,
+        tension: 0.4
                 },
-                {
-                    label: 'Expenses (₹)',
-                    data: {{ expense_trend_data|safe }},
-                    borderColor: '#ef4444', // error
-                    backgroundColor: gradExp,
-                    borderWidth: 3,
-                    pointBackgroundColor: '#ef4444',
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4,
-                    fill: true,
-                    tension: 0.4
+        {
+            label: 'Expenses (₹)',
+            data: {{ expense_trend_data| safe }},
+        borderColor: '#ef4444', // error
+        backgroundColor: gradExp,
+        borderWidth: 3,
+        pointBackgroundColor: '#ef4444',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 4,
+        fill: true,
+        tension: 0.4
                 }
-            ]
+    ]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: {
-                mode: 'index',
-                intersect: false,
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+            mode: 'index',
+            intersect: false,
+        },
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: { usePointStyle: true, boxWidth: 8, font: { weight: 'bold' } }
             },
-            plugins: {
-                legend: { 
-                    position: 'top',
-                    labels: { usePointStyle: true, boxWidth: 8, font: {weight: 'bold'} }
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                    titleColor: '#0f172a',
-                    bodyColor: '#334155',
-                    borderColor: '#e2e8f0',
-                    borderWidth: 1,
-                    padding: 12,
-                    boxPadding: 6,
-                    usePointStyle: true,
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) label += ': ';
-                            if (context.parsed.y !== null) {
-                                label += '₹' + context.parsed.y.toLocaleString();
-                            }
-                            return label;
+            tooltip: {
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                titleColor: '#0f172a',
+                bodyColor: '#334155',
+                borderColor: '#e2e8f0',
+                borderWidth: 1,
+                padding: 12,
+                boxPadding: 6,
+                usePointStyle: true,
+                callbacks: {
+                    label: function (context) {
+                        let label = context.dataset.label || '';
+                        if (label) label += ': ';
+                        if (context.parsed.y !== null) {
+                            label += '₹' + context.parsed.y.toLocaleString();
                         }
+                        return label;
                     }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-                    ticks: { 
-                        callback: function(value) { return '₹' + (value/1000) + 'k'; },
-                        font: {weight: '500'}
-                    }
-                },
-                x: {
-                    grid: { display: false, drawBorder: false },
-                    ticks: { font: {weight: 'bold'} }
                 }
             }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+                ticks: {
+                    callback: function (value) { return '₹' + (value / 1000) + 'k'; },
+                    font: { weight: '500' }
+                }
+            },
+            x: {
+                grid: { display: false, drawBorder: false },
+                ticks: { font: { weight: 'bold' } }
+            }
         }
+    }
     });
 
     // 2. Revenue by Service (Doughnut Chart)
     const srvCtx = document.getElementById('serviceRevenueChart').getContext('2d');
-    const serviceLabels = {{ service_labels|safe }};
-    const serviceRevenue = {{ service_revenue|safe }};
-    
+    const serviceLabels = {{ service_labels| safe }};
+    const serviceRevenue = {{ service_revenue| safe }};
+
     new Chart(srvCtx, {
         type: 'doughnut',
         data: {
@@ -353,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             return ' ₹' + context.parsed.toLocaleString();
                         }
                     }
@@ -369,45 +390,45 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(clientCtx, {
         type: 'bar',
         data: {
-            labels: {{ client_revenue_labels|safe }},
-            datasets: [{
-                label: 'Revenue (₹)',
-                data: {{ client_revenue_data|safe }},
-                backgroundColor: '#3b82f6', // primary blue
-                borderRadius: 6,
-                barThickness: 30
+            labels: {{ client_revenue_labels| safe }},
+        datasets: [{
+            label: 'Revenue (₹)',
+            data: {{ client_revenue_data| safe }},
+        backgroundColor: '#3b82f6', // primary blue
+        borderRadius: 6,
+        barThickness: 30
             }]
         },
         options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { 
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) { return ' ₹' + context.parsed.y.toLocaleString(); }
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-                    ticks: { callback: function(value) { return '₹' + (value/1000) + 'k'; } }
-                },
-                x: {
-                    grid: { display: false, drawBorder: false },
-                    ticks: { font: {weight: 'bold'} }
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: function (context) { return ' ₹' + context.parsed.y.toLocaleString(); }
                 }
             }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+                ticks: { callback: function (value) { return '₹' + (value / 1000) + 'k'; } }
+            },
+            x: {
+                grid: { display: false, drawBorder: false },
+                ticks: { font: { weight: 'bold' } }
+            }
         }
+    }
     });
 
     // 4. Expense Breakdown (Doughnut Chart)
     const expCtx = document.getElementById('expenseCategoryChart').getContext('2d');
-    const expLabels = {{ expense_cat_labels|safe }};
-    const expData = {{ expense_cat_data|safe }};
-    
+    const expLabels = {{ expense_cat_labels| safe }};
+    const expData = {{ expense_cat_data| safe }};
+
     new Chart(expCtx, {
         type: 'doughnut',
         data: {
@@ -426,7 +447,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 legend: { position: 'right', labels: { usePointStyle: true, padding: 15 } },
                 tooltip: {
                     callbacks: {
-                        label: function(context) { return ' ₹' + context.parsed.toLocaleString(); }
+                        label: function (context) { return ' ₹' + context.parsed.toLocaleString(); }
                     }
                 }
             },
