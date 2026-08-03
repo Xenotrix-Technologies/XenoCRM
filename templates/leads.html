@@ -1,93 +1,98 @@
 {% extends 'base.html' %}
 
-{% block title %}XenoCRM | Lead Management{% endblock %}
+{% block title %}Leads Management | XenoCRM ERP{% endblock %}
 
 {% block content %}
-<main class="pt-4 p-margin-edge min-h-screen flex flex-col bg-background">
-    <!-- Header & Action Bar -->
+<main class="p-6 md:p-8 min-h-screen flex flex-col bg-slate-50">
+    <!-- Header Title & Action Bar -->
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
-            <h2 class="font-headline-lg text-headline-lg text-on-background">Lead Management</h2>
-        </div>
-        
-        <!-- Import Instructions -->
-        <div class="flex-1 px-4 hidden md:flex items-center justify-end">
-            <div class="bg-surface-container-low text-secondary text-body-sm px-4 py-2 rounded-lg border border-outline-variant flex items-center gap-2">
-                <span class="material-symbols-outlined text-[16px] text-primary">info</span>
-                <span><strong>CSV Import:</strong> File must include <em>Name</em>, <em>Phone Number</em>, and <em>Company</em> columns.</span>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                <span>Sales CRM</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                <span class="text-brand-600 font-bold">Leads & Opportunities</span>
             </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Leads Directory</h1>
+            <p class="text-xs md:text-sm text-slate-500 mt-1">Manage, filter, and track qualified business leads.</p>
         </div>
 
-        <div class="flex items-center gap-3">
-            <button type="button" id="import-leads-btn" class="bg-surface-container-lowest border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-surface-container-low transition-all">
-                <span class="material-symbols-outlined text-[18px]">upload</span>
-                Import
+        <div class="flex flex-wrap items-center gap-3">
+            <button type="button" id="import-leads-btn" class="bg-white border border-slate-200 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xs hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2">
+                <i data-lucide="upload" class="w-4 h-4 text-slate-500"></i>
+                <span>Import CSV</span>
             </button>
-            <a href="{% url 'download_lead_template' %}" class="bg-surface-container-lowest border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-surface-container-low transition-all" title="Download Template">
-                <span class="material-symbols-outlined text-[18px]">description</span>
-                Template
+            <a href="{% url 'download_lead_template' %}" class="bg-white border border-slate-200 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xs hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2" title="Download Template">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4 text-slate-500"></i>
+                <span>Template</span>
             </a>
             <form id="import-leads-form" class="hidden">
                 {% csrf_token %}
                 <input type="file" id="import-leads-input" name="file" accept=".csv" data-url="{% url 'import_leads' %}">
             </form>
 
-            <a href="{% url 'add_lead' %}" class="bg-primary text-on-primary px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:opacity-90 transition-all shadow-md">
-                <span class="material-symbols-outlined text-[18px]">add</span>
-                Add Lead
+            <a href="{% url 'add_lead' %}" class="bg-brand-600 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 hover:bg-brand-700 transition-all shadow-xs shadow-brand-600/20 active:scale-[0.98]">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Add Lead</span>
             </a>
 
-            <a href="?export=csv{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="bg-surface-container-lowest border border-outline-variant text-on-surface px-4 py-2 rounded-xl font-button text-button flex items-center gap-2 hover:bg-surface-container-low transition-all">
-                <span class="material-symbols-outlined text-[18px]">download</span>
-                Export
+            <a href="?export=csv{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="bg-white border border-slate-200 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-semibold shadow-xs hover:bg-slate-50 hover:border-slate-300 transition-all flex items-center gap-2">
+                <i data-lucide="download" class="w-4 h-4 text-slate-500"></i>
+                <span>Export</span>
             </a>
         </div>
     </div>
 
+    <!-- Info banner for CSV Import -->
+    <div class="mb-6 p-3.5 bg-blue-50/70 border border-blue-200/80 rounded-2xl flex items-center gap-3 text-xs text-blue-900">
+        <i data-lucide="info" class="w-4 h-4 text-blue-600 flex-shrink-0"></i>
+        <span><strong>CSV Import Spec:</strong> File must include <em>Name</em>, <em>Phone Number</em>, and <em>Company</em> header columns.</span>
+    </div>
+
     <!-- Filter Bar Form -->
-    <form id="lead-filter-form" method="GET" action="{% url 'leads' %}" class="glass-panel rounded-2xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
+    <form id="lead-filter-form" method="GET" action="{% url 'leads' %}" class="bg-white border border-slate-200/80 rounded-2xl p-4 mb-6 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3">
-            <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-outline">filter_list</span>
-                <span class="font-label-md text-label-md text-outline">FILTERS:</span>
+            <div class="flex items-center gap-1.5 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <i data-lucide="filter" class="w-4 h-4 text-slate-400"></i>
+                <span>Filters:</span>
             </div>
 
+            <!-- Search input -->
             <div class="relative flex items-center">
-                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-[18px]">search</span>
-                <input type="search" name="q" id="lead-search-input" value="{{ q|default_if_none:'' }}" placeholder="Search leads..." class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-9 pr-4 focus:ring-primary focus:border-primary w-48 md:w-64 transition-all appearance-none">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="search" name="q" id="lead-search-input" value="{{ q|default_if_none:'' }}" placeholder="Search leads..." class="bg-slate-50 border border-slate-200 rounded-xl text-xs py-1.5 pl-9 pr-4 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 w-48 md:w-64 transition-all">
             </div>
 
-            <select name="status" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
+            <select name="status" class="bg-slate-50 border border-slate-200 rounded-xl text-xs py-1.5 pl-3 pr-8 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
                 <option value="">All Statuses</option>
                 {% for s in statuses %}
                 <option value="{{ s.name }}" {% if status_filter == s.name %}selected{% endif %}>{{ s.name }}</option>
                 {% endfor %}
             </select>
 
-            <select name="owner" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
+            <select name="owner" class="bg-slate-50 border border-slate-200 rounded-xl text-xs py-1.5 pl-3 pr-8 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
                 <option value="">All Agents</option>
                 {% for owner in owners %}
                 <option value="{{ owner.id }}" {% if owner_filter == owner.id|stringformat:"i" %}selected{% endif %}>{{ owner.user.get_full_name|default:owner.user.username }}</option>
                 {% endfor %}
             </select>
 
-            <select name="sort" class="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm py-1.5 pl-3 pr-8 focus:ring-primary focus:border-primary">
+            <select name="sort" class="bg-slate-50 border border-slate-200 rounded-xl text-xs py-1.5 pl-3 pr-8 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500">
                 <option value="value_desc" {% if sort_by == 'value_desc' %}selected{% endif %}>Value: High to Low</option>
                 <option value="value_asc" {% if sort_by == 'value_asc' %}selected{% endif %}>Value: Low to High</option>
             </select>
             
-            <div class="h-6 w-px bg-outline-variant mx-1"></div>
-            <a href="{% url 'leads' %}" id="clear-filters-btn" class="text-primary font-button text-button hover:underline">Clear all</a>
+            <div class="h-5 w-px bg-slate-200 mx-1"></div>
+            <a href="{% url 'leads' %}" id="clear-filters-btn" class="text-xs font-semibold text-brand-600 hover:underline">Clear all</a>
         </div>
         
         <div class="flex items-center gap-2">
-            <span class="text-body-sm text-secondary">Bulk Actions:</span>
-            <button type="button" value="change_status_qualified" class="px-3 py-1.5 rounded-lg border border-outline-variant text-body-sm hover:bg-surface-container-low disabled:opacity-50 bulk-btn" disabled>Mark Qualified</button>
-            <button type="button" value="delete" class="px-3 py-1.5 rounded-lg border border-red-200 text-red-600 text-body-sm hover:bg-red-50 disabled:opacity-50 bulk-btn" disabled>Delete</button>
+            <span class="text-xs text-slate-500 font-medium">Bulk:</span>
+            <button type="button" value="change_status_qualified" class="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50 bulk-btn transition-colors" disabled>Mark Qualified</button>
+            <button type="button" value="delete" class="px-3 py-1.5 rounded-xl border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-50 disabled:opacity-50 bulk-btn transition-colors" disabled>Delete</button>
         </div>
     </form>
 
-    <!-- Leads Table -->
+    <!-- Leads Table Container -->
     <div id="leads-table-container">
         {% include 'leads_table_fragment.html' %}
     </div>
@@ -97,7 +102,6 @@
 
 {% block extra_js %}
 <script>
-    // AJAX filtering and pagination logic
     function fetchLeads(url) {
         const tableContainer = document.getElementById('leads-table-container');
         if (!tableContainer) return;
@@ -115,6 +119,7 @@
             tableContainer.innerHTML = data.html;
             tableContainer.style.opacity = '1';
             tableContainer.style.pointerEvents = 'auto';
+            if (window.lucide) lucide.createIcons();
             bindTableEvents();
         })
         .catch(err => {
@@ -129,7 +134,6 @@
         if (!filterForm) return;
 
         const formData = new FormData(filterForm);
-
         const params = new URLSearchParams(formData);
         if (page) {
             params.set('page', page);
@@ -140,7 +144,6 @@
         fetchLeads(newUrl);
     }
 
-    // Debounce function
     let searchDebounceTimeout;
     const globalSearch = document.getElementById('lead-search-input');
     if (globalSearch) {
@@ -160,7 +163,6 @@
         }
     }
 
-    // Bind event listeners to filter dropdowns
     document.querySelectorAll('#lead-filter-form select').forEach(select => {
         select.addEventListener('change', () => updateFilters());
     });
@@ -173,7 +175,6 @@
         });
     }
 
-    // Intercept pagination clicks
     document.getElementById('leads-table-container').addEventListener('click', function(e) {
         const link = e.target.closest('.pagination-link');
         if (link) {
@@ -184,7 +185,6 @@
         }
     });
 
-    // Bind table elements and checkbox logic
     function bindTableEvents() {
         const selectAll = document.getElementById('select-all');
         const checkboxes = document.querySelectorAll('.lead-checkbox');
@@ -195,11 +195,6 @@
             const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
             document.querySelectorAll('.bulk-btn').forEach(btn => {
                 btn.disabled = !anyChecked;
-                if (anyChecked) {
-                    btn.classList.remove('opacity-50');
-                } else {
-                    btn.classList.add('opacity-50');
-                }
             });
         }
 
@@ -214,11 +209,9 @@
             cb.addEventListener('change', updateBulkState);
         });
 
-        // Initialize state
         updateBulkState();
     }
 
-    // Bind bulk action buttons ONCE outside of bindTableEvents
     document.querySelectorAll('.bulk-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
@@ -227,7 +220,6 @@
                 if (!confirm("Are you sure you want to delete the selected leads?")) return;
             }
             
-            // Fetch the current form and input from the DOM (they might have been replaced by AJAX)
             const currentBulkForm = document.getElementById('bulk-form');
             const currentActionInput = document.getElementById('action-type-input');
             
@@ -239,7 +231,6 @@
         });
     });
 
-    // Run on initial load
     bindTableEvents();
 
     const importBtn = document.getElementById('import-leads-btn');
@@ -257,9 +248,8 @@
             const formData = new FormData(importForm);
             const url = this.getAttribute('data-url');
             
-            // Show loading state
             const originalText = importBtn.innerHTML;
-            importBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">sync</span> Importing...';
+            importBtn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Importing...';
             importBtn.disabled = true;
 
             fetch(url, {
@@ -272,23 +262,23 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(`Import successful! ${data.imported} leads imported. ${data.failed} failed.`);
+                    showToast(`Import successful! ${data.imported} leads imported.`, 'success');
                     window.location.reload();
                 } else {
-                    alert('Import failed: ' + (data.error || 'Unknown error'));
+                    showToast('Import failed: ' + (data.error || 'Unknown error'), 'error');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred during import.');
+                showToast('An error occurred during import.', 'error');
             })
             .finally(() => {
                 importBtn.innerHTML = originalText;
                 importBtn.disabled = false;
                 this.value = '';
+                if (window.lucide) lucide.createIcons();
             });
         });
     }
 </script>
 {% endblock %}
-

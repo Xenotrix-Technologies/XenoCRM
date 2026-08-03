@@ -1,230 +1,202 @@
 {% extends 'base.html' %}
 
-{% block title %}XenoCRM | Finance Dashboard{% endblock %}
+{% block title %}Finance Dashboard | XenoCRM ERP{% endblock %}
 
 {% block extra_css %}
 <style>
-    .chart-gradient-rev {
-        background: linear-gradient(180deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0) 100%);
+    .fin-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04);
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    .chart-gradient-exp {
-        background: linear-gradient(180deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0) 100%);
-    }
-
-    .ceo-glass {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: 1px solid rgba(255, 255, 255, 0.8);
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
-    }
-
-    .text-gradient {
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+    .fin-card:hover {
+        border-color: #cbd5e1;
+        box-shadow: 0 8px 16px -4px rgba(15, 23, 42, 0.08);
+        transform: translateY(-2px);
     }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block content %}
-<div class="p-margin-edge flex-1 flex flex-col bg-slate-50 overflow-y-auto custom-scrollbar relative">
-
-    <!-- Decorative background blobs -->
-    <div
-        class="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none -z-10">
-    </div>
-    <div
-        class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-tertiary/10 via-transparent to-transparent rounded-full blur-3xl pointer-events-none -z-10">
-    </div>
+<div class="p-6 md:p-8 flex-1 flex flex-col bg-slate-50 overflow-y-auto custom-scrollbar">
 
     <!-- Dashboard Header -->
-    <div class="flex justify-between items-end mb-8 relative z-10">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-            <h2 class="font-headline-lg text-headline-lg text-on-background font-bold tracking-tight">Executive Finance
-                Dashboard</h2>
-            <p class="text-secondary font-body-md mt-1">High-level financial overview and cash flow insights.</p>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                <span>Finance</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                <span class="text-brand-600 font-bold">Cash Flow Overview</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Executive Finance Dashboard</h1>
+            <p class="text-xs md:text-sm text-slate-500 mt-1">High-level financial overview, invoice tracking, and revenue analytics.</p>
         </div>
-        <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100">
-            <span class="material-symbols-outlined text-primary">today</span>
-            <span class="font-label-lg text-on-surface font-medium">{% now "F d, Y" %}</span>
+        <div class="flex items-center gap-2.5 bg-white px-4 py-2 rounded-xl shadow-xs border border-slate-200 text-xs font-semibold text-slate-700">
+            <i data-lucide="calendar" class="w-4 h-4 text-brand-600"></i>
+            <span>{% now "F d, Y" %}</span>
         </div>
     </div>
 
     <!-- 8 KPI Bento Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8 relative z-10">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
 
         <!-- KPI: Total Revenue -->
-        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-2.5 bg-gradient-to-br from-success/20 to-success/5 rounded-xl border border-success/10">
-                    <span class="material-symbols-outlined text-success">account_balance</span>
+        <div class="fin-card p-6">
+            <div class="flex justify-between items-start mb-3">
+                <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+                    <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
                 </div>
+                <span class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Gross Income</span>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Total Revenue</p>
-            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ total_revenue|floatformat:0 }}
-            </h3>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Revenue</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">₹{{ total_revenue|floatformat:0 }}</h2>
         </div>
 
         <!-- KPI: Monthly Expenses -->
-        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-2.5 bg-gradient-to-br from-error/20 to-error/5 rounded-xl border border-error/10">
-                    <span class="material-symbols-outlined text-error">trending_down</span>
+        <div class="fin-card p-6">
+            <div class="flex justify-between items-start mb-3">
+                <div class="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
+                    <i data-lucide="arrow-down-left" class="w-5 h-5"></i>
                 </div>
+                <span class="text-[11px] font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">Outflow</span>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Total Expenses</p>
-            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ total_expenses|floatformat:0 }}
-            </h3>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Expenses</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">₹{{ total_expenses|floatformat:0 }}</h2>
         </div>
 
         <!-- KPI: Net Profit -->
-        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-2.5 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl border border-primary/10">
-                    <span class="material-symbols-outlined text-primary">savings</span>
+        <div class="fin-card p-6">
+            <div class="flex justify-between items-start mb-3">
+                <div class="p-2.5 bg-brand-50 text-brand-600 rounded-xl">
+                    <i data-lucide="wallet" class="w-5 h-5"></i>
                 </div>
+                <span class="text-[11px] font-semibold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full border border-brand-200">Net Profit</span>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Net Profit</p>
-            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ net_profit|floatformat:0 }}</h3>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Net Profit</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">₹{{ net_profit|floatformat:0 }}</h2>
         </div>
 
         <!-- KPI: Profit Margin -->
-        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div
-                    class="p-2.5 bg-gradient-to-br from-tertiary/20 to-tertiary/5 rounded-xl border border-tertiary/10">
-                    <span class="material-symbols-outlined text-tertiary">pie_chart</span>
+        <div class="fin-card p-6">
+            <div class="flex justify-between items-start mb-3">
+                <div class="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                    <i data-lucide="pie-chart" class="w-5 h-5"></i>
                 </div>
+                <span class="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200">Efficiency</span>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Profit Margin</p>
-            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">{{ profit_margin|floatformat:1 }}%
-            </h3>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Profit Margin</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">{{ profit_margin|floatformat:1 }}%</h2>
         </div>
 
         <!-- KPI: Outstanding Invoices -->
-        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-2.5 bg-gradient-to-br from-warning/20 to-warning/5 rounded-xl border border-warning/10">
-                    <span class="material-symbols-outlined text-warning">receipt_long</span>
+        <div class="fin-card p-6">
+            <div class="flex justify-between items-start mb-3">
+                <div class="p-2.5 bg-amber-50 text-amber-600 rounded-xl">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
                 </div>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Outstanding Invoices
-            </p>
-            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">{{ outstanding_invoices }}</h3>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unpaid Invoices</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">{{ outstanding_invoices }}</h2>
         </div>
 
         <!-- KPI: Pending Payments -->
-        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-2.5 bg-gradient-to-br from-error/20 to-error/5 rounded-xl border border-error/10">
-                    <span class="material-symbols-outlined text-error">hourglass_bottom</span>
+        <div class="fin-card p-6">
+            <div class="flex justify-between items-start mb-3">
+                <div class="p-2.5 bg-rose-50 text-rose-600 rounded-xl">
+                    <i data-lucide="clock" class="w-5 h-5"></i>
                 </div>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Pending Payments</p>
-            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ pending_payments|floatformat:0 }}
-            </h3>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending Receivables</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">₹{{ pending_payments|floatformat:0 }}</h2>
         </div>
 
         <!-- KPI: Active Clients -->
-        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-2.5 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl border border-primary/10">
-                    <span class="material-symbols-outlined text-primary">groups</span>
+        <div class="fin-card p-6">
+            <div class="flex justify-between items-start mb-3">
+                <div class="p-2.5 bg-sky-50 text-sky-600 rounded-xl">
+                    <i data-lucide="users" class="w-5 h-5"></i>
                 </div>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Active Clients</p>
-            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">{{ active_clients }}</h3>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Billing Accounts</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">{{ active_clients }}</h2>
         </div>
 
         <!-- KPI: Total Invoices -->
-        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div
-                    class="p-2.5 bg-gradient-to-br from-tertiary/20 to-tertiary/5 rounded-xl border border-tertiary/10">
-                    <span class="material-symbols-outlined text-tertiary">description</span>
+        <div class="fin-card p-6">
+            <div class="flex justify-between items-start mb-3">
+                <div class="p-2.5 bg-slate-100 text-slate-600 rounded-xl">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
                 </div>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Total Invoices Raised
-            </p>
-            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">{{ total_invoices }}</h3>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Invoices Raised</p>
+            <h2 class="text-3xl font-extrabold text-slate-900 tracking-tight mt-1">{{ total_invoices }}</h2>
         </div>
     </div>
 
     <!-- MoM Analytics Row -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 relative z-10">
-        <div
-            class="ceo-glass p-6 rounded-2xl flex justify-between items-center bg-gradient-to-r from-success/5 to-transparent border-l-4 border-l-success">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 border-l-4 border-l-emerald-500 shadow-xs flex justify-between items-center">
             <div>
-                <h4 class="font-headline-sm text-secondary font-bold text-sm uppercase tracking-wide">Revenue This Month
-                </h4>
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Revenue This Month</span>
                 <div class="flex items-end gap-3 mt-1">
-                    <h2 class="text-5xl font-display-lg text-success font-bold">₹{{ revenue_this_month|floatformat:0 }}
-                    </h2>
+                    <h2 class="text-4xl font-extrabold text-emerald-700 tracking-tight">₹{{ revenue_this_month|floatformat:0 }}</h2>
                     {% if revenue_mom > 0 %}
-                    <span
-                        class="flex items-center text-success bg-success/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
-                        <span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+                    <span class="flex items-center text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-xs font-bold border border-emerald-200 mb-1">
+                        <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                        +{{ revenue_mom|floatformat:1 }}%
+                    </span>
+                    {% elif revenue_mom < 0 %}
+                    <span class="flex items-center text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full text-xs font-bold border border-rose-200 mb-1">
+                        <i data-lucide="arrow-down-right" class="w-3.5 h-3.5"></i>
                         {{ revenue_mom|floatformat:1 }}%
                     </span>
-                    {% elif revenue_mom < 0 %} <span
-                        class="flex items-center text-error bg-error/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
-                        <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
-                        {{ revenue_mom|floatformat:1 }}%
-                        </span>
-                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
-            <div class="p-4 bg-success/10 rounded-full">
-                <span class="material-symbols-outlined text-4xl text-success">monetization_on</span>
+            <div class="p-3.5 bg-emerald-50 text-emerald-600 rounded-2xl">
+                <i data-lucide="trending-up" class="w-8 h-8"></i>
             </div>
         </div>
 
-        <div
-            class="ceo-glass p-6 rounded-2xl flex justify-between items-center bg-gradient-to-r from-error/5 to-transparent border-l-4 border-l-error">
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 border-l-4 border-l-rose-500 shadow-xs flex justify-between items-center">
             <div>
-                <h4 class="font-headline-sm text-secondary font-bold text-sm uppercase tracking-wide">Expenses This
-                    Month</h4>
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Expenses This Month</span>
                 <div class="flex items-end gap-3 mt-1">
-                    <h2 class="text-5xl font-display-lg text-error font-bold">₹{{ expenses_this_month|floatformat:0 }}
-                    </h2>
+                    <h2 class="text-4xl font-extrabold text-rose-700 tracking-tight">₹{{ expenses_this_month|floatformat:0 }}</h2>
                     {% if expenses_mom > 0 %}
-                    <span class="flex items-center text-error bg-error/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
-                        <span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+                    <span class="flex items-center text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full text-xs font-bold border border-rose-200 mb-1">
+                        <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+                        +{{ expenses_mom|floatformat:1 }}%
+                    </span>
+                    {% elif expenses_mom < 0 %}
+                    <span class="flex items-center text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-xs font-bold border border-emerald-200 mb-1">
+                        <i data-lucide="arrow-down-right" class="w-3.5 h-3.5"></i>
                         {{ expenses_mom|floatformat:1 }}%
                     </span>
-                    {% elif expenses_mom < 0 %} <span
-                        class="flex items-center text-success bg-success/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
-                        <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
-                        {{ expenses_mom|floatformat:1 }}%
-                        </span>
-                        {% endif %}
+                    {% endif %}
                 </div>
             </div>
-            <div class="p-4 bg-error/10 rounded-full">
-                <span class="material-symbols-outlined text-4xl text-error">shopping_cart</span>
+            <div class="p-3.5 bg-rose-50 text-rose-600 rounded-2xl">
+                <i data-lucide="trending-down" class="w-8 h-8"></i>
             </div>
         </div>
     </div>
 
     <!-- Charts Section: Cash Flow & Breakdowns -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 relative z-10">
-
-        <!-- Cash Flow Trend (Dual Line Chart) -->
-        <div class="ceo-glass p-6 rounded-2xl lg:col-span-2">
-            <div class="flex justify-between items-center mb-6">
-                <h4 class="font-headline-sm text-on-surface font-bold">Cash Flow Trend (6 Months)</h4>
-            </div>
-            <div class="relative h-80 bg-white/50 rounded-xl p-4 border border-outline-variant/30">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Cash Flow Trend -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs lg:col-span-2">
+            <h3 class="text-base font-bold text-slate-900 mb-6">Cash Flow Trend (6 Months)</h3>
+            <div class="relative h-80">
                 <canvas id="cashFlowChart"></canvas>
             </div>
         </div>
 
-        <!-- Revenue by Service (Doughnut Chart) -->
-        <div class="ceo-glass p-6 rounded-2xl">
-            <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Revenue by Service</h4>
+        <!-- Revenue by Service -->
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs">
+            <h3 class="text-base font-bold text-slate-900 mb-6">Revenue Distribution</h3>
             <div class="relative h-80">
                 <canvas id="serviceRevenueChart"></canvas>
             </div>
@@ -232,230 +204,119 @@
     </div>
 
     <!-- Charts Section 2: Clients & Expenses -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 relative z-10">
-        <!-- Revenue by Client (Bar Chart) -->
-        <div class="ceo-glass p-6 rounded-2xl">
-            <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Top Clients by Revenue</h4>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs">
+            <h3 class="text-base font-bold text-slate-900 mb-6">Top Clients by Revenue</h3>
             <div class="relative h-64">
                 <canvas id="clientRevenueChart"></canvas>
             </div>
         </div>
 
-        <!-- Expense Breakdown (Doughnut Chart) -->
-        <div class="ceo-glass p-6 rounded-2xl">
-            <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Expense Breakdown</h4>
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs">
+            <h3 class="text-base font-bold text-slate-900 mb-6">Expense Category Breakdown</h3>
             <div class="relative h-64">
                 <canvas id="expenseCategoryChart"></canvas>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        if (window.lucide) lucide.createIcons();
 
         Chart.defaults.font.family = "'Inter', sans-serif";
-        Chart.defaults.color = '#64748b'; // slate-500
+        Chart.defaults.color = '#64748b';
 
-        // 1. Cash Flow Trend (Dual Line Chart)
         const cfCtx = document.getElementById('cashFlowChart').getContext('2d');
-
-        let gradRev = cfCtx.createLinearGradient(0, 0, 0, 400);
-        gradRev.addColorStop(0, 'rgba(34, 197, 94, 0.2)'); // success
+        let gradRev = cfCtx.createLinearGradient(0, 0, 0, 300);
+        gradRev.addColorStop(0, 'rgba(34, 197, 94, 0.15)');
         gradRev.addColorStop(1, 'rgba(34, 197, 94, 0)');
 
-        let gradExp = cfCtx.createLinearGradient(0, 0, 0, 400);
-        gradExp.addColorStop(0, 'rgba(239, 68, 68, 0.2)'); // error
+        let gradExp = cfCtx.createLinearGradient(0, 0, 0, 300);
+        gradExp.addColorStop(0, 'rgba(239, 68, 68, 0.15)');
         gradExp.addColorStop(1, 'rgba(239, 68, 68, 0)');
 
         new Chart(cfCtx, {
             type: 'line',
             data: {
                 labels: {{ trend_labels| safe }},
-        datasets: [
-        {
-            label: 'Revenue (₹)',
-            data: {{ trend_data| safe }},
-        borderColor: '#22c55e', // success
-        backgroundColor: gradRev,
-        borderWidth: 3,
-        pointBackgroundColor: '#22c55e',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        fill: true,
-        tension: 0.4
-                },
-        {
-            label: 'Expenses (₹)',
-            data: {{ expense_trend_data| safe }},
-        borderColor: '#ef4444', // error
-        backgroundColor: gradExp,
-        borderWidth: 3,
-        pointBackgroundColor: '#ef4444',
-        pointBorderColor: '#fff',
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        fill: true,
-        tension: 0.4
-                }
-    ]
-        },
-        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        interaction: {
-            mode: 'index',
-            intersect: false,
-        },
-        plugins: {
-            legend: {
-                position: 'top',
-                labels: { usePointStyle: true, boxWidth: 8, font: { weight: 'bold' } }
-            },
-            tooltip: {
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                titleColor: '#0f172a',
-                bodyColor: '#334155',
-                borderColor: '#e2e8f0',
-                borderWidth: 1,
-                padding: 12,
-                boxPadding: 6,
-                usePointStyle: true,
-                callbacks: {
-                    label: function (context) {
-                        let label = context.dataset.label || '';
-                        if (label) label += ': ';
-                        if (context.parsed.y !== null) {
-                            label += '₹' + context.parsed.y.toLocaleString();
-                        }
-                        return label;
+                datasets: [
+                    {
+                        label: 'Revenue (₹)',
+                        data: {{ trend_data| safe }},
+                        borderColor: '#22c55e',
+                        backgroundColor: gradRev,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.35
+                    },
+                    {
+                        label: 'Expenses (₹)',
+                        data: {{ expense_trend_data| safe }},
+                        borderColor: '#ef4444',
+                        backgroundColor: gradExp,
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.35
                     }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
                 }
             }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-                ticks: {
-                    callback: function (value) { return '₹' + (value / 1000) + 'k'; },
-                    font: { weight: '500' }
-                }
+        });
+
+        const srvCtx = document.getElementById('serviceRevenueChart').getContext('2d');
+        new Chart(srvCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ service_labels| safe }}.length ? {{ service_labels| safe }} : ['No Data'],
+                datasets: [{
+                    data: {{ service_revenue| safe }}.length ? {{ service_revenue| safe }} : [1],
+                    backgroundColor: ['#2563eb', '#0ea5e9', '#10b981', '#f59e0b', '#cbd5e1'],
+                    borderWidth: 0
+                }]
             },
-            x: {
-                grid: { display: false, drawBorder: false },
-                ticks: { font: { weight: 'bold' } }
-            }
-        }
-    }
-    });
+            options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+        });
 
-    // 2. Revenue by Service (Doughnut Chart)
-    const srvCtx = document.getElementById('serviceRevenueChart').getContext('2d');
-    const serviceLabels = {{ service_labels| safe }};
-    const serviceRevenue = {{ service_revenue| safe }};
-
-    new Chart(srvCtx, {
-        type: 'doughnut',
-        data: {
-            labels: serviceLabels.length > 0 ? serviceLabels : ['No Data'],
-            datasets: [{
-                data: serviceRevenue.length > 0 ? serviceRevenue : [1],
-                backgroundColor: ['#2563eb', '#0ea5e9', '#0d9488', '#8b5cf6', '#e2e8f0'],
-                borderWidth: 0,
-                hoverOffset: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
-                tooltip: {
-                    callbacks: {
-                        label: function (context) {
-                            return ' ₹' + context.parsed.toLocaleString();
-                        }
-                    }
-                }
+        const clientCtx = document.getElementById('clientRevenueChart').getContext('2d');
+        new Chart(clientCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ client_revenue_labels| safe }},
+                datasets: [{
+                    label: 'Revenue (₹)',
+                    data: {{ client_revenue_data| safe }},
+                    backgroundColor: '#2563eb',
+                    borderRadius: 6
+                }]
             },
-            cutout: '75%',
-            layout: { padding: 10 }
-        }
-    });
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
 
-    // 3. Top Clients (Bar Chart)
-    const clientCtx = document.getElementById('clientRevenueChart').getContext('2d');
-    new Chart(clientCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ client_revenue_labels| safe }},
-        datasets: [{
-            label: 'Revenue (₹)',
-            data: {{ client_revenue_data| safe }},
-        backgroundColor: '#3b82f6', // primary blue
-        borderRadius: 6,
-        barThickness: 30
-            }]
-        },
-        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                callbacks: {
-                    label: function (context) { return ' ₹' + context.parsed.y.toLocaleString(); }
-                }
-            }
-        },
-        scales: {
-            y: {
-                beginAtZero: true,
-                grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
-                ticks: { callback: function (value) { return '₹' + (value / 1000) + 'k'; } }
+        const expCtx = document.getElementById('expenseCategoryChart').getContext('2d');
+        new Chart(expCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ expense_cat_labels| safe }}.length ? {{ expense_cat_labels| safe }} : ['No Data'],
+                datasets: [{
+                    data: {{ expense_cat_data| safe }}.length ? {{ expense_cat_data| safe }} : [1],
+                    backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#cbd5e1'],
+                    borderWidth: 0
+                }]
             },
-            x: {
-                grid: { display: false, drawBorder: false },
-                ticks: { font: { weight: 'bold' } }
-            }
-        }
-    }
+            options: { responsive: true, maintainAspectRatio: false, cutout: '70%' }
+        });
     });
-
-    // 4. Expense Breakdown (Doughnut Chart)
-    const expCtx = document.getElementById('expenseCategoryChart').getContext('2d');
-    const expLabels = {{ expense_cat_labels| safe }};
-    const expData = {{ expense_cat_data| safe }};
-
-    new Chart(expCtx, {
-        type: 'doughnut',
-        data: {
-            labels: expLabels.length > 0 ? expLabels : ['No Data'],
-            datasets: [{
-                data: expData.length > 0 ? expData : [1],
-                backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#f1f5f9'],
-                borderWidth: 0,
-                hoverOffset: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'right', labels: { usePointStyle: true, padding: 15 } },
-                tooltip: {
-                    callbacks: {
-                        label: function (context) { return ' ₹' + context.parsed.toLocaleString(); }
-                    }
-                }
-            },
-            cutout: '70%',
-            layout: { padding: 10 }
-        }
-    });
-
-});
 </script>
 {% endblock %}

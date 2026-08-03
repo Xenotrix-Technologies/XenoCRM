@@ -1,131 +1,149 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}XenoCRM | Invoices & Bills{% endblock %}
+{% block title %}Invoices & Billing | XenoCRM ERP{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/invoices.css' %}">
 {% endblock %}
 
 {% block content %}
-<div class="invoice-container p-margin-edge flex-1 flex flex-col overflow-y-auto custom-scrollbar">
-    <div class="invoice-header">
+<div class="p-6 md:p-8 flex-1 flex flex-col bg-slate-50 overflow-y-auto custom-scrollbar">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-            <h2 class="invoice-title">Invoices & Bills</h2>
-            <p class="invoice-subtitle">Manage your invoicing, billing, and payments</p>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                <span>Finance</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                <span class="text-brand-600 font-bold">Invoices & Billing</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Invoices & Bills</h1>
+            <p class="text-xs md:text-sm text-slate-500 mt-1">Manage billing statements, client invoices, and payment statuses.</p>
         </div>
         <div>
-            <a href="{% url 'invoice_create' %}" class="btn-premium">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                Create Invoice
+            <a href="{% url 'invoice_create' %}" class="bg-brand-600 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 hover:bg-brand-700 transition-all shadow-xs shadow-brand-600/20 active:scale-[0.98]">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Create Invoice</span>
             </a>
         </div>
     </div>
 
     <!-- Statistics Section -->
-    <div class="invoice-stats-grid">
-        <div class="stat-card">
-            <div class="stat-icon bg-blue">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4">
+            <div class="p-3 bg-brand-50 text-brand-600 rounded-xl">
+                <i data-lucide="file-text" class="w-6 h-6"></i>
             </div>
-            <div class="stat-info">
-                <h4>Total Invoices</h4>
-                <p>{{ total_invoices }}</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon bg-green">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            </div>
-            <div class="stat-info">
-                <h4>Paid Invoices</h4>
-                <p>{{ paid_invoices }}</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon bg-yellow">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            </div>
-            <div class="stat-info">
-                <h4>Pending Invoices</h4>
-                <p>{{ pending_invoices }}</p>
-            </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon bg-red">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-            </div>
-            <div class="stat-info">
-                <h4>Overdue Invoices</h4>
-                <p>{{ overdue_invoices }}</p>
+            <div>
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Total Invoices</span>
+                <span class="text-2xl font-extrabold text-slate-900">{{ total_invoices }}</span>
             </div>
         </div>
 
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4">
+            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Paid Invoices</span>
+                <span class="text-2xl font-extrabold text-emerald-700">{{ paid_invoices }}</span>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4">
+            <div class="p-3 bg-amber-50 text-amber-600 rounded-xl">
+                <i data-lucide="clock" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Pending Invoices</span>
+                <span class="text-2xl font-extrabold text-amber-700">{{ pending_invoices }}</span>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center gap-4">
+            <div class="p-3 bg-rose-50 text-rose-600 rounded-xl">
+                <i data-lucide="alert-circle" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Overdue Invoices</span>
+                <span class="text-2xl font-extrabold text-rose-700">{{ overdue_invoices }}</span>
+            </div>
+        </div>
     </div>
 
-    <!-- Invoice History Section -->
-    <div class="invoice-table-container">
-        <div class="table-header">
-            <h3>Invoice History</h3>
-            <div class="table-actions">
-                <input type="text" id="invoiceSearch" class="premium-input" placeholder="Search Invoices...">
+    <!-- Invoice Table Card -->
+    <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-50/50">
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Invoice History</h3>
+                <p class="text-xs text-slate-500">View and update client invoices</p>
+            </div>
+            <div class="relative w-full sm:w-64">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <input type="text" id="invoiceSearch" class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" placeholder="Search invoices...">
             </div>
         </div>
         
-        <table class="premium-table">
-            <thead>
-                <tr>
-                    <th>Invoice No</th>
-                    <th>Customer / Company</th>
-                    <th>Date</th>
-                    <th>Amount</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for inv in invoices %}
-                <tr>
-                    <td><strong>{{ inv.invoice_number }}</strong></td>
-                    <td>
-                        {{ inv.customer_name }}
-                        {% if inv.company_name %}<br><span class="text-small">{{ inv.company_name }}</span>{% endif %}
-                    </td>
-                    <td>{{ inv.invoice_date }}</td>
-                    <td>₹{{ inv.grand_total|floatformat:2 }}</td>
-                    <td>
-                        <select class="premium-input status-select status-badge" data-invoice-id="{{ inv.id }}" style="padding: 4px 8px; font-size: 0.85rem; border-radius: 4px; width: auto; appearance: none; cursor: pointer; height: auto;">
-                            {% for status in invoice_statuses %}
-                            <option value="{{ status.name }}" {% if inv.status == status.name %}selected{% endif %}>{{ status.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </td>
-                    <td class="action-cell">
-                        <div style="display: flex; gap: 0.5rem;">
-                            <a href="{% url 'invoice_detail' inv.id %}" class="action-link" title="View/Print">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                            </a>
-                            <a href="{% url 'invoice_edit' inv.id %}" class="action-link text-blue" title="Edit">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                            </a>
-                            <form action="{% url 'invoice_delete' inv.id %}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this invoice?');">
-                                {% csrf_token %}
-                                <button type="submit" class="action-link text-red bg-transparent" style="border:none; cursor:pointer;" title="Delete">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" style="text-align: center; padding: 3rem;">
-                        <p class="text-secondary">No invoices found. Create your first invoice!</p>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="saas-table">
+                <thead>
+                    <tr>
+                        <th>Invoice No</th>
+                        <th>Customer / Company</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th class="text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for inv in invoices %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="font-bold text-slate-900">{{ inv.invoice_number }}</td>
+                        <td>
+                            <div class="font-semibold text-slate-900">{{ inv.customer_name }}</div>
+                            {% if inv.company_name %}<div class="text-[11px] text-slate-500">{{ inv.company_name }}</div>{% endif %}
+                        </td>
+                        <td class="text-slate-600 text-xs">{{ inv.invoice_date }}</td>
+                        <td class="font-bold text-slate-900">₹{{ inv.grand_total|floatformat:2 }}</td>
+                        <td>
+                            <select class="status-select bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-brand-500/20" data-invoice-id="{{ inv.id }}">
+                                {% for status in invoice_statuses %}
+                                <option value="{{ status.name }}" {% if inv.status == status.name %}selected{% endif %}>{{ status.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                        <td class="text-right">
+                            <div class="flex items-center justify-end gap-1">
+                                <a href="{% url 'invoice_detail' inv.id %}" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-brand-600 transition-all" title="View/Print">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </a>
+                                <a href="{% url 'invoice_edit' inv.id %}" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-brand-600 transition-all" title="Edit">
+                                    <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                </a>
+                                <form action="{% url 'invoice_delete' inv.id %}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this invoice?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all" title="Delete">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="p-12 text-center text-slate-400">
+                            <div class="max-w-xs mx-auto">
+                                <i data-lucide="receipt" class="w-10 h-10 mx-auto mb-3 text-slate-300"></i>
+                                <p class="text-sm font-semibold text-slate-700">No Invoices Found</p>
+                                <p class="text-xs text-slate-400 mt-1">Create your first client invoice to start tracking payments.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -133,26 +151,21 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    if (window.lucide) lucide.createIcons();
+
     const searchInput = document.getElementById('invoiceSearch');
-    const tableBody = document.querySelector('.premium-table tbody');
-    const rows = tableBody.querySelectorAll('tr');
+    const tableBody = document.querySelector('.saas-table tbody');
+    const rows = tableBody ? tableBody.querySelectorAll('tr') : [];
 
     if (searchInput) {
         searchInput.addEventListener('input', function() {
             const query = this.value.toLowerCase().trim();
-            
             rows.forEach(row => {
-                // If the row has colspan="6" it's the "No items" row, don't hide if it's the only one shown, or just leave it
                 if(row.children.length === 1 && row.children[0].hasAttribute('colspan')) return;
-
                 const clientCell = row.querySelector('td:nth-child(2)');
                 if (clientCell) {
-                    const clientName = clientCell.textContent.toLowerCase();
-                    if (clientName.includes(query)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
+                    const text = clientCell.textContent.toLowerCase();
+                    row.style.display = text.includes(query) ? '' : 'none';
                 }
             });
         });
@@ -164,9 +177,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const invoiceId = this.dataset.invoiceId;
             const newStatus = this.value;
             
-            // Update the class color based on new status
-            this.className = `premium-input status-select status-badge status-${newStatus.toLowerCase()}`;
-            
             try {
                 const response = await fetch(`/finance/invoices/${invoiceId}/update-status/`, {
                     method: 'POST',
@@ -177,12 +187,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     body: JSON.stringify({ status: newStatus })
                 });
                 const data = await response.json();
-                if (!data.success) {
-                    alert('Error updating status: ' + (data.error || 'Unknown error'));
+                if (data.success) {
+                    showToast('Invoice status updated', 'success');
+                } else {
+                    showToast('Error updating status: ' + (data.error || 'Unknown error'), 'error');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Network error occurred while updating status.');
+                showToast('Network error occurred while updating status.', 'error');
             }
         });
     });
