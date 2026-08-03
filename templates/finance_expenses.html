@@ -120,7 +120,7 @@
                                 <button onclick="openEditExpenseModal('{{ item.id }}', '{{ item.date|date:'Y-m-d' }}', '{{ item.category.id|default:'' }}', '{{ item.description|default:''|escapejs }}', '{{ item.cost_center|default:''|escapejs }}', '{{ item.amount }}', '{{ item.payment_method.id|default:'' }}')" class="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-secondary hover:bg-primary-container hover:text-primary transition-colors">
                                     <span class="material-symbols-outlined text-[16px]">edit</span>
                                 </button>
-                                <button class="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-secondary hover:bg-error-container hover:text-error transition-colors">
+                                <button onclick="deleteSingleExpense('{{ item.id }}')" class="w-7 h-7 rounded-md flex items-center justify-center bg-transparent text-secondary hover:bg-error-container hover:text-error transition-colors">
                                     <span class="material-symbols-outlined text-[16px]">delete</span>
                                 </button>
                             </div>
@@ -214,6 +214,35 @@ function openEditExpenseModal(id, date, category, description, cost_center, amou
 
 function closeEditExpenseModal() {
     document.getElementById('editExpenseModal').classList.add('hidden');
+}
+
+function deleteSingleExpense(id) {
+    if (!confirm('Are you sure you want to delete this expense record?')) return;
+
+    fetch('{% url "bulk_delete_expenses" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ ids: [id] })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (typeof showToast === 'function') showToast(data.message, 'success');
+            else alert(data.message);
+            setTimeout(() => window.location.reload(), 800);
+        } else {
+            if (typeof showToast === 'function') showToast(data.error || 'Failed to delete.', 'error');
+            else alert(data.error || 'Failed to delete.');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        if (typeof showToast === 'function') showToast('Network error.', 'error');
+    });
 }
 
 // Bulk Delete Logic
