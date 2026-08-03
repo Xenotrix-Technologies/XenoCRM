@@ -595,7 +595,7 @@
                     </a>
                     {% endif %}
                     {% if request.user.profile.has_access_finance_settings %}
-                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'finance' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'finance_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
                         href="{% url 'finance_settings' %}">
                         <span>Status Settings</span>
                     </a>
