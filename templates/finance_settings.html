@@ -186,50 +186,52 @@
 {% block extra_js %}
 <script>
     // Server-backed AJAX for adding finance category/method
-    const addForms = [
-        document.getElementById('add-finance-form-modal'),
-        document.getElementById('add-finance-method-form-modal')
-    ];
-    
-    addForms.forEach(form => {
-        if (form) {
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
-                const submitBtn = form.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = 'Adding...';
+    document.addEventListener('DOMContentLoaded', function() {
+        const addForms = [
+            document.getElementById('add-finance-form-modal'),
+            document.getElementById('add-finance-method-form-modal')
+        ];
+        
+        addForms.forEach(form => {
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = 'Adding...';
 
-                const formData = new FormData(form);
-                fetch(form.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                    },
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                    if (data.success) {
-                        if (typeof showToast === 'function') showToast('Added successfully!', 'success');
-                        else alert('Added successfully!');
-                        setTimeout(() => window.location.reload(), 800);
-                    } else {
-                        if (typeof showToast === 'function') showToast(data.error || 'Failed to add.', 'error');
-                        else alert(data.error || 'Failed to add.');
-                    }
-                })
-                .catch(err => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                    console.error(err);
-                    if (typeof showToast === 'function') showToast('Network error.', 'error');
+                    const formData = new FormData(form);
+                    fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                        if (data.success) {
+                            if (typeof showToast === 'function') showToast('Added successfully!', 'success');
+                            else alert('Added successfully!');
+                            setTimeout(() => window.location.reload(), 800);
+                        } else {
+                            if (typeof showToast === 'function') showToast(data.error || 'Failed to add.', 'error');
+                            else alert(data.error || 'Failed to add.');
+                        }
+                    })
+                    .catch(err => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                        console.error(err);
+                        if (typeof showToast === 'function') showToast('Network error.', 'error');
+                    });
                 });
-            });
-        }
+            }
+        });
     });
 
     // Finance Category actions
