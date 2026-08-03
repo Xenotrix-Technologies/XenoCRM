@@ -393,10 +393,12 @@ def projects_view(request):
     tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
     staff = UserProfile.objects.filter(organization=org)
     leads = Lead.objects.filter(organization=org)
+    project_statuses = ProjectStatus.objects.filter(organization=org).order_by('position')
     return render(request, 'projects.html', {
         'tasks': tasks,
         'staff': staff,
-        'leads': leads
+        'leads': leads,
+        'project_statuses': project_statuses
     })
 
 
@@ -1120,6 +1122,14 @@ def add_task(request):
             if lead_id and lead_id != 'inhouse':
                 lead = Lead.objects.get(id=lead_id, organization=org)
             
+            status_id = request.POST.get('status_id')
+            status_obj = None
+            if status_id:
+                try:
+                    status_obj = ProjectStatus.objects.get(id=status_id, organization=org)
+                except ProjectStatus.DoesNotExist:
+                    pass
+
             task = Task.objects.create(
                 lead=lead,
                 organization=org if not lead else None,
@@ -1128,6 +1138,7 @@ def add_task(request):
                 start_date=start_date,
                 due_date=due_date,
                 priority=priority,
+                status=status_obj,
                 completed=completed
             )
             
@@ -1185,6 +1196,13 @@ def edit_task(request, task_id):
             task.description = request.POST.get('description', '')
             task.priority = request.POST.get('priority', 'Medium')
             task.completed = request.POST.get('completed') == 'true' or request.POST.get('completed') == 'on'
+            
+            status_id = request.POST.get('status_id')
+            if status_id:
+                try:
+                    task.status = ProjectStatus.objects.get(id=status_id, organization=org)
+                except ProjectStatus.DoesNotExist:
+                    pass
             
             start_date_val = request.POST.get('start_date')
             task.start_date = start_date_val if start_date_val else None
