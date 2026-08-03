@@ -91,8 +91,49 @@
                 <li class="text-sm text-secondary italic">No payment methods found.</li>
                 {% endfor %}
             </ul>
+    </div>
+    
+    <!-- Second Row (Invoice Statuses) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <!-- Invoice Statuses Card -->
+        <div class="bg-white dark:bg-surface-container rounded-[24px] p-6 shadow-sm border border-outline-variant/50">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center">
+                        <span class="material-symbols-outlined text-[20px]">description</span>
+                    </div>
+                    <h3 class="font-bold text-sm tracking-widest text-on-surface uppercase leading-tight">Invoice Statuses</h3>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button type="button" onclick="openModal('add-invoice-status-modal')" class="w-7 h-7 rounded-full bg-surface-variant/50 hover:bg-surface-variant flex items-center justify-center text-secondary hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-[16px]">add</span>
+                    </button>
+                    <span class="bg-surface-variant text-secondary text-xs font-bold px-2.5 py-1 rounded-full">{{ invoice_statuses|length }}</span>
+                </div>
+            </div>
+            
+            <ul class="space-y-4">
+                {% for status in invoice_statuses %}
+                <li class="group flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <span class="px-2 py-0.5 rounded-full text-xs font-bold tracking-tight" style="{{ status.badge_style }}">
+                            {{ status.name }}
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button type="button" onclick="openEditInvoiceStatusModal('{{ status.id }}', '{{ status.name|escapejs }}', '{{ status.color }}')" class="p-1.5 rounded-lg hover:bg-surface-variant text-outline hover:text-primary transition-colors" title="Edit Invoice Status">
+                            <span class="material-symbols-outlined text-[16px]">edit</span>
+                        </button>
+                        <button type="button" onclick="deleteInvoiceStatus('{{ status.id }}', '{{ status.name|escapejs }}')" class="p-1.5 rounded-lg hover:bg-red-50 text-outline hover:text-red-600 transition-colors" title="Delete Invoice Status">
+                            <span class="material-symbols-outlined text-[16px]">delete</span>
+                        </button>
+                    </div>
+                </li>
+                {% empty %}
+                <li class="text-sm text-secondary italic">No invoice statuses found.</li>
+                {% endfor %}
+            </ul>
         </div>
-        
     </div>
 
     <!-- Modals for Adding -->
@@ -133,6 +174,31 @@
                 <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
                     <button type="button" onclick="closeModal('add-finance-method-modal')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
                     <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Add Method</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Invoice Status Modal -->
+    <div id="add-invoice-status-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-outline-variant/30">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/20">
+                <h3 class="font-headline-md text-headline-md font-bold text-on-background">Add Invoice Status</h3>
+                <button type="button" onclick="closeModal('add-invoice-status-modal')" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+            </div>
+            <form id="add-invoice-status-form-modal" method="POST" action="/statuses/category/invoices/add/" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status Name *</label>
+                    <input type="text" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                </div>
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Color *</label>
+                    <input type="color" name="color" value="#f59e0b" required class="w-full h-10 p-1 bg-surface-container-low border border-outline-variant rounded-lg cursor-pointer" />
+                </div>
+                <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
+                    <button type="button" onclick="closeModal('add-invoice-status-modal')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Add Status</button>
                 </div>
             </form>
         </div>
@@ -180,6 +246,31 @@
         </div>
     </div>
 
+    <!-- Edit Invoice Status Modal -->
+    <div id="edit-invoice-status-modal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-outline-variant/30">
+            <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/20">
+                <h3 class="font-headline-md text-headline-md font-bold text-on-background">Edit Invoice Status</h3>
+                <button type="button" onclick="closeEditInvoiceStatusModal()" class="material-symbols-outlined text-outline hover:text-primary">close</button>
+            </div>
+            <form id="edit-invoice-status-form" method="POST" action="" class="space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Status Name *</label>
+                    <input type="text" id="edit-invoice-status-name" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary" />
+                </div>
+                <div>
+                    <label class="block text-label-md font-label-md text-outline uppercase mb-1">Color *</label>
+                    <input type="color" id="edit-invoice-status-color" name="color" required class="w-full h-10 p-1 bg-surface-container-low border border-outline-variant rounded-lg cursor-pointer" />
+                </div>
+                <div class="mt-6 flex justify-end gap-3 border-t border-outline-variant/20 pt-4">
+                    <button type="button" onclick="closeEditInvoiceStatusModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </main>
 {% endblock %}
 
@@ -190,8 +281,9 @@
         function initFinanceForms() {
             var addForm1 = document.getElementById('add-finance-form-modal');
             var addForm2 = document.getElementById('add-finance-method-form-modal');
+            var addForm3 = document.getElementById('add-invoice-status-form-modal');
             
-            var forms = [addForm1, addForm2];
+            var forms = [addForm1, addForm2, addForm3];
             
             for (var i = 0; i < forms.length; i++) {
                 var form = forms[i];

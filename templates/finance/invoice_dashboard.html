@@ -94,12 +94,10 @@
                     <td>{{ inv.invoice_date }}</td>
                     <td>₹{{ inv.grand_total|floatformat:2 }}</td>
                     <td>
-                        <select class="premium-input status-select status-badge status-{{ inv.status|lower }}" data-invoice-id="{{ inv.id }}" style="padding: 4px 8px; font-size: 0.85rem; border-radius: 4px; width: auto; appearance: auto; cursor: pointer; height: auto;">
-                            <option value="Pending" {% if inv.status == 'Pending' %}selected{% endif %}>Pending</option>
-                            <option value="Paid" {% if inv.status == 'Paid' %}selected{% endif %}>Paid</option>
-                            <option value="Draft" {% if inv.status == 'Draft' %}selected{% endif %}>Draft</option>
-                            <option value="Overdue" {% if inv.status == 'Overdue' %}selected{% endif %}>Overdue</option>
-                            <option value="Partial" {% if inv.status == 'Partial' %}selected{% endif %}>Partial</option>
+                        <select class="premium-input status-select status-badge" data-invoice-id="{{ inv.id }}" style="padding: 4px 8px; font-size: 0.85rem; border-radius: 4px; width: auto; appearance: auto; cursor: pointer; height: auto;">
+                            {% for status in invoice_statuses %}
+                            <option value="{{ status.name }}" {% if inv.status == status.name %}selected{% endif %}>{{ status.name }}</option>
+                            {% endfor %}
                         </select>
                     </td>
                     <td class="action-cell">

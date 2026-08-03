@@ -43,10 +43,9 @@
                 <div class="form-group inline">
                     <label>Status:</label>
                     <select id="status" class="premium-input text-right pr-8">
-                        <option value="Pending" {% if invoice and invoice.status == 'Pending' %}selected{% endif %}>Pending</option>
-                        <option value="Paid" {% if invoice and invoice.status == 'Paid' %}selected{% endif %}>Paid</option>
-                        <option value="Draft" {% if invoice and invoice.status == 'Draft' %}selected{% endif %}>Draft</option>
-                        <option value="Overdue" {% if invoice and invoice.status == 'Overdue' %}selected{% endif %}>Overdue</option>
+                        {% for status in invoice_statuses %}
+                        <option value="{{ status.name }}" {% if invoice and invoice.status == status.name %}selected{% endif %}>{{ status.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
             </div>
