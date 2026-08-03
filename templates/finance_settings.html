@@ -186,9 +186,13 @@
 {% block extra_js %}
 <script>
     // Server-backed AJAX for adding finance category/method
-    const addFinanceForm = document.getElementById('add-finance-form-modal');
-    if (addFinanceForm) {
-        addFinanceForm.querySelectorAll('form').forEach(form => {
+    const addForms = [
+        document.getElementById('add-finance-form-modal'),
+        document.getElementById('add-finance-method-form-modal')
+    ];
+    
+    addForms.forEach(form => {
+        if (form) {
             form.addEventListener('submit', function (e) {
                 e.preventDefault();
                 const submitBtn = form.querySelector('button[type="submit"]');
@@ -225,8 +229,8 @@
                     if (typeof showToast === 'function') showToast('Network error.', 'error');
                 });
             });
-        });
-    }
+        }
+    });
 
     // Finance Category actions
     function deleteFinanceCategory(id, name) {
