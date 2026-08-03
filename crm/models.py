@@ -1375,14 +1375,19 @@ class PriorityStatus(models.Model, StatusStyleMixin):
         db_table = 'priority_statuses'
     def __str__(self): return self.name
 
+class InvoiceStatus(models.Model, StatusStyleMixin):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='invoice_statuses')
+    name = models.CharField(max_length=50)
+    color = models.CharField(max_length=20, default='#64748b')
+    position = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('organization', 'name')
+        ordering = ['position', 'id']
+        db_table = 'invoice_statuses'
+    def __str__(self): return self.name
+
 class Invoice(models.Model):
-    STATUS_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Paid', 'Paid'),
-        ('Partial', 'Partial'),
-        ('Overdue', 'Overdue'),
-    ]
-    
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='invoices')
     
     # Customer Info
@@ -1397,7 +1402,7 @@ class Invoice(models.Model):
     invoice_number = models.CharField(max_length=100, unique=True)
     invoice_date = models.DateField()
     due_date = models.DateField()
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Pending')
+    status = models.CharField(max_length=50, default='Pending')
     currency = models.CharField(max_length=10, default='INR')
     
     # Calculation totals

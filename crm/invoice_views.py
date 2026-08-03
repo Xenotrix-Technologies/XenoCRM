@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Sum, Count, Q
-from .models import Organization, Invoice, InvoiceItem, UserProfile
+from .models import Organization, Invoice, InvoiceItem, UserProfile, InvoiceStatus
 import datetime
 from django.utils import timezone
 
@@ -25,6 +25,8 @@ def invoice_dashboard(request):
     current_year = timezone.now().year
     monthly_revenue = invoices.filter(status='Paid', invoice_date__year=current_year, invoice_date__month=current_month).aggregate(total=Sum('grand_total'))['total'] or 0.00
     
+    invoice_statuses = InvoiceStatus.objects.filter(organization=organization).order_by('position', 'id')
+    
     context = {
         'invoices': invoices,
         'total_invoices': total_invoices,
@@ -33,6 +35,7 @@ def invoice_dashboard(request):
         'overdue_invoices': overdue_invoices,
         'monthly_revenue': monthly_revenue,
         'profile': user_profile,
+        'invoice_statuses': invoice_statuses,
     }
     return render(request, 'finance/invoice_dashboard.html', context)
 
@@ -98,10 +101,13 @@ def invoice_create(request):
     invoice_count = Invoice.objects.filter(organization=organization).count()
     default_inv_number = f"INV-{invoice_count + 1:06d}"
 
+    invoice_statuses = InvoiceStatus.objects.filter(organization=organization).order_by('position', 'id')
+    
     return render(request, 'finance/invoice_form.html', {
         'profile': user_profile,
         'default_inv_number': default_inv_number,
-        'today': timezone.now().date().isoformat()
+        'today': timezone.now().date().isoformat(),
+        'invoice_statuses': invoice_statuses,
     })
 
 @login_required
@@ -170,9 +176,12 @@ def invoice_edit(request, invoice_id):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
 
+    invoice_statuses = InvoiceStatus.objects.filter(organization=organization).order_by('position', 'id')
+    
     return render(request, 'finance/invoice_form.html', {
         'profile': user_profile,
         'invoice': invoice,
+        'invoice_statuses': invoice_statuses,
     })
 
 @login_required

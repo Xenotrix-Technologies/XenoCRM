@@ -1886,7 +1886,8 @@ def get_or_create_dynamic_statuses(org, category_str, model_class):
             'campaigns': [{'name': 'Planning', 'color': '#64748b'}, {'name': 'Active', 'color': '#0053db'}, {'name': 'Completed', 'color': '#22c55e'}],
             'calendar': [{'name': 'Meetings', 'color': '#004ac6'}, {'name': 'Calls', 'color': '#10b981'}, {'name': 'Deadlines', 'color': '#ef4444'}, {'name': 'Follow-ups', 'color': '#8b5cf6'}, {'name': 'Personal', 'color': '#f97316'}],
             'tickets': [{'name': 'Open', 'color': '#ef4444'}, {'name': 'Pending', 'color': '#f59e0b'}, {'name': 'Resolved', 'color': '#10b981'}, {'name': 'Closed', 'color': '#64748b'}],
-            'priority': [{'name': 'Low', 'color': '#64748b'}, {'name': 'Medium', 'color': '#f59e0b'}, {'name': 'High', 'color': '#ef4444'}, {'name': 'Critical', 'color': '#8b5cf6'}]
+            'priority': [{'name': 'Low', 'color': '#64748b'}, {'name': 'Medium', 'color': '#f59e0b'}, {'name': 'High', 'color': '#ef4444'}, {'name': 'Critical', 'color': '#8b5cf6'}],
+            'invoices': [{'name': 'Pending', 'color': '#f59e0b'}, {'name': 'Paid', 'color': '#10b981'}, {'name': 'Partial', 'color': '#3b82f6'}, {'name': 'Overdue', 'color': '#ef4444'}]
         }
         defaults = DEFAULT_STATUSES_MAP.get(category_str, [])
         for idx, s in enumerate(defaults):
@@ -1900,9 +1901,11 @@ def finance_settings_view(request):
     org = request.user.profile.organization
     finance_methods = FinancePaymentMethod.objects.filter(organization=org).order_by('name')
     finance_categories = FinanceExpenseCategory.objects.filter(organization=org).order_by('name')
+    invoice_statuses = get_or_create_dynamic_statuses(org, 'invoices', InvoiceStatus)
     return render(request, 'finance_settings.html', {
         'finance_methods': finance_methods,
         'finance_categories': finance_categories,
+        'invoice_statuses': invoice_statuses,
     })
 
 def lead_statuses_view(request):
@@ -4688,6 +4691,7 @@ def get_dynamic_model_class(category):
         'calendar': CalendarStatus,
         'tickets': TicketStatus,
         'priority': PriorityStatus,
+        'invoices': InvoiceStatus,
     }.get(category)
 
 @login_required
