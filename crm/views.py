@@ -4214,6 +4214,7 @@ def finance_income_view(request):
                 date_str = row.get('date', '').strip()
                 client_name = row.get('client_name', '').strip()
                 project_name = row.get('project_name', '').strip()
+                method_str = row.get('payment_method', '').strip()
                 amount_str = row.get('amount', '').strip()
 
                 if date_str and client_name and amount_str:
@@ -4230,11 +4231,17 @@ def finance_income_view(request):
                         # Clean amount
                         clean_amount = amount_str.replace(',', '').replace('₹', '').replace('$', '').strip()
                         amount = Decimal(clean_amount)
+                        # Get Payment Method
+                        pm_obj = None
+                        if method_str:
+                            pm_obj = FinancePaymentMethod.objects.filter(organization=request.user.profile.organization, name__iexact=method_str).first()
+                            
                         Income.objects.create(
                             organization=request.user.profile.organization,
                             date=date_obj,
                             client_name=client_name,
                             project_name=project_name,
+                            payment_method=pm_obj,
                             amount=amount
                         )
                         success_count += 1
@@ -4359,8 +4366,10 @@ def finance_expenses_view(request):
             for row in reader:
                 row_num += 1
                 date_str = row.get('date', '').strip()
+                category_str = row.get('category', '').strip()
                 description = row.get('description', '').strip()
                 cost_center = row.get('cost_center', '').strip()
+                method_str = row.get('payment_method', '').strip()
                 amount_str = row.get('amount', '').strip()
 
                 if date_str and amount_str:
@@ -4377,11 +4386,23 @@ def finance_expenses_view(request):
                         # Clean amount
                         clean_amount = amount_str.replace(',', '').replace('₹', '').replace('$', '').strip()
                         amount = Decimal(clean_amount)
+
+                        # Get Category and Payment Method
+                        cat_obj = None
+                        if category_str:
+                            cat_obj = FinanceExpenseCategory.objects.filter(organization=request.user.profile.organization, name__iexact=category_str).first()
+                            
+                        pm_obj = None
+                        if method_str:
+                            pm_obj = FinancePaymentMethod.objects.filter(organization=request.user.profile.organization, name__iexact=method_str).first()
+                            
                         Expense.objects.create(
                             organization=request.user.profile.organization,
                             date=date_obj,
+                            category=cat_obj,
                             description=description,
                             cost_center=cost_center,
+                            payment_method=pm_obj,
                             amount=amount
                         )
                         success_count += 1
