@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.db.models import Sum, Count, Q
 from .models import Organization, Invoice, InvoiceItem, UserProfile, InvoiceStatus
+from .views import get_or_create_dynamic_statuses
 import datetime
 from django.utils import timezone
 
@@ -24,8 +25,7 @@ def invoice_dashboard(request):
     current_month = timezone.now().month
     current_year = timezone.now().year
     monthly_revenue = invoices.filter(status='Paid', invoice_date__year=current_year, invoice_date__month=current_month).aggregate(total=Sum('grand_total'))['total'] or 0.00
-    
-    invoice_statuses = InvoiceStatus.objects.filter(organization=organization).order_by('position', 'id')
+    invoice_statuses = get_or_create_dynamic_statuses(organization, 'invoices', InvoiceStatus)
     
     context = {
         'invoices': invoices,
@@ -101,7 +101,7 @@ def invoice_create(request):
     invoice_count = Invoice.objects.filter(organization=organization).count()
     default_inv_number = f"INV-{invoice_count + 1:06d}"
 
-    invoice_statuses = InvoiceStatus.objects.filter(organization=organization).order_by('position', 'id')
+    invoice_statuses = get_or_create_dynamic_statuses(organization, 'invoices', InvoiceStatus)
     
     return render(request, 'finance/invoice_form.html', {
         'profile': user_profile,
@@ -176,7 +176,7 @@ def invoice_edit(request, invoice_id):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
 
-    invoice_statuses = InvoiceStatus.objects.filter(organization=organization).order_by('position', 'id')
+    invoice_statuses = get_or_create_dynamic_statuses(organization, 'invoices', InvoiceStatus)
     
     return render(request, 'finance/invoice_form.html', {
         'profile': user_profile,
