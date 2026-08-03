@@ -94,7 +94,7 @@
                     <td>{{ inv.invoice_date }}</td>
                     <td>₹{{ inv.grand_total|floatformat:2 }}</td>
                     <td>
-                        <select class="premium-input status-select status-badge" data-invoice-id="{{ inv.id }}" style="padding: 4px 8px; font-size: 0.85rem; border-radius: 4px; width: auto; appearance: auto; cursor: pointer; height: auto;">
+                        <select class="premium-input status-select status-badge" data-invoice-id="{{ inv.id }}" style="padding: 4px 8px; font-size: 0.85rem; border-radius: 4px; width: auto; appearance: none; cursor: pointer; height: auto;">
                             {% for status in invoice_statuses %}
                             <option value="{{ status.name }}" {% if inv.status == status.name %}selected{% endif %}>{{ status.name }}</option>
                             {% endfor %}
