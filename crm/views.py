@@ -4141,17 +4141,50 @@ def editor_dashboard_view(request):
 
 @login_required
 def finance_dashboard_view(request):
+    from .models import Invoice
+    import calendar
+    import datetime
+
     org = request.user.profile.organization
     today = timezone.now().date()
     
     total_revenue = Income.objects.filter(organization=org).aggregate(Sum('amount'))['amount__sum'] or 0
-    monthly_expenses = Expense.objects.filter(organization=org).aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expenses = Expense.objects.filter(organization=org).aggregate(Sum('amount'))['amount__sum'] or 0
     
     revenue_this_month = Income.objects.filter(organization=org, date__year=today.year, date__month=today.month).aggregate(Sum('amount'))['amount__sum'] or 0
     revenue_this_year = Income.objects.filter(organization=org, date__year=today.year).aggregate(Sum('amount'))['amount__sum'] or 0
     
+    expenses_this_month = Expense.objects.filter(organization=org, date__year=today.year, date__month=today.month).aggregate(Sum('amount'))['amount__sum'] or 0
+    
+    # Calculate MoM growth for Revenue
+    last_month = today.replace(day=1) - datetime.timedelta(days=1)
+    revenue_last_month = Income.objects.filter(organization=org, date__year=last_month.year, date__month=last_month.month).aggregate(Sum('amount'))['amount__sum'] or 0
+    if revenue_last_month > 0:
+        revenue_mom = ((float(revenue_this_month) - float(revenue_last_month)) / float(revenue_last_month)) * 100
+    else:
+        revenue_mom = 100 if revenue_this_month > 0 else 0
+        
+    # Calculate MoM growth for Expenses
+    expenses_last_month = Expense.objects.filter(organization=org, date__year=last_month.year, date__month=last_month.month).aggregate(Sum('amount'))['amount__sum'] or 0
+    if expenses_last_month > 0:
+        expenses_mom = ((float(expenses_this_month) - float(expenses_last_month)) / float(expenses_last_month)) * 100
+    else:
+        expenses_mom = 100 if expenses_this_month > 0 else 0
+    
+    # Calculate Profit Margin
+    net_profit = float(total_revenue) - float(total_expenses)
+    profit_margin = (net_profit / float(total_revenue)) * 100 if total_revenue > 0 else 0
+    
+    # Invoice Data
+    invoices = Invoice.objects.filter(organization=org)
+    outstanding_invoices_count = invoices.exclude(status='Paid').count()
+    pending_payments_amount = invoices.exclude(status='Paid').aggregate(Sum('grand_total'))['grand_total__sum'] or 0
+    total_invoices_count = invoices.count()
+    
+    # Chart Data
     months_labels = []
     revenue_data = []
+    expense_data = []
     
     for i in range(5, -1, -1):
         target_month = today.month - i
@@ -4161,31 +4194,45 @@ def finance_dashboard_view(request):
             target_year -= 1
         months_labels.append(f"{calendar.month_abbr[target_month]}")
         inc = Income.objects.filter(organization=org, date__year=target_year, date__month=target_month).aggregate(total=Sum('amount'))['total'] or 0
+        exp = Expense.objects.filter(organization=org, date__year=target_year, date__month=target_month).aggregate(total=Sum('amount'))['total'] or 0
         revenue_data.append(float(inc))
+        expense_data.append(float(exp))
         
     client_incomes = Income.objects.filter(organization=org).values('client_name').annotate(total=Sum('amount')).order_by('-total')[:5]
     client_labels = [c['client_name'] for c in client_incomes]
     client_revenue = [float(c['total']) for c in client_incomes]
     
+    expense_categories = Expense.objects.filter(organization=org).exclude(category__isnull=True).values('category__name').annotate(total=Sum('amount')).order_by('-total')[:5]
+    expense_cat_labels = [c['category__name'] for c in expense_categories]
+    expense_cat_data = [float(c['total']) for c in expense_categories]
+    
     service_incomes = Income.objects.filter(organization=org, project_name__isnull=False).exclude(project_name='').values('project_name').annotate(total=Sum('amount')).order_by('-total')[:5]
     service_labels = [s['project_name'] for s in service_incomes]
     service_revenue = [float(s['total']) for s in service_incomes]
-    
+
     context = {
         'total_revenue': total_revenue,
-        'outstanding_invoices': 0,
+        'outstanding_invoices': outstanding_invoices_count,
         'payments_received': total_revenue,
-        'pending_payments': 0,
-        'monthly_expenses': monthly_expenses,
-        'net_profit': float(total_revenue) - float(monthly_expenses),
-        'active_clients': Lead.objects.filter(organization=org).count(),
-        'total_invoices': Income.objects.filter(organization=org).count(),
+        'pending_payments': pending_payments_amount,
+        'monthly_expenses': expenses_this_month,
+        'total_expenses': total_expenses,
+        'net_profit': net_profit,
+        'profit_margin': profit_margin,
+        'active_clients': Lead.objects.filter(organization=org, is_client=True).count(),
+        'total_invoices': total_invoices_count,
         'revenue_this_month': revenue_this_month,
         'revenue_this_year': revenue_this_year,
+        'expenses_this_month': expenses_this_month,
+        'revenue_mom': revenue_mom,
+        'expenses_mom': expenses_mom,
         'trend_labels': json.dumps(months_labels),
         'trend_data': json.dumps(revenue_data),
+        'expense_trend_data': json.dumps(expense_data),
         'client_revenue_labels': json.dumps(client_labels),
         'client_revenue_data': json.dumps(client_revenue),
+        'expense_cat_labels': json.dumps(expense_cat_labels),
+        'expense_cat_data': json.dumps(expense_cat_data),
         'service_labels': json.dumps(service_labels),
         'service_revenue': json.dumps(service_revenue),
     }

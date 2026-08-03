@@ -4,158 +4,227 @@
 
 {% block extra_css %}
 <style>
-    .chart-gradient {
+    .chart-gradient-rev {
         background: linear-gradient(180deg, rgba(37, 99, 235, 0.1) 0%, rgba(37, 99, 235, 0) 100%);
     }
+    .chart-gradient-exp {
+        background: linear-gradient(180deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0) 100%);
+    }
+    
+    .ceo-glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+    }
+    
+    .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block content %}
-<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+<div class="p-margin-edge flex-1 flex flex-col bg-slate-50 overflow-y-auto custom-scrollbar relative">
+    
+    <!-- Decorative background blobs -->
+    <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none -z-10"></div>
+    <div class="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-tertiary/10 via-transparent to-transparent rounded-full blur-3xl pointer-events-none -z-10"></div>
+
     <!-- Dashboard Header -->
-    <div class="flex justify-between items-end mb-8">
+    <div class="flex justify-between items-end mb-8 relative z-10">
         <div>
-            <h2 class="font-headline-lg text-headline-lg text-on-background">Finance Dashboard</h2>
-            <p class="text-secondary font-body-md">Your financial overview and insights.</p>
+            <h2 class="font-headline-lg text-headline-lg text-on-background font-bold tracking-tight">Executive Finance Dashboard</h2>
+            <p class="text-secondary font-body-md mt-1">High-level financial overview and cash flow insights.</p>
+        </div>
+        <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-100">
+            <span class="material-symbols-outlined text-primary">today</span>
+            <span class="font-label-lg text-on-surface font-medium">{% now "F d, Y" %}</span>
         </div>
     </div>
 
     <!-- 8 KPI Bento Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8 relative z-10">
         
         <!-- KPI: Total Revenue -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
             <div class="flex justify-between items-start mb-4">
-                <div class="p-2 bg-success/10 rounded-lg">
+                <div class="p-2.5 bg-gradient-to-br from-success/20 to-success/5 rounded-xl border border-success/10">
                     <span class="material-symbols-outlined text-success">account_balance</span>
                 </div>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Total Revenue</p>
-            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ total_revenue|floatformat:0 }}</h3>
-        </div>
-
-        <!-- KPI: Outstanding Invoices -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-2 bg-warning/10 rounded-lg">
-                    <span class="material-symbols-outlined text-warning">receipt_long</span>
-                </div>
-            </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Outstanding Invoices</p>
-            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ outstanding_invoices|floatformat:0 }}</h3>
-        </div>
-        
-        <!-- KPI: Payments Received -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-2 bg-primary/10 rounded-lg">
-                    <span class="material-symbols-outlined text-primary">price_check</span>
-                </div>
-            </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Payments Received</p>
-            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ payments_received|floatformat:0 }}</h3>
-        </div>
-
-        <!-- KPI: Pending Payments -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
-            <div class="flex justify-between items-start mb-4">
-                <div class="p-2 bg-error/10 rounded-lg">
-                    <span class="material-symbols-outlined text-error">hourglass_bottom</span>
-                </div>
-            </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Pending Payments</p>
-            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ pending_payments|floatformat:0 }}</h3>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Total Revenue</p>
+            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ total_revenue|floatformat:0 }}</h3>
         </div>
 
         <!-- KPI: Monthly Expenses -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
             <div class="flex justify-between items-start mb-4">
-                <div class="p-2 bg-error/10 rounded-lg">
+                <div class="p-2.5 bg-gradient-to-br from-error/20 to-error/5 rounded-xl border border-error/10">
                     <span class="material-symbols-outlined text-error">trending_down</span>
                 </div>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Monthly Expenses</p>
-            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ monthly_expenses|floatformat:0 }}</h3>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Total Expenses</p>
+            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ total_expenses|floatformat:0 }}</h3>
         </div>
 
         <!-- KPI: Net Profit -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
             <div class="flex justify-between items-start mb-4">
-                <div class="p-2 bg-success/10 rounded-lg">
-                    <span class="material-symbols-outlined text-success">savings</span>
+                <div class="p-2.5 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl border border-primary/10">
+                    <span class="material-symbols-outlined text-primary">savings</span>
                 </div>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Net Profit</p>
-            <h3 class="text-3xl font-display-lg text-on-background mt-1">₹{{ net_profit|floatformat:0 }}</h3>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Net Profit</p>
+            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ net_profit|floatformat:0 }}</h3>
+        </div>
+        
+        <!-- KPI: Profit Margin -->
+        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2.5 bg-gradient-to-br from-tertiary/20 to-tertiary/5 rounded-xl border border-tertiary/10">
+                    <span class="material-symbols-outlined text-tertiary">pie_chart</span>
+                </div>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Profit Margin</p>
+            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">{{ profit_margin|floatformat:1 }}%</h3>
         </div>
 
-        <!-- KPI: Active Clients -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+        <!-- KPI: Outstanding Invoices -->
+        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
             <div class="flex justify-between items-start mb-4">
-                <div class="p-2 bg-tertiary/10 rounded-lg">
-                    <span class="material-symbols-outlined text-tertiary">groups</span>
+                <div class="p-2.5 bg-gradient-to-br from-warning/20 to-warning/5 rounded-xl border border-warning/10">
+                    <span class="material-symbols-outlined text-warning">receipt_long</span>
                 </div>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Active Clients</p>
-            <h3 class="text-3xl font-display-lg text-on-background mt-1">{{ active_clients }}</h3>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Outstanding Invoices</p>
+            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">{{ outstanding_invoices }}</h3>
+        </div>
+
+        <!-- KPI: Pending Payments -->
+        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2.5 bg-gradient-to-br from-error/20 to-error/5 rounded-xl border border-error/10">
+                    <span class="material-symbols-outlined text-error">hourglass_bottom</span>
+                </div>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Pending Payments (AR)</p>
+            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">₹{{ pending_payments|floatformat:0 }}</h3>
+        </div>
+        
+        <!-- KPI: Active Clients -->
+        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-2.5 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl border border-primary/10">
+                    <span class="material-symbols-outlined text-primary">groups</span>
+                </div>
+            </div>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Active Clients</p>
+            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">{{ active_clients }}</h3>
         </div>
 
         <!-- KPI: Total Invoices -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white hover:shadow-md transition-shadow">
+        <div class="ceo-glass p-6 rounded-2xl transition-all hover:-translate-y-1 hover:shadow-lg">
             <div class="flex justify-between items-start mb-4">
-                <div class="p-2 bg-primary/10 rounded-lg">
-                    <span class="material-symbols-outlined text-primary">description</span>
+                <div class="p-2.5 bg-gradient-to-br from-tertiary/20 to-tertiary/5 rounded-xl border border-tertiary/10">
+                    <span class="material-symbols-outlined text-tertiary">description</span>
                 </div>
             </div>
-            <p class="text-secondary font-label-md uppercase tracking-wider text-[10px]">Total Invoices</p>
-            <h3 class="text-3xl font-display-lg text-on-background mt-1">{{ total_invoices }}</h3>
+            <p class="text-secondary font-label-md uppercase tracking-wider text-[11px] font-bold">Total Invoices Raised</p>
+            <h3 class="text-4xl font-display-lg text-on-background mt-2 font-bold">{{ total_invoices }}</h3>
         </div>
     </div>
 
-    <!-- Mini Analytics Row -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white flex justify-between items-center bg-gradient-to-r from-primary/5 to-transparent">
+    <!-- MoM Analytics Row -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 relative z-10">
+        <div class="ceo-glass p-6 rounded-2xl flex justify-between items-center bg-gradient-to-r from-success/5 to-transparent border-l-4 border-l-success">
             <div>
-                <h4 class="font-headline-sm text-on-surface font-bold">Revenue This Month</h4>
-                <h2 class="text-4xl font-display-lg text-primary mt-2">₹{{ revenue_this_month|floatformat:0 }}</h2>
+                <h4 class="font-headline-sm text-secondary font-bold text-sm uppercase tracking-wide">Revenue This Month</h4>
+                <div class="flex items-end gap-3 mt-1">
+                    <h2 class="text-5xl font-display-lg text-success font-bold">₹{{ revenue_this_month|floatformat:0 }}</h2>
+                    {% if revenue_mom > 0 %}
+                    <span class="flex items-center text-success bg-success/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
+                        <span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+                        {{ revenue_mom|floatformat:1 }}%
+                    </span>
+                    {% elif revenue_mom < 0 %}
+                    <span class="flex items-center text-error bg-error/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
+                        <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+                        {{ revenue_mom|floatformat:1 }}%
+                    </span>
+                    {% endif %}
+                </div>
             </div>
-            <span class="material-symbols-outlined text-6xl text-primary/20">calendar_month</span>
+            <div class="p-4 bg-success/10 rounded-full">
+                <span class="material-symbols-outlined text-4xl text-success">monetization_on</span>
+            </div>
         </div>
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white flex justify-between items-center bg-gradient-to-r from-success/5 to-transparent">
+
+        <div class="ceo-glass p-6 rounded-2xl flex justify-between items-center bg-gradient-to-r from-error/5 to-transparent border-l-4 border-l-error">
             <div>
-                <h4 class="font-headline-sm text-on-surface font-bold">Revenue This Year</h4>
-                <h2 class="text-4xl font-display-lg text-success mt-2">₹{{ revenue_this_year|floatformat:0 }}</h2>
+                <h4 class="font-headline-sm text-secondary font-bold text-sm uppercase tracking-wide">Expenses This Month</h4>
+                <div class="flex items-end gap-3 mt-1">
+                    <h2 class="text-5xl font-display-lg text-error font-bold">₹{{ expenses_this_month|floatformat:0 }}</h2>
+                    {% if expenses_mom > 0 %}
+                    <span class="flex items-center text-error bg-error/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
+                        <span class="material-symbols-outlined text-[16px]">arrow_upward</span>
+                        {{ expenses_mom|floatformat:1 }}%
+                    </span>
+                    {% elif expenses_mom < 0 %}
+                    <span class="flex items-center text-success bg-success/10 px-2 py-1 rounded-md text-sm font-bold mb-1">
+                        <span class="material-symbols-outlined text-[16px]">arrow_downward</span>
+                        {{ expenses_mom|floatformat:1 }}%
+                    </span>
+                    {% endif %}
+                </div>
             </div>
-            <span class="material-symbols-outlined text-6xl text-success/20">calendar_today</span>
+            <div class="p-4 bg-error/10 rounded-full">
+                <span class="material-symbols-outlined text-4xl text-error">shopping_cart</span>
+            </div>
         </div>
     </div>
 
-    <!-- Charts Section 1 -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <!-- Monthly Revenue Trend (Line Chart) -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white">
-            <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Monthly Revenue Trend</h4>
-            <div class="relative h-64 chart-gradient rounded-xl p-4 border border-outline-variant/30">
-                <canvas id="monthlyTrendChart"></canvas>
+    <!-- Charts Section: Cash Flow & Breakdowns -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 relative z-10">
+        
+        <!-- Cash Flow Trend (Dual Line Chart) -->
+        <div class="ceo-glass p-6 rounded-2xl lg:col-span-2">
+            <div class="flex justify-between items-center mb-6">
+                <h4 class="font-headline-sm text-on-surface font-bold">Cash Flow Trend (6 Months)</h4>
+            </div>
+            <div class="relative h-80 bg-white/50 rounded-xl p-4 border border-outline-variant/30">
+                <canvas id="cashFlowChart"></canvas>
             </div>
         </div>
         
+        <!-- Revenue by Service (Doughnut Chart) -->
+        <div class="ceo-glass p-6 rounded-2xl">
+            <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Revenue by Service</h4>
+            <div class="relative h-80">
+                <canvas id="serviceRevenueChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section 2: Clients & Expenses -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 relative z-10">
         <!-- Revenue by Client (Bar Chart) -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white">
-            <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Revenue by Top Clients</h4>
+        <div class="ceo-glass p-6 rounded-2xl">
+            <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Top Clients by Revenue</h4>
             <div class="relative h-64">
                 <canvas id="clientRevenueChart"></canvas>
             </div>
         </div>
-    </div>
 
-    <!-- Charts Section 2 -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <!-- Revenue by Service Chart -->
-        <div class="glass-card p-6 rounded-2xl shadow-sm border border-white">
-            <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Revenue by Service</h4>
+        <!-- Expense Breakdown (Doughnut Chart) -->
+        <div class="ceo-glass p-6 rounded-2xl">
+            <h4 class="font-headline-sm text-on-surface mb-6 font-bold">Expense Breakdown</h4>
             <div class="relative h-64">
-                <canvas id="serviceRevenueChart"></canvas>
+                <canvas id="expenseCategoryChart"></canvas>
             </div>
         </div>
     </div>
@@ -164,75 +233,104 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     
-    Chart.defaults.font.family = 'Inter';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.color = '#64748b'; // slate-500
 
-    // 1. Monthly Revenue Trend (Line Chart)
-    const trendCtx = document.getElementById('monthlyTrendChart').getContext('2d');
-    new Chart(trendCtx, {
+    // 1. Cash Flow Trend (Dual Line Chart)
+    const cfCtx = document.getElementById('cashFlowChart').getContext('2d');
+    
+    let gradRev = cfCtx.createLinearGradient(0, 0, 0, 400);
+    gradRev.addColorStop(0, 'rgba(34, 197, 94, 0.2)'); // success
+    gradRev.addColorStop(1, 'rgba(34, 197, 94, 0)');
+
+    let gradExp = cfCtx.createLinearGradient(0, 0, 0, 400);
+    gradExp.addColorStop(0, 'rgba(239, 68, 68, 0.2)'); // error
+    gradExp.addColorStop(1, 'rgba(239, 68, 68, 0)');
+
+    new Chart(cfCtx, {
         type: 'line',
         data: {
             labels: {{ trend_labels|safe }},
-            datasets: [{
-                label: 'Revenue (₹)',
-                data: {{ trend_data|safe }},
-                borderColor: '#2563eb', // primary
-                backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                borderWidth: 2,
-                pointBackgroundColor: '#2563eb',
-                fill: true,
-                tension: 0.4
-            }]
+            datasets: [
+                {
+                    label: 'Revenue (₹)',
+                    data: {{ trend_data|safe }},
+                    borderColor: '#22c55e', // success
+                    backgroundColor: gradRev,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#22c55e',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.4
+                },
+                {
+                    label: 'Expenses (₹)',
+                    data: {{ expense_trend_data|safe }},
+                    borderColor: '#ef4444', // error
+                    backgroundColor: gradExp,
+                    borderWidth: 3,
+                    pointBackgroundColor: '#ef4444',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    fill: true,
+                    tension: 0.4
+                }
+            ]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
             plugins: {
-                legend: { display: false }
+                legend: { 
+                    position: 'top',
+                    labels: { usePointStyle: true, boxWidth: 8, font: {weight: 'bold'} }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    titleColor: '#0f172a',
+                    bodyColor: '#334155',
+                    borderColor: '#e2e8f0',
+                    borderWidth: 1,
+                    padding: 12,
+                    boxPadding: 6,
+                    usePointStyle: true,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) label += ': ';
+                            if (context.parsed.y !== null) {
+                                label += '₹' + context.parsed.y.toLocaleString();
+                            }
+                            return label;
+                        }
+                    }
+                }
             },
             scales: {
                 y: {
                     beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.05)' },
-                    ticks: { callback: function(value) { return '₹' + (value/1000) + 'k'; } }
+                    grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+                    ticks: { 
+                        callback: function(value) { return '₹' + (value/1000) + 'k'; },
+                        font: {weight: '500'}
+                    }
                 },
                 x: {
-                    grid: { display: false }
+                    grid: { display: false, drawBorder: false },
+                    ticks: { font: {weight: 'bold'} }
                 }
             }
         }
     });
 
-    // 2. Revenue by Client (Bar Chart)
-    const clientCtx = document.getElementById('clientRevenueChart').getContext('2d');
-    new Chart(clientCtx, {
-        type: 'bar',
-        data: {
-            labels: {{ client_revenue_labels|safe }},
-            datasets: [{
-                label: 'Revenue (₹)',
-                data: {{ client_revenue_data|safe }},
-                backgroundColor: '#006056', // tertiary
-                borderRadius: 4
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: 'rgba(0,0,0,0.05)' },
-                    ticks: { callback: function(value) { return '₹' + (value/1000) + 'k'; } }
-                },
-                x: {
-                    grid: { display: false }
-                }
-            }
-        }
-    });
-
-    // 3. Service Revenue Doughnut Chart
+    // 2. Revenue by Service (Doughnut Chart)
     const srvCtx = document.getElementById('serviceRevenueChart').getContext('2d');
     const serviceLabels = {{ service_labels|safe }};
     const serviceRevenue = {{ service_revenue|safe }};
@@ -243,27 +341,97 @@ document.addEventListener('DOMContentLoaded', function() {
             labels: serviceLabels.length > 0 ? serviceLabels : ['No Data'],
             datasets: [{
                 data: serviceRevenue.length > 0 ? serviceRevenue : [1],
-                backgroundColor: [
-                    '#2563eb', // primary
-                    '#006056', // tertiary
-                    '#22C55E', // success
-                    '#F59E0B', // warning
-                    '#dbe1ff',
-                ],
+                backgroundColor: ['#2563eb', '#0ea5e9', '#0d9488', '#8b5cf6', '#e2e8f0'],
                 borderWidth: 0,
-                hoverOffset: 4
+                hoverOffset: 8
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: { usePointStyle: true }
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return ' ₹' + context.parsed.toLocaleString();
+                        }
+                    }
                 }
             },
-            cutout: '70%'
+            cutout: '75%',
+            layout: { padding: 10 }
+        }
+    });
+
+    // 3. Top Clients (Bar Chart)
+    const clientCtx = document.getElementById('clientRevenueChart').getContext('2d');
+    new Chart(clientCtx, {
+        type: 'bar',
+        data: {
+            labels: {{ client_revenue_labels|safe }},
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: {{ client_revenue_data|safe }},
+                backgroundColor: '#3b82f6', // primary blue
+                borderRadius: 6,
+                barThickness: 30
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) { return ' ₹' + context.parsed.y.toLocaleString(); }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false },
+                    ticks: { callback: function(value) { return '₹' + (value/1000) + 'k'; } }
+                },
+                x: {
+                    grid: { display: false, drawBorder: false },
+                    ticks: { font: {weight: 'bold'} }
+                }
+            }
+        }
+    });
+
+    // 4. Expense Breakdown (Doughnut Chart)
+    const expCtx = document.getElementById('expenseCategoryChart').getContext('2d');
+    const expLabels = {{ expense_cat_labels|safe }};
+    const expData = {{ expense_cat_data|safe }};
+    
+    new Chart(expCtx, {
+        type: 'doughnut',
+        data: {
+            labels: expLabels.length > 0 ? expLabels : ['No Data'],
+            datasets: [{
+                data: expData.length > 0 ? expData : [1],
+                backgroundColor: ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#f1f5f9'],
+                borderWidth: 0,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'right', labels: { usePointStyle: true, padding: 15 } },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) { return ' ₹' + context.parsed.toLocaleString(); }
+                    }
+                }
+            },
+            cutout: '70%',
+            layout: { padding: 10 }
         }
     });
 
