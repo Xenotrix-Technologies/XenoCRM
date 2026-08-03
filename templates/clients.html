@@ -1,57 +1,63 @@
 {% extends 'base.html' %}
 
-{% block title %}XenoCRM | Clients{% endblock %}
+{% block title %}Clients Directory | XenoCRM ERP{% endblock %}
 
 {% block content %}
-<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+<div class="p-6 md:p-8 flex-1 flex flex-col bg-slate-50 overflow-y-auto custom-scrollbar">
     <!-- Header -->
-    <div class="flex justify-between items-end mb-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-            <h2 class="font-headline-lg text-headline-lg text-on-background">Clients Directory</h2>
-            <p class="text-secondary font-body-md">Manage your clients, corporate relationships, and grouped opportunity pipelines.</p>
+            <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+                <span>Accounts</span>
+                <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+                <span class="text-brand-600 font-bold">Clients</span>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Clients Directory</h1>
+            <p class="text-xs md:text-sm text-slate-500 mt-1">Manage corporate clients, accounts, and service category relationships.</p>
         </div>
     </div>
 
     <!-- Service Categories Section -->
     <div class="mb-8">
-        <h3 class="text-sm font-bold text-outline uppercase tracking-wider mb-4">Service Categories</h3>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Service Categories & Accounts</h2>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {% for service in services %}
-            <a href="{% url 'service_clients' service_id=service.id %}" class="service-filter-card text-left glass-card p-5 rounded-2xl border border-white/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between min-h-[180px]">
+            <a href="{% url 'service_clients' service_id=service.id %}" class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-brand-500/50 transition-all flex flex-col justify-between group">
                 <div>
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="p-3 bg-secondary-fixed/50 rounded-xl text-primary-fixed-dim">
-                            <span class="material-symbols-outlined text-primary text-2xl">
-                                {% if service.id == 0 %}help{% else %}design_services{% endif %}
-                            </span>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 bg-brand-50 text-brand-600 rounded-xl group-hover:scale-105 transition-transform">
+                            <i data-lucide="briefcase" class="w-6 h-6"></i>
                         </div>
-                        <span class="bg-secondary/10 text-secondary text-xs px-2.5 py-0.5 rounded-full font-bold">
+                        <span class="bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full font-bold border border-slate-200">
                             {{ service.client_count }} Client{{ service.client_count|pluralize }}
                         </span>
                     </div>
-                    <h4 class="font-bold text-on-surface text-base">{{ service.name }}</h4>
-                    <p class="text-xs text-secondary mt-2 line-clamp-2">{{ service.description }}</p>
+                    <h3 class="font-bold text-slate-900 text-base group-hover:text-brand-600 transition-colors">{{ service.name }}</h3>
+                    <p class="text-xs text-slate-500 mt-2 line-clamp-2">{{ service.description|default:"Active client service line." }}</p>
                 </div>
-                <div class="mt-4 pt-3 border-t border-outline-variant/30 flex justify-between items-center text-sm">
-                    <span class="text-secondary">Pipeline Value</span>
-                    <span class="font-bold text-primary">₹{{ service.total_value|floatformat:2 }}</span>
+                <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center text-xs">
+                    <span class="text-slate-500 font-medium">Pipeline Value</span>
+                    <span class="font-bold text-brand-600 text-sm">₹{{ service.total_value|floatformat:0 }}</span>
                 </div>
             </a>
+            {% empty %}
+            <div class="col-span-full bg-white p-12 rounded-2xl border border-slate-200/80 text-center text-slate-400">
+                <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-3 text-slate-300"></i>
+                <p class="text-sm font-semibold text-slate-700">No Services Found</p>
+                <p class="text-xs text-slate-400 mt-1">Add services in settings to categorize clients.</p>
+            </div>
             {% endfor %}
         </div>
     </div>
 </div>
+{% endblock %}
 
-<style>
-.service-filter-card {
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-}
-.service-filter-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(var(--primary-rgb, 0, 83, 219), 0.4);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
-}
-</style>
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide) lucide.createIcons();
+    });
+</script>
 {% endblock %}

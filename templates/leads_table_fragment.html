@@ -1,56 +1,56 @@
-<!-- Data Table Card -->
+<!-- Leads Data Table Fragment -->
 <form method="POST" id="bulk-form" action="{% url 'leads' %}">
     {% csrf_token %}
     <input type="hidden" name="action_type" id="action-type-input" value=""/>
-    <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant overflow-hidden mb-6">
+    <div class="bg-white rounded-2xl shadow-xs border border-slate-200/80 overflow-hidden mb-6">
         <div class="overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left border-collapse">
+            <table class="saas-table">
                 <thead>
-                    <tr class="bg-surface-container-low/50 border-b border-outline-variant text-[11px]">
-                        <th class="py-2 px-2 w-8">
-                            <input id="select-all" class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+                    <tr>
+                        <th class="w-10">
+                            <input id="select-all" class="rounded border-slate-300 text-brand-600 focus:ring-brand-500" type="checkbox"/>
                         </th>
-                        <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider whitespace-nowrap">Lead Name</th>
-                        <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider whitespace-nowrap">Company</th>
-                        <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider whitespace-nowrap">Location</th>
-                        <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider">Phone / Alt Phone</th>
-                        <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider">Registered On</th>
-                        <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider whitespace-nowrap">Status</th>
-                        <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider whitespace-nowrap">Agent</th>
-                        <th class="py-2 px-2 font-label-md text-secondary uppercase tracking-wider">Last Followup</th>
-                        <th class="py-2 px-2 w-8"></th>
+                        <th>Lead Name</th>
+                        <th>Company</th>
+                        <th>Location</th>
+                        <th>Phone / Contact</th>
+                        <th>Registered Date</th>
+                        <th>Status</th>
+                        <th>Assigned Agent</th>
+                        <th>Last Followup</th>
+                        <th class="text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-outline-variant/30 text-xs">
+                <tbody>
                     {% for lead in leads %}
-                    <tr class="hover:bg-primary-container/5 transition-colors group" id="lead-row-{{ lead.id }}">
-                        <td class="py-2 px-2">
-                            <input name="lead_ids" value="{{ lead.id }}" class="lead-checkbox rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"/>
+                    <tr class="hover:bg-slate-50 transition-colors group" id="lead-row-{{ lead.id }}">
+                        <td>
+                            <input name="lead_ids" value="{{ lead.id }}" class="lead-checkbox rounded border-slate-300 text-brand-600 focus:ring-brand-500" type="checkbox"/>
                         </td>
-                        <td class="py-2 px-2">
-                            <div class="flex items-center gap-2">
+                        <td>
+                            <div class="flex items-center gap-3">
                                 {% if lead.profile_image_url %}
-                                <img class="w-6 h-6 rounded-full border border-outline-variant object-cover" src="{{ lead.profile_image_url }}" alt=""/>
+                                <img class="w-8 h-8 rounded-full border border-slate-200 object-cover" src="{{ lead.profile_image_url }}" alt=""/>
                                 {% else %}
-                                <div class="w-6 h-6 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-[10px] border border-outline-variant">
+                                <div class="w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs border border-brand-200 flex-shrink-0">
                                     {{ lead.name|slice:":2"|upper }}
                                 </div>
                                 {% endif %}
                                 <div>
-                                    <div class="font-semibold text-on-surface hover:text-primary"><a href="{% url 'contact_detail' lead.id %}">{{ lead.name }}</a></div>
-                                    <div class="text-[10px] text-secondary">{{ lead.email }}</div>
+                                    <div class="font-bold text-slate-900 hover:text-brand-600 transition-colors"><a href="{% url 'contact_detail' lead.id %}">{{ lead.name }}</a></div>
+                                    <div class="text-[11px] text-slate-400 font-normal">{{ lead.email }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="py-2 px-2 text-on-surface-variant">{{ lead.company }}</td>
-                        <td class="py-2 px-2 text-on-surface-variant">{{ lead.location|default:"-" }}</td>
-                        <td class="py-2 px-2 text-on-surface-variant">
-                            <div>{{ lead.phone_number|default:"-" }}</div>
+                        <td class="font-semibold text-slate-700">{{ lead.company }}</td>
+                        <td class="text-slate-600">{{ lead.location|default:"-" }}</td>
+                        <td class="text-slate-700">
+                            <div class="font-medium">{{ lead.phone_number|default:"-" }}</div>
                             {% if lead.alt_phone_number %}
-                            <div class="text-[10px] text-secondary">{{ lead.alt_phone_number }}</div>
+                            <div class="text-[10px] text-slate-400">{{ lead.alt_phone_number }}</div>
                             {% endif %}
                         </td>
-                        <td class="py-2 px-2 text-on-surface-variant">
+                        <td class="text-slate-500 text-xs">
                             {% if lead.date_time %}
                             {{ lead.date_time|date:"Y-m-d H:i" }}
                             {% elif lead.created_at %}
@@ -59,45 +59,55 @@
                             -
                             {% endif %}
                         </td>
-                        <td class="py-2 px-2">
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight" style="{{ lead.status_badge_style }}">
+                        <td>
+                            <span class="badge-saas badge-info">
                                 {{ lead.status }}
                             </span>
                         </td>
-                        <td class="py-2 px-2">
+                        <td>
                             {% if lead.owner %}
-                            <div class="flex items-center gap-1">
-                                <div class="w-4 h-4 rounded-full bg-secondary-container text-[7px] flex items-center justify-center text-secondary font-bold" title="{{ lead.owner.user.username }}">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-slate-100 text-brand-600 text-[10px] flex items-center justify-center font-bold border border-slate-200">
                                     {{ lead.owner.user.username|slice:":2"|upper }}
                                 </div>
-                                <span class="text-[11px]">{{ lead.owner.user.get_full_name|default:lead.owner.user.username }}</span>
+                                <span class="text-xs font-medium text-slate-700">{{ lead.owner.user.get_full_name|default:lead.owner.user.username }}</span>
                             </div>
                             {% else %}
-                            <span class="text-secondary">-</span>
+                            <span class="text-slate-400">-</span>
                             {% endif %}
                         </td>
-                        <td class="py-2 px-2 text-secondary">
+                        <td class="text-slate-500 text-xs">
                             {% if lead.last_followup_date_time %}
                             {{ lead.last_followup_date_time|date:"Y-m-d H:i" }}
                             {% else %}
                             -
                             {% endif %}
                         </td>
-                        <td class="py-2 px-2 text-right">
-                                <button type="button" class="p-1.5 rounded-lg hover:bg-red-50 text-outline hover:text-red-600 transition-all" title="Delete Lead" onclick="if(confirm('Delete lead \'{{ lead.name|escapejs }}\'? This cannot be undone.')) { const f = document.getElementById('single-delete-form'); f.action = '{% url 'delete_lead' lead.id %}'; f.submit(); }">
-                                    <span class="material-symbols-outlined text-[16px]">delete</span>
+                        <td class="text-right">
+                            <div class="flex items-center justify-end gap-1">
+                                <a href="{% url 'contact_detail' lead.id %}" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-brand-600 transition-all" title="View Lead">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </a>
+                                <button type="button" class="p-1.5 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all" title="Delete Lead" onclick="if(confirm('Delete lead \'{{ lead.name|escapejs }}\'? This cannot be undone.')) { const f = document.getElementById('single-delete-form'); f.action = '{% url 'delete_lead' lead.id %}'; f.submit(); }">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="9" class="p-8 text-center text-outline">
-                            {% if q %}
-                                No leads found matching "{{ q }}".
-                            {% else %}
-                                No leads found matching current filters.
-                            {% endif %}
+                        <td colspan="10" class="p-12 text-center text-slate-400">
+                            <div class="max-w-xs mx-auto">
+                                <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-3 text-slate-300"></i>
+                                <p class="text-sm font-semibold text-slate-700">No Leads Found</p>
+                                <p class="text-xs text-slate-400 mt-1">
+                                    {% if q %}
+                                        No matching record for "{{ q }}". Try refining your search query.
+                                    {% else %}
+                                        No leads exist matching your selected filters.
+                                    {% endif %}
+                                </p>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -107,34 +117,34 @@
         
         <!-- Pagination Footer -->
         {% if is_paginated or leads.has_other_pages %}
-        <div class="p-4 bg-surface-container-low/30 border-t border-outline-variant flex items-center justify-between">
-            <span class="text-body-sm text-secondary">Showing {{ leads.start_index }}-{{ leads.end_index }} of {{ paginator.count }} leads</span>
-            <div class="flex items-center gap-2">
+        <div class="p-4 bg-slate-50 border-t border-slate-200/80 flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-500">Showing {{ leads.start_index }}-{{ leads.end_index }} of {{ paginator.count }} leads</span>
+            <div class="flex items-center gap-1.5">
                 {% if leads.has_previous %}
-                <a href="?page={{ leads.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="p-2 rounded-lg hover:bg-surface-variant pagination-link">
-                    <span class="material-symbols-outlined">chevron_left</span>
+                <a href="?page={{ leads.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 pagination-link">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
                 </a>
                 {% else %}
-                <button type="button" class="p-2 rounded-lg opacity-30 cursor-not-allowed" disabled>
-                    <span class="material-symbols-outlined">chevron_left</span>
+                <button type="button" class="p-1.5 rounded-xl border border-slate-200 bg-white opacity-40 cursor-not-allowed" disabled>
+                    <i data-lucide="chevron-left" class="w-4 h-4 text-slate-400"></i>
                 </button>
                 {% endif %}
                 
                 {% for page_num in paginator.page_range %}
                     {% if page_num == leads.number %}
-                    <button type="button" class="w-8 h-8 rounded-lg bg-primary text-on-primary text-body-sm font-semibold">{{ page_num }}</button>
+                    <button type="button" class="w-8 h-8 rounded-xl bg-brand-600 text-white text-xs font-bold shadow-xs">{{ page_num }}</button>
                     {% elif page_num > leads.number|add:"-3" and page_num < leads.number|add:"3" %}
-                    <a href="?page={{ page_num }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="w-8 h-8 rounded-lg hover:bg-surface-variant text-body-sm flex items-center justify-center pagination-link">{{ page_num }}</a>
+                    <a href="?page={{ page_num }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="w-8 h-8 rounded-xl hover:bg-slate-100 text-xs font-semibold text-slate-700 flex items-center justify-center pagination-link">{{ page_num }}</a>
                     {% endif %}
                 {% endfor %}
                 
                 {% if leads.has_next %}
-                <a href="?page={{ leads.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="p-2 rounded-lg hover:bg-surface-variant pagination-link">
-                    <span class="material-symbols-outlined">chevron_right</span>
+                <a href="?page={{ leads.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if owner_filter %}&owner={{ owner_filter }}{% endif %}{% if sort_by %}&sort={{ sort_by }}{% endif %}" class="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 pagination-link">
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
                 </a>
                 {% else %}
-                <button type="button" class="p-2 rounded-lg opacity-30 cursor-not-allowed" disabled>
-                    <span class="material-symbols-outlined">chevron_right</span>
+                <button type="button" class="p-1.5 rounded-xl border border-slate-200 bg-white opacity-40 cursor-not-allowed" disabled>
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400"></i>
                 </button>
                 {% endif %}
             </div>

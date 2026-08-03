@@ -44,7 +44,9 @@ CSRF_TRUSTED_ORIGINS.extend(['https://xeno.xenotrix.in', 'https://www.xeno.xenot
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
-if not DEBUG:
+import sys
+
+if not DEBUG and 'test' not in sys.argv:
     # Tell Django it's secure if Render's proxy forwards it as HTTPS
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     
