@@ -4873,3 +4873,32 @@ def client_contact_detail_view(request, lead_id):
         'services': services,
     }
     return render(request, 'client_contact_detail.html', context)
+
+@login_required
+@require_POST
+def bulk_delete_incomes(request):
+    try:
+        import json
+        data = json.loads(request.body)
+        ids = data.get('ids', [])
+        if ids:
+            Income.objects.filter(organization=request.user.profile.organization, id__in=ids).delete()
+            return JsonResponse({'success': True, 'message': 'Selected income records deleted successfully.'})
+        return JsonResponse({'success': False, 'error': 'No records selected.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_POST
+def bulk_delete_expenses(request):
+    try:
+        import json
+        data = json.loads(request.body)
+        ids = data.get('ids', [])
+        if ids:
+            Expense.objects.filter(organization=request.user.profile.organization, id__in=ids).delete()
+            return JsonResponse({'success': True, 'message': 'Selected expense records deleted successfully.'})
+        return JsonResponse({'success': False, 'error': 'No records selected.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+

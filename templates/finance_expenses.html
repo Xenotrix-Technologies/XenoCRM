@@ -12,6 +12,14 @@
             <h2 class="font-headline-sm text-headline-sm text-on-background font-bold uppercase tracking-wider text-primary">Expenses Management</h2>
         </div>
         <div class="flex items-center gap-3">
+            <button id="bulk-delete-btn" type="button" class="hidden items-center gap-1.5 px-4 py-2 bg-error text-white font-bold text-sm rounded-lg hover:bg-error/90 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+                Bulk Delete (<span id="selected-count">0</span>)
+            </button>
+            <a href="data:text/csv;charset=utf-8,date,description,cost_center,amount%0A" download="expense_template.csv" class="flex items-center gap-1.5 px-4 py-2 bg-white border border-outline-variant text-on-surface font-bold text-sm rounded-lg hover:bg-slate-50 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[18px]">download</span>
+                Template
+            </a>
             <form method="POST" enctype="multipart/form-data" class="m-0">
                 {% csrf_token %}
                 <input type="file" name="csv_file" id="expense_csv_upload" accept=".csv" class="hidden" onchange="this.form.submit()">
@@ -75,6 +83,7 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-surface-variant/20 border-b border-outline-variant/30">
+                        <th class="px-4 py-3 text-xs font-bold text-secondary w-10 text-center"><input type="checkbox" id="select-all" class="rounded border-outline-variant text-primary focus:ring-primary"></th>
                         <th class="px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Date</th>
                         <th class="px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Category</th>
                         <th class="px-4 py-3 text-xs font-bold text-secondary uppercase tracking-wider">Description</th>
@@ -87,6 +96,9 @@
                 <tbody class="divide-y divide-outline-variant/20">
                     {% for item in expenses %}
                     <tr class="hover:bg-primary/5 transition-colors group bg-white">
+                        <td class="px-4 py-3 text-center w-10">
+                            <input type="checkbox" class="row-checkbox rounded border-outline-variant text-primary focus:ring-primary" value="{{ item.id }}">
+                        </td>
                         <td class="px-4 py-3 text-xs text-on-surface font-medium">{{ item.date }}</td>
                         <td class="px-4 py-3 text-xs text-on-surface">
                             <span class="px-2 py-0.5 rounded-full border border-outline-variant/50 text-[10px] font-bold text-on-surface bg-surface-container inline-block">
@@ -116,7 +128,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="p-6 text-center text-secondary bg-white text-sm">
+                        <td colspan="8" class="p-6 text-center text-secondary bg-white text-sm">
                             <div class="flex flex-col items-center justify-center">
                                 <span class="material-symbols-outlined text-3xl mb-2 opacity-50">receipt_long</span>
                                 <p>No expense records found.</p>
@@ -203,5 +215,74 @@ function openEditExpenseModal(id, date, category, description, cost_center, amou
 function closeEditExpenseModal() {
     document.getElementById('editExpenseModal').classList.add('hidden');
 }
+
+// Bulk Delete Logic
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAll = document.getElementById('select-all');
+    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+    const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
+    const selectedCountSpan = document.getElementById('selected-count');
+
+    function updateBulkDeleteBtn() {
+        const checkedCount = document.querySelectorAll('.row-checkbox:checked').length;
+        selectedCountSpan.textContent = checkedCount;
+        if (checkedCount > 0) {
+            bulkDeleteBtn.classList.remove('hidden');
+            bulkDeleteBtn.classList.add('flex');
+        } else {
+            bulkDeleteBtn.classList.add('hidden');
+            bulkDeleteBtn.classList.remove('flex');
+        }
+        
+        if (selectAll) {
+            selectAll.checked = checkedCount > 0 && checkedCount === rowCheckboxes.length;
+        }
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            rowCheckboxes.forEach(cb => cb.checked = this.checked);
+            updateBulkDeleteBtn();
+        });
+    }
+
+    rowCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateBulkDeleteBtn);
+    });
+
+    if (bulkDeleteBtn) {
+        bulkDeleteBtn.addEventListener('click', function() {
+            const selectedIds = Array.from(document.querySelectorAll('.row-checkbox:checked')).map(cb => cb.value);
+            if (selectedIds.length === 0) return;
+
+            if (!confirm(`Are you sure you want to delete ${selectedIds.length} selected expense records?`)) return;
+
+            fetch('{% url "bulk_delete_expenses" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ ids: selectedIds })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (typeof showToast === 'function') showToast(data.message, 'success');
+                    else alert(data.message);
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    if (typeof showToast === 'function') showToast(data.error || 'Failed to delete.', 'error');
+                    else alert(data.error || 'Failed to delete.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (typeof showToast === 'function') showToast('Network error.', 'error');
+            });
+        });
+    }
+});
 </script>
 {% endblock %}
