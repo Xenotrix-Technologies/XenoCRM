@@ -901,7 +901,8 @@ class Task(models.Model):
         ('Low', 'Low'),
     ]
 
-    lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='tasks')
+    lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
     title = models.CharField(max_length=255, default='Project Task')
     description = models.TextField(blank=True, null=True)
     assignees = models.ManyToManyField(UserProfile, blank=True, related_name='assigned_tasks')

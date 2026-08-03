@@ -36,7 +36,7 @@
                     {% for task in tasks %}
                     <tr class="hover:bg-surface-container/30 transition-colors">
                         <td class="px-6 py-4 font-bold">
-                            <a href="#" onclick="openEditModal('{{ task.id }}', '{{ task.title|escapejs }}', '{{ task.description|default:''|escapejs }}', '[{% for a in task.assignees.all %}{{ a.id }}{% if not forloop.last %},{% endif %}{% endfor %}]', '{{ task.priority|escapejs }}', '{{ task.start_date|date:'Y-m-d' }}', '{{ task.due_date|date:'Y-m-d' }}', '{{ task.completed|yesno:'true,false' }}', '{{ task.lead.id }}')" class="text-primary hover:underline font-bold">
+                            <a href="#" onclick="openEditModal('{{ task.id }}', '{{ task.title|escapejs }}', '{{ task.description|default:''|escapejs }}', '[{% for a in task.assignees.all %}{{ a.id }}{% if not forloop.last %},{% endif %}{% endfor %}]', '{{ task.priority|escapejs }}', '{{ task.start_date|date:'Y-m-d' }}', '{{ task.due_date|date:'Y-m-d' }}', '{{ task.completed|yesno:'true,false' }}', '{% if task.lead %}{{ task.lead.id }}{% else %}inhouse{% endif %}')" class="text-primary hover:underline font-bold">
                                 {{ task.title }}
                             </a>
                         </td>
@@ -115,6 +115,7 @@
                 <label class="block text-label-md font-label-md text-outline uppercase mb-1">Associated Lead / Client *</label>
                 <select name="lead_id" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
                     <option value="" disabled selected>Select associated lead</option>
+                    <option value="inhouse">In-house Project</option>
                     {% for lead in leads %}
                     <option value="{{ lead.id }}">{{ lead.name }} ({% if lead.company %}{{ lead.company }}{% else %}No Company{% endif %})</option>
                     {% endfor %}
@@ -191,6 +192,7 @@
             <div>
                 <label class="block text-label-md font-label-md text-outline uppercase mb-1">Associated Lead / Client *</label>
                 <select id="edit-lead-id" name="lead_id" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                    <option value="inhouse">In-house Project</option>
                     {% for lead in leads %}
                     <option value="{{ lead.id }}">{{ lead.name }} ({% if lead.company %}{{ lead.company }}{% else %}No Company{% endif %})</option>
                     {% endfor %}
