@@ -390,7 +390,7 @@ def delete_ticket(request, ticket_id):
 @login_required
 def projects_view(request):
     org = request.user.profile.organization
-    tasks = Task.objects.filter(lead__organization=org).order_by('due_date')
+    tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
     staff = UserProfile.objects.filter(organization=org)
     leads = Lead.objects.filter(organization=org)
     return render(request, 'projects.html', {
@@ -1116,9 +1116,13 @@ def add_task(request):
         org = request.user.profile.organization
         
         try:
-            lead = Lead.objects.get(id=lead_id, organization=org)
+            lead = None
+            if lead_id and lead_id != 'inhouse':
+                lead = Lead.objects.get(id=lead_id, organization=org)
+            
             task = Task.objects.create(
                 lead=lead,
+                organization=org if not lead else None,
                 title=title,
                 description=desc,
                 start_date=start_date,
@@ -1132,12 +1136,13 @@ def add_task(request):
                 valid_assignees = UserProfile.objects.filter(id__in=[int(aid) for aid in assignee_ids if aid], organization=org)
                 task.assignees.set(valid_assignees)
 
-            # Log activity
-            Activity.objects.create(
-                lead=lead,
-                type='Task',
-                description=f"Created task: {title} (Priority: {priority}, Due: {due_date})"
-            )
+            if lead:
+                # Log activity
+                Activity.objects.create(
+                    lead=lead,
+                    type='Task',
+                    description=f"Created task: {title} (Priority: {priority}, Due: {due_date})"
+                )
             
             if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('ajax') == 'true':
                 return JsonResponse({
@@ -1171,7 +1176,9 @@ def add_task(request):
 def edit_task(request, task_id):
     if request.method == 'POST':
         org = request.user.profile.organization
-        task = get_object_or_404(Task, id=task_id, lead__organization=org)
+        task = get_object_or_404(Task, id=task_id)
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Invalid task.'})
         
         try:
             task.title = request.POST.get('title', 'Project Task')
@@ -1187,11 +1194,15 @@ def edit_task(request, task_id):
                 task.due_date = due_date_val
                 
             lead_id = request.POST.get('lead_id')
-            if lead_id:
+            if lead_id and lead_id != 'inhouse':
                 try:
                     task.lead = Lead.objects.get(id=int(lead_id), organization=org)
+                    task.organization = None
                 except (ValueError, Lead.DoesNotExist):
                     pass
+            elif lead_id == 'inhouse':
+                task.lead = None
+                task.organization = org
                     
             assignee_ids = request.POST.getlist('assignees')
             if assignee_ids:
@@ -1219,7 +1230,9 @@ def edit_task(request, task_id):
 def delete_task(request, task_id):
     if request.method == 'POST':
         org = request.user.profile.organization
-        task = get_object_or_404(Task, id=task_id, lead__organization=org)
+        task = get_object_or_404(Task, id=task_id)
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Invalid task.'})
         task.delete()
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'message': 'Task deleted successfully.'})
