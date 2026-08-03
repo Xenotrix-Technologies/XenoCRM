@@ -186,53 +186,71 @@
 {% block extra_js %}
 <script>
     // Server-backed AJAX for adding finance category/method
-    document.addEventListener('DOMContentLoaded', function() {
-        const addForms = [
-            document.getElementById('add-finance-form-modal'),
-            document.getElementById('add-finance-method-form-modal')
-        ];
-        
-        addForms.forEach(form => {
-            if (form) {
-                form.addEventListener('submit', function (e) {
-                    e.preventDefault();
-                    const submitBtn = form.querySelector('button[type="submit"]');
-                    const originalText = submitBtn.innerHTML;
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = 'Adding...';
-
-                    const formData = new FormData(form);
-                    fetch(form.action, {
-                        method: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-                        },
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalText;
-                        if (data.success) {
-                            if (typeof showToast === 'function') showToast('Added successfully!', 'success');
-                            else alert('Added successfully!');
-                            setTimeout(() => window.location.reload(), 800);
-                        } else {
-                            if (typeof showToast === 'function') showToast(data.error || 'Failed to add.', 'error');
-                            else alert(data.error || 'Failed to add.');
+    (function() {
+        function initFinanceForms() {
+            var addForm1 = document.getElementById('add-finance-form-modal');
+            var addForm2 = document.getElementById('add-finance-method-form-modal');
+            
+            var forms = [addForm1, addForm2];
+            
+            for (var i = 0; i < forms.length; i++) {
+                var form = forms[i];
+                if (form && !form.dataset.ajaxBound) {
+                    form.dataset.ajaxBound = 'true';
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        var currentForm = e.target;
+                        var submitBtn = currentForm.querySelector('button[type="submit"]');
+                        var originalText = 'Save';
+                        if (submitBtn) {
+                            originalText = submitBtn.innerHTML;
+                            submitBtn.disabled = true;
+                            submitBtn.innerHTML = 'Adding...';
                         }
-                    })
-                    .catch(err => {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = originalText;
-                        console.error(err);
-                        if (typeof showToast === 'function') showToast('Network error.', 'error');
+
+                        var formData = new FormData(currentForm);
+                        fetch(currentForm.action, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                            },
+                            body: formData
+                        })
+                        .then(function(response) { return response.json(); })
+                        .then(function(data) {
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = originalText;
+                            }
+                            if (data.success) {
+                                if (typeof showToast === 'function') showToast('Added successfully!', 'success');
+                                else alert('Added successfully!');
+                                setTimeout(function() { window.location.reload(); }, 800);
+                            } else {
+                                if (typeof showToast === 'function') showToast(data.error || 'Failed to add.', 'error');
+                                else alert(data.error || 'Failed to add.');
+                            }
+                        })
+                        .catch(function(err) {
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = originalText;
+                            }
+                            console.error(err);
+                            if (typeof showToast === 'function') showToast('Network error.', 'error');
+                        });
                     });
-                });
+                }
             }
-        });
-    });
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFinanceForms);
+        } else {
+            initFinanceForms();
+        }
+    })();
 
     // Finance Category actions
     function deleteFinanceCategory(id, name) {
