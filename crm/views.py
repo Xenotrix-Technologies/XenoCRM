@@ -13,7 +13,7 @@ from django.contrib import messages
 from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable, Campaign, ContentDropdownOption, SystemNotification
 from .forms import EventForm, ProfileForm
 from .models import Income, Expense, FinancePaymentMethod, FinanceExpenseCategory
-from .models import ClientStatus, ProjectStatus, CampaignStatus, CalendarStatus, TicketStatus, PriorityStatus
+from .models import ClientStatus, ProjectStatus, CampaignStatus, CalendarStatus, TicketStatus, PriorityStatus, InvoiceStatus
 from datetime import datetime
 from decimal import Decimal
 # Views for navigation pages with proper multi-tenant database queries
