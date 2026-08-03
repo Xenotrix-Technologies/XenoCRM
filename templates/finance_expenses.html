@@ -37,42 +37,52 @@
 
     <!-- Filter Bar -->
     <div class="glass-card p-4 rounded-xl shadow-sm border border-outline-variant/30 mb-6 bg-surface text-on-surface">
-        <form class="flex flex-wrap items-end gap-4">
+        <form method="GET" class="flex flex-wrap items-end gap-4">
             <div class="flex-1 min-w-[90px]">
                 <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Day</label>
-                <input type="text" placeholder="DD" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface placeholder-on-surface-variant/50">
+                <input type="text" name="day" value="{{ request.GET.day }}" placeholder="DD" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface placeholder-on-surface-variant/50">
             </div>
             <div class="flex-1 min-w-[130px]">
                 <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Month</label>
-                <select class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface">
-                    <option>All Months</option>
-                    <option>January</option>
-                    <option>February</option>
+                <select name="month" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface">
+                    <option value="">All Months</option>
+                    <option value="1" {% if request.GET.month == '1' %}selected{% endif %}>January</option>
+                    <option value="2" {% if request.GET.month == '2' %}selected{% endif %}>February</option>
+                    <option value="3" {% if request.GET.month == '3' %}selected{% endif %}>March</option>
+                    <option value="4" {% if request.GET.month == '4' %}selected{% endif %}>April</option>
+                    <option value="5" {% if request.GET.month == '5' %}selected{% endif %}>May</option>
+                    <option value="6" {% if request.GET.month == '6' %}selected{% endif %}>June</option>
+                    <option value="7" {% if request.GET.month == '7' %}selected{% endif %}>July</option>
+                    <option value="8" {% if request.GET.month == '8' %}selected{% endif %}>August</option>
+                    <option value="9" {% if request.GET.month == '9' %}selected{% endif %}>September</option>
+                    <option value="10" {% if request.GET.month == '10' %}selected{% endif %}>October</option>
+                    <option value="11" {% if request.GET.month == '11' %}selected{% endif %}>November</option>
+                    <option value="12" {% if request.GET.month == '12' %}selected{% endif %}>December</option>
                 </select>
             </div>
             <div class="flex-1 min-w-[90px]">
                 <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Year</label>
-                <input type="text" placeholder="YYYY" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface placeholder-on-surface-variant/50">
+                <input type="text" name="year" value="{{ request.GET.year }}" placeholder="YYYY" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface placeholder-on-surface-variant/50">
             </div>
             <div class="flex-[1.5] min-w-[150px]">
                 <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Cost Center</label>
-                <input type="text" placeholder="Search Cost Center..." class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface placeholder-on-surface-variant/50">
+                <input type="text" name="cost_center" value="{{ request.GET.cost_center }}" placeholder="Search Cost Center..." class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface placeholder-on-surface-variant/50">
             </div>
             <div class="flex-[1.5] min-w-[150px]">
                 <label class="block text-label-sm font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Sort by Value</label>
-                <select class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface">
-                    <option>Latest (Recent First)</option>
-                    <option>Highest Amount</option>
-                    <option>Lowest Amount</option>
+                <select name="sort" class="w-full bg-surface-container-highest border border-outline-variant/50 rounded-md px-3 py-1.5 text-body-sm focus:ring-2 focus:ring-primary text-on-surface">
+                    <option value="">Latest (Recent First)</option>
+                    <option value="highest" {% if request.GET.sort == 'highest' %}selected{% endif %}>Highest Amount</option>
+                    <option value="lowest" {% if request.GET.sort == 'lowest' %}selected{% endif %}>Lowest Amount</option>
                 </select>
             </div>
             <div class="flex items-center gap-2">
-                <button type="button" class="px-4 py-1.5 bg-primary text-white text-sm font-bold rounded-md hover:bg-primary/90 transition-all shadow-sm">
+                <button type="submit" class="px-4 py-1.5 bg-primary text-white text-sm font-bold rounded-md hover:bg-primary/90 transition-all shadow-sm">
                     Apply Filters
                 </button>
-                <button type="reset" class="px-4 py-1.5 bg-surface-variant text-on-surface-variant text-sm font-bold rounded-md hover:bg-surface-variant/80 transition-all">
+                <a href="{% url 'finance_expenses' %}" class="px-4 py-1.5 bg-surface-variant text-on-surface-variant text-sm font-bold rounded-md hover:bg-surface-variant/80 transition-all">
                     Reset
-                </button>
+                </a>
             </div>
         </form>
     </div>
