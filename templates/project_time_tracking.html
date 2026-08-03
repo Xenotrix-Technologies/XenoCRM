@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+
+{% block title %}XenoCRM | Project Time Tracking & Worklogs{% endblock %}
+
+{% block content %}
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<div class="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans p-4 sm:p-6 lg:p-8 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-teal-600/10 border border-teal-200 flex items-center justify-center text-teal-600">
+                <i data-lucide="clock-4" class="w-5 h-5"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                    Time Tracking & Worklogs
+                </h1>
+                <p class="text-xs text-slate-500 font-medium">Log hours, billable time & contributor velocity</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+            <a href="{% url 'projects' %}" class="px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-sm flex items-center gap-2">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                <span>Back to Overview</span>
+            </a>
+            <button onclick="alert('Log work time feature')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-sm flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Log Hours</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Time Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
+            <div class="text-xs font-semibold text-slate-500 uppercase">Total Logged Hours</div>
+            <div class="text-3xl font-bold text-slate-900 mt-1">142.5 hrs</div>
+            <div class="text-xs text-teal-600 font-medium mt-1">+18.5 hrs this week</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
+            <div class="text-xs font-semibold text-slate-500 uppercase">Billable Ratio</div>
+            <div class="text-3xl font-bold text-blue-600 mt-1">88.4%</div>
+            <div class="text-xs text-slate-400 mt-1">Client billable work</div>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm">
+            <div class="text-xs font-semibold text-slate-500 uppercase">Active Contributors</div>
+            <div class="text-3xl font-bold text-indigo-600 mt-1">{{ staff|length }}</div>
+            <div class="text-xs text-slate-400 mt-1">Team members logging work</div>
+        </div>
+    </div>
+
+    <!-- Worklogs Table -->
+    <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-200 font-bold text-sm text-slate-900">Recent Time Logs</div>
+        <div class="divide-y divide-slate-100 text-xs font-medium text-slate-700">
+            {% for task in tasks|slice:":5" %}
+            <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xs">
+                        {{ task.title|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <div class="font-bold text-slate-900">{{ task.title }}</div>
+                        <div class="text-[11px] text-slate-400">Logged by Team Member • {{ task.due_date|date:"M d, Y" }}</div>
+                    </div>
+                </div>
+                <div class="font-mono font-bold text-slate-800 text-sm">4.5 hrs</div>
+            </div>
+            {% empty %}
+            <div class="p-8 text-center text-slate-400 text-xs italic">No time logs recorded.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        lucide.createIcons();
+    });
+</script>
+{% endblock %}

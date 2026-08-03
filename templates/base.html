@@ -378,7 +378,7 @@
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" aria-controls="projects-dropdown-menu"
                     id="projects-dropdown-btn" onclick="toggleSidebarDropdown('projects')"
-                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if request.resolver_match.url_name == 'projects' or request.resolver_match.url_name == 'project_board' or request.resolver_match.url_name == 'project_timeline' or request.resolver_match.url_name == 'project_reports' or request.resolver_match.url_name == 'project_status_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
+                    class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg transition-all {% if request.resolver_match.url_name == 'projects' or request.resolver_match.url_name == 'project_tasks' or request.resolver_match.url_name == 'project_board' or request.resolver_match.url_name == 'project_timeline' or request.resolver_match.url_name == 'project_milestones' or request.resolver_match.url_name == 'project_files' or request.resolver_match.url_name == 'project_time_tracking' or request.resolver_match.url_name == 'project_reports' or request.resolver_match.url_name == 'project_status_settings' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/5{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/50{% endif %}">
                     <div class="flex items-center gap-2 flex-1 overflow-hidden">
                         <span class="material-symbols-outlined text-[20px]">assignment</span>
                         <span class="text-[13px] font-body-sm text-[13px] truncate">Projects</span>
@@ -392,6 +392,10 @@
                         href="{% url 'projects' %}">
                         <span>Overview</span>
                     </a>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'project_tasks' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
+                        href="{% url 'project_tasks' %}">
+                        <span>Tasks & List</span>
+                    </a>
                     <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'project_board' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
                         href="{% url 'project_board' %}">
                         <span>Kanban Board</span>
@@ -399,6 +403,18 @@
                     <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'project_timeline' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
                         href="{% url 'project_timeline' %}">
                         <span>Timeline Roadmap</span>
+                    </a>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'project_milestones' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
+                        href="{% url 'project_milestones' %}">
+                        <span>Milestones</span>
+                    </a>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'project_files' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
+                        href="{% url 'project_files' %}">
+                        <span>Files & Assets</span>
+                    </a>
+                    <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'project_time_tracking' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
+                        href="{% url 'project_time_tracking' %}">
+                        <span>Time Tracking</span>
                     </a>
                     <a class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-colors text-[13px] {% if request.resolver_match.url_name == 'project_reports' %}text-primary dark:text-primary-fixed font-bold bg-primary-container/10{% else %}text-secondary dark:text-secondary-fixed-dim hover:bg-surface-variant/30{% endif %}"
                         href="{% url 'project_reports' %}">

@@ -534,6 +534,61 @@ def project_reports_view(request):
     })
 
 
+@login_required
+def project_tasks_view(request):
+    org = request.user.profile.organization
+    tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
+    staff = UserProfile.objects.filter(organization=org)
+    leads = Lead.objects.filter(organization=org)
+    project_statuses = ProjectStatus.objects.filter(organization=org).order_by('position')
+    
+    return render(request, 'project_tasks.html', {
+        'tasks': tasks,
+        'staff': staff,
+        'leads': leads,
+        'project_statuses': project_statuses,
+    })
+
+
+@login_required
+def project_milestones_view(request):
+    org = request.user.profile.organization
+    tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
+    staff = UserProfile.objects.filter(organization=org)
+    leads = Lead.objects.filter(organization=org)
+    
+    return render(request, 'project_milestones.html', {
+        'tasks': tasks,
+        'staff': staff,
+        'leads': leads,
+    })
+
+
+@login_required
+def project_files_view(request):
+    org = request.user.profile.organization
+    tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
+    staff = UserProfile.objects.filter(organization=org)
+
+    return render(request, 'project_files.html', {
+        'tasks': tasks,
+        'staff': staff,
+    })
+
+
+@login_required
+def project_time_tracking_view(request):
+    org = request.user.profile.organization
+    tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
+    staff = UserProfile.objects.filter(organization=org)
+
+    return render(request, 'project_time_tracking.html', {
+        'tasks': tasks,
+        'staff': staff,
+    })
+
+
+
 
 @login_required
 def agreements_list_view(request):
