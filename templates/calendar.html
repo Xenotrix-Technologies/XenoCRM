@@ -208,35 +208,93 @@
     </div>
 
     <!-- Main Grid (3:1 Layout: 75% Calendar / 25% Analytics Sidebar) -->
-    <div class="grid grid-cols-1 2xl:grid-cols-4 gap-6 items-start w-full min-w-0">
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start w-full min-w-0">
       <!-- Calendar View (75%) -->
-      <div class="2xl:col-span-3 min-w-0 w-full">
+      <div class="lg:col-span-3 min-w-0 w-full">
         <div class="bg-white rounded-2xl p-4 md:p-6 border border-slate-200/80 shadow-xs overflow-x-auto custom-scrollbar">
           <div id="calendar" class="min-h-[620px] min-w-[500px]"></div>
         </div>
       </div>
 
       <!-- Right Sidebar (25%) -->
-      <div class="2xl:col-span-1 space-y-6 w-full min-w-0">
+      <div class="lg:col-span-1 space-y-6 w-full min-w-0">
         <!-- Calendar Analytics -->
         <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
           <h3 class="font-bold text-sm text-slate-900 mb-4 flex items-center">
             <i data-lucide="bar-chart-2" class="w-4 h-4 mr-2 text-brand-600"></i>
             Calendar Analytics
           </h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-1 gap-3" id="analytics-container">
+          <div class="space-y-3" id="analytics-container">
             <!-- KPI Widgets injected via JS -->
           </div>
         </div>
 
         <!-- Quick Actions -->
         <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
-          <h3 class="font-bold text-sm text-slate-900 mb-3 flex items-center">
+          <h3 class="font-bold text-sm text-slate-900 mb-4 flex items-center">
             <i data-lucide="zap" class="w-4 h-4 mr-2 text-amber-500"></i>
             Quick Actions
           </h3>
-          <div class="space-y-2" id="quick-templates-container">
-            <!-- Quick actions injected via JS -->
+          <div class="space-y-2.5" id="quick-templates-container">
+            <button type="button" onclick="useQuickTemplate('Client Call', 'Scheduled call with client.', '#10B981')" class="w-full p-2.5 bg-white border border-slate-200/80 rounded-xl hover:border-brand-500/40 hover:bg-slate-50/50 transition-all flex items-center justify-between group">
+              <div class="flex items-center gap-2.5">
+                <div class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
+                  <i data-lucide="phone" class="w-4 h-4"></i>
+                </div>
+                <span class="text-xs font-semibold text-slate-700 group-hover:text-slate-900">Client Call</span>
+              </div>
+              <div class="w-6 h-6 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-brand-600 group-hover:border-brand-300">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              </div>
+            </button>
+
+            <button type="button" onclick="useQuickTemplate('Weekly Sync', 'Internal team synchronization.', '#2563EB')" class="w-full p-2.5 bg-white border border-slate-200/80 rounded-xl hover:border-brand-500/40 hover:bg-slate-50/50 transition-all flex items-center justify-between group">
+              <div class="flex items-center gap-2.5">
+                <div class="p-1.5 bg-brand-50 text-brand-600 rounded-lg">
+                  <i data-lucide="users" class="w-4 h-4"></i>
+                </div>
+                <span class="text-xs font-semibold text-slate-700 group-hover:text-slate-900">Weekly Sync</span>
+              </div>
+              <div class="w-6 h-6 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-brand-600 group-hover:border-brand-300">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              </div>
+            </button>
+
+            <button type="button" onclick="useQuickTemplate('Proposal Deadline', 'Project proposal deadline.', '#EF4444')" class="w-full p-2.5 bg-white border border-slate-200/80 rounded-xl hover:border-brand-500/40 hover:bg-slate-50/50 transition-all flex items-center justify-between group">
+              <div class="flex items-center gap-2.5">
+                <div class="p-1.5 bg-rose-50 text-rose-600 rounded-lg">
+                  <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                </div>
+                <span class="text-xs font-semibold text-slate-700 group-hover:text-slate-900">Proposal Deadline</span>
+              </div>
+              <div class="w-6 h-6 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-brand-600 group-hover:border-brand-300">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              </div>
+            </button>
+
+            <button type="button" onclick="useQuickTemplate('Post Follow-up', 'Follow up with lead on content.', '#8B5CF6')" class="w-full p-2.5 bg-white border border-slate-200/80 rounded-xl hover:border-brand-500/40 hover:bg-slate-50/50 transition-all flex items-center justify-between group">
+              <div class="flex items-center gap-2.5">
+                <div class="p-1.5 bg-purple-50 text-purple-600 rounded-lg">
+                  <i data-lucide="corner-up-right" class="w-4 h-4"></i>
+                </div>
+                <span class="text-xs font-semibold text-slate-700 group-hover:text-slate-900">Post Follow-up</span>
+              </div>
+              <div class="w-6 h-6 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-brand-600 group-hover:border-brand-300">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              </div>
+            </button>
+
+            <button type="button" onclick="useQuickTemplate('Client Meeting', 'High-priority strategy meeting.', '#2563EB')" class="w-full p-2.5 bg-white border border-slate-200/80 rounded-xl hover:border-brand-500/40 hover:bg-slate-50/50 transition-all flex items-center justify-between group">
+              <div class="flex items-center gap-2.5">
+                <div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                  <i data-lucide="calendar" class="w-4 h-4"></i>
+                </div>
+                <span class="text-xs font-semibold text-slate-700 group-hover:text-slate-900">Client Meeting</span>
+              </div>
+              <div class="w-6 h-6 rounded-lg border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-brand-600 group-hover:border-brand-300">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              </div>
+            </button>
           </div>
         </div>
       </div>
