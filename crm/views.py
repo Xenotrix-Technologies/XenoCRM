@@ -4628,8 +4628,14 @@ def finance_add_income_view(request):
             messages.error(request, f'Failed to add income record: {e}')
             return redirect('finance_income')
             
-    clients_from_leads = list(Lead.objects.filter(organization=org, status='Qualified').values_list('company', flat=True).distinct())
-    clients = sorted(list(set([c for c in clients_from_leads if c and c != "No Client / General"])))
+    client_leads = Lead.objects.filter(organization=org).filter(Q(is_client=True) | Q(status='Qualified'))
+    client_names = set()
+    for lead in client_leads:
+        if lead.company and lead.company.strip() and lead.company.strip() != "No Client / General":
+            client_names.add(lead.company.strip())
+        if lead.name and lead.name.strip() and lead.name.strip() != "No Client / General":
+            client_names.add(lead.name.strip())
+    clients = sorted(list(client_names))
     payment_methods = FinancePaymentMethod.objects.filter(organization=org).order_by('name')
     return render(request, 'finance_add_income.html', {'clients': clients, 'payment_methods': payment_methods})
 
