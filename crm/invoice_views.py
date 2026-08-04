@@ -8,31 +8,6 @@ from .views import get_or_create_dynamic_statuses
 import datetime
 from django.utils import timezone
 
-def sync_invoice_income(invoice):
-    try:
-        from .models import Income
-        ref_project_name = f"Invoice #{invoice.invoice_number}"
-        
-        if invoice.status and invoice.status.strip().lower() == 'paid':
-            income_obj, created = Income.objects.get_or_create(
-                organization=invoice.organization,
-                project_name=ref_project_name,
-                defaults={
-                    'date': invoice.invoice_date or timezone.now().date(),
-                    'client_name': invoice.customer_name or 'Invoice Client',
-                    'amount': invoice.grand_total,
-                }
-            )
-            if not created:
-                income_obj.date = invoice.invoice_date or income_obj.date
-                income_obj.client_name = invoice.customer_name or income_obj.client_name
-                income_obj.amount = invoice.grand_total
-                income_obj.save()
-        else:
-            Income.objects.filter(organization=invoice.organization, project_name=ref_project_name).delete()
-    except Exception as e:
-        print("Error syncing invoice income:", str(e))
-
 def get_invoice_stats(organization):
     invoices = Invoice.objects.filter(organization=organization)
     total_invoices = invoices.count()
@@ -144,8 +119,6 @@ def invoice_create(request):
                         discount_amount=float(item.get('discount_amount') or 0),
                         line_total=float(item.get('line_total') or 0)
                     )
-                
-                sync_invoice_income(invoice)
             
             return JsonResponse({'success': True, 'invoice_id': invoice.id})
         except Exception as e:
@@ -228,8 +201,6 @@ def invoice_edit(request, invoice_id):
                         discount_amount=float(item.get('discount_amount') or 0),
                         line_total=float(item.get('line_total') or 0)
                     )
-                
-                sync_invoice_income(invoice)
             
             return JsonResponse({'success': True, 'invoice_id': invoice.id})
         except Exception as e:
@@ -249,7 +220,6 @@ def invoice_delete(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id, organization=user_profile.organization)
     
     if request.method == 'POST':
-        sync_invoice_income(invoice)
         invoice.delete()
         return redirect('invoice_dashboard')
     
@@ -266,7 +236,6 @@ def invoice_update_status(request, invoice_id):
             if new_status:
                 invoice.status = new_status.strip()
                 invoice.save(update_fields=['status'])
-                sync_invoice_income(invoice)
                 
                 stats = get_invoice_stats(user_profile.organization)
                 return JsonResponse({'success': True, 'stats': stats})
