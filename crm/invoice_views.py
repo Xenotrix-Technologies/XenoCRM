@@ -8,22 +8,64 @@ from .views import get_or_create_dynamic_statuses
 import datetime
 from django.utils import timezone
 
-@login_required
-def invoice_dashboard(request):
-    user_profile = UserProfile.objects.get(user=request.user)
-    organization = user_profile.organization
-    
-    invoices = Invoice.objects.filter(organization=organization).order_by('-invoice_date')
-    
-    # Calculate stats using case-insensitive matching
+def sync_invoice_income(invoice):
+    try:
+        from .models import Income
+        ref_project_name = f"Invoice #{invoice.invoice_number}"
+        
+        if invoice.status and invoice.status.strip().lower() == 'paid':
+            income_obj, created = Income.objects.get_or_create(
+                organization=invoice.organization,
+                project_name=ref_project_name,
+                defaults={
+                    'date': invoice.invoice_date or timezone.now().date(),
+                    'client_name': invoice.customer_name or 'Invoice Client',
+                    'amount': invoice.grand_total,
+                }
+            )
+            if not created:
+                income_obj.date = invoice.invoice_date or income_obj.date
+                income_obj.client_name = invoice.customer_name or income_obj.client_name
+                income_obj.amount = invoice.grand_total
+                income_obj.save()
+        else:
+            Income.objects.filter(organization=invoice.organization, project_name=ref_project_name).delete()
+    except Exception as e:
+        print("Error syncing invoice income:", str(e))
+
+def get_invoice_stats(organization):
+    invoices = Invoice.objects.filter(organization=organization)
     total_invoices = invoices.count()
     paid_invoices = invoices.filter(status__iexact='Paid').count()
     pending_invoices = invoices.filter(
         Q(status__iexact='Pending') | Q(status__iexact='Draft') | Q(status__iexact='Partial') | Q(status__iexact='Unpaid')
     ).count()
     overdue_invoices = invoices.filter(status__iexact='Overdue').count()
+
+    total_amount = float(invoices.aggregate(total=Sum('grand_total'))['total'] or 0.00)
+    paid_amount = float(invoices.filter(status__iexact='Paid').aggregate(total=Sum('grand_total'))['total'] or 0.00)
+    pending_amount = float(invoices.exclude(status__iexact='Paid').aggregate(total=Sum('grand_total'))['total'] or 0.00)
+    overdue_amount = float(invoices.filter(status__iexact='Overdue').aggregate(total=Sum('grand_total'))['total'] or 0.00)
+
+    return {
+        'total': total_invoices,
+        'paid': paid_invoices,
+        'pending': pending_invoices,
+        'overdue': overdue_invoices,
+        'total_amount': f"{total_amount:.2f}",
+        'paid_amount': f"{paid_amount:.2f}",
+        'pending_amount': f"{pending_amount:.2f}",
+        'overdue_amount': f"{overdue_amount:.2f}",
+    }
+
+@login_required
+def invoice_dashboard(request):
+    user_profile = UserProfile.objects.get(user=request.user)
+    organization = user_profile.organization
     
-    # Simple monthly revenue for current month
+    invoices = Invoice.objects.filter(organization=organization).order_by('-invoice_date')
+    stats = get_invoice_stats(organization)
+    
     current_month = timezone.now().month
     current_year = timezone.now().year
     monthly_revenue = invoices.filter(status__iexact='Paid', invoice_date__year=current_year, invoice_date__month=current_month).aggregate(total=Sum('grand_total'))['total'] or 0.00
@@ -31,10 +73,14 @@ def invoice_dashboard(request):
     
     context = {
         'invoices': invoices,
-        'total_invoices': total_invoices,
-        'paid_invoices': paid_invoices,
-        'pending_invoices': pending_invoices,
-        'overdue_invoices': overdue_invoices,
+        'total_invoices': stats['total'],
+        'paid_invoices': stats['paid'],
+        'pending_invoices': stats['pending'],
+        'overdue_invoices': stats['overdue'],
+        'total_amount': stats['total_amount'],
+        'paid_amount': stats['paid_amount'],
+        'pending_amount': stats['pending_amount'],
+        'overdue_amount': stats['overdue_amount'],
         'monthly_revenue': monthly_revenue,
         'profile': user_profile,
         'invoice_statuses': invoice_statuses,
@@ -98,6 +144,8 @@ def invoice_create(request):
                         discount_amount=float(item.get('discount_amount') or 0),
                         line_total=float(item.get('line_total') or 0)
                     )
+                
+                sync_invoice_income(invoice)
             
             return JsonResponse({'success': True, 'invoice_id': invoice.id})
         except Exception as e:
@@ -180,6 +228,8 @@ def invoice_edit(request, invoice_id):
                         discount_amount=float(item.get('discount_amount') or 0),
                         line_total=float(item.get('line_total') or 0)
                     )
+                
+                sync_invoice_income(invoice)
             
             return JsonResponse({'success': True, 'invoice_id': invoice.id})
         except Exception as e:
@@ -199,6 +249,7 @@ def invoice_delete(request, invoice_id):
     invoice = get_object_or_404(Invoice, id=invoice_id, organization=user_profile.organization)
     
     if request.method == 'POST':
+        sync_invoice_income(invoice)
         invoice.delete()
         return redirect('invoice_dashboard')
     
@@ -215,17 +266,9 @@ def invoice_update_status(request, invoice_id):
             if new_status:
                 invoice.status = new_status.strip()
                 invoice.save(update_fields=['status'])
+                sync_invoice_income(invoice)
                 
-                # Recalculate organization stats
-                invoices = Invoice.objects.filter(organization=user_profile.organization)
-                stats = {
-                    'total': invoices.count(),
-                    'paid': invoices.filter(status__iexact='Paid').count(),
-                    'pending': invoices.filter(
-                        Q(status__iexact='Pending') | Q(status__iexact='Draft') | Q(status__iexact='Partial') | Q(status__iexact='Unpaid')
-                    ).count(),
-                    'overdue': invoices.filter(status__iexact='Overdue').count(),
-                }
+                stats = get_invoice_stats(user_profile.organization)
                 return JsonResponse({'success': True, 'stats': stats})
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})

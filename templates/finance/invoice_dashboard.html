@@ -36,7 +36,10 @@
             </div>
             <div>
                 <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Total Invoices</span>
-                <span id="statTotalInvoices" class="text-2xl font-extrabold text-slate-900">{{ total_invoices }}</span>
+                <div class="flex items-baseline gap-1.5 mt-0.5">
+                    <span id="statTotalInvoices" class="text-2xl font-extrabold text-slate-900">{{ total_invoices }}</span>
+                    <span id="statTotalAmount" class="text-xs font-bold text-slate-500">(₹{{ total_amount }})</span>
+                </div>
             </div>
         </div>
 
@@ -46,7 +49,10 @@
             </div>
             <div>
                 <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Paid Invoices</span>
-                <span id="statPaidInvoices" class="text-2xl font-extrabold text-emerald-700">{{ paid_invoices }}</span>
+                <div class="flex items-baseline gap-1.5 mt-0.5">
+                    <span id="statPaidInvoices" class="text-2xl font-extrabold text-emerald-700">{{ paid_invoices }}</span>
+                    <span id="statPaidAmount" class="text-xs font-bold text-emerald-600">(₹{{ paid_amount }})</span>
+                </div>
             </div>
         </div>
 
@@ -56,7 +62,10 @@
             </div>
             <div>
                 <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Pending Invoices</span>
-                <span id="statPendingInvoices" class="text-2xl font-extrabold text-amber-700">{{ pending_invoices }}</span>
+                <div class="flex items-baseline gap-1.5 mt-0.5">
+                    <span id="statPendingInvoices" class="text-2xl font-extrabold text-amber-700">{{ pending_invoices }}</span>
+                    <span id="statPendingAmount" class="text-xs font-bold text-amber-600">(₹{{ pending_amount }})</span>
+                </div>
             </div>
         </div>
 
@@ -66,7 +75,10 @@
             </div>
             <div>
                 <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Overdue Invoices</span>
-                <span id="statOverdueInvoices" class="text-2xl font-extrabold text-rose-700">{{ overdue_invoices }}</span>
+                <div class="flex items-baseline gap-1.5 mt-0.5">
+                    <span id="statOverdueInvoices" class="text-2xl font-extrabold text-rose-700">{{ overdue_invoices }}</span>
+                    <span id="statOverdueAmount" class="text-xs font-bold text-rose-600">(₹{{ overdue_amount }})</span>
+                </div>
             </div>
         </div>
     </div>
@@ -107,7 +119,7 @@
                         <td class="text-slate-600 text-xs">{{ inv.invoice_date }}</td>
                         <td class="font-bold text-slate-900">₹{{ inv.grand_total|floatformat:2 }}</td>
                         <td>
-                            <select class="status-select bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-brand-500/20" data-invoice-id="{{ inv.id }}">
+                            <select class="status-select w-28 px-2.5 py-1 text-xs font-semibold rounded-lg border text-center transition-all cursor-pointer focus:ring-2 focus:ring-brand-500/20" data-invoice-id="{{ inv.id }}">
                                 {% for status in invoice_statuses %}
                                 <option value="{{ status.name }}" {% if inv.status|lower == status.name|lower %}selected{% endif %}>{{ status.name }}</option>
                                 {% endfor %}
@@ -171,9 +183,34 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function updateBadgeStyle(selectEl) {
+        const val = (selectEl.value || '').toLowerCase();
+        selectEl.classList.remove(
+            'bg-emerald-50', 'text-emerald-700', 'border-emerald-200',
+            'bg-amber-50', 'text-amber-700', 'border-amber-200',
+            'bg-rose-50', 'text-rose-700', 'border-rose-200',
+            'bg-slate-100', 'text-slate-700', 'border-slate-200',
+            'bg-blue-50', 'text-blue-700', 'border-blue-200'
+        );
+        if (val === 'paid') {
+            selectEl.classList.add('bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
+        } else if (val === 'pending') {
+            selectEl.classList.add('bg-amber-50', 'text-amber-700', 'border-amber-200');
+        } else if (val === 'overdue') {
+            selectEl.classList.add('bg-rose-50', 'text-rose-700', 'border-rose-200');
+        } else if (val === 'partial') {
+            selectEl.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-200');
+        } else {
+            selectEl.classList.add('bg-slate-100', 'text-slate-700', 'border-slate-200');
+        }
+    }
+
     const statusSelects = document.querySelectorAll('.status-select');
     statusSelects.forEach(select => {
+        updateBadgeStyle(select);
+
         select.addEventListener('change', async function() {
+            updateBadgeStyle(this);
             const invoiceId = this.dataset.invoiceId;
             const newStatus = this.value;
             
@@ -193,10 +230,19 @@ document.addEventListener('DOMContentLoaded', function() {
                         const paidEl = document.getElementById('statPaidInvoices');
                         const pendingEl = document.getElementById('statPendingInvoices');
                         const overdueEl = document.getElementById('statOverdueInvoices');
+                        const totalAmtEl = document.getElementById('statTotalAmount');
+                        const paidAmtEl = document.getElementById('statPaidAmount');
+                        const pendingAmtEl = document.getElementById('statPendingAmount');
+                        const overdueAmtEl = document.getElementById('statOverdueAmount');
+                        
                         if (totalEl) totalEl.textContent = data.stats.total;
                         if (paidEl) paidEl.textContent = data.stats.paid;
                         if (pendingEl) pendingEl.textContent = data.stats.pending;
                         if (overdueEl) overdueEl.textContent = data.stats.overdue;
+                        if (totalAmtEl) totalAmtEl.textContent = '(₹' + data.stats.total_amount + ')';
+                        if (paidAmtEl) paidAmtEl.textContent = '(₹' + data.stats.paid_amount + ')';
+                        if (pendingAmtEl) pendingAmtEl.textContent = '(₹' + data.stats.pending_amount + ')';
+                        if (overdueAmtEl) overdueAmtEl.textContent = '(₹' + data.stats.overdue_amount + ')';
                     }
                     if (typeof showToast === 'function') {
                         showToast('Invoice status updated', 'success');
