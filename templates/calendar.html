@@ -114,20 +114,20 @@
 {% endblock %}
 
 {% block content %}
-<main class="pt-4 p-margin-edge min-h-screen" style="background-color: #F8FAFC;">
-  <div class="max-w-container-max mx-auto">
+<main class="pt-4 p-margin-edge min-h-screen max-w-full overflow-x-hidden" style="background-color: #F8FAFC;">
+  <div class="w-full max-w-[1600px] mx-auto min-w-0">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Organization Calendar</h1>
-        <p class="text-slate-500 text-sm mt-1">Schedule and manage meetings, demos, and deadlines dynamically.</p>
+        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Organization Calendar</h1>
+        <p class="text-slate-500 text-xs sm:text-sm mt-1">Schedule and manage meetings, demos, and deadlines dynamically.</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap shrink-0">
         <!-- Filter Dropdown -->
         <div class="relative">
-          <button type="button" onclick="document.getElementById('filter-dropdown').classList.toggle('hidden')" class="px-4 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-[12px] shadow-sm hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-2">
+          <button type="button" onclick="document.getElementById('filter-dropdown').classList.toggle('hidden')" class="btn-saas btn-saas-outline btn-md">
             <i data-lucide="filter" class="w-4 h-4 text-slate-500"></i>
-            Filter
+            <span>Filter</span>
           </button>
           
           <div id="filter-dropdown" class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-slate-200 hidden z-[200] p-3">
@@ -200,24 +200,24 @@
           </div>
         </div>
         
-        <button onclick="openAddModal()" class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-[12px] shadow-sm hover:bg-blue-700 hover:shadow active:scale-95 transition-all flex items-center gap-2">
+        <button onclick="openAddModal()" class="btn-saas btn-saas-primary btn-md">
           <i data-lucide="plus" class="w-4 h-4"></i>
-          Add Event
+          <span>Add Event</span>
         </button>
       </div>
     </div>
 
     <!-- Main Grid (3:1 Layout: 75% Calendar / 25% Analytics Sidebar) -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+    <div class="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start w-full min-w-0">
       <!-- Calendar View (75%) -->
-      <div class="lg:col-span-3">
-        <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
-          <div id="calendar" class="min-h-[650px]"></div>
+      <div class="xl:col-span-3 min-w-0 w-full">
+        <div class="bg-white rounded-2xl p-4 md:p-6 border border-slate-200/80 shadow-xs overflow-x-auto custom-scrollbar">
+          <div id="calendar" class="min-h-[620px] min-w-[500px]"></div>
         </div>
       </div>
 
       <!-- Right Sidebar (25%) -->
-      <div class="lg:col-span-1 space-y-6">
+      <div class="xl:col-span-1 space-y-6 w-full min-w-0">
         <!-- Calendar Analytics -->
         <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
           <h3 class="font-bold text-sm text-slate-900 mb-4 flex items-center">
