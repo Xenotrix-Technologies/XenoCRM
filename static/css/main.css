@@ -31,6 +31,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Workspace Layout Edge Padding */
+.p-margin-edge {
+  padding: 1.5rem 2rem 2.5rem 2rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 640px) {
+  .p-margin-edge {
+    padding: 1rem !important;
+  }
+}
+
 /* Custom Scrollbars */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
