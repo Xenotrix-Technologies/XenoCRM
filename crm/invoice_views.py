@@ -18,9 +18,24 @@ def get_invoice_stats(organization):
     overdue_invoices = invoices.filter(status__iexact='Overdue').count()
 
     total_amount = float(invoices.aggregate(total=Sum('grand_total'))['total'] or 0.00)
-    paid_amount = float(invoices.filter(status__iexact='Paid').aggregate(total=Sum('grand_total'))['total'] or 0.00)
-    pending_amount = float(invoices.exclude(status__iexact='Paid').aggregate(total=Sum('grand_total'))['total'] or 0.00)
-    overdue_amount = float(invoices.filter(status__iexact='Overdue').aggregate(total=Sum('grand_total'))['total'] or 0.00)
+    
+    paid_amount = 0.0
+    pending_amount = 0.0
+    overdue_amount = 0.0
+
+    for inv in invoices:
+        st = inv.status.strip().lower() if inv.status else ''
+        if st == 'paid':
+            paid_amount += float(inv.amount_paid if inv.amount_paid > 0 else inv.grand_total)
+        else:
+            paid_amount += float(inv.amount_paid or 0.0)
+            if inv.balance_due > 0 or inv.amount_paid > 0:
+                pending_amount += float(inv.balance_due)
+            else:
+                pending_amount += float(inv.grand_total)
+            
+            if st == 'overdue':
+                overdue_amount += float(inv.balance_due if inv.balance_due > 0 else inv.grand_total)
 
     return {
         'total': total_invoices,
@@ -75,6 +90,19 @@ def invoice_create(request):
             raw_status = data.get('status')
             status_val = raw_status.strip() if raw_status else 'Pending'
 
+            grand_total = float(data.get('grand_total') or 0)
+            amount_paid = float(data.get('amount_paid') or 0)
+            raw_balance = data.get('balance_due')
+            if raw_balance is not None and str(raw_balance).strip() != '':
+                balance_due = float(raw_balance)
+            else:
+                balance_due = max(0.0, grand_total - amount_paid)
+
+            if status_val.lower() == 'paid':
+                if amount_paid == 0:
+                    amount_paid = grand_total
+                balance_due = 0.0
+
             with transaction.atomic():
                 # Create Invoice
                 invoice = Invoice.objects.create(
@@ -95,9 +123,9 @@ def invoice_create(request):
                     total_discount=float(data.get('total_discount') or 0),
                     extra_discount=float(data.get('extra_discount') or 0),
                     shipping_charge=float(data.get('shipping_charge') or 0),
-                    grand_total=float(data.get('grand_total') or 0),
-                    amount_paid=float(data.get('amount_paid') or 0),
-                    balance_due=float(data.get('balance_due') or 0),
+                    grand_total=grand_total,
+                    amount_paid=amount_paid,
+                    balance_due=balance_due,
                     payment_method=data.get('payment_method', ''),
                     bank_account_details=data.get('bank_account_details', ''),
                     upi_id=data.get('upi_id', ''),
@@ -177,7 +205,18 @@ def invoice_edit(request, invoice_id):
                 invoice.shipping_charge = float(data.get('shipping_charge') or 0)
                 invoice.grand_total = float(data.get('grand_total') or 0)
                 invoice.amount_paid = float(data.get('amount_paid') or 0)
-                invoice.balance_due = float(data.get('balance_due') or 0)
+                
+                raw_balance = data.get('balance_due')
+                if raw_balance is not None and str(raw_balance).strip() != '':
+                    invoice.balance_due = float(raw_balance)
+                else:
+                    invoice.balance_due = max(0.0, invoice.grand_total - invoice.amount_paid)
+
+                if invoice.status and invoice.status.strip().lower() == 'paid':
+                    if invoice.amount_paid == 0:
+                        invoice.amount_paid = invoice.grand_total
+                    invoice.balance_due = 0.0
+
                 invoice.payment_method = data.get('payment_method', '')
                 invoice.bank_account_details = data.get('bank_account_details', '')
                 invoice.upi_id = data.get('upi_id', '')
