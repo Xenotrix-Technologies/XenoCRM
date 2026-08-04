@@ -144,6 +144,20 @@
         .sidebar-collapsed aside [id$="-dropdown-menu"] {
             display: none !important;
         }
+
+        /* Standardized Workspace Margin & Alignment for All Pages */
+        .p-margin-edge {
+            padding: 1.5rem 2rem 2.5rem 2rem !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        @media (max-width: 640px) {
+            .p-margin-edge {
+                padding: 1rem !important;
+            }
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>
