@@ -167,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
             invoice_number: document.getElementById('invoice_number').value,
             invoice_date: document.getElementById('invoice_date').value,
             due_date: document.getElementById('due_date').value,
-            status: saveStatus === 'Draft' ? 'Draft' : (document.getElementById('status') ? document.getElementById('status').value : saveStatus),
+            status: saveStatus === 'Draft' ? 'Draft' : ((document.getElementById('status') && document.getElementById('status').value) ? document.getElementById('status').value : saveStatus),
             
             subtotal: document.getElementById('lblSubtotal').dataset.val || 0,
             total_discount: document.getElementById('lblTotalDiscount').dataset.val || 0,

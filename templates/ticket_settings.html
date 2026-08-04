@@ -1,29 +1,27 @@
 {% extends 'base.html' %}
-{% block title %}Ticket Settings - XenoCRM{% endblock %}
+{% block title %}Ticket Settings | XenoCRM ERP{% endblock %}
 
 {% block content %}
-<main class="pt-8 p-margin-edge min-h-screen bg-background">
-  <div class="max-w-5xl mx-auto space-y-6">
+<main class="p-6 md:p-8 min-h-screen flex flex-col bg-slate-50">
+  <div class="max-w-5xl mx-auto w-full space-y-6">
 
-    <div class="flex items-center gap-2 text-xs text-outline font-semibold mb-1">
-      <span>Settings</span>
-      <span class="material-symbols-outlined text-[12px]">chevron_right</span>
-      <span class="text-primary">Ticket Statuses & Priorities</span>
-    </div>
-
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div>
-        <h2 class="font-headline-lg text-headline-lg font-bold text-on-background">Ticket Settings</h2>
-        <p class="text-secondary text-body-sm mt-1">Manage ticket statuses and priorities used in the support section.</p>
+    <!-- Header -->
+    <div>
+      <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+        <span>Settings</span>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+        <span class="text-brand-600 font-bold">Ticket Statuses & Priorities</span>
       </div>
+      <h1 class="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">Support Ticket Settings</h1>
+      <p class="text-xs md:text-sm text-slate-500 mt-1">Manage ticket status workflows and priority options for customer support.</p>
     </div>
 
     {% if messages %}
     <div class="space-y-2">
       {% for message in messages %}
-      <div class="px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 bg-emerald-50 text-emerald-700 border border-emerald-200">
-        <span class="material-symbols-outlined text-[16px]">info</span>
-        {{ message }}
+      <div class="px-4 py-3 rounded-xl text-xs font-semibold flex items-center gap-2 bg-emerald-50 text-emerald-900 border border-emerald-200">
+        <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+        <span>{{ message }}</span>
       </div>
       {% endfor %}
     </div>
@@ -32,245 +30,200 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       
       <!-- TICKET STATUSES -->
-      <div class="glass-card rounded-2xl border border-outline-variant/30 shadow-sm bg-white overflow-hidden flex flex-col" data-category="tickets">
-        <div class="px-5 py-4 bg-slate-50 border-b border-outline-variant/20 flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-100 text-blue-600">
-              <span class="material-symbols-outlined text-[18px]">assignment</span>
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col" data-category="tickets">
+        <div class="px-5 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-brand-50 text-brand-600 border border-brand-200">
+              <i data-lucide="headphones" class="w-4 h-4"></i>
             </div>
-            <h3 class="font-bold text-sm text-on-surface uppercase tracking-wider">Ticket Statuses</h3>
+            <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Ticket Statuses</h3>
           </div>
-          <span class="text-[10px] font-bold text-outline bg-slate-200 rounded-full px-2 py-0.5">{{ statuses|length }}</span>
+          <span class="text-xs font-bold text-slate-600 bg-slate-200/80 rounded-full px-2.5 py-0.5">{{ statuses|length }}</span>
         </div>
 
-        <div class="flex-1 divide-y divide-outline-variant/10 status-list">
+        <div class="flex-1 divide-y divide-slate-100 status-list">
           {% for status in statuses %}
-          <div class="group flex items-center justify-between px-5 py-3 hover:bg-slate-50/50 transition-colors status-drag-item" draggable="true" data-id="{{ status.id }}">
-            <div class="flex items-center gap-2 flex-1 min-w-0">
-              <span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors cursor-move opacity-0 group-hover:opacity-100">drag_indicator</span>
-              <span class="w-3 h-3 rounded-full flex-shrink-0 border border-black/10" style="background-color: {{ status.color }};"></span>
-              <span class="text-sm font-bold text-on-surface truncate uppercase tracking-wider">{{ status.name }}</span>
+          <div class="group flex items-center justify-between px-5 py-3 hover:bg-slate-50 transition-colors status-drag-item" draggable="true" data-id="{{ status.id }}">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <i data-lucide="grip-vertical" class="w-4 h-4 text-slate-400 group-hover:text-brand-600 transition-colors cursor-move opacity-40 group-hover:opacity-100 flex-shrink-0"></i>
+              <span class="w-3 h-3 rounded-full flex-shrink-0 border border-slate-300 shadow-2xs" style="background-color: {{ status.color }};"></span>
+              <span class="text-xs font-bold text-slate-900 truncate uppercase tracking-wider">{{ status.name }}</span>
             </div>
-            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onclick="openEditStatusModal('{{ status.id }}', '{{ status.name|escapejs }}', '{{ status.color }}', 'tickets')" class="p-1 rounded-lg text-outline hover:bg-blue-50 hover:text-blue-600 transition-all" title="Edit">
-                <span class="material-symbols-outlined text-[16px]">edit</span>
+            <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+              <button onclick="openEditStatusModal('{{ status.id }}', '{{ status.name|escapejs }}', '{{ status.color }}', 'tickets')" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-brand-600 transition-all" title="Edit">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
               </button>
               <form method="POST" action="/statuses/category/tickets/{{ status.id }}/delete/" class="inline status-delete-form">
                 {% csrf_token %}
-                <button type="submit" class="p-1 rounded-lg text-outline hover:bg-rose-50 hover:text-rose-600 transition-all" title="Delete">
-                  <span class="material-symbols-outlined text-[16px]">delete</span>
+                <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all" title="Delete">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
               </form>
             </div>
           </div>
           {% empty %}
-          <div class="p-5 text-center text-outline/60 text-sm italic">No statuses yet.</div>
+          <div class="p-8 text-center text-slate-400 text-xs italic">No statuses yet.</div>
           {% endfor %}
         </div>
 
-        <div class="px-5 py-3 border-t border-outline-variant/20 bg-slate-50/50">
-          <form method="POST" action="{% url 'add_dynamic_status' 'tickets' %}" class="flex gap-2 status-add-form">
+        <div class="px-5 py-3.5 border-t border-slate-200/80 bg-slate-50/50">
+          <form method="POST" action="{% url 'add_dynamic_status' 'tickets' %}" class="flex items-center gap-2 status-add-form">
             {% csrf_token %}
-            <input type="color" name="color" value="#0053db" class="w-9 h-9 rounded-lg border-0 cursor-pointer bg-transparent">
-            <input type="text" name="name" required placeholder="Add ticket status..." class="flex-1 bg-white border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary text-sm uppercase"/>
-            <button type="submit" class="bg-primary text-on-primary px-3 py-2 rounded-lg hover:opacity-90 transition-all flex items-center gap-1 text-xs font-bold">
-              <span class="material-symbols-outlined text-[16px]">add</span>
+            <input type="color" name="color" value="#2563eb" class="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer bg-transparent p-0 flex-shrink-0">
+            <input type="text" name="name" required placeholder="Add ticket status..." class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 font-bold uppercase placeholder:text-slate-400 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"/>
+            <button type="submit" class="bg-brand-600 text-white px-3.5 py-2 rounded-xl hover:bg-brand-700 transition-all flex items-center gap-1 text-xs font-bold shadow-xs shadow-brand-600/20">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Add</span>
             </button>
           </form>
         </div>
       </div>
 
       <!-- TICKET PRIORITIES -->
-      <div class="glass-card rounded-2xl border border-outline-variant/30 shadow-sm bg-white overflow-hidden flex flex-col" data-category="priority">
-        <div class="px-5 py-4 bg-slate-50 border-b border-outline-variant/20 flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <div class="w-8 h-8 rounded-lg flex items-center justify-center bg-orange-100 text-orange-600">
-              <span class="material-symbols-outlined text-[18px]">priority</span>
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden flex flex-col" data-category="ticket_priorities">
+        <div class="px-5 py-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl flex items-center justify-center bg-indigo-50 text-indigo-600 border border-indigo-200">
+              <i data-lucide="flag" class="w-4 h-4"></i>
             </div>
-            <h3 class="font-bold text-sm text-on-surface uppercase tracking-wider">Ticket Priorities</h3>
+            <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Ticket Priorities</h3>
           </div>
-          <span class="text-[10px] font-bold text-outline bg-slate-200 rounded-full px-2 py-0.5">{{ priorities|length }}</span>
+          <span class="text-xs font-bold text-slate-600 bg-slate-200/80 rounded-full px-2.5 py-0.5">{{ priorities|length }}</span>
         </div>
 
-        <div class="flex-1 divide-y divide-outline-variant/10 status-list">
-          {% for status in priorities %}
-          <div class="group flex items-center justify-between px-5 py-3 hover:bg-slate-50/50 transition-colors status-drag-item" draggable="true" data-id="{{ status.id }}">
-            <div class="flex items-center gap-2 flex-1 min-w-0">
-              <span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors cursor-move opacity-0 group-hover:opacity-100">drag_indicator</span>
-              <span class="w-3 h-3 rounded-full flex-shrink-0 border border-black/10" style="background-color: {{ status.color }};"></span>
-              <span class="text-sm font-bold text-on-surface truncate uppercase tracking-wider">{{ status.name }}</span>
+        <div class="flex-1 divide-y divide-slate-100 status-list">
+          {% for priority in priorities %}
+          <div class="group flex items-center justify-between px-5 py-3 hover:bg-slate-50 transition-colors status-drag-item" draggable="true" data-id="{{ priority.id }}">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+              <i data-lucide="grip-vertical" class="w-4 h-4 text-slate-400 group-hover:text-brand-600 transition-colors cursor-move opacity-40 group-hover:opacity-100 flex-shrink-0"></i>
+              <span class="w-3 h-3 rounded-full flex-shrink-0 border border-slate-300 shadow-2xs" style="background-color: {{ priority.color }};"></span>
+              <span class="text-xs font-bold text-slate-900 truncate uppercase tracking-wider">{{ priority.name }}</span>
             </div>
-            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button onclick="openEditStatusModal('{{ status.id }}', '{{ status.name|escapejs }}', '{{ status.color }}', 'priority')" class="p-1 rounded-lg text-outline hover:bg-blue-50 hover:text-blue-600 transition-all" title="Edit">
-                <span class="material-symbols-outlined text-[16px]">edit</span>
+            <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+              <button onclick="openEditStatusModal('{{ priority.id }}', '{{ priority.name|escapejs }}', '{{ priority.color }}', 'ticket_priorities')" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-brand-600 transition-all" title="Edit">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
               </button>
-              <form method="POST" action="/statuses/category/priority/{{ status.id }}/delete/" class="inline status-delete-form">
+              <form method="POST" action="/statuses/category/ticket_priorities/{{ priority.id }}/delete/" class="inline status-delete-form">
                 {% csrf_token %}
-                <button type="submit" class="p-1 rounded-lg text-outline hover:bg-rose-50 hover:text-rose-600 transition-all" title="Delete">
-                  <span class="material-symbols-outlined text-[16px]">delete</span>
+                <button type="submit" class="p-1.5 rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all" title="Delete">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
               </form>
             </div>
           </div>
           {% empty %}
-          <div class="p-5 text-center text-outline/60 text-sm italic">No priorities yet.</div>
+          <div class="p-8 text-center text-slate-400 text-xs italic">No priorities yet.</div>
           {% endfor %}
         </div>
 
-        <div class="px-5 py-3 border-t border-outline-variant/20 bg-slate-50/50">
-          <form method="POST" action="{% url 'add_dynamic_status' 'priority' %}" class="flex gap-2 status-add-form">
+        <div class="px-5 py-3.5 border-t border-slate-200/80 bg-slate-50/50">
+          <form method="POST" action="{% url 'add_dynamic_status' 'ticket_priorities' %}" class="flex items-center gap-2 status-add-form">
             {% csrf_token %}
-            <input type="color" name="color" value="#0053db" class="w-9 h-9 rounded-lg border-0 cursor-pointer bg-transparent">
-            <input type="text" name="name" required placeholder="Add priority..." class="flex-1 bg-white border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary text-sm uppercase"/>
-            <button type="submit" class="bg-primary text-on-primary px-3 py-2 rounded-lg hover:opacity-90 transition-all flex items-center gap-1 text-xs font-bold">
-              <span class="material-symbols-outlined text-[16px]">add</span>
+            <input type="color" name="color" value="#f59e0b" class="w-8 h-8 rounded-lg border border-slate-200 cursor-pointer bg-transparent p-0 flex-shrink-0">
+            <input type="text" name="name" required placeholder="Add priority level..." class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-900 font-bold uppercase placeholder:text-slate-400 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"/>
+            <button type="submit" class="bg-brand-600 text-white px-3.5 py-2 rounded-xl hover:bg-brand-700 transition-all flex items-center gap-1 text-xs font-bold shadow-xs shadow-brand-600/20">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Add</span>
             </button>
           </form>
         </div>
       </div>
 
     </div>
-
   </div>
 </main>
 
+<!-- Edit Modal -->
 <div id="edit-status-modal" class="fixed inset-0 z-[100] hidden">
-  <div class="absolute inset-0 bg-black/30 backdrop-blur-sm" onclick="closeEditStatusModal()"></div>
-  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-xl border border-outline-variant/30 w-full max-w-md p-6 animate-fade-in">
+  <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-xs" onclick="closeEditStatusModal()"></div>
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-2xl shadow-2xl border border-slate-200/80 w-full max-w-md p-6">
     <div class="flex items-center justify-between mb-5">
-      <h3 class="font-bold text-lg text-on-surface">Edit Value</h3>
-      <button onclick="closeEditStatusModal()" class="p-1 rounded-lg hover:bg-slate-100 text-outline transition-all">
-        <span class="material-symbols-outlined">close</span>
+      <h3 class="font-extrabold text-base text-slate-900">Edit Option</h3>
+      <button onclick="closeEditStatusModal()" class="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all">
+        <i data-lucide="x" class="w-5 h-5"></i>
       </button>
     </div>
     <form id="edit-status-form" method="POST" class="space-y-4">
       {% csrf_token %}
       <div>
-        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Name</label>
-        <input type="text" name="name" id="edit-status-name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary uppercase"/>
+        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Name</label>
+        <input type="text" name="name" id="edit-status-name" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-xs text-slate-900 font-bold uppercase focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white transition-all"/>
       </div>
       <div>
-        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Color</label>
-        <input type="color" name="color" id="edit-status-color" class="w-12 h-12 rounded-lg border-0 cursor-pointer bg-transparent"/>
+        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Color</label>
+        <input type="color" name="color" id="edit-status-color" class="w-12 h-12 rounded-xl border border-slate-200 cursor-pointer bg-transparent p-1"/>
       </div>
-      <div class="flex justify-end gap-2 pt-2">
-        <button type="button" onclick="closeEditStatusModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg hover:bg-slate-50 transition-all text-sm">Cancel</button>
-        <button type="submit" class="px-5 py-2 bg-primary text-on-primary font-button rounded-lg shadow hover:opacity-90 active:scale-95 transition-all text-sm">Save</button>
+      <div class="flex justify-end gap-3 pt-3 border-t border-slate-100">
+        <button type="button" onclick="closeEditStatusModal()" class="px-4 py-2 border border-slate-200 text-xs font-semibold text-slate-600 rounded-xl hover:bg-slate-50 transition-all">Cancel</button>
+        <button type="submit" class="px-5 py-2 bg-brand-600 text-white font-semibold rounded-xl shadow-xs shadow-brand-600/20 hover:bg-brand-700 transition-all text-xs">Save</button>
       </div>
     </form>
   </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+});
+
 function openEditStatusModal(id, name, color, category) {
-  document.getElementById('edit-status-form').action = '/statuses/category/' + category + '/' + id + '/edit/';
+  document.getElementById('edit-status-form').action = `/statuses/category/${category}/${id}/edit/`;
   document.getElementById('edit-status-name').value = name;
   document.getElementById('edit-status-color').value = color;
   document.getElementById('edit-status-modal').classList.remove('hidden');
+  if (window.lucide) lucide.createIcons();
 }
 function closeEditStatusModal() {
   document.getElementById('edit-status-modal').classList.add('hidden');
 }
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeEditStatusModal();
-});
-
-let dragSrcEl = null;
-
-function handleDragStart(e) {
-  dragSrcEl = this;
-  e.dataTransfer.effectAllowed = 'move';
-  e.dataTransfer.setData('text/html', this.outerHTML);
-  this.classList.add('opacity-40');
-}
-
-function handleDragOver(e) {
-  if (e.preventDefault) e.preventDefault();
-  return false;
-}
-
-function handleDragEnter(e) {
-  this.classList.add('bg-primary-container/20');
-}
-
-function handleDragLeave(e) {
-  this.classList.remove('bg-primary-container/20');
-}
-
-function handleDrop(e) {
-  if (e.stopPropagation) e.stopPropagation();
-  if (dragSrcEl !== this) {
-    let parent = this.parentNode;
-    if (parent === dragSrcEl.parentNode) {
-        parent.removeChild(dragSrcEl);
-        let dropHTML = e.dataTransfer.getData('text/html');
-        this.insertAdjacentHTML('beforebegin', dropHTML);
-        let dropElem = this.previousSibling;
-        addDnDHandlers(dropElem);
-        updateOrder(parent);
-    }
-  }
-  return false;
-}
-
-function handleDragEnd(e) {
-  this.classList.remove('opacity-40');
-  let items = document.querySelectorAll('.status-drag-item');
-  items.forEach(function (item) {
-    item.classList.remove('bg-primary-container/20');
-  });
-}
-
-function addDnDHandlers(elem) {
-  elem.addEventListener('dragstart', handleDragStart, false);
-  elem.addEventListener('dragenter', handleDragEnter, false);
-  elem.addEventListener('dragover', handleDragOver, false);
-  elem.addEventListener('dragleave', handleDragLeave, false);
-  elem.addEventListener('drop', handleDrop, false);
-  elem.addEventListener('dragend', handleDragEnd, false);
-}
-
-document.querySelectorAll('.status-drag-item').forEach(addDnDHandlers);
-
-function updateOrder(container) {
-  let items = container.querySelectorAll('.status-drag-item');
-  let orderData = [];
-  items.forEach(item => {
-    orderData.push(item.getAttribute('data-id'));
-  });
-  
-  let category = container.closest('[data-category]').getAttribute('data-category');
-  
-  fetch('/statuses/category/' + category + '/reorder/', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': '{{ csrf_token }}'
-    },
-    body: JSON.stringify({ 'order': orderData })
-  });
-}
 
 function handleAjaxSubmit(e, form) {
     e.preventDefault();
-    if (form.classList.contains('status-delete-form') && !confirm('Delete this?')) return;
+    if (form.classList.contains('status-delete-form')) {
+        if (!confirm('Delete this option?')) return;
+    }
+
     const formData = new FormData(form);
     fetch(form.action, {
-        method: 'POST', body: formData, headers: {'X-Requested-With': 'XMLHttpRequest'}
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
     })
-    .then(r => r.json())
+    .then(response => response.json())
     .then(data => {
-        if (data.success) window.location.reload();
-        else alert(data.error || 'An error occurred.');
-    }).catch(err => {
-        console.error(err); alert('An error occurred.');
+        if (data.success) {
+            sessionStorage.setItem('status_message', data.message || 'Operation successful.');
+            window.location.reload();
+        } else {
+            showToast(data.error || 'An error occurred.', 'error');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showToast('An error occurred.', 'error');
     });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.status-add-form, #edit-status-form, .status-delete-form').forEach(form => {
+    document.querySelectorAll('.status-add-form').forEach(form => {
         form.addEventListener('submit', (e) => handleAjaxSubmit(e, form));
     });
+    const editForm = document.getElementById('edit-status-form');
+    if (editForm) editForm.addEventListener('submit', (e) => handleAjaxSubmit(e, editForm));
+
+    document.querySelectorAll('.status-delete-form').forEach(form => {
+        form.addEventListener('submit', (e) => handleAjaxSubmit(e, form));
+    });
+
+    const msg = sessionStorage.getItem('status_message');
+    if (msg) {
+        showToast(msg, 'success');
+        sessionStorage.removeItem('status_message');
+    }
 });
 </script>
 {% endblock %}
