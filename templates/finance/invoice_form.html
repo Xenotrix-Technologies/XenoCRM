@@ -44,7 +44,7 @@
                     <label>Status:</label>
                     <select id="status" class="premium-input text-right pr-8">
                         {% for status in invoice_statuses %}
-                        <option value="{{ status.name }}" {% if invoice and invoice.status == status.name %}selected{% endif %}>{{ status.name }}</option>
+                        <option value="{{ status.name }}" {% if invoice and invoice.status|lower == status.name|lower %}selected{% endif %}>{{ status.name }}</option>
                         {% endfor %}
                     </select>
                 </div>

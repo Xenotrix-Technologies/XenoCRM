@@ -4399,8 +4399,8 @@ def finance_dashboard_view(request):
     
     # Invoice Data
     invoices = Invoice.objects.filter(organization=org)
-    outstanding_invoices_count = invoices.exclude(status='Paid').count()
-    pending_payments_amount = invoices.exclude(status='Paid').aggregate(Sum('grand_total'))['grand_total__sum'] or 0
+    outstanding_invoices_count = invoices.exclude(status__iexact='Paid').count()
+    pending_payments_amount = invoices.exclude(status__iexact='Paid').aggregate(Sum('grand_total'))['grand_total__sum'] or 0
     total_invoices_count = invoices.count()
     
     # Chart Data

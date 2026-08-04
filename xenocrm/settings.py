@@ -174,7 +174,7 @@ STORAGES = {
         'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
     },
     'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage' if 'test' in sys.argv else 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
 }
 WHITENOISE_MANIFEST_STRICT = False
