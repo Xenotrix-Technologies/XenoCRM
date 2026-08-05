@@ -30,27 +30,38 @@
                         <td>
                             <div class="flex items-center gap-3">
                                 {% if lead.profile_image_url %}
-                                <img class="w-8 h-8 rounded-full border border-slate-200 object-cover" src="{{ lead.profile_image_url }}" alt=""/>
+                                <img class="w-8 h-8 rounded-full border border-slate-200 object-cover flex-shrink-0" src="{{ lead.profile_image_url }}" alt=""/>
                                 {% else %}
                                 <div class="w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs border border-brand-200 flex-shrink-0">
                                     {{ lead.name|slice:":2"|upper }}
                                 </div>
                                 {% endif %}
-                                <div>
-                                    <div class="font-bold text-slate-900 hover:text-brand-600 transition-colors"><a href="{% url 'contact_detail' lead.id %}">{{ lead.name }}</a></div>
-                                    <div class="text-[11px] text-slate-400 font-normal">{{ lead.email }}</div>
+                                <div class="min-w-0">
+                                    <div class="font-bold text-slate-900 hover:text-brand-600 transition-colors truncate max-w-[180px]" title="{{ lead.name }}"><a href="{% url 'contact_detail' lead.id %}">{{ lead.name }}</a></div>
+                                    <div class="text-[11px] text-slate-400 font-normal truncate max-w-[180px]" title="{{ lead.email }}">{{ lead.email }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="font-semibold text-slate-700">{{ lead.company }}</td>
-                        <td class="text-slate-600">{{ lead.location|default:"-" }}</td>
-                        <td class="text-slate-700">
-                            <div class="font-medium">{{ lead.phone_number|default:"-" }}</div>
+                        <td class="font-semibold text-slate-700 max-w-[160px]">
+                            <div class="truncate" title="{{ lead.company }}">{{ lead.company }}</div>
+                        </td>
+                        <td class="text-slate-600 max-w-[220px]">
+                            {% if lead.location %}
+                            <div class="flex items-center gap-1.5 cursor-help group/loc" title="{{ lead.location }}">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400 flex-shrink-0 group-hover/loc:text-brand-600 transition-colors"></i>
+                                <span class="truncate text-xs font-medium text-slate-700 block whitespace-nowrap overflow-hidden text-ellipsis max-w-[190px]">{{ lead.location }}</span>
+                            </div>
+                            {% else %}
+                            <span class="text-slate-400 text-xs">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-slate-700 whitespace-nowrap">
+                            <div class="font-medium text-xs">{{ lead.phone_number|default:"-" }}</div>
                             {% if lead.alt_phone_number %}
                             <div class="text-[10px] text-slate-400">{{ lead.alt_phone_number }}</div>
                             {% endif %}
                         </td>
-                        <td class="text-slate-500 text-xs">
+                        <td class="text-slate-500 text-xs whitespace-nowrap">
                             {% if lead.date_time %}
                             {{ lead.date_time|date:"Y-m-d H:i" }}
                             {% elif lead.created_at %}
@@ -59,31 +70,31 @@
                             -
                             {% endif %}
                         </td>
-                        <td>
+                        <td class="whitespace-nowrap">
                             <span class="badge-saas badge-info">
                                 {{ lead.status }}
                             </span>
                         </td>
-                        <td>
+                        <td class="whitespace-nowrap">
                             {% if lead.owner %}
                             <div class="flex items-center gap-2">
-                                <div class="w-6 h-6 rounded-full bg-slate-100 text-brand-600 text-[10px] flex items-center justify-center font-bold border border-slate-200">
+                                <div class="w-6 h-6 rounded-full bg-slate-100 text-brand-600 text-[10px] flex items-center justify-center font-bold border border-slate-200 flex-shrink-0">
                                     {{ lead.owner.user.username|slice:":2"|upper }}
                                 </div>
-                                <span class="text-xs font-medium text-slate-700">{{ lead.owner.user.get_full_name|default:lead.owner.user.username }}</span>
+                                <span class="text-xs font-medium text-slate-700 truncate max-w-[120px]">{{ lead.owner.user.get_full_name|default:lead.owner.user.username }}</span>
                             </div>
                             {% else %}
-                            <span class="text-slate-400">-</span>
+                            <span class="text-slate-400 text-xs">-</span>
                             {% endif %}
                         </td>
-                        <td class="text-slate-500 text-xs">
+                        <td class="text-slate-500 text-xs whitespace-nowrap">
                             {% if lead.last_followup_date_time %}
                             {{ lead.last_followup_date_time|date:"Y-m-d H:i" }}
                             {% else %}
                             -
                             {% endif %}
                         </td>
-                        <td class="text-right">
+                        <td class="text-right whitespace-nowrap">
                             <div class="flex items-center justify-end gap-1">
                                 <a href="{% url 'contact_detail' lead.id %}" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-brand-600 transition-all" title="View Lead">
                                     <i data-lucide="eye" class="w-4 h-4"></i>
