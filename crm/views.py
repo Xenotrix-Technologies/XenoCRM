@@ -1130,29 +1130,63 @@ def leads_view(request):
 
     leads_qs = Lead.objects.filter(organization=org, is_client=False)
     
+    # Account-specific session key for user
+    user_pref_key = f'leads_filter_pref_user_{request.user.id}'
+    
+    # Check if user clicked Clear All
+    if request.GET.get('clear_filters') == '1':
+        if user_pref_key in request.session:
+            del request.session[user_pref_key]
+        q = ''
+        status_filter = ''
+        owner_filter = ''
+        sort_by = 'value_desc'
+    else:
+        has_filter_params = any(k in request.GET for k in ['q', 'status', 'owner', 'sort'])
+        
+        if has_filter_params:
+            q = request.GET.get('q', '').strip()
+            status_filter = request.GET.get('status', '').strip()
+            owner_filter = request.GET.get('owner', '').strip()
+            sort_by = request.GET.get('sort', 'value_desc').strip()
+            
+            # Persist preferences to user's session
+            request.session[user_pref_key] = {
+                'q': q,
+                'status': status_filter,
+                'owner': owner_filter,
+                'sort': sort_by
+            }
+        elif user_pref_key in request.session:
+            # Restore saved user account filter/sort preferences
+            pref = request.session[user_pref_key]
+            q = pref.get('q', '')
+            status_filter = pref.get('status', '')
+            owner_filter = pref.get('owner', '')
+            sort_by = pref.get('sort', 'value_desc')
+        else:
+            q = request.GET.get('q', '').strip()
+            status_filter = request.GET.get('status', '').strip()
+            owner_filter = request.GET.get('owner', '').strip()
+            sort_by = request.GET.get('sort', 'value_desc').strip()
+
     # 1. Search Query
-    q = request.GET.get('q', '').strip()
     if q:
         leads_qs = leads_qs.filter(name__icontains=q)
         
     # 2. Filters
-    status_filter = request.GET.get('status', '').strip()
     if status_filter:
         leads_qs = leads_qs.filter(status=status_filter)
         
-    owner_filter = request.GET.get('owner', '').strip()
     if owner_filter:
         leads_qs = leads_qs.filter(owner_id=owner_filter)
         
     # 3. Sorting
-    sort_by = request.GET.get('sort', 'value_desc').strip()  # default changed from score_desc to value_desc (score column commented out)
-    # if sort_by == 'score_asc':
-    #     leads_qs = leads_qs.order_by('score')
     if sort_by == 'value_desc':
         leads_qs = leads_qs.order_by('-value')
     elif sort_by == 'value_asc':
         leads_qs = leads_qs.order_by('value')
-    else: # default value_desc (was score_desc)
+    else:
         leads_qs = leads_qs.order_by('-value')
 
     # Owners lookup

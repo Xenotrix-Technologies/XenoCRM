@@ -102,6 +102,20 @@
 
 {% block extra_js %}
 <script>
+    const userStorageKey = "xenocrm_user_{{ request.user.id }}_leads_filter";
+
+    function saveUserFilterPreferences() {
+        const filterForm = document.getElementById('lead-filter-form');
+        if (!filterForm) return;
+        const qVal = filterForm.querySelector('[name="q"]')?.value || '';
+        const statusVal = filterForm.querySelector('[name="status"]')?.value || '';
+        const ownerVal = filterForm.querySelector('[name="owner"]')?.value || '';
+        const sortVal = filterForm.querySelector('[name="sort"]')?.value || '';
+        
+        const prefs = { q: qVal, status: statusVal, owner: ownerVal, sort: sortVal };
+        localStorage.setItem(userStorageKey, JSON.stringify(prefs));
+    }
+
     function fetchLeads(url) {
         const tableContainer = document.getElementById('leads-table-container');
         if (!tableContainer) return;
@@ -133,6 +147,8 @@
         const filterForm = document.getElementById('lead-filter-form');
         if (!filterForm) return;
 
+        saveUserFilterPreferences();
+
         const formData = new FormData(filterForm);
         const params = new URLSearchParams(formData);
         if (page) {
@@ -143,6 +159,43 @@
         window.history.pushState({}, '', newUrl);
         fetchLeads(newUrl);
     }
+
+    // Bind Clear All button to reset user account preferences
+    const clearBtn = document.getElementById('clear-filters-btn');
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem(userStorageKey);
+            window.location.href = "{% url 'leads' %}?clear_filters=1";
+        });
+    }
+
+    // Auto-restore user account filter/sort preferences on initial load if no URL parameters
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('q') && !urlParams.has('status') && !urlParams.has('owner') && !urlParams.has('sort') && !urlParams.has('clear_filters')) {
+            const saved = localStorage.getItem(userStorageKey);
+            if (saved) {
+                try {
+                    const prefs = JSON.parse(saved);
+                    const form = document.getElementById('lead-filter-form');
+                    if (form) {
+                        let shouldUpdate = false;
+                        if (prefs.q && form.querySelector('[name="q"]')) { form.querySelector('[name="q"]').value = prefs.q; shouldUpdate = true; }
+                        if (prefs.status && form.querySelector('[name="status"]')) { form.querySelector('[name="status"]').value = prefs.status; shouldUpdate = true; }
+                        if (prefs.owner && form.querySelector('[name="owner"]')) { form.querySelector('[name="owner"]').value = prefs.owner; shouldUpdate = true; }
+                        if (prefs.sort && form.querySelector('[name="sort"]')) { form.querySelector('[name="sort"]').value = prefs.sort; shouldUpdate = true; }
+                        
+                        if (shouldUpdate) {
+                            updateFilters();
+                        }
+                    }
+                } catch(e) {
+                    console.error("Error parsing saved filter preferences", e);
+                }
+            }
+        }
+    });
 
     let searchDebounceTimeout;
     const globalSearch = document.getElementById('lead-search-input');
