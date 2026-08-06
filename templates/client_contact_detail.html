@@ -14,65 +14,65 @@
 
 {% block content %}
 <main class="pt-4 p-margin-edge min-h-screen">
-    <div class="max-w-container-max mx-auto">
+    <div class="w-full max-w-7xl mx-auto space-y-6">
         <!-- Page Header / Breadcrumbs -->
-        <h2 class="text-xl font-bold flex items-center text-on-background mb-6">
-            <a href="{% url 'clients' %}" class="text-secondary hover:text-primary transition-colors">Clients</a>
-            <span class="material-symbols-outlined mx-2 text-outline text-sm">chevron_right</span>
-            <span class="text-primary font-bold">Client Contact Profile</span>
+        <h2 class="text-xl font-bold flex items-center text-slate-900 mb-4">
+            <a href="{% url 'clients' %}" class="text-slate-500 hover:text-brand-600 transition-colors text-xs font-semibold">Clients</a>
+            <span class="material-symbols-outlined mx-2 text-slate-400 text-xs">chevron_right</span>
+            <span class="text-brand-600 font-bold text-xs">Client Contact Profile</span>
         </h2>
 
-        <div class="grid grid-cols-12 gap-gutter-md">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             <!-- Left Column: Main Profile & Content -->
-            <div class="col-span-12 lg:col-span-8 space-y-gutter-md">
+            <div class="col-span-1 lg:col-span-8 space-y-6 min-w-0">
                 <!-- Profile Edit Form -->
-                <form method="POST" action="{% url 'edit_lead' lead.id %}" class="space-y-gutter-md">
+                <form method="POST" action="{% url 'edit_lead' lead.id %}" class="space-y-6">
                     {% csrf_token %}
                     
                     <!-- Profile Header Card -->
-                    <div class="glass-card rounded-xl p-8 shadow-sm border border-outline-variant/30 space-y-6">
-                        <div class="flex flex-col md:flex-row items-center gap-6 pb-6 border-b border-outline-variant/20">
-                            <div class="relative">
+                    <div class="glass-card rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/80 bg-white space-y-6">
+                        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-6 border-b border-slate-100">
+                            <div class="relative shrink-0">
                                 {% if lead.profile_image_url %}
-                                <img class="w-20 h-20 rounded-full border border-outline-variant object-cover shadow-md" src="{{ lead.profile_image_url }}" alt="Profile Image"/>
+                                <img class="w-20 h-20 rounded-full border-2 border-slate-200 object-cover shadow-md" src="{{ lead.profile_image_url }}" alt="Profile Image"/>
                                 {% else %}
-                                <div class="w-20 h-20 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-2xl border border-outline-variant shadow-md">
+                                <div class="w-20 h-20 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-2xl border-2 border-brand-100 shadow-md">
                                     {{ lead.name|slice:":2"|upper }}
                                 </div>
                                 {% endif %}
                             </div>
                             <div class="flex-1 w-full space-y-3">
                                 <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Lead Name *</label>
-                                    <input type="text" name="name" value="{{ lead.name }}" required class="text-xl font-bold bg-surface-container-low border border-outline-variant rounded-xl px-4 py-2 w-full focus:ring-1 focus:ring-primary focus:border-primary text-on-surface"/>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Lead Name *</label>
+                                    <input type="text" name="name" value="{{ lead.name }}" required class="text-xl font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 w-full focus:ring-2 focus:ring-brand-500 text-slate-900"/>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Company *</label>
-                                    <input type="text" name="company" value="{{ lead.company }}" required class="text-body-md font-semibold bg-surface-container-low border border-outline-variant rounded-xl px-4 py-1.5 w-full focus:ring-1 focus:ring-primary focus:border-primary text-on-surface"/>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Company *</label>
+                                    <input type="text" name="company" value="{{ lead.company }}" required class="text-sm font-semibold bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 w-full focus:ring-2 focus:ring-brand-500 text-slate-800"/>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex flex-wrap items-center gap-3 mt-2">
-                            <button type="button" onclick="openSendEmailModal()" class="bg-primary text-on-primary flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-semibold shadow-sm hover:shadow-md hover:bg-primary/90 transition-all active:scale-95 text-sm">
+                        <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                            <button type="button" onclick="openSendEmailModal()" class="bg-brand-600 text-white flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-brand-700 transition-all active:scale-95 text-xs sm:text-sm">
                                 <span class="material-symbols-outlined text-[18px]">mail</span>
                                 Send Email
                             </button>
-                            <button type="button" onclick="logInteraction('Call')" class="bg-surface-container-lowest border border-outline-variant text-on-surface flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-semibold shadow-sm hover:bg-surface-container-low hover:border-outline transition-all active:scale-95 text-sm">
-                                <span class="material-symbols-outlined text-[18px] text-primary">call</span>
+                            <button type="button" onclick="logInteraction('Call')" class="bg-white border border-slate-200 text-slate-700 flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-slate-50 transition-all active:scale-95 text-xs sm:text-sm">
+                                <span class="material-symbols-outlined text-[18px] text-brand-600">call</span>
                                 Call
                             </button>
-                            <button type="button" onclick="showCalendarModal()" class="bg-surface-container-lowest border border-outline-variant text-on-surface flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-semibold shadow-sm hover:bg-surface-container-low hover:border-outline transition-all active:scale-95 text-sm">
-                                <span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
+                            <button type="button" onclick="showCalendarModal()" class="bg-white border border-slate-200 text-slate-700 flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-slate-50 transition-all active:scale-95 text-xs sm:text-sm">
+                                <span class="material-symbols-outlined text-[18px] text-brand-600">calendar_today</span>
                                 Schedule Meeting
                             </button>
-                            <button type="button" onclick="openWhatsAppModal()" class="bg-[#25D366] text-white flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-semibold shadow-sm hover:bg-[#20bd5a] hover:shadow-md transition-all active:scale-95 text-sm">
-                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <button type="button" onclick="openWhatsAppModal()" class="bg-[#25D366] text-white flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-[#20bd5a] transition-all active:scale-95 text-xs sm:text-sm">
+                                <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
                                     <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z"/>
                                 </svg>
                                 WhatsApp
                             </button>
-                            <button type="button" onclick="confirmDelete()" class="bg-surface-container-lowest border border-red-200 text-red-600 flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-semibold shadow-sm hover:bg-red-50 hover:border-red-300 transition-all active:scale-95 text-sm ml-auto">
+                            <button type="button" onclick="confirmDelete()" class="bg-white border border-red-200 text-red-600 flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-red-50 hover:border-red-300 transition-all active:scale-95 text-xs sm:text-sm sm:ml-auto w-full sm:w-auto">
                                 <span class="material-symbols-outlined text-[18px]">delete</span>
                                 Delete
                             </button>
@@ -80,56 +80,56 @@
                     </div>
 
                     <!-- Tabbed Navigation -->
-                    <div class="border-b border-outline-variant">
+                    <div class="border-b border-slate-200">
                         <nav class="flex gap-8">
-                            <a class="py-4 font-button border-b-2 border-primary text-primary transition-all active-tab-link" href="#" onclick="switchTab(event, 'tab-overview')">Overview</a>
-                            <a class="py-4 font-button border-b-2 border-transparent text-secondary hover:text-on-surface transition-all" href="#" onclick="switchTab(event, 'tab-timeline')">Activity Timeline</a>
+                            <a class="py-3.5 font-bold text-sm border-b-2 border-brand-600 text-brand-600 transition-all active-tab-link" href="#" onclick="switchTab(event, 'tab-overview')">Overview</a>
+                            <a class="py-3.5 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-900 transition-all" href="#" onclick="switchTab(event, 'tab-timeline')">Activity Timeline</a>
                         </nav>
                     </div>
 
                     <!-- Content Grid -->
-                    <div id="tab-overview" class="grid grid-cols-2 gap-gutter-md tab-content">
+                    <div id="tab-overview" class="grid grid-cols-1 md:grid-cols-2 gap-6 tab-content">
                         <!-- Profile Info Details Card -->
-                        <div class="col-span-2 glass-card rounded-xl p-6 border border-outline-variant/30 space-y-6">
-                            <h3 class="font-headline-md text-[18px] font-bold">Profile Details</h3>
+                        <div class="col-span-1 md:col-span-2 glass-card rounded-2xl p-6 border border-slate-200/80 bg-white shadow-sm space-y-6">
+                            <h3 class="text-lg font-bold text-slate-900">Profile Details</h3>
                             
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <!-- Contact Info -->
                                 <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Email Address</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Email Address</label>
                                     <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">mail</span>
-                                        <input type="email" name="email" value="{{ lead.email }}" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                                        <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">mail</span>
+                                        <input type="email" name="email" value="{{ lead.email }}" class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 w-full text-xs focus:ring-2 focus:ring-brand-500 text-slate-900"/>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Phone Number *</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Phone Number *</label>
                                     <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">call</span>
-                                        <input type="text" name="phone_number" value="{{ lead.phone_number|default:'' }}" required class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                                        <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">call</span>
+                                        <input type="text" name="phone_number" value="{{ lead.phone_number|default:'' }}" required class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 w-full text-xs focus:ring-2 focus:ring-brand-500 text-slate-900"/>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Alt Phone Number</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Alt Phone Number</label>
                                     <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">phone_iphone</span>
-                                        <input type="text" name="alt_phone_number" value="{{ lead.alt_phone_number|default:'' }}" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                                        <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">phone_iphone</span>
+                                        <input type="text" name="alt_phone_number" value="{{ lead.alt_phone_number|default:'' }}" class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 w-full text-xs focus:ring-2 focus:ring-brand-500 text-slate-900"/>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Location / Address</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Location / Address</label>
                                     <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">location_on</span>
-                                        <input type="text" name="location" value="{{ lead.location|default:'' }}" placeholder="City, Country" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                                        <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">location_on</span>
+                                        <input type="text" name="location" value="{{ lead.location|default:'' }}" placeholder="City, Country" class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 w-full text-xs focus:ring-2 focus:ring-brand-500 text-slate-900"/>
                                     </div>
                                 </div>
 
                                 <!-- Lead / Client Status & Owner -->
                                 <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Client Status</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Client Status</label>
                                     <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">adjust</span>
-                                        <select id="lead-status-select" name="status" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                                        <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">adjust</span>
+                                        <select id="lead-status-select" name="status" class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 w-full text-xs focus:ring-2 focus:ring-brand-500 text-slate-900">
                                             {% for s in client_statuses %}
                                             <option value="{{ s.name }}" {% if lead.status == s.name %}selected{% endif %}>{{ s.name }}</option>
                                             {% endfor %}
@@ -137,10 +137,10 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Assigned Employee (Owner)</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Assigned Employee (Owner)</label>
                                     <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">person</span>
-                                        <select name="owner" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
+                                        <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">person</span>
+                                        <select name="owner" class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 w-full text-xs focus:ring-2 focus:ring-brand-500 text-slate-900">
                                             <option value="">None</option>
                                             {% for owner in owners %}
                                             <option value="{{ owner.id }}" {% if lead.owner.id == owner.id %}selected{% endif %}>{{ owner.user.get_full_name|default:owner.user.username }}</option>
@@ -151,169 +151,165 @@
 
                                 <!-- Deal Value & Service Interest -->
                                 <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Contract Value ($)</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Contract Value ($)</label>
                                     <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">attach_money</span>
-                                        <input type="number" step="0.01" name="value" value="{% if lead.value %}{{ lead.value }}{% endif %}" placeholder="" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                                        <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">attach_money</span>
+                                        <input type="number" step="0.01" name="value" value="{% if lead.value %}{{ lead.value }}{% endif %}" placeholder="" class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 w-full text-xs focus:ring-2 focus:ring-brand-500 text-slate-900"/>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Paid Amount ($)</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Paid Amount ($)</label>
                                     <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">payments</span>
-                                        <input type="number" step="0.01" name="paid_amount" value="{{ lead.paid_amount|default:'0.00' }}" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                                        <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">payments</span>
+                                        <input type="number" step="0.01" name="paid_amount" value="{{ lead.paid_amount|default:'0.00' }}" class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 w-full text-xs focus:ring-2 focus:ring-brand-500 text-slate-900"/>
                                     </div>
                                 </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-2">Service Interest</label>
-                                    <div id="lead-service-select" class="bg-surface-container-low border border-outline-variant rounded-xl p-3 space-y-2 max-h-48 overflow-y-auto">
+                                <div class="md:col-span-2">
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Service Interest</label>
+                                    <div id="lead-service-select" class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2 max-h-48 overflow-y-auto">
                                         {% for svc in services %}
                                         <label class="flex items-center gap-2 cursor-pointer">
-                                            <input type="checkbox" name="services" value="{{ svc.id }}" class="w-4 h-4 text-primary bg-white border-outline-variant rounded focus:ring-primary focus:ring-2"
+                                            <input type="checkbox" name="services" value="{{ svc.id }}" class="w-4 h-4 text-brand-600 bg-white border-slate-300 rounded focus:ring-brand-500 focus:ring-2"
                                                 {% if svc in lead.services.all %}checked{% endif %}>
-                                            <span class="text-body-sm text-on-surface">{{ svc.name }}</span>
+                                            <span class="text-xs text-slate-800">{{ svc.name }}</span>
                                         </label>
                                         {% empty %}
-                                        <p class="text-xs text-secondary italic">No services available.</p>
+                                        <p class="text-xs text-slate-400 italic">No services available.</p>
                                         {% endfor %}
                                     </div>
                                 </div>
 
                                 <!-- Metadata -->
                                 <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Registered On</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Registered On</label>
                                     <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">calendar_today</span>
-                                        <input type="datetime-local" name="date_time" value="{{ lead.date_time|date:'Y-m-d\TH:i' }}" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                                        <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">calendar_today</span>
+                                        <input type="datetime-local" name="date_time" value="{{ lead.date_time|date:'Y-m-d\TH:i' }}" class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 w-full text-xs focus:ring-2 focus:ring-brand-500 text-slate-900"/>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Last Followup Date/Time</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Last Followup Date/Time</label>
                                     <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">history</span>
-                                        <input type="datetime-local" name="last_followup_date_time" value="{{ lead.last_followup_date_time|date:'Y-m-d\TH:i' }}" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                                        <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">history</span>
+                                        <input type="datetime-local" name="last_followup_date_time" value="{{ lead.last_followup_date_time|date:'Y-m-d\TH:i' }}" class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 w-full text-xs focus:ring-2 focus:ring-brand-500 text-slate-900"/>
                                     </div>
                                 </div>
 
                                 <div class="md:col-span-2">
-                                    <label class="block text-[10px] font-bold text-outline uppercase tracking-wider mb-1">Profile Image URL</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Profile Image URL</label>
                                     <div class="relative flex items-center">
-                                        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px]">image</span>
-                                        <input type="url" name="profile_image_url" value="{{ lead.profile_image_url|default:'' }}" placeholder="https://example.com/image.png" class="bg-surface-container-low border border-outline-variant rounded-xl pl-10 pr-4 py-2 w-full text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+                                        <span class="material-symbols-outlined absolute left-3 text-slate-400 text-[18px]">image</span>
+                                        <input type="url" name="profile_image_url" value="{{ lead.profile_image_url|default:'' }}" placeholder="https://example.com/image.png" class="bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-2 w-full text-xs focus:ring-2 focus:ring-brand-500 text-slate-900"/>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="flex justify-end gap-3 pt-6 border-t border-outline-variant/20">
-                                <a href="{% url 'leads' %}" class="px-5 py-2.5 border border-outline-variant text-secondary rounded-xl hover:bg-slate-50 transition-colors font-button text-sm">Cancel</a>
-                                <button type="submit" class="px-6 py-2.5 bg-primary text-on-primary font-button text-sm rounded-xl shadow-md hover:opacity-90 active:scale-95 transition-all flex items-center gap-2">
+                            <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
+                                <a href="{% url 'leads' %}" class="px-5 py-2.5 border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors font-semibold text-xs sm:text-sm">Cancel</a>
+                                <button type="submit" class="px-6 py-2.5 bg-brand-600 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-md hover:bg-brand-700 active:scale-95 transition-all flex items-center gap-2">
                                     <span class="material-symbols-outlined text-[18px]">save</span>
                                     Save Changes
                                 </button>
                             </div>
                         </div>
-                        
-
-
                     </div>
                 </form>
 
                 <!-- Full Activity Timeline Tab -->
-                <div id="tab-timeline" class="glass-card rounded-xl p-6 border border-outline-variant/30 tab-content hidden">
-                    <h3 class="font-headline-md text-[18px] font-bold mb-6">Complete Activity Timeline</h3>
-                    <div class="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[1px] before:bg-outline-variant/30">
+                <div id="tab-timeline" class="glass-card rounded-2xl p-6 border border-slate-200/80 bg-white shadow-sm tab-content hidden">
+                    <h3 class="text-lg font-bold text-slate-900 mb-6">Complete Activity Timeline</h3>
+                    <div class="space-y-6 relative before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-[1px] before:bg-slate-200">
                         {% for activity in activities %}
-                        <div class="relative pl-10">
-                            <div class="absolute left-0 top-0 w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary z-10">
-                                <span class="material-symbols-outlined text-[18px]">
+                        <div class="relative pl-9">
+                            <div class="absolute left-0 top-0 w-7 h-7 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600 z-10">
+                                <span class="material-symbols-outlined text-[16px]">
                                     {% if activity.type == 'Email' %}mail{% elif activity.type == 'Call' %}call{% elif activity.type == 'Meeting' %}calendar_today{% else %}description{% endif %}
                                 </span>
                             </div>
                             <div>
-                                <p class="font-body-sm font-bold">{{ activity.type }} Logged</p>
-                                <p class="text-sm text-secondary">{{ activity.description }}</p>
-                                <p class="text-xs text-outline mt-1">{{ activity.timestamp|date:"M d, Y h:i A" }}</p>
+                                <p class="text-xs font-bold text-slate-900">{{ activity.type }} Logged</p>
+                                <p class="text-xs text-slate-500 mt-0.5">{{ activity.description }}</p>
+                                <p class="text-[10px] text-slate-400 font-semibold mt-1">{{ activity.timestamp|date:"M d, Y h:i A" }}</p>
                             </div>
                         </div>
                         {% empty %}
-                        <p class="text-xs text-outline text-center py-4">No logged activity.</p>
+                        <p class="text-xs text-slate-400 text-center py-4">No logged activity.</p>
                         {% endfor %}
                     </div>
                 </div>
             </div>
 
             <!-- Right Column: Widgets -->
-            <div class="col-span-12 lg:col-span-4 space-y-gutter-md">
-
+            <div class="col-span-1 lg:col-span-4 space-y-6 min-w-0">
 
                 <!-- Upcoming Tasks Widget -->
-                <div class="glass-card rounded-xl p-6 border border-outline-variant/30">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="font-headline-md text-[18px] font-bold">Upcoming Tasks</h3>
-                        <button onclick="toggleAddTaskForm()" class="material-symbols-outlined p-1 bg-surface-container rounded-lg text-primary">add</button>
+                <div class="glass-card rounded-2xl p-5 sm:p-6 border border-slate-200/80 bg-white shadow-sm space-y-4">
+                    <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                        <h3 class="text-base font-bold text-slate-900">Upcoming Tasks</h3>
+                        <button type="button" onclick="toggleAddTaskForm()" class="material-symbols-outlined p-1.5 bg-slate-100 hover:bg-slate-200 text-brand-600 rounded-lg transition-colors text-sm" title="Add Task">add</button>
                     </div>
 
                     <!-- Inline Add Task Form -->
-                    <div id="add-task-form-container" class="hidden mb-4 p-3 bg-surface-container-low rounded-xl border border-outline-variant/30">
-                        <input type="text" id="new-task-desc" placeholder="Task description..." class="w-full bg-white border border-outline-variant rounded-lg px-3 py-1.5 text-xs focus:ring-1 focus:ring-primary mb-2"/>
-                        <div class="flex gap-2 mb-2">
-                            <input type="date" id="new-task-due" class="w-full bg-white border border-outline-variant rounded-lg px-2 py-1 text-[10px] focus:ring-1 focus:ring-primary"/>
-                            <select id="new-task-priority" class="w-full bg-white border border-outline-variant rounded-lg px-2 py-1 text-[10px] focus:ring-1 focus:ring-primary">
+                    <div id="add-task-form-container" class="hidden p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                        <input type="text" id="new-task-desc" placeholder="Task description..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs focus:ring-2 focus:ring-brand-500 text-slate-900"/>
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="date" id="new-task-due" class="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-[11px] focus:ring-2 focus:ring-brand-500 text-slate-700"/>
+                            <select id="new-task-priority" class="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-[11px] focus:ring-2 focus:ring-brand-500 text-slate-700">
                                 <option value="High">High</option>
                                 <option value="Medium" selected>Medium</option>
                                 <option value="Low">Low</option>
                             </select>
                         </div>
-                        <div class="flex justify-end gap-2">
-                            <button onclick="toggleAddTaskForm()" class="px-2.5 py-1 text-[10px] border border-outline-variant rounded hover:bg-slate-50">Cancel</button>
-                            <button onclick="submitNewTask()" class="px-2.5 py-1 text-[10px] bg-primary text-on-primary rounded hover:opacity-90">Add</button>
+                        <div class="flex justify-end gap-2 pt-1">
+                            <button type="button" onclick="toggleAddTaskForm()" class="px-2.5 py-1 text-xs border border-slate-200 rounded-lg hover:bg-white text-slate-600">Cancel</button>
+                            <button type="button" onclick="submitNewTask()" class="px-2.5 py-1 text-xs bg-brand-600 text-white rounded-lg hover:bg-brand-700 font-semibold">Add</button>
                         </div>
                     </div>
 
-                    <div id="task-list-container" class="space-y-4">
+                    <div id="task-list-container" class="space-y-3">
                         {% for task in tasks %}
-                        <div id="task-item-{{ task.id }}" class="flex gap-4 p-3 rounded-lg hover:bg-surface-container-low transition-colors group">
-                            <button onclick="completeTask('{{ task.id }}')" class="w-6 h-6 rounded border-2 {% if task.completed %}bg-success border-success text-white flex items-center justify-center{% else %}border-outline-variant group-hover:border-primary{% endif %} mt-1 transition-colors">
-                                {% if task.completed %}<span class="material-symbols-outlined text-[16px]">check</span>{% endif %}
+                        <div id="task-item-{{ task.id }}" class="flex items-start gap-3 p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group">
+                            <button type="button" onclick="completeTask('{{ task.id }}')" class="w-5 h-5 rounded border-2 {% if task.completed %}bg-success border-success text-white flex items-center justify-center{% else %}border-slate-300 group-hover:border-brand-600{% endif %} mt-0.5 transition-colors shrink-0">
+                                {% if task.completed %}<span class="material-symbols-outlined text-[14px]">check</span>{% endif %}
                             </button>
-                            <div>
-                                <p class="font-body-sm font-bold text-on-surface {% if task.completed %}line-through opacity-50{% endif %}">{{ task.description }}</p>
-                                <div class="flex items-center gap-3 mt-1">
-                                    <span class="font-label-md {% if task.priority == 'High' %}text-error{% else %}text-outline{% endif %} flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-[14px]">event</span> {{ task.due_date|date:"M d" }}
+                            <div class="min-w-0 flex-1">
+                                <p class="text-xs font-bold text-slate-800 break-words {% if task.completed %}line-through opacity-50{% endif %}">{{ task.description }}</p>
+                                <div class="flex flex-wrap items-center gap-2 mt-1">
+                                    <span class="text-[11px] font-semibold {% if task.priority == 'High' %}text-red-500{% else %}text-slate-400{% endif %} flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[13px]">event</span> {{ task.due_date|date:"M d" }}
                                     </span>
-                                    <span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded font-label-md">{{ task.priority }}</span>
+                                    <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md text-[10px] font-bold">{{ task.priority }}</span>
                                 </div>
                             </div>
                         </div>
                         {% empty %}
-                        <p class="text-xs text-outline text-center py-4" id="no-tasks-placeholder">No upcoming tasks.</p>
+                        <p class="text-xs text-slate-400 text-center py-4" id="no-tasks-placeholder">No upcoming tasks.</p>
                         {% endfor %}
                     </div>
                 </div>
 
                 <!-- Activity Timeline (Compact Preview) -->
-                <div class="glass-card rounded-xl p-6 border border-outline-variant/30">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="font-headline-md text-[18px] font-bold">Recent Activity</h3>
-                        <button onclick="switchTab(null, 'tab-timeline')" class="text-primary font-button text-sm">View All</button>
+                <div class="glass-card rounded-2xl p-5 sm:p-6 border border-slate-200/80 bg-white shadow-sm space-y-4">
+                    <div class="flex justify-between items-center pb-3 border-b border-slate-100">
+                        <h3 class="text-base font-bold text-slate-900">Recent Activity</h3>
+                        <button type="button" onclick="switchTab(null, 'tab-timeline')" class="text-brand-600 hover:text-brand-700 text-xs font-bold">View All</button>
                     </div>
-                    <div id="activity-list-container" class="space-y-6 relative before:absolute before:left-4 before:top-2 before:bottom-2 before:w-[1px] before:bg-outline-variant/30">
+                    <div id="activity-list-container" class="space-y-5 relative before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-[1px] before:bg-slate-200">
                         {% for activity in activities|slice:":3" %}
-                        <div class="relative pl-10">
-                            <div class="absolute left-0 top-0 w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-primary z-10">
-                                <span class="material-symbols-outlined text-[18px]">
+                        <div class="relative pl-8">
+                            <div class="absolute left-0 top-0 w-7 h-7 rounded-full bg-brand-50 border border-brand-100 flex items-center justify-center text-brand-600 z-10 shrink-0">
+                                <span class="material-symbols-outlined text-[15px]">
                                     {% if activity.type == 'Email' %}mail{% elif activity.type == 'Call' %}call{% elif activity.type == 'Meeting' %}calendar_today{% else %}description{% endif %}
                                 </span>
                             </div>
-                            <div>
-                                <p class="font-body-sm font-bold">{{ activity.type }} Logged</p>
-                                <p class="text-sm text-secondary">{{ activity.description }}</p>
-                                <p class="text-xs text-outline mt-1">{{ activity.timestamp|timesince }} ago</p>
+                            <div class="min-w-0">
+                                <p class="text-xs font-bold text-slate-900">{{ activity.type }} Logged</p>
+                                <p class="text-xs text-slate-500 break-words mt-0.5">{{ activity.description }}</p>
+                                <p class="text-[10px] text-slate-400 font-semibold mt-1">{{ activity.timestamp|timesince }} ago</p>
                             </div>
                         </div>
                         {% empty %}
-                        <p class="text-xs text-outline text-center py-4">No recent activity.</p>
+                        <p class="text-xs text-slate-400 text-center py-4">No recent activity.</p>
                         {% endfor %}
                     </div>
                 </div>
