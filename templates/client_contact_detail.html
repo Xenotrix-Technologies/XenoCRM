@@ -66,6 +66,12 @@
                                 <span class="material-symbols-outlined text-[18px] text-primary">calendar_today</span>
                                 Schedule Meeting
                             </button>
+                            <button type="button" onclick="openWhatsAppModal()" class="bg-[#25D366] text-white flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-semibold shadow-sm hover:bg-[#20bd5a] hover:shadow-md transition-all active:scale-95 text-sm">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z"/>
+                                </svg>
+                                WhatsApp
+                            </button>
                             <button type="button" onclick="confirmDelete()" class="bg-surface-container-lowest border border-red-200 text-red-600 flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-semibold shadow-sm hover:bg-red-50 hover:border-red-300 transition-all active:scale-95 text-sm ml-auto">
                                 <span class="material-symbols-outlined text-[18px]">delete</span>
                                 Delete
@@ -432,6 +438,131 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+    <!-- WhatsApp Message Modal -->
+    <div id="whatsapp-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center hidden opacity-0 transition-all duration-300">
+        <div class="bg-white rounded-2xl w-full max-w-4xl p-0 shadow-2xl border border-outline-variant/30 transform scale-95 transition-all duration-300 overflow-hidden mx-4 my-6">
+            <!-- Modal Header -->
+            <div class="bg-[#075e54] text-white p-5 flex items-center justify-between shadow-md">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-[#25D366] flex items-center justify-center text-white shadow-inner">
+                        <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg leading-tight">Send WhatsApp Message</h3>
+                        <p class="text-xs text-emerald-100 flex items-center gap-1.5 mt-0.5">
+                            <span>Our Business Number:</span>
+                            <span class="font-mono bg-white/20 px-2 py-0.5 rounded text-white font-semibold">+91 9995544316</span>
+                        </p>
+                    </div>
+                </div>
+                <button onclick="closeWhatsAppModal()" type="button" class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+            
+            <div class="p-6 grid grid-cols-1 md:grid-cols-12 gap-6 bg-surface-container-lowest max-h-[80vh] overflow-y-auto">
+                <!-- Left Column: Message Controls & Textarea (7 cols) -->
+                <div class="md:col-span-7 space-y-4">
+                    <!-- Recipient Card -->
+                    <div class="bg-surface-container-low border border-outline-variant/40 rounded-xl p-3.5 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-primary-container text-primary flex items-center justify-center font-bold text-sm">
+                                {{ lead.name|slice:":2"|upper }}
+                            </div>
+                            <div>
+                                <p class="text-xs font-bold text-outline uppercase tracking-wider">Recipient</p>
+                                <p class="text-sm font-bold text-on-surface">{{ lead.name }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs font-bold text-outline uppercase tracking-wider">Target Phone</p>
+                            <p class="text-sm font-mono font-bold text-primary">{{ lead.phone_number|default:'Not specified' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Template Selector -->
+                    <div>
+                        <label class="block text-xs font-bold text-outline uppercase tracking-wider mb-1.5">Select Message Template</label>
+                        <select id="whatsapp-template-select" onchange="onWhatsAppTemplateChange()" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2.5 text-sm font-semibold focus:ring-1 focus:ring-[#25D366] focus:border-[#25D366]">
+                            <option value="greetings">🌟 Greetings & Services Overview (Default)</option>
+                            <option value="followup">💬 Follow-up Message</option>
+                            <option value="meeting">📅 Schedule Discussion / Demo</option>
+                            <option value="custom">✏️ Blank / Custom Message</option>
+                        </select>
+                    </div>
+
+                    <!-- Editable Textarea -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1.5">
+                            <label class="block text-xs font-bold text-outline uppercase tracking-wider">Message Content</label>
+                            <span class="text-[11px] text-secondary">Supports emojis & line breaks</span>
+                        </div>
+                        <textarea id="whatsapp-msg-input" oninput="updateWhatsAppPreview()" rows="9" class="w-full bg-surface-container-low border border-outline-variant rounded-xl p-3.5 text-sm leading-relaxed focus:ring-1 focus:ring-[#25D366] focus:border-[#25D366] font-sans" placeholder="Type your WhatsApp message here..."></textarea>
+                    </div>
+
+                    <!-- Quick Placeholder Pills -->
+                    <div class="flex flex-wrap items-center gap-2 pt-1">
+                        <span class="text-[11px] font-bold text-outline uppercase">Quick Tags:</span>
+                        <button type="button" onclick="insertWhatsAppTag('{Lead Name}')" class="text-xs bg-surface-variant text-on-surface-variant hover:bg-primary-container hover:text-primary px-2.5 py-1 rounded-lg transition-colors font-medium">+ Lead Name</button>
+                        <button type="button" onclick="insertWhatsAppTag('{Company}')" class="text-xs bg-surface-variant text-on-surface-variant hover:bg-primary-container hover:text-primary px-2.5 py-1 rounded-lg transition-colors font-medium">+ Company</button>
+                        <button type="button" onclick="insertWhatsAppTag('{Services}')" class="text-xs bg-surface-variant text-on-surface-variant hover:bg-primary-container hover:text-primary px-2.5 py-1 rounded-lg transition-colors font-medium">+ Services</button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Live WhatsApp Chat UI Preview (5 cols) -->
+                <div class="md:col-span-5 flex flex-col">
+                    <label class="block text-xs font-bold text-outline uppercase tracking-wider mb-1.5">Live WhatsApp Preview</label>
+                    <div class="bg-[#efeae2] border border-emerald-900/10 rounded-2xl p-3.5 flex-1 flex flex-col justify-between shadow-inner min-h-[340px] relative overflow-hidden">
+                        <!-- Chat Header -->
+                        <div class="bg-[#075e54] text-white rounded-xl px-3 py-2 flex items-center gap-2.5 shadow-sm mb-3">
+                            <div class="w-7 h-7 rounded-full bg-emerald-700 flex items-center justify-center text-white font-bold text-xs">
+                                X
+                            </div>
+                            <div class="flex-1 truncate">
+                                <p class="text-xs font-bold leading-tight truncate">XenoCRM Official (+91 9995544316)</p>
+                                <p class="text-[10px] text-emerald-200 leading-tight">Business Account • Online</p>
+                            </div>
+                        </div>
+
+                        <!-- Chat Message Bubble -->
+                        <div class="flex-1 overflow-y-auto space-y-2 py-2 pr-1">
+                            <div class="bg-[#dcf8c6] text-slate-900 shadow border border-emerald-200/60 rounded-lg rounded-tr-none p-3 text-xs leading-relaxed max-w-[92%] ml-auto relative space-y-1">
+                                <div id="whatsapp-preview-text" class="whitespace-pre-wrap font-sans break-words text-[12.5px]"></div>
+                                <div class="flex items-center justify-end gap-1 text-[10px] text-emerald-800/70 mt-1.5 select-none">
+                                    <span id="whatsapp-preview-time">13:20</span>
+                                    <span class="material-symbols-outlined text-[13px] text-sky-600 font-bold">done_all</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chat Footer / Indicator -->
+                        <div class="pt-2 border-t border-emerald-900/10 text-center">
+                            <p class="text-[11px] text-emerald-900/60 font-medium">Sending from <span class="font-bold text-emerald-950">+91 9995544316</span> to <span class="font-bold text-emerald-950">{{ lead.phone_number|default:'Lead' }}</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer Actions -->
+            <div class="p-4 bg-surface-container-low border-t border-outline-variant/20 flex flex-wrap items-center justify-between gap-3">
+                <button type="button" onclick="copyWhatsAppText()" class="px-4 py-2 border border-outline-variant text-on-surface rounded-xl hover:bg-surface-container-high transition-all text-xs font-semibold flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                    Copy Message
+                </button>
+                <div class="flex items-center gap-3">
+                    <button type="button" onclick="closeWhatsAppModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-xl hover:bg-slate-100 text-xs font-semibold">Cancel</button>
+                    <button type="button" onclick="sendWhatsAppMessage()" class="px-6 py-2.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-semibold rounded-xl shadow hover:shadow-md transition-all active:scale-95 text-sm flex items-center gap-2">
+                        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z"/>
+                        </svg>
+                        Send via WhatsApp
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </main>
@@ -826,6 +957,164 @@
             }
         });
     });
+
+    // WhatsApp Modal Logic
+    const whatsappModal = document.getElementById('whatsapp-modal');
+    const whatsappMsgInput = document.getElementById('whatsapp-msg-input');
+    const whatsappPreviewText = document.getElementById('whatsapp-preview-text');
+    const whatsappPreviewTime = document.getElementById('whatsapp-preview-time');
+    const whatsappTemplateSelect = document.getElementById('whatsapp-template-select');
+
+    const leadNameVal = "{{ lead.name|escapejs }}";
+    const leadCompanyVal = "{{ lead.company|escapejs }}";
+    const leadPhoneVal = "{{ lead.phone_number|escapejs }}";
+
+    const whatsappTemplatesMap = {
+        greetings: `Hello ${leadNameVal},\n\nGreetings from XenoCRM! 👋\n\nWe are delighted to reach out regarding our premier services and solutions tailored for ${leadCompanyVal}.\n\n✨ Our Core Services:\n• Custom CRM & Workflow Automation\n• Lead & Client Management Tools\n• Real-Time Analytics & Reporting\n• Dedicated Technical Support\n\nIf you have any questions or would like to discuss how we can help grow your business, feel free to reply directly to this message!\n\nBest regards,\nTeam XenoCRM (+91 9995544316)`,
+        followup: `Hello ${leadNameVal},\n\nHope you are having a productive day! Following up on our recent interaction regarding ${leadCompanyVal}.\n\nPlease let us know if you need any additional details or assistance from our team at XenoCRM.\n\nDirect Contact: +91 9995544316\n\nBest regards,\nTeam XenoCRM`,
+        meeting: `Hi ${leadNameVal},\n\nWe would love to schedule a brief 15-minute discussion to share how XenoCRM can add value to ${leadCompanyVal}.\n\nPlease let us know what time works best for you.\n\nBest regards,\nTeam XenoCRM (+91 9995544316)`,
+        custom: `Hi ${leadNameVal},\n\n`
+    };
+
+    function openWhatsAppModal() {
+        if (!leadPhoneVal || leadPhoneVal.trim() === '') {
+            alert("This lead does not have a phone number specified. Please add a phone number first.");
+            return;
+        }
+        whatsappTemplateSelect.value = 'greetings';
+        whatsappMsgInput.value = whatsappTemplatesMap.greetings;
+        updateWhatsAppPreview();
+        
+        whatsappModal.classList.remove('hidden');
+        setTimeout(() => {
+            whatsappModal.classList.remove('opacity-0');
+            whatsappModal.firstElementChild.classList.remove('scale-95');
+        }, 10);
+    }
+
+    function closeWhatsAppModal() {
+        whatsappModal.classList.add('opacity-0');
+        whatsappModal.firstElementChild.classList.add('scale-95');
+        setTimeout(() => {
+            whatsappModal.classList.add('hidden');
+        }, 300);
+    }
+
+    function onWhatsAppTemplateChange() {
+        const selected = whatsappTemplateSelect.value;
+        if (whatsappTemplatesMap[selected] !== undefined) {
+            whatsappMsgInput.value = whatsappTemplatesMap[selected];
+            updateWhatsAppPreview();
+        }
+    }
+
+    function updateWhatsAppPreview() {
+        const text = whatsappMsgInput.value;
+        whatsappPreviewText.textContent = text || 'Your message preview will appear here...';
+        
+        const now = new Date();
+        const hrs = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        if (whatsappPreviewTime) {
+            whatsappPreviewTime.textContent = `${hrs}:${mins}`;
+        }
+    }
+
+    function insertWhatsAppTag(tag) {
+        let valueToInsert = tag;
+        if (tag === '{Lead Name}') valueToInsert = leadNameVal;
+        else if (tag === '{Company}') valueToInsert = leadCompanyVal;
+        else if (tag === '{Services}') valueToInsert = "Custom CRM Solutions & Workflow Automation";
+
+        const start = whatsappMsgInput.selectionStart;
+        const end = whatsappMsgInput.selectionEnd;
+        const currentText = whatsappMsgInput.value;
+        
+        whatsappMsgInput.value = currentText.substring(0, start) + valueToInsert + currentText.substring(end);
+        whatsappMsgInput.focus();
+        whatsappMsgInput.selectionStart = whatsappMsgInput.selectionEnd = start + valueToInsert.length;
+        updateWhatsAppPreview();
+    }
+
+    function sendWhatsAppMessage() {
+        const message = whatsappMsgInput.value;
+        if (!message.trim()) {
+            alert("Please enter a message content.");
+            return;
+        }
+
+        // Clean phone number (strip non-digits, keep leading plus if present)
+        let rawPhone = leadPhoneVal.trim();
+        let cleanedPhone = rawPhone.replace(/[^\d+]/g, '');
+        if (cleanedPhone.startsWith('+')) {
+            cleanedPhone = cleanedPhone.substring(1);
+        } else if (cleanedPhone.length === 10) {
+            cleanedPhone = '91' + cleanedPhone;
+        }
+
+        const encodedText = encodeURIComponent(message);
+        const waUrl = `https://api.whatsapp.com/send?phone=${cleanedPhone}&text=${encodedText}`;
+
+        // Open WhatsApp link in a new tab
+        window.open(waUrl, '_blank');
+
+        // Log interaction automatically to XenoCRM timeline
+        const csrfToken = "{{ csrf_token }}";
+        const logDescription = `Sent WhatsApp Message to ${leadPhoneVal} from +919995544316:\n"${message.substring(0, 120)}${message.length > 120 ? '...' : ''}"`;
+        
+        fetch("{% url 'log_activity' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: `lead_id={{ lead.id }}&type=WhatsApp&description=${encodeURIComponent(logDescription)}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') {
+                    showToast("WhatsApp message logged to activity timeline.", "success");
+                }
+                const container = document.getElementById('activity-list-container');
+                if (container) {
+                    const noAct = container.querySelector('.text-outline');
+                    if (noAct) noAct.remove();
+                    const actHtml = `
+                        <div class="relative pl-10">
+                            <div class="absolute left-0 top-0 w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center z-10 font-bold text-xs">
+                                WA
+                            </div>
+                            <div>
+                                <p class="font-body-sm font-bold">WhatsApp Message Logged</p>
+                                <p class="text-sm text-secondary">${data.activity.description}</p>
+                                <p class="text-xs text-outline mt-1">Just now</p>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('afterbegin', actHtml);
+                }
+            }
+        })
+        .catch(err => console.error("Error logging WhatsApp interaction:", err));
+
+        closeWhatsAppModal();
+    }
+
+    function copyWhatsAppText() {
+        const text = whatsappMsgInput.value;
+        navigator.clipboard.writeText(text).then(() => {
+            if (typeof showToast === 'function') {
+                showToast("Message copied to clipboard!", "success");
+            } else {
+                alert("Message copied to clipboard!");
+            }
+        }).catch(err => {
+            console.error("Failed to copy:", err);
+            alert("Could not copy text.");
+        });
+    }
 
     function confirmDelete() {
         if (confirm("Are you sure you want to permanently delete lead '{{ lead.name }}'? This action cannot be undone.")) {
