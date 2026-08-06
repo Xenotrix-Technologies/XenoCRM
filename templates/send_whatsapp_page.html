@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Send WhatsApp Message - {{ lead.name }} | Xenotrix Technologies{% endblock %}
+
+{% block content %}
+<!-- Full Page Dedicated View for Send WhatsApp Message -->
+<div class="fixed inset-0 z-[100] w-screen h-screen overflow-hidden bg-slate-950">
+    {% include 'whatsapp_modal.html' %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof openWhatsAppModal === 'function') {
+            openWhatsAppModal();
+            // Override closeWhatsAppModal to redirect back to contact detail
+            window.closeWhatsAppModal = function() {
+                {% if lead.is_client %}
+                window.location.href = "{% url 'client_contact_detail' lead.id %}";
+                {% else %}
+                window.location.href = "{% url 'contact_detail' lead.id %}";
+                {% endif %}
+            };
+        }
+    });
+</script>
+{% endblock %}
