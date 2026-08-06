@@ -1294,6 +1294,28 @@ def contact_detail_view(request, lead_id):
     return render(request, 'contact_detail.html', context)
 
 @login_required
+def send_whatsapp_page_view(request, lead_id):
+    org = request.user.profile.organization
+    try:
+        lead = Lead.objects.get(id=lead_id, organization=org)
+    except Lead.DoesNotExist:
+        return redirect('leads')
+        
+    activities = lead.activities.all().order_by('-timestamp')
+    tasks = lead.tasks.all().order_by('-created_at')
+    owners = UserProfile.objects.filter(organization=org)
+    services = Service.objects.filter(organization=org)
+    
+    context = {
+        'lead': lead,
+        'activities': activities,
+        'tasks': tasks,
+        'owners': owners,
+        'services': services,
+    }
+    return render(request, 'send_whatsapp_page.html', context)
+
+@login_required
 def add_task(request):
     if request.method == 'POST':
         lead_id = request.POST.get('lead_id')

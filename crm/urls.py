@@ -27,6 +27,7 @@ urlpatterns = [
     path('pipeline/', views.pipeline_view, name='pipeline'),
     path('pipeline/update-stage/', views.update_lead_stage, name='update_lead_stage'),
     path('leads/<int:lead_id>/', views.contact_detail_view, name='contact_detail'),
+    path('leads/<int:lead_id>/send-whatsapp/', views.send_whatsapp_page_view, name='send_whatsapp_page'),
     path('clients/contact/<int:lead_id>/', views.client_contact_detail_view, name='client_contact_detail'),
     path('task/add/', views.add_task, name='add_task'),
     path('task/complete/', views.complete_task, name='complete_task'),
