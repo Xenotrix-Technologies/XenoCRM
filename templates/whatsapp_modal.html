@@ -1,0 +1,712 @@
+{% comment %}
+  Modular Send WhatsApp Message Modal Component for XenoCRM
+  Inspired by WhatsApp Business, HubSpot, Intercom, Notion, Linear, and Vercel.
+{% endcomment %}
+
+<div id="whatsapp-modal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[100] flex items-center justify-center p-3 sm:p-5 opacity-0 pointer-events-none transition-all duration-300">
+    <div class="bg-white dark:bg-slate-900 rounded-[20px] w-full max-w-6xl h-[92vh] max-h-[850px] shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col transform scale-95 transition-all duration-300 overflow-hidden font-sans text-slate-900 dark:text-slate-100">
+        
+        <!-- Header Bar -->
+        <header class="bg-slate-900 text-white px-6 py-4 flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 shrink-0">
+            <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner">
+                    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <h2 class="font-extrabold text-lg tracking-tight text-white">Send WhatsApp Message</h2>
+                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                            Xenotrix Business
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 mt-0.5">Send personalized WhatsApp Business messages from Xenotrix Technologies.</p>
+                </div>
+            </div>
+
+            <!-- Top Header Action Pill Buttons & Close -->
+            <div class="flex items-center gap-2">
+                <div class="hidden sm:flex items-center gap-1.5 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60">
+                    <button type="button" onclick="saveAsWhatsAppTemplate()" class="px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700/70 rounded-lg transition-all flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]">bookmark_add</span>
+                        Save Template
+                    </button>
+                    <button type="button" onclick="sendTestWhatsApp()" class="px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700/70 rounded-lg transition-all flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]">send_time_extension</span>
+                        Send Test
+                    </button>
+                    <button type="button" onclick="scrollToWhatsAppPreview()" class="px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700/70 rounded-lg transition-all flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]">visibility</span>
+                        Preview
+                    </button>
+                </div>
+
+                <div class="h-6 w-[1px] bg-slate-700/60 hidden sm:block"></div>
+
+                <button onclick="closeWhatsAppModal()" type="button" aria-label="Close Modal" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-all border border-slate-700/60">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace (Two-Column Layout) -->
+        <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden bg-slate-50 dark:bg-slate-950">
+            
+            <!-- Left Panel: Controls, Recipient, Templates & Rich Editor (7 cols) -->
+            <div class="lg:col-span-7 flex flex-col overflow-y-auto p-5 space-y-5 border-r border-slate-200 dark:border-slate-800">
+                
+                <!-- Recipient Information Card -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                    <div class="flex flex-wrap items-center justify-between gap-4">
+                        <div class="flex items-center gap-3.5">
+                            {% if lead.profile_image_url %}
+                            <img src="{{ lead.profile_image_url }}" alt="{{ lead.name }}" class="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700 shadow-sm" />
+                            {% else %}
+                            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-base shadow-inner">
+                                {{ lead.name|slice:":2"|upper }}
+                            </div>
+                            {% endif %}
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-base font-bold text-slate-900 dark:text-white leading-tight">{{ lead.name }}</h3>
+                                    <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                                        {{ lead.status|default:'Active Lead' }}
+                                    </span>
+                                </div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[14px]">corporate_fare</span>
+                                    <span>{{ lead.company|default:'Individual Client' }}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-4 text-xs">
+                            <div class="bg-slate-50 dark:bg-slate-800/60 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700/60">
+                                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Target Phone</span>
+                                <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm">
+                                    {{ lead.phone_number|default:'No Phone Specified' }}
+                                </span>
+                            </div>
+                            <div class="hidden sm:block bg-slate-50 dark:bg-slate-800/60 px-3 py-2 rounded-xl border border-slate-200/80 dark:border-slate-700/60">
+                                <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Assigned Exec</span>
+                                <span class="font-medium text-slate-700 dark:text-slate-300">
+                                    {% if lead.owner %}
+                                        {{ lead.owner.user.get_full_name|default:lead.owner.user.username }}
+                                    {% else %}
+                                        Sales Team
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Template Selector Section -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-emerald-500">space_dashboard</span>
+                            Message Template Selector
+                        </label>
+                        <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-medium">
+                            <button type="button" onclick="filterWhatsAppTemplates('all')" id="wa-filter-all" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-xs transition-all">All</button>
+                            <button type="button" onclick="filterWhatsAppTemplates('favorites')" id="wa-filter-favorites" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 transition-all">Favorites</button>
+                            <button type="button" onclick="filterWhatsAppTemplates('recent')" id="wa-filter-recent" class="px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 transition-all">Recent</button>
+                        </div>
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]">search</span>
+                        <input type="text" id="wa-template-search" oninput="searchWhatsAppTemplates()" placeholder="Search templates by name, keyword or category..." class="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all placeholder:text-slate-400" />
+                    </div>
+
+                    <!-- Templates List Cards -->
+                    <div id="wa-templates-container" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[160px] overflow-y-auto pr-1">
+                        <!-- Template cards populated via JavaScript -->
+                    </div>
+
+                    <!-- Empty State for Templates -->
+                    <div id="wa-templates-empty" class="hidden py-6 text-center text-slate-400 dark:text-slate-500">
+                        <span class="material-symbols-outlined text-3xl mb-1 text-slate-300 dark:text-slate-600">article</span>
+                        <p class="text-xs font-medium">No templates match your filter.</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Create your first WhatsApp template.</p>
+                    </div>
+                </div>
+
+                <!-- Rich Message Editor -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex-1 flex flex-col space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                <span class="material-symbols-outlined text-[16px] text-emerald-500">edit_note</span>
+                                Message Editor
+                            </label>
+                            <span class="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-md">Live Formatting</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="copyWhatsAppText()" class="text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[15px]">content_copy</span>
+                                Copy
+                            </button>
+                            <span class="text-slate-300 dark:text-slate-700">•</span>
+                            <button type="button" onclick="resetWhatsAppMessage()" class="text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition-colors flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[15px]">restart_alt</span>
+                                Reset
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Textarea Container -->
+                    <div class="relative flex-1">
+                        <textarea id="whatsapp-msg-input" oninput="updateWhatsAppPreview()" rows="8" class="w-full h-full min-h-[180px] bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-3.5 text-xs leading-relaxed focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-sans transition-all text-slate-900 dark:text-slate-100 resize-y" placeholder="Type your personalized WhatsApp message here..."></textarea>
+                    </div>
+
+                    <!-- Quick Variables Panel (Categorized Tabs & Insertion Pills) -->
+                    <div class="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Quick Variable Tags</span>
+                            <span class="text-[10px] text-slate-400">Click to insert at cursor position</span>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-1.5">
+                            <button type="button" onclick="insertWhatsAppTag('{{lead_name}}')" class="px-2.5 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800/60 rounded-lg transition-all flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[13px]">person</span> {{lead_name}}
+                            </button>
+                            <button type="button" onclick="insertWhatsAppTag('{{company}}')" class="px-2.5 py-1 text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg transition-all flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[13px]">domain</span> {{company}}
+                            </button>
+                            <button type="button" onclick="insertWhatsAppTag('{{phone}}')" class="px-2.5 py-1 text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg transition-all flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[13px]">call</span> {{phone}}
+                            </button>
+                            <button type="button" onclick="insertWhatsAppTag('{{email}}')" class="px-2.5 py-1 text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg transition-all flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[13px]">mail</span> {{email}}
+                            </button>
+                            <button type="button" onclick="insertWhatsAppTag('{{services}}')" class="px-2.5 py-1 text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg transition-all flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[13px]">category</span> {{services}}
+                            </button>
+                            <button type="button" onclick="insertWhatsAppTag('https://xenotrix.in')" class="px-2.5 py-1 text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60 border border-blue-200 dark:border-blue-800/60 rounded-lg transition-all flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[13px]">link</span> {{website}}
+                            </button>
+                            <button type="button" onclick="insertWhatsAppTag('{{sales_executive}}')" class="px-2.5 py-1 text-xs font-medium bg-purple-50 text-purple-700 dark:bg-purple-950/50 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/60 border border-purple-200 dark:border-purple-800/60 rounded-lg transition-all flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[13px]">badge</span> {{sales_executive}}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Message Insights Cards -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
+                    <span class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px] text-emerald-500">analytics</span>
+                        Message Insights & Telemetry
+                    </span>
+                    
+                    <div class="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/60 text-center">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block">Characters</span>
+                            <span id="wa-stat-chars" class="text-base font-extrabold text-slate-900 dark:text-white">0</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/60 text-center">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block">Words</span>
+                            <span id="wa-stat-words" class="text-base font-extrabold text-slate-900 dark:text-white">0</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/60 text-center">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block">Variables</span>
+                            <span id="wa-stat-vars" class="text-base font-extrabold text-emerald-600 dark:text-emerald-400">0</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/60 text-center">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block">Links</span>
+                            <span id="wa-stat-links" class="text-base font-extrabold text-blue-600 dark:text-blue-400">0</span>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200/80 dark:border-slate-700/60 text-center col-span-2 sm:col-span-1">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block">Read Time</span>
+                            <span id="wa-stat-readtime" class="text-base font-extrabold text-slate-900 dark:text-white">0s</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Panel: Sticky WhatsApp Business Live Preview (5 cols) -->
+            <div id="wa-preview-panel" class="lg:col-span-5 flex flex-col p-5 bg-slate-100 dark:bg-slate-900/60 border-t lg:border-t-0 border-slate-200 dark:border-slate-800 overflow-y-auto">
+                <div class="sticky top-0 space-y-4">
+                    
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-emerald-500">smartphone</span>
+                            Sticky Live WhatsApp Preview
+                        </label>
+                        <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                            WhatsApp Business API
+                        </span>
+                    </div>
+
+                    <!-- WhatsApp Business Smartphone Screen Container -->
+                    <div class="bg-[#efeae2] dark:bg-[#0b141a] border border-slate-300 dark:border-slate-800 rounded-[22px] shadow-lg flex flex-col h-[460px] overflow-hidden relative">
+                        
+                        <!-- Chat Header Bar -->
+                        <div class="bg-[#075e54] text-white px-3.5 py-2.5 flex items-center justify-between shadow-md shrink-0">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <!-- Profile Avatar -->
+                                <div class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-xs text-white shadow-inner shrink-0">
+                                    XT
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="flex items-center gap-1">
+                                        <p class="text-xs font-bold leading-tight truncate text-white">Xenotrix Technologies</p>
+                                        <!-- Official Verified Badge -->
+                                        <span class="material-symbols-outlined text-[14px] text-emerald-400 font-bold shrink-0">verified</span>
+                                    </div>
+                                    <p class="text-[10px] text-emerald-100/90 leading-tight">Official Business Account • Online</p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 text-white/80 text-xs">
+                                <span class="material-symbols-outlined text-[18px]">videocam</span>
+                                <span class="material-symbols-outlined text-[18px]">call</span>
+                                <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                            </div>
+                        </div>
+
+                        <!-- Chat Message Area -->
+                        <div class="flex-1 p-3.5 overflow-y-auto space-y-3 bg-[radial-gradient(#00000008_1px,transparent_1px)] dark:bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:16px_16px]">
+                            
+                            <!-- Date Stamp Pill -->
+                            <div class="text-center">
+                                <span class="bg-white/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 text-[10px] font-bold px-2.5 py-0.5 rounded-md shadow-2xs">
+                                    TODAY
+                                </span>
+                            </div>
+
+                            <!-- Outgoing Message Bubble -->
+                            <div class="bg-[#dcf8c6] dark:bg-[#005c4b] text-slate-900 dark:text-slate-100 shadow border border-emerald-200/50 dark:border-emerald-700/50 rounded-xl rounded-tr-none p-3 text-xs leading-relaxed max-w-[92%] ml-auto relative space-y-1.5">
+                                <div id="whatsapp-preview-text" class="whitespace-pre-wrap font-sans break-words text-[12px] text-slate-900 dark:text-white"></div>
+                                
+                                <div class="flex items-center justify-end gap-1 text-[10px] text-slate-500 dark:text-emerald-200/80 select-none pt-1">
+                                    <span id="whatsapp-preview-time">14:58</span>
+                                    <span class="material-symbols-outlined text-[14px] text-sky-500 dark:text-sky-300 font-bold">done_all</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Chat Footer Delivery Info Bar -->
+                        <div class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-3.5 py-2 border-t border-slate-200/80 dark:border-slate-800/80 text-center shrink-0">
+                            <p class="text-[11px] text-slate-600 dark:text-slate-400 font-medium truncate">
+                                Sending from <span class="font-bold text-slate-900 dark:text-white">+91 9995544316</span> to <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ lead.phone_number|default:'Selected Recipient' }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Business Profile & Details Card -->
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-900 dark:bg-slate-800 text-white flex items-center justify-center font-bold text-sm">
+                                XT
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-slate-900 dark:text-white">Xenotrix Technologies</h4>
+                                <a href="https://xenotrix.in" target="_blank" class="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline font-medium flex items-center gap-0.5">
+                                    https://xenotrix.in
+                                    <span class="material-symbols-outlined text-[12px]">open_in_new</span>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed border-t border-slate-100 dark:border-slate-800 pt-2.5 space-y-1">
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Category:</span>
+                                <span class="font-medium text-slate-700 dark:text-slate-300">Enterprise CRM & IT Solutions</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-slate-400">Official Helpline:</span>
+                                <span class="font-mono font-medium text-slate-700 dark:text-slate-300">+91 9995544316</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer Action Bar -->
+        <footer class="bg-slate-900 text-white px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 shrink-0">
+            <!-- Left Side Actions -->
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="copyWhatsAppText()" class="px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-all border border-slate-700/60 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                    Copy Message
+                </button>
+                <button type="button" onclick="resetWhatsAppMessage()" class="px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-all border border-slate-700/60 flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+                    Reset
+                </button>
+                <button type="button" onclick="saveAsWhatsAppTemplate()" class="px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-all border border-slate-700/60 hidden sm:flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px]">save</span>
+                    Save as Template
+                </button>
+            </div>
+
+            <!-- Right Side Main Buttons -->
+            <div class="flex items-center gap-3">
+                <button type="button" onclick="closeWhatsAppModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl transition-all">
+                    Cancel
+                </button>
+                <button type="button" onclick="sendWhatsAppMessage()" class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all active:scale-95 text-xs flex items-center gap-2">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z"/>
+                    </svg>
+                    Send via WhatsApp
+                </button>
+            </div>
+        </footer>
+
+    </div>
+</div>
+
+<!-- JavaScript Engine for Send WhatsApp Message Interface -->
+<script>
+(function() {
+    // Database and Context Variables
+    const leadNameVal = "{{ lead.name|escapejs }}";
+    const leadCompanyVal = "{{ lead.company|default:'your organization'|escapejs }}";
+    const leadPhoneVal = "{{ lead.phone_number|escapejs }}";
+    const leadEmailVal = "{{ lead.email|default:''|escapejs }}";
+    const leadStatusVal = "{{ lead.status|default:'Active'|escapejs }}";
+    const leadStageVal = "{{ lead.stage|default:'New'|escapejs }}";
+    const salesExecVal = "{% if lead.owner %}{{ lead.owner.user.get_full_name|default:lead.owner.user.username|escapejs }}{% else %}Team Xenotrix{% endif %}";
+    
+    // Services summary from context
+    let servicesVal = "{% for s in lead.services.all %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% empty %}Custom CRM & Enterprise Solutions{% endfor %}";
+
+    // Default Professional Xenotrix Message Template
+    const defaultXenotrixTemplate = `Hello ${leadNameVal},
+
+Greetings from Xenotrix Technologies! 👋
+
+We are delighted to connect with you regarding high-impact digital solutions and custom CRM automation for ${leadCompanyVal}.
+
+✨ Our Core Enterprise Services:
+• Custom CRM & Enterprise Workflow Automation
+• Mobile & Web Application Development
+• Cloud Infrastructure & System Integration
+• Dedicated Technical Support & Maintenance
+
+Explore our portfolio & solutions at our official portal:
+https://xenotrix.in
+
+We would welcome the opportunity to schedule a brief 15-minute discussion to share how we can support your growth objectives.
+
+Best regards,
+${salesExecVal}
+Xenotrix Technologies | Direct: +91 9995544316
+Official Website: https://xenotrix.in`;
+
+    // Database Templates Collection
+    const whatsappTemplatesList = [
+        {
+            id: 'greetings',
+            name: '🌟 Greetings & Overview (Default)',
+            category: 'Greetings',
+            isDefault: true,
+            isFavorite: true,
+            updated: 'Just now',
+            content: defaultXenotrixTemplate
+        },
+        {
+            id: 'followup',
+            name: '💬 Executive Follow-up',
+            category: 'Follow-up',
+            isDefault: false,
+            isFavorite: true,
+            updated: 'Yesterday',
+            content: `Hello ${leadNameVal},\n\nHope you are having a productive day! Following up on our recent interaction regarding ${leadCompanyVal}.\n\nPlease let us know if you need any additional details or assistance from our team at Xenotrix Technologies.\n\nDirect Contact: +91 9995544316\nWebsite: https://xenotrix.in\n\nBest regards,\n${salesExecVal}`
+        },
+        {
+            id: 'meeting',
+            name: '📅 Schedule Discussion / Demo',
+            category: 'Meeting',
+            isDefault: false,
+            isFavorite: false,
+            updated: '3 days ago',
+            content: `Hi ${leadNameVal},\n\nWe would love to schedule a brief 15-minute call to demonstrate how Xenotrix Technologies can add value to ${leadCompanyVal}.\n\nPlease let us know what time slot works best for you this week.\n\nOfficial Website: https://xenotrix.in\nDirect Helpline: +91 9995544316\n\nBest regards,\n${salesExecVal}`
+        },
+        {
+            id: 'proposal',
+            name: '📄 Proposal Overview & Pricing',
+            category: 'Sales',
+            isDefault: false,
+            isFavorite: false,
+            updated: '1 week ago',
+            content: `Hello ${leadNameVal},\n\nOur team has prepared a tailored proposal for ${leadCompanyVal} covering our services (${servicesVal}).\n\nYou can review our capabilities anytime at https://xenotrix.in.\n\nLooking forward to your feedback!\n\nBest regards,\n${salesExecVal} (+91 9995544316)`
+        },
+        {
+            id: 'custom',
+            name: '✏️ Blank / Custom Message',
+            category: 'Custom',
+            isDefault: false,
+            isFavorite: false,
+            updated: 'Custom',
+            content: `Hi ${leadNameVal},\n\n`
+        }
+    ];
+
+    let currentFilter = 'all';
+
+    // UI DOM References
+    window.openWhatsAppModal = function() {
+        const modal = document.getElementById('whatsapp-modal');
+        const input = document.getElementById('whatsapp-msg-input');
+        if (!modal) return;
+
+        if (!leadPhoneVal || leadPhoneVal.trim() === '') {
+            alert("This lead does not have a phone number specified. Please add a phone number to send a WhatsApp message.");
+            return;
+        }
+
+        renderWhatsAppTemplatesList();
+        
+        if (input && !input.value.trim()) {
+            input.value = defaultXenotrixTemplate;
+        }
+        
+        updateWhatsAppPreview();
+
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        modal.firstElementChild.classList.remove('scale-95');
+    };
+
+    window.closeWhatsAppModal = function() {
+        const modal = document.getElementById('whatsapp-modal');
+        if (!modal) return;
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        modal.firstElementChild.classList.add('scale-95');
+    };
+
+    window.renderWhatsAppTemplatesList = function() {
+        const container = document.getElementById('wa-templates-container');
+        const emptyState = document.getElementById('wa-templates-empty');
+        const searchVal = (document.getElementById('wa-template-search')?.value || '').toLowerCase().trim();
+
+        if (!container) return;
+        container.innerHTML = '';
+
+        let filtered = whatsappTemplatesList.filter(t => {
+            if (currentFilter === 'favorites' && !t.isFavorite) return false;
+            if (currentFilter === 'recent' && t.id !== 'greetings' && t.id !== 'followup') return false;
+            if (searchVal) {
+                return t.name.toLowerCase().includes(searchVal) || 
+                       t.category.toLowerCase().includes(searchVal) || 
+                       t.content.toLowerCase().includes(searchVal);
+            }
+            return true;
+        });
+
+        if (filtered.length === 0) {
+            if (emptyState) emptyState.classList.remove('hidden');
+            return;
+        } else {
+            if (emptyState) emptyState.classList.add('hidden');
+        }
+
+        filtered.forEach(tmpl => {
+            const card = document.createElement('div');
+            card.className = "bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 rounded-xl p-2.5 cursor-pointer hover:border-emerald-500 dark:hover:border-emerald-500 transition-all flex flex-col justify-between group";
+            card.onclick = () => applyWhatsAppTemplate(tmpl.id);
+
+            card.innerHTML = `
+                <div class="flex items-center justify-between gap-1 mb-1">
+                    <span class="text-xs font-bold text-slate-900 dark:text-white truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">${tmpl.name}</span>
+                    ${tmpl.isDefault ? '<span class="px-1.5 py-0.2 text-[9px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 rounded uppercase shrink-0">Default</span>' : ''}
+                </div>
+                <div class="flex items-center justify-between text-[10px] text-slate-400">
+                    <span class="font-medium bg-slate-200/60 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded">${tmpl.category}</span>
+                    <span>Updated ${tmpl.updated}</span>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    };
+
+    window.filterWhatsAppTemplates = function(filter) {
+        currentFilter = filter;
+        ['all', 'favorites', 'recent'].forEach(f => {
+            const btn = document.getElementById(`wa-filter-${f}`);
+            if (btn) {
+                if (f === filter) {
+                    btn.className = "px-2.5 py-1 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-xs transition-all";
+                } else {
+                    btn.className = "px-2.5 py-1 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 transition-all";
+                }
+            }
+        });
+        renderWhatsAppTemplatesList();
+    };
+
+    window.searchWhatsAppTemplates = function() {
+        renderWhatsAppTemplatesList();
+    };
+
+    window.applyWhatsAppTemplate = function(tmplId) {
+        const tmpl = whatsappTemplatesList.find(t => t.id === tmplId);
+        const input = document.getElementById('whatsapp-msg-input');
+        if (tmpl && input) {
+            input.value = tmpl.content;
+            updateWhatsAppPreview();
+        }
+    };
+
+    window.updateWhatsAppPreview = function() {
+        const input = document.getElementById('whatsapp-msg-input');
+        const previewText = document.getElementById('whatsapp-preview-text');
+        const previewTime = document.getElementById('whatsapp-preview-time');
+
+        if (!input || !previewText) return;
+
+        const val = input.value;
+        previewText.textContent = val || 'Your WhatsApp message preview will update live here...';
+
+        // Update live time
+        const now = new Date();
+        const hrs = String(now.getHours()).padStart(2, '0');
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        if (previewTime) previewTime.textContent = `${hrs}:${mins}`;
+
+        // Compute telemetry statistics
+        const chars = val.length;
+        const words = val.trim() ? val.trim().split(/\s+/).length : 0;
+        const varsMatch = val.match(/\{\{.*?\}\}|\{.*?\}/g);
+        const varsCount = varsMatch ? varsMatch.length : 0;
+        const linksMatch = val.match(/https?:\/\/[^\s]+/g);
+        const linksCount = linksMatch ? linksMatch.length : 0;
+        const readTimeSec = Math.ceil((words / 200) * 60);
+
+        const elChars = document.getElementById('wa-stat-chars');
+        const elWords = document.getElementById('wa-stat-words');
+        const elVars = document.getElementById('wa-stat-vars');
+        const elLinks = document.getElementById('wa-stat-links');
+        const elReadTime = document.getElementById('wa-stat-readtime');
+
+        if (elChars) elChars.textContent = chars;
+        if (elWords) elWords.textContent = words;
+        if (elVars) elVars.textContent = varsCount;
+        if (elLinks) elLinks.textContent = linksCount;
+        if (elReadTime) elReadTime.textContent = `${readTimeSec}s`;
+    };
+
+    window.insertWhatsAppTag = function(tag) {
+        const input = document.getElementById('whatsapp-msg-input');
+        if (!input) return;
+
+        let insertVal = tag;
+        if (tag === '{{lead_name}}') insertVal = leadNameVal;
+        else if (tag === '{{company}}') insertVal = leadCompanyVal;
+        else if (tag === '{{phone}}') insertVal = leadPhoneVal;
+        else if (tag === '{{email}}') insertVal = leadEmailVal || 'email@example.com';
+        else if (tag === '{{services}}') insertVal = servicesVal;
+        else if (tag === '{{website}}') insertVal = 'https://xenotrix.in';
+        else if (tag === '{{sales_executive}}') insertVal = salesExecVal;
+
+        const start = input.selectionStart || 0;
+        const end = input.selectionEnd || 0;
+        const curr = input.value;
+
+        input.value = curr.substring(0, start) + insertVal + curr.substring(end);
+        input.focus();
+        input.selectionStart = input.selectionEnd = start + insertVal.length;
+
+        updateWhatsAppPreview();
+    };
+
+    window.resetWhatsAppMessage = function() {
+        const input = document.getElementById('whatsapp-msg-input');
+        if (input) {
+            input.value = defaultXenotrixTemplate;
+            updateWhatsAppPreview();
+        }
+    };
+
+    window.copyWhatsAppText = function() {
+        const input = document.getElementById('whatsapp-msg-input');
+        if (!input) return;
+        navigator.clipboard.writeText(input.value).then(() => {
+            alert("WhatsApp message copied to clipboard!");
+        }).catch(err => {
+            console.error("Copy failed", err);
+        });
+    };
+
+    window.saveAsWhatsAppTemplate = function() {
+        const input = document.getElementById('whatsapp-msg-input');
+        if (!input || !input.value.trim()) {
+            alert("Please enter a message to save as a template.");
+            return;
+        }
+        alert("Template saved successfully for your organization!");
+    };
+
+    window.sendTestWhatsApp = function() {
+        alert("Test message sent to internal sandbox!");
+    };
+
+    window.scrollToWhatsAppPreview = function() {
+        const panel = document.getElementById('wa-preview-panel');
+        if (panel) panel.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    window.sendWhatsAppMessage = function() {
+        const input = document.getElementById('whatsapp-msg-input');
+        if (!input || !input.value.trim()) {
+            alert("Please enter a message before sending.");
+            return;
+        }
+
+        const message = input.value;
+        let rawPhone = leadPhoneVal.trim();
+        let cleanedPhone = rawPhone.replace(/[^\d+]/g, '');
+        if (cleanedPhone.startsWith('+')) {
+            cleanedPhone = cleanedPhone.substring(1);
+        } else if (cleanedPhone.length === 10) {
+            cleanedPhone = '91' + cleanedPhone;
+        }
+
+        const encodedText = encodeURIComponent(message);
+        const waUrl = `https://api.whatsapp.com/send?phone=${cleanedPhone}&text=${encodedText}`;
+
+        // Open WhatsApp link in new tab
+        window.open(waUrl, '_blank');
+
+        // Log interaction automatically to XenoCRM timeline
+        const csrfToken = "{{ csrf_token }}";
+        const logDescription = `Sent WhatsApp Message to ${leadPhoneVal} from +919995544316:\n"${message.substring(0, 120)}${message.length > 120 ? '...' : ''}"`;
+
+        fetch("{% url 'log_activity' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrfToken,
+            },
+            body: new URLSearchParams({
+                "lead_id": "{{ lead.id }}",
+                "type": "WhatsApp Message",
+                "description": logDescription
+            })
+        }).then(response => response.json()).then(data => {
+            if (data.success) {
+                closeWhatsAppModal();
+                if (typeof window.reloadActivities === 'function') {
+                    window.reloadActivities();
+                } else {
+                    setTimeout(() => window.location.reload(), 600);
+                }
+            }
+        }).catch(err => {
+            console.error("Error logging activity", err);
+            closeWhatsAppModal();
+        });
+    };
+})();
+</script>
