@@ -169,8 +169,8 @@
     <aside class="fixed left-0 top-0 h-full w-[240px] bg-white border-r border-slate-200/80 shadow-sm z-50 flex flex-col py-4">
         <!-- Logo & Sidebar Toggle -->
         <div class="px-4 mb-6 flex items-center justify-between">
-            <div class="flex items-center gap-3 overflow-hidden">
-                <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white font-black text-lg shadow-md shadow-brand-600/20 flex-shrink-0">
+            <div onclick="toggleSidebarState(event)" title="Toggle Sidebar" class="flex items-center gap-3 overflow-hidden cursor-pointer group select-none">
+                <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white font-black text-lg shadow-md shadow-brand-600/20 flex-shrink-0 transition-transform group-hover:scale-105 active:scale-95">
                     X
                 </div>
                 <div class="sidebar-text flex flex-col">
