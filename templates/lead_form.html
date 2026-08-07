@@ -77,6 +77,10 @@
             <input type="text" name="alt_phone_number" value="{{ lead.alt_phone_number|default:'' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
           </div>
           <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Location / Address</label>
+            <textarea name="location" rows="3" placeholder="Full Address, City, State, Country..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary resize-y min-h-[72px]">{{ lead.location|default:'' }}</textarea>
+          </div>
+          <div>
             <label class="block text-label-md font-label-md text-outline uppercase mb-1">Registered On</label>
             <input type="datetime-local" name="date_time" value="{% if lead.date_time %}{{ lead.date_time|date:'Y-m-d\TH:i' }}{% else %}{% now 'Y-m-d\TH:i' %}{% endif %}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
           </div>
@@ -88,11 +92,6 @@
               <option value="{{ owner.id }}" {% if lead.owner.id == owner.id %}selected{% endif %}>{{ owner.user.get_full_name|default:owner.user.username }}</option>
               {% endfor %}
             </select>
-          </div>
-
-          <div class="md:col-span-2">
-            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Location / Address</label>
-            <textarea name="location" rows="2" placeholder="Full Address, City, State, Country..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary resize-y">{{ lead.location|default:'' }}</textarea>
           </div>
           <div class="md:col-span-2">
             <label class="block text-label-md font-label-md text-outline uppercase mb-1">Profile Image URL</label>
