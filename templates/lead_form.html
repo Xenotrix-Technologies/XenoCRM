@@ -81,10 +81,6 @@
             <textarea name="location" rows="3" placeholder="Full Address, City, State, Country..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary resize-y min-h-[72px]">{{ lead.location|default:'' }}</textarea>
           </div>
           <div>
-            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Registered On</label>
-            <input type="datetime-local" name="date_time" value="{% if lead.date_time %}{{ lead.date_time|date:'Y-m-d\TH:i' }}{% else %}{% now 'Y-m-d\TH:i' %}{% endif %}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
-          </div>
-          <div>
             <label class="block text-label-md font-label-md text-outline uppercase mb-1">Assigned Employee (Owner)</label>
             <select name="owner" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
               <option value="">None</option>
@@ -93,13 +89,21 @@
               {% endfor %}
             </select>
           </div>
-          <div class="md:col-span-2">
+          <div>
             <label class="block text-label-md font-label-md text-outline uppercase mb-1">Profile Image URL</label>
             <input type="url" name="profile_image_url" value="{{ lead.profile_image_url|default:'' }}" placeholder="https://example.com/image.png" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
           </div>
-          <div class="md:col-span-2">
+          <div>
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Registered On</label>
+            <input type="datetime-local" name="date_time" value="{% if lead.date_time %}{{ lead.date_time|date:'Y-m-d\TH:i' }}{% else %}{% now 'Y-m-d\TH:i' %}{% endif %}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+          </div>
+          <div>
             <label class="block text-label-md font-label-md text-outline uppercase mb-1">Last Followup Date and Time</label>
             <input type="datetime-local" name="last_followup_date_time" value="{{ lead.last_followup_date_time|date:'Y-m-d\TH:i' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-label-md font-label-md text-outline uppercase mb-1">Followup Wanted Date and Time</label>
+            <input type="datetime-local" name="followup_wanted_date_time" value="{{ lead.followup_wanted_date_time|date:'Y-m-d\TH:i' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
           </div>
         </div>
 

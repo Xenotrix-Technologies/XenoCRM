@@ -1094,7 +1094,7 @@ def leads_view(request):
         response['Content-Disposition'] = 'attachment; filename="leads_export.csv"'
         
         writer = csv.writer(response)
-        writer.writerow(['Name', 'Email', 'Company', 'Phone Number', 'Alt Phone Number', 'Date and Time', 'Status', 'Last Followup Date and Time'])
+        writer.writerow(['Name', 'Email', 'Company', 'Phone Number', 'Alt Phone Number', 'Date and Time', 'Status', 'Last Followup Date and Time', 'Followup Wanted Date and Time'])
         
         leads_export = Lead.objects.filter(organization=org, is_client=False)
         for lead in leads_export:
@@ -1103,7 +1103,8 @@ def leads_view(request):
                 lead.phone_number or '', lead.alt_phone_number or '',
                 lead.date_time.strftime('%Y-%m-%d %H:%M') if lead.date_time else '',
                 lead.status,
-                lead.last_followup_date_time.strftime('%Y-%m-%d %H:%M') if lead.last_followup_date_time else ''
+                lead.last_followup_date_time.strftime('%Y-%m-%d %H:%M') if lead.last_followup_date_time else '',
+                lead.followup_wanted_date_time.strftime('%Y-%m-%d %H:%M') if lead.followup_wanted_date_time else ''
             ])
         return response
         
@@ -1568,6 +1569,7 @@ def quick_create_lead(request):
                 email=email,
                 company=company,
                 phone_number=phone_number,
+                date_time=timezone.now(),
                 value=value,
                 score=score,
                 owner=owner,
@@ -1880,6 +1882,9 @@ def add_lead(request):
         last_followup_val = request.POST.get('last_followup_date_time')
         last_followup_date_time = last_followup_val if last_followup_val else None
 
+        followup_wanted_val = request.POST.get('followup_wanted_date_time')
+        followup_wanted_date_time = followup_wanted_val if followup_wanted_val else None
+
         value_val = request.POST.get('value', '0.00')
         value = safe_parse_decimal(value_val, 0.00)
 
@@ -1913,6 +1918,7 @@ def add_lead(request):
                 status=status,
                 owner=owner,
                 last_followup_date_time=last_followup_date_time,
+                followup_wanted_date_time=followup_wanted_date_time,
                 stage=status,
                 value=value,
                 location=location if location else None,
@@ -1968,7 +1974,7 @@ def edit_lead(request, lead_id):
             lead.alt_phone_number = request.POST.get('alt_phone_number')
             
             date_time_val = request.POST.get('date_time')
-            lead.date_time = date_time_val if date_time_val else None
+            lead.date_time = date_time_val if date_time_val else (lead.date_time or timezone.now())
             
             lead.status = request.POST.get('status')
             
@@ -1983,6 +1989,9 @@ def edit_lead(request, lead_id):
                 
             last_followup_val = request.POST.get('last_followup_date_time')
             lead.last_followup_date_time = last_followup_val if last_followup_val else None
+
+            followup_wanted_val = request.POST.get('followup_wanted_date_time')
+            lead.followup_wanted_date_time = followup_wanted_val if followup_wanted_val else None
 
             val_input = request.POST.get('value', '').strip()
             if val_input == '':
@@ -2110,6 +2119,7 @@ def lead_json_view(request, lead_id):
             'status': lead.status,
             'owner_id': lead.owner.id if lead.owner else '',
             'last_followup_date_time': lead.last_followup_date_time.strftime('%Y-%m-%dT%H:%M') if lead.last_followup_date_time else '',
+            'followup_wanted_date_time': lead.followup_wanted_date_time.strftime('%Y-%m-%dT%H:%M') if lead.followup_wanted_date_time else '',
         }
         return JsonResponse({'success': True, 'lead': data})
     except Lead.DoesNotExist:
@@ -2384,6 +2394,7 @@ def map_headers(headers):
         'annual_revenue': ['annual revenue', 'revenue'],
         'lifecycle_stage': ['lifecycle stage', 'lifecycle'],
         'last_followup': ['last followup', 'last followup date and time', 'last followup date/time', 'last followup datetime'],
+        'followup_wanted': ['followup wanted', 'follow up wanted', 'followup wanted date and time', 'follow up wanted date/time', 'next followup', 'next followup date and time', 'next followup date/time'],
         'date_time': ['date and time', 'date/time', 'date', 'datetime', 'date time'],
         'location': ['location', 'address', 'city']
     }
@@ -2592,6 +2603,9 @@ def import_leads(request):
         raw_followup = row.get(mapped.get('last_followup', ''), '')
         last_followup_date_time = safe_parse_datetime(raw_followup)
         
+        raw_followup_wanted = row.get(mapped.get('followup_wanted', ''), '')
+        followup_wanted_date_time = safe_parse_datetime(raw_followup_wanted)
+        
         owner = None
         raw_owner = row.get(mapped.get('owner', ''), '')
         raw_owner = raw_owner.strip() if raw_owner else ''
@@ -2660,6 +2674,7 @@ def import_leads(request):
                     health_score=health_score,
                     date_time=date_time,
                     last_followup_date_time=last_followup_date_time,
+                    followup_wanted_date_time=followup_wanted_date_time,
                     location=location
                 )
                 Activity.objects.create(

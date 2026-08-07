@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class Organization(models.Model):
     name = models.CharField(max_length=255)
@@ -820,8 +821,9 @@ class Lead(models.Model):
     health_score = models.IntegerField(default=50)
     profile_image_url = models.URLField(max_length=1000, blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
-    date_time = models.DateTimeField(blank=True, null=True)
+    date_time = models.DateTimeField(default=timezone.now, blank=True, null=True)
     last_followup_date_time = models.DateTimeField(blank=True, null=True)
+    followup_wanted_date_time = models.DateTimeField(blank=True, null=True)
     last_activity = models.DateTimeField(auto_now=True)
     created_at = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True, null=True)
