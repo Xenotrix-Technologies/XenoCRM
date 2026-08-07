@@ -12,7 +12,7 @@ from django.core.paginator import Paginator
 from django.contrib import messages
 from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable, Campaign, ContentDropdownOption, SystemNotification
 from .forms import EventForm, ProfileForm
-from .models import Income, Expense, FinancePaymentMethod, FinanceExpenseCategory
+from .models import Income, Expense, FinancePaymentMethod, FinanceExpenseCategory, PartnerPayout, FinancePaymentStatus, FinanceCommissionType
 from .models import ClientStatus, ProjectStatus, CampaignStatus, CalendarStatus, TicketStatus, PriorityStatus, InvoiceStatus
 from datetime import datetime
 from decimal import Decimal
@@ -4971,10 +4971,162 @@ def finance_reports_view(request):
 
 @login_required
 def partner_payout_view(request):
-    return render(request, 'partner_payouts.html')
+    org = request.user.profile.organization
+    payouts_qs = PartnerPayout.objects.filter(organization=org)
+    
+    # Filtering logic
+    search_query = request.GET.get('search', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    method_filter = request.GET.get('payment_method', '').strip()
+    type_filter = request.GET.get('commission_type', '').strip()
+    date_range = request.GET.get('date_range', '').strip()
+    
+    if search_query:
+        payouts_qs = payouts_qs.filter(
+            Q(partner_name__icontains=search_query) |
+            Q(project_client__icontains=search_query) |
+            Q(payout_id__icontains=search_query)
+        )
+    
+    if status_filter and status_filter != 'All Statuses':
+        payouts_qs = payouts_qs.filter(Q(status__name=status_filter) | Q(status=status_filter))
+        
+    if method_filter and method_filter != 'All Methods':
+        payouts_qs = payouts_qs.filter(Q(payment_method__name=method_filter) | Q(payment_method=method_filter))
+
+    if type_filter and type_filter != 'All Types':
+        payouts_qs = payouts_qs.filter(Q(commission_type__name=type_filter) | Q(commission_type=type_filter))
+
+    all_org_payouts = PartnerPayout.objects.filter(organization=org)
+    
+    total_partners = all_org_payouts.values('partner_name').distinct().count()
+    total_commission = all_org_payouts.aggregate(Sum('amount'))['amount__sum'] or 0
+    
+    pending_payouts = all_org_payouts.filter(
+        Q(status__name='Pending') | Q(status='Pending')
+    ).aggregate(Sum('amount'))['amount__sum'] or 0
+    
+    now = datetime.now()
+    paid_this_month = all_org_payouts.filter(
+        Q(status__name='Paid') | Q(status='Paid'),
+        payout_date__year=now.year,
+        payout_date__month=now.month
+    ).aggregate(Sum('amount'))['amount__sum'] or 0
+    
+    processing_payments = all_org_payouts.filter(
+        Q(status__name='Processing') | Q(status='Processing')
+    ).aggregate(Sum('amount'))['amount__sum'] or 0
+    
+    total_paid = all_org_payouts.filter(
+        Q(status__name='Paid') | Q(status='Paid')
+    ).aggregate(Sum('amount'))['amount__sum'] or 0
+
+    payouts_list = []
+    for p in payouts_qs.order_by('-created_at'):
+        status_name = p.status.name if p.status else 'Pending'
+        method_name = p.payment_method.name if p.payment_method else 'Bank Transfer'
+        payouts_list.append({
+            'id': p.payout_id or f"PAY-{p.id:04d}",
+            'pk': p.id,
+            'partner_name': p.partner_name,
+            'project_client': p.project_client or '-',
+            'amount': p.amount,
+            'method': method_name,
+            'status': status_name,
+            'date': p.payout_date.strftime('%b. %d, %Y') if p.payout_date else p.created_at.strftime('%b. %d, %Y')
+        })
+
+    context = {
+        'payouts': payouts_list,
+        'total_partners': total_partners,
+        'total_commission': total_commission,
+        'pending_payouts': pending_payouts,
+        'paid_this_month': paid_this_month,
+        'processing_payments': processing_payments,
+        'total_paid': total_paid,
+    }
+    return render(request, 'partner_payouts.html', context)
+
 
 @login_required
 def partner_payout_add_view(request):
+    org = request.user.profile.organization
+    
+    # Ensure default payment methods exist if empty
+    payment_methods = FinancePaymentMethod.objects.filter(organization=org).order_by('name')
+    if not payment_methods.exists():
+        default_methods = ['Bank Transfer', 'PayPal', 'UPI', 'Cash']
+        for m in default_methods:
+            FinancePaymentMethod.objects.create(organization=org, name=m)
+        payment_methods = FinancePaymentMethod.objects.filter(organization=org).order_by('name')
+
+    # Ensure default payment statuses exist if empty
+    statuses = FinancePaymentStatus.objects.filter(organization=org).order_by('name')
+    if not statuses.exists():
+        default_statuses = ['Pending', 'Approved', 'Processing', 'Paid', 'Failed', 'Cancelled']
+        for s in default_statuses:
+            FinancePaymentStatus.objects.create(organization=org, name=s)
+        statuses = FinancePaymentStatus.objects.filter(organization=org).order_by('name')
+
+    if request.method == 'POST':
+        try:
+            payout_date_str = request.POST.get('payout_date')
+            partner_name = request.POST.get('partner_name', '').strip()
+            project_client = request.POST.get('project_client', '').strip()
+            amount_str = request.POST.get('amount', '0')
+            payment_method_id = request.POST.get('payment_method')
+            status_id = request.POST.get('status')
+            
+            payout_date = None
+            if payout_date_str:
+                try:
+                    payout_date = datetime.strptime(payout_date_str, '%Y-%m-%d').date()
+                except ValueError:
+                    payout_date = timezone.now().date()
+            else:
+                payout_date = timezone.now().date()
+
+            clean_amount = Decimal(amount_str.replace(',', '').replace('₹', '').replace('$', '').strip() or '0')
+
+            pm = None
+            if payment_method_id:
+                pm = FinancePaymentMethod.objects.filter(id=payment_method_id, organization=org).first()
+
+            st = None
+            if status_id:
+                st = FinancePaymentStatus.objects.filter(id=status_id, organization=org).first()
+
+            count = PartnerPayout.objects.filter(organization=org).count() + 1
+            payout_id = f"PAY-{count:04d}"
+
+            PartnerPayout.objects.create(
+                organization=org,
+                payout_id=payout_id,
+                partner_name=partner_name,
+                project_client=project_client,
+                amount=clean_amount,
+                payment_method=pm,
+                status=st,
+                payout_date=payout_date
+            )
+            messages.success(request, 'Payout request created successfully.')
+            return redirect('partner_payouts')
+        except Exception as e:
+            messages.error(request, f'Failed to create payout request: {e}')
+            return redirect('partner_payouts')
+
+    return render(request, 'partner_payout_add.html', {
+        'payment_methods': payment_methods,
+        'statuses': statuses
+    })
+
+
+@login_required
+def partner_payout_delete_view(request, payout_id):
+    org = request.user.profile.organization
+    payout = get_object_or_404(PartnerPayout, id=payout_id, organization=org)
+    payout.delete()
+    messages.success(request, 'Partner payout record deleted successfully.')
     return redirect('partner_payouts')
 
 

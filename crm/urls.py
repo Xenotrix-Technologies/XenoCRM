@@ -173,6 +173,7 @@ urlpatterns = [
     path('finance/reports/', views.finance_reports_view, name='finance_reports'),
     path('finance/partner-payouts/', views.partner_payout_view, name='partner_payouts'),
     path('finance/partner-payouts/add/', views.partner_payout_add_view, name='partner_payout_add'),
+    path('finance/partner-payouts/delete/<int:payout_id>/', views.partner_payout_delete_view, name='partner_payout_delete'),
     path('finance/settings/', views.finance_settings_view, name='finance_settings'),
     
     # Invoices & Bills
