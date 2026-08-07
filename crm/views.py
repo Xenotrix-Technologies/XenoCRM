@@ -1212,12 +1212,20 @@ def leads_view(request):
         'statuses': statuses,
     }
     
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         from django.template.loader import render_to_string
         html = render_to_string('leads_table_fragment.html', context, request=request)
-        return JsonResponse({'html': html})
+        response = JsonResponse({'html': html})
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0, private'
+        response['Pragma'] = 'no-cache'
+        response['Vary'] = 'X-Requested-With'
+        return response
         
-    return render(request, 'leads.html', context)
+    response = render(request, 'leads.html', context)
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate, max-age=0, private'
+    response['Pragma'] = 'no-cache'
+    response['Vary'] = 'X-Requested-With'
+    return response
 
 @login_required
 def pipeline_view(request):

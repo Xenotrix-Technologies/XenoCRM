@@ -156,9 +156,14 @@
         }
         
         const newUrl = `${window.location.pathname}?${params.toString()}`;
-        window.history.pushState({}, '', newUrl);
+        window.history.pushState({ isAjax: true }, '', newUrl);
         fetchLeads(newUrl);
     }
+
+    // Handle browser back/forward history navigation seamlessly
+    window.addEventListener('popstate', function(e) {
+        fetchLeads(window.location.href);
+    });
 
     // Bind Clear All button to reset user account preferences
     const clearBtn = document.getElementById('clear-filters-btn');
