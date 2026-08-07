@@ -4989,37 +4989,40 @@ def partner_payout_view(request):
         )
     
     if status_filter and status_filter != 'All Statuses':
-        payouts_qs = payouts_qs.filter(Q(status__name=status_filter) | Q(status=status_filter))
+        if status_filter.isdigit():
+            payouts_qs = payouts_qs.filter(Q(status__id=int(status_filter)) | Q(status__name=status_filter))
+        else:
+            payouts_qs = payouts_qs.filter(status__name=status_filter)
         
     if method_filter and method_filter != 'All Methods':
-        payouts_qs = payouts_qs.filter(Q(payment_method__name=method_filter) | Q(payment_method=method_filter))
+        if method_filter.isdigit():
+            payouts_qs = payouts_qs.filter(Q(payment_method__id=int(method_filter)) | Q(payment_method__name=method_filter))
+        else:
+            payouts_qs = payouts_qs.filter(payment_method__name=method_filter)
 
     if type_filter and type_filter != 'All Types':
-        payouts_qs = payouts_qs.filter(Q(commission_type__name=type_filter) | Q(commission_type=type_filter))
+        if type_filter.isdigit():
+            payouts_qs = payouts_qs.filter(Q(commission_type__id=int(type_filter)) | Q(commission_type__name=type_filter))
+        else:
+            payouts_qs = payouts_qs.filter(commission_type__name=type_filter)
 
     all_org_payouts = PartnerPayout.objects.filter(organization=org)
     
     total_partners = all_org_payouts.values('partner_name').distinct().count()
     total_commission = all_org_payouts.aggregate(Sum('amount'))['amount__sum'] or 0
     
-    pending_payouts = all_org_payouts.filter(
-        Q(status__name='Pending') | Q(status='Pending')
-    ).aggregate(Sum('amount'))['amount__sum'] or 0
+    pending_payouts = all_org_payouts.filter(status__name='Pending').aggregate(Sum('amount'))['amount__sum'] or 0
     
     now = datetime.now()
     paid_this_month = all_org_payouts.filter(
-        Q(status__name='Paid') | Q(status='Paid'),
+        status__name='Paid',
         payout_date__year=now.year,
         payout_date__month=now.month
     ).aggregate(Sum('amount'))['amount__sum'] or 0
     
-    processing_payments = all_org_payouts.filter(
-        Q(status__name='Processing') | Q(status='Processing')
-    ).aggregate(Sum('amount'))['amount__sum'] or 0
+    processing_payments = all_org_payouts.filter(status__name='Processing').aggregate(Sum('amount'))['amount__sum'] or 0
     
-    total_paid = all_org_payouts.filter(
-        Q(status__name='Paid') | Q(status='Paid')
-    ).aggregate(Sum('amount'))['amount__sum'] or 0
+    total_paid = all_org_payouts.filter(status__name='Paid').aggregate(Sum('amount'))['amount__sum'] or 0
 
     payouts_list = []
     for p in payouts_qs.order_by('-created_at'):
