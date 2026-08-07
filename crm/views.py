@@ -1130,45 +1130,15 @@ def leads_view(request):
 
     leads_qs = Lead.objects.filter(organization=org, is_client=False)
     
-    # Account-specific session key for user
+    # Clear old session key if present (do not persist filters/sorting across reloads or page closes)
     user_pref_key = f'leads_filter_pref_user_{request.user.id}'
-    
-    # Check if user clicked Clear All
-    if request.GET.get('clear_filters') == '1':
-        if user_pref_key in request.session:
-            del request.session[user_pref_key]
-        q = ''
-        status_filter = ''
-        owner_filter = ''
-        sort_by = 'value_desc'
-    else:
-        has_filter_params = any(k in request.GET for k in ['q', 'status', 'owner', 'sort'])
+    if user_pref_key in request.session:
+        del request.session[user_pref_key]
         
-        if has_filter_params:
-            q = request.GET.get('q', '').strip()
-            status_filter = request.GET.get('status', '').strip()
-            owner_filter = request.GET.get('owner', '').strip()
-            sort_by = request.GET.get('sort', 'value_desc').strip()
-            
-            # Persist preferences to user's session
-            request.session[user_pref_key] = {
-                'q': q,
-                'status': status_filter,
-                'owner': owner_filter,
-                'sort': sort_by
-            }
-        elif user_pref_key in request.session:
-            # Restore saved user account filter/sort preferences
-            pref = request.session[user_pref_key]
-            q = pref.get('q', '')
-            status_filter = pref.get('status', '')
-            owner_filter = pref.get('owner', '')
-            sort_by = pref.get('sort', 'value_desc')
-        else:
-            q = request.GET.get('q', '').strip()
-            status_filter = request.GET.get('status', '').strip()
-            owner_filter = request.GET.get('owner', '').strip()
-            sort_by = request.GET.get('sort', 'value_desc').strip()
+    q = request.GET.get('q', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    owner_filter = request.GET.get('owner', '').strip()
+    sort_by = request.GET.get('sort', '').strip()
 
     # 1. Search Query
     if q:
@@ -1187,7 +1157,7 @@ def leads_view(request):
     elif sort_by == 'value_asc':
         leads_qs = leads_qs.order_by('value')
     else:
-        leads_qs = leads_qs.order_by('-value')
+        leads_qs = leads_qs.order_by('-created_at', '-id')
 
     # Owners lookup
     owners = UserProfile.objects.filter(organization=org)
