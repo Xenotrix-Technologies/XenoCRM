@@ -402,6 +402,11 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
   let calendar;
+  window.calendarStatuses = [
+    {% for status in calendar_statuses %}
+    { name: "{{ status.name|escapejs }}", color: "{{ status.color|escapejs }}" },
+    {% endfor %}
+  ];
 
   function renderCalendarStatuses() {
       // Handled by Django backend
@@ -550,45 +555,93 @@
     });
   });
 
-  // Dynamically update analytics cards
+  // Dynamically update analytics cards based on calendar events
   function updateStatCounters(events) {
       const analyticsContainer = document.getElementById('analytics-container');
-      if (analyticsContainer) {
-          const categories = [
-              { name: 'Meetings', color: '#2563EB', icon: 'users' },
-              { name: 'Calls', color: '#10B981', icon: 'phone' },
-              { name: 'Deadlines', color: '#EF4444', icon: 'alert-circle' },
-              { name: 'Follow-ups', color: '#8B5CF6', icon: 'corner-up-right' }
-          ];
-          
-          let html = `
-              <div class="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80 flex items-center justify-between shadow-xs mb-3">
-                <div>
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Total Scheduled Events</span>
-                    <span class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5 block">${events.length}</span>
-                </div>
-                <div class="p-2.5 bg-brand-50 text-brand-600 rounded-xl shrink-0">
-                    <i data-lucide="calendar" class="w-5 h-5"></i>
-                </div>
+      if (!analyticsContainer) return;
+
+      const defaultCategories = [
+          { name: 'Meetings', colors: ['#2563EB', '#004AC6', '#0053DB'], icon: 'users', primaryColor: '#2563EB' },
+          { name: 'Calls', colors: ['#10B981', '#22C55E'], icon: 'phone', primaryColor: '#10B981' },
+          { name: 'Deadlines', colors: ['#EF4444', '#DC2626'], icon: 'alert-circle', primaryColor: '#EF4444' },
+          { name: 'Follow-ups', colors: ['#8B5CF6', '#7C3AED'], icon: 'corner-up-right', primaryColor: '#8B5CF6' }
+      ];
+
+      // Build categories list from dynamic window.calendarStatuses if available
+      let categoriesToDisplay = [];
+      if (window.calendarStatuses && window.calendarStatuses.length > 0) {
+          categoriesToDisplay = window.calendarStatuses.map(s => {
+              const nameUpper = (s.name || '').toUpperCase();
+              let icon = 'calendar';
+              let color = s.color || '#2563EB';
+              let aliasColors = [color.toUpperCase()];
+
+              if (nameUpper.includes('MEETING')) {
+                  icon = 'users';
+                  aliasColors.push('#2563EB', '#004AC6', '#0053DB');
+              } else if (nameUpper.includes('CALL')) {
+                  icon = 'phone';
+                  aliasColors.push('#10B981', '#22C55E');
+              } else if (nameUpper.includes('DEADLINE')) {
+                  icon = 'alert-circle';
+                  aliasColors.push('#EF4444', '#DC2626');
+              } else if (nameUpper.includes('FOLLOW')) {
+                  icon = 'corner-up-right';
+                  aliasColors.push('#8B5CF6', '#7C3AED');
+              }
+
+              return {
+                  name: s.name,
+                  primaryColor: color,
+                  colors: aliasColors,
+                  icon: icon
+              };
+          });
+      } else {
+          categoriesToDisplay = defaultCategories;
+      }
+
+      let html = `
+          <div class="p-4 bg-slate-50/80 rounded-xl border border-slate-200/80 flex items-center justify-between shadow-xs mb-3">
+            <div>
+                <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Total Scheduled Events</span>
+                <span class="text-2xl font-extrabold text-slate-900 tracking-tight mt-0.5 block">${events.length}</span>
+            </div>
+            <div class="p-2.5 bg-brand-50 text-brand-600 rounded-xl shrink-0">
+                <i data-lucide="calendar" class="w-5 h-5"></i>
+            </div>
+          </div>
+      `;
+
+      categoriesToDisplay.forEach(cat => {
+          const count = events.filter(e => {
+              const eventColor = (e.color || '').toUpperCase();
+              if (cat.colors && cat.colors.some(c => c.toUpperCase() === eventColor)) {
+                  return true;
+              }
+              if (eventColor === (cat.primaryColor || '').toUpperCase()) {
+                  return true;
+              }
+              return false;
+          }).length;
+
+          const themeColor = cat.primaryColor || '#2563EB';
+
+          html += `
+              <div class="p-3 bg-white rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-3 min-w-0">
+                  <div class="flex items-center gap-2.5 min-w-0 truncate">
+                      <div class="p-1.5 rounded-lg shrink-0" style="background-color: ${themeColor}15; color: ${themeColor};">
+                        <i data-lucide="${cat.icon}" class="w-4 h-4"></i>
+                      </div>
+                      <span class="text-xs font-bold text-slate-700 uppercase tracking-wider truncate" title="${cat.name}">${cat.name}</span>
+                  </div>
+                  <span class="text-base font-extrabold shrink-0 px-2 py-0.5 rounded-md" style="color: ${themeColor}; background-color: ${themeColor}15;">${count}</span>
               </div>
           `;
-          
-          categories.forEach(cat => {
-              const count = events.filter(e => (e.color || '').toUpperCase() === cat.color.toUpperCase()).length;
-              html += `
-                  <div class="p-3 bg-white rounded-xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-3 min-w-0">
-                      <div class="flex items-center gap-2.5 min-w-0 truncate">
-                          <div class="p-1.5 rounded-lg shrink-0" style="background-color: ${cat.color}15; color: ${cat.color};">
-                            <i data-lucide="${cat.icon}" class="w-4 h-4"></i>
-                          </div>
-                          <span class="text-xs font-bold text-slate-700 uppercase tracking-wider truncate" title="${cat.name}">${cat.name}</span>
-                      </div>
-                      <span class="text-base font-extrabold shrink-0 px-2 py-0.5 rounded-md" style="color: ${cat.color}; background-color: ${cat.color}10;">${count}</span>
-                  </div>
-              `;
-          });
-          
-          analyticsContainer.innerHTML = html;
+      });
+
+      analyticsContainer.innerHTML = html;
+      if (window.lucide) {
           lucide.createIcons();
       }
   }
