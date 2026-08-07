@@ -13,71 +13,70 @@
 {% endblock %}
 
 {% block content %}
-<main class="pt-4 p-margin-edge min-h-screen">
-    <div class="w-full max-w-7xl mx-auto space-y-6">
-        <!-- Page Header / Breadcrumbs -->
-        <h2 class="text-xl font-bold flex items-center text-slate-900 mb-4">
-            <a href="{% url 'clients' %}" class="text-slate-500 hover:text-brand-600 transition-colors text-xs font-semibold">Clients</a>
-            <span class="material-symbols-outlined mx-2 text-slate-400 text-xs">chevron_right</span>
-            <span class="text-brand-600 font-bold text-xs">Client Contact Profile</span>
-        </h2>
+<div class="py-6 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto space-y-6 min-h-screen">
+    <!-- Page Header / Breadcrumbs -->
+    <h2 class="text-xl font-bold flex items-center text-slate-900 mb-4">
+        <a href="{% url 'clients' %}" class="text-slate-500 hover:text-brand-600 transition-colors text-xs font-semibold">Clients</a>
+        <span class="material-symbols-outlined mx-2 text-slate-400 text-xs">chevron_right</span>
+        <span class="text-brand-600 font-bold text-xs">Client Contact Profile</span>
+    </h2>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            <!-- Left Column: Main Profile & Content -->
-            <div class="col-span-1 lg:col-span-8 space-y-6 min-w-0">
-                <!-- Profile Edit Form -->
-                <form method="POST" action="{% url 'edit_lead' lead.id %}" class="space-y-6">
-                    {% csrf_token %}
-                    
-                    <!-- Profile Header Card -->
-                    <div class="glass-card rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/80 bg-white space-y-6">
-                        <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-6 border-b border-slate-100">
-                            <div class="relative shrink-0">
-                                {% if lead.profile_image_url %}
-                                <img class="w-20 h-20 rounded-full border-2 border-slate-200 object-cover shadow-md" src="{{ lead.profile_image_url }}" alt="Profile Image"/>
-                                {% else %}
-                                <div class="w-20 h-20 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-2xl border-2 border-brand-100 shadow-md">
-                                    {{ lead.name|slice:":2"|upper }}
-                                </div>
-                                {% endif %}
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Left Column: Main Profile & Content -->
+        <div class="col-span-1 lg:col-span-8 space-y-6 min-w-0">
+            <!-- Profile Edit Form -->
+            <form method="POST" action="{% url 'edit_lead' lead.id %}" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Profile Header Card -->
+                <div class="glass-card rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/80 bg-white space-y-6">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-6 pb-6 border-b border-slate-100">
+                        <div class="relative shrink-0">
+                            {% if lead.profile_image_url %}
+                            <img class="w-20 h-20 rounded-full border-2 border-slate-200 object-cover shadow-md" src="{{ lead.profile_image_url }}" alt="Profile Image"/>
+                            {% else %}
+                            <div class="w-20 h-20 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-2xl border-2 border-brand-100 shadow-md">
+                                {{ lead.name|slice:":2"|upper }}
                             </div>
-                            <div class="flex-1 w-full space-y-3">
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Lead Name *</label>
-                                    <input type="text" name="name" value="{{ lead.name }}" required class="text-xl font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 w-full focus:ring-2 focus:ring-brand-500 text-slate-900"/>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Company *</label>
-                                    <input type="text" name="company" value="{{ lead.company }}" required class="text-sm font-semibold bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 w-full focus:ring-2 focus:ring-brand-500 text-slate-800"/>
-                                </div>
-                            </div>
+                            {% endif %}
                         </div>
-
-                        <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
-                            <button type="button" onclick="openSendEmailModal()" class="bg-brand-600 text-white flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-brand-700 transition-all active:scale-95 text-xs sm:text-sm">
-                                <span class="material-symbols-outlined text-[18px]">mail</span>
-                                Send Email
-                            </button>
-                            <button type="button" onclick="logInteraction('Call')" class="bg-white border border-slate-200 text-slate-700 flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-slate-50 transition-all active:scale-95 text-xs sm:text-sm">
-                                <span class="material-symbols-outlined text-[18px] text-brand-600">call</span>
-                                Call
-                            </button>
-                            <button type="button" onclick="showCalendarModal()" class="bg-white border border-slate-200 text-slate-700 flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-slate-50 transition-all active:scale-95 text-xs sm:text-sm">
-                                <span class="material-symbols-outlined text-[18px] text-brand-600">calendar_today</span>
-                                Schedule Meeting
-                            </button>
-                            <button type="button" onclick="openWhatsAppModal()" class="bg-[#25D366] text-white flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-[#20bd5a] transition-all active:scale-95 text-xs sm:text-sm">
-                                <svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
-                                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z"/>
-                                </svg>
-                                WhatsApp
-                            </button>
-                            <button type="button" onclick="confirmDelete()" class="bg-white border border-red-200 text-red-600 flex items-center justify-center gap-2 px-4 py-2.5 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-red-50 hover:border-red-300 transition-all active:scale-95 text-xs sm:text-sm sm:ml-auto w-full sm:w-auto">
-                                <span class="material-symbols-outlined text-[18px]">delete</span>
-                                Delete
-                            </button>
+                        <div class="flex-1 w-full space-y-3">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Lead Name *</label>
+                                <input type="text" name="name" value="{{ lead.name }}" required class="text-xl font-bold bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 w-full focus:ring-2 focus:ring-brand-500 text-slate-900"/>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Company *</label>
+                                <input type="text" name="company" value="{{ lead.company }}" required class="text-sm font-semibold bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 w-full focus:ring-2 focus:ring-brand-500 text-slate-800"/>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="flex flex-wrap items-center gap-2.5 sm:gap-3">
+                        <button type="button" onclick="openSendEmailModal()" class="bg-brand-600 text-white inline-flex items-center justify-center gap-2 h-10 px-4 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-brand-700 transition-all active:scale-95 text-xs sm:text-sm shrink-0">
+                            <span class="material-symbols-outlined text-[18px]">mail</span>
+                            <span>Send Email</span>
+                        </button>
+                        <button type="button" onclick="logInteraction('Call')" class="bg-white border border-slate-200 text-slate-700 inline-flex items-center justify-center gap-2 h-10 px-4 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-slate-50 transition-all active:scale-95 text-xs sm:text-sm shrink-0">
+                            <span class="material-symbols-outlined text-[18px] text-brand-600">call</span>
+                            <span>Call</span>
+                        </button>
+                        <button type="button" onclick="showCalendarModal()" class="bg-white border border-slate-200 text-slate-700 inline-flex items-center justify-center gap-2 h-10 px-4 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-slate-50 transition-all active:scale-95 text-xs sm:text-sm shrink-0">
+                            <span class="material-symbols-outlined text-[18px] text-brand-600">calendar_today</span>
+                            <span>Schedule Meeting</span>
+                        </button>
+                        <button type="button" onclick="openWhatsAppModal()" class="bg-[#25D366] text-white inline-flex items-center justify-center gap-2 h-10 px-4 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-[#20bd5a] transition-all active:scale-95 text-xs sm:text-sm shrink-0">
+                            <svg class="w-[18px] h-[18px] fill-current shrink-0" viewBox="0 0 24 24">
+                                <path d="M17.472 14.382c-.301-.15-1.782-.88-2.057-.98-.275-.1-.475-.15-.675.15-.2.299-.775.98-.95 1.18-.175.2-.35.225-.65.075-.3-.15-1.265-.465-2.41-1.485-.892-.795-1.493-1.777-1.668-2.077-.175-.3-.018-.463.13-.61.134-.133.3-.35.45-.525.15-.175.2-.299.3-.5.1-.2.05-.375-.025-.525-.075-.15-.675-1.625-.925-2.225-.244-.583-.493-.504-.675-.513-.175-.008-.375-.01-.575-.01-.2 0-.525.075-.8.375-.275.3-1.05 1.025-1.05 2.5 0 1.475 1.075 2.9 1.225 3.1.15.2 2.113 3.226 5.12 4.526.715.31 1.273.495 1.708.633.718.228 1.37.195 1.886.118.577-.087 1.782-.728 2.032-1.43.25-.702.25-1.303.175-1.43-.075-.127-.275-.227-.575-.377zM12 21.82c-1.848 0-3.655-.496-5.235-1.438l-.375-.223-3.89 1.02 1.038-3.793-.245-.39C2.292 15.385 1.7 13.731 1.7 12c0-5.679 4.621-10.3 10.3-10.3 2.752 0 5.339 1.071 7.284 3.018C21.23 6.663 22.3 9.25 22.3 12c0 5.679-4.621 10.3-10.3 10.3zM12 0C5.373 0 0 5.373 0 12c0 2.118.552 4.107 1.517 5.834L0 24l6.326-1.66C7.994 23.298 9.944 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
+                            </svg>
+                            <span>WhatsApp</span>
+                        </button>
+                        <button type="button" onclick="confirmDelete()" class="bg-white border border-red-200 text-red-600 inline-flex items-center justify-center gap-2 h-10 px-4 sm:px-5 rounded-xl font-semibold shadow-xs hover:bg-red-50 hover:border-red-300 transition-all active:scale-95 text-xs sm:text-sm sm:ml-auto w-full sm:w-auto shrink-0">
+                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                            <span>Delete</span>
+                        </button>
+                    </div>
+                </div>
 
                     <!-- Tabbed Navigation -->
                     <div class="border-b border-slate-200">
@@ -243,10 +242,10 @@
             <div class="col-span-1 lg:col-span-4 space-y-6 min-w-0">
 
                 <!-- Upcoming Tasks Widget -->
-                <div class="glass-card rounded-2xl p-5 sm:p-6 border border-slate-200/80 bg-white shadow-sm space-y-4">
+                <div class="glass-card rounded-2xl p-5 sm:p-6 border border-slate-200/80 bg-white shadow-sm space-y-4 min-w-0">
                     <div class="flex justify-between items-center pb-3 border-b border-slate-100">
                         <h3 class="text-base font-bold text-slate-900">Upcoming Tasks</h3>
-                        <button type="button" onclick="toggleAddTaskForm()" class="material-symbols-outlined p-1.5 bg-slate-100 hover:bg-slate-200 text-brand-600 rounded-lg transition-colors text-sm" title="Add Task">add</button>
+                        <button type="button" onclick="toggleAddTaskForm()" class="material-symbols-outlined p-1.5 bg-slate-100 hover:bg-slate-200 text-brand-600 rounded-lg transition-colors text-sm shrink-0" title="Add Task">add</button>
                     </div>
 
                     <!-- Inline Add Task Form -->
@@ -289,10 +288,10 @@
                 </div>
 
                 <!-- Activity Timeline (Compact Preview) -->
-                <div class="glass-card rounded-2xl p-5 sm:p-6 border border-slate-200/80 bg-white shadow-sm space-y-4">
+                <div class="glass-card rounded-2xl p-5 sm:p-6 border border-slate-200/80 bg-white shadow-sm space-y-4 min-w-0">
                     <div class="flex justify-between items-center pb-3 border-b border-slate-100">
                         <h3 class="text-base font-bold text-slate-900">Recent Activity</h3>
-                        <button type="button" onclick="switchTab(null, 'tab-timeline')" class="text-brand-600 hover:text-brand-700 text-xs font-bold">View All</button>
+                        <button type="button" onclick="switchTab(null, 'tab-timeline')" class="text-brand-600 hover:text-brand-700 text-xs font-bold shrink-0 whitespace-nowrap">View All</button>
                     </div>
                     <div id="activity-list-container" class="space-y-5 relative before:absolute before:left-3.5 before:top-2 before:bottom-2 before:w-[1px] before:bg-slate-200">
                         {% for activity in activities|slice:":3" %}
