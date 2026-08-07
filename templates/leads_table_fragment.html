@@ -18,6 +18,7 @@
                         <th>Status</th>
                         <th>Assigned Agent</th>
                         <th>Last Followup</th>
+                        <th>Followup Wanted</th>
                         <th class="text-right">Actions</th>
                     </tr>
                 </thead>
@@ -94,6 +95,13 @@
                             -
                             {% endif %}
                         </td>
+                        <td class="text-slate-500 text-xs whitespace-nowrap">
+                            {% if lead.followup_wanted_date_time %}
+                            {{ lead.followup_wanted_date_time|date:"Y-m-d H:i" }}
+                            {% else %}
+                            -
+                            {% endif %}
+                        </td>
                         <td class="text-right whitespace-nowrap">
                             <div class="flex items-center justify-end gap-1">
                                 <a href="{% url 'contact_detail' lead.id %}" class="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-brand-600 transition-all" title="View Lead">
@@ -107,7 +115,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="10" class="p-12 text-center text-slate-400">
+                        <td colspan="11" class="p-12 text-center text-slate-400">
                             <div class="max-w-xs mx-auto">
                                 <i data-lucide="inbox" class="w-10 h-10 mx-auto mb-3 text-slate-300"></i>
                                 <p class="text-sm font-semibold text-slate-700">No Leads Found</p>
