@@ -941,6 +941,8 @@ class Event(models.Model):
     color = models.CharField(max_length=50, default='#004ac6')
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='events')
+    notified_10h = models.BooleanField(default=False)
+    notified_1h = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'events'

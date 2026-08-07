@@ -1653,6 +1653,11 @@ def event_create_view(request):
             event.owner = request.user
             event.organization = org
             event.save()
+            try:
+                from .event_notifications import check_and_send_event_notifications
+                check_and_send_event_notifications(event)
+            except Exception:
+                pass
             SystemNotification.objects.create(user=request.user, message='Event created successfully.', type='success')
             return redirect('calendar')
     else:
@@ -1667,7 +1672,12 @@ def event_edit_view(request, event_id):
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
-            form.save()
+            event = form.save()
+            try:
+                from .event_notifications import check_and_send_event_notifications
+                check_and_send_event_notifications(event)
+            except Exception:
+                pass
             SystemNotification.objects.create(user=request.user, message='Event updated successfully.', type='success')
             return redirect('calendar')
     else:
@@ -1769,6 +1779,11 @@ def event_create_ajax(request):
             event.owner = request.user
             event.organization = org
             event.save()
+            try:
+                from .event_notifications import check_and_send_event_notifications
+                check_and_send_event_notifications(event)
+            except Exception:
+                pass
             return JsonResponse({
                 'success': True,
                 'event': {
@@ -1795,7 +1810,12 @@ def event_edit_ajax(request, event_id):
     if request.method == 'POST':
         form = EventForm(request.POST, instance=event)
         if form.is_valid():
-            form.save()
+            event = form.save()
+            try:
+                from .event_notifications import check_and_send_event_notifications
+                check_and_send_event_notifications(event)
+            except Exception:
+                pass
             return JsonResponse({
                 'success': True,
                 'event': {
