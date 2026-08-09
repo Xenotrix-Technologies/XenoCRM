@@ -10,7 +10,9 @@ from django.db.models import Sum, Q
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib import messages
-from .models import Organization, UserProfile, Lead, Activity, Task, TaskTodo, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable, Campaign, ContentDropdownOption, SystemNotification
+from .models import Organization, UserProfile, Lead, Activity, Task, TaskTodo, TaskFile, TaskMilestone, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable, Campaign, ContentDropdownOption, SystemNotification
+from datetime import datetime, timedelta
+import io, json
 from .forms import EventForm, ProfileForm
 from .models import Income, Expense, FinancePaymentMethod, FinanceExpenseCategory, PartnerPayout, FinancePaymentStatus, FinanceCommissionType
 from .models import ClientStatus, ProjectStatus, CampaignStatus, CalendarStatus, TicketStatus, PriorityStatus, InvoiceStatus
@@ -417,6 +419,66 @@ def projects_view(request):
 
     team_members_count = staff.count()
     
+    # Search query
+    q = request.GET.get('q', '').strip() or request.GET.get('search', '').strip()
+    if q:
+        tasks = tasks.filter(
+            Q(title__icontains=q) |
+            Q(description__icontains=q) |
+            Q(lead__name__icontains=q) |
+            Q(lead__company_name__icontains=q) |
+            Q(status__name__icontains=q)
+        )
+
+    # Filter parameters
+    filter_status = request.GET.get('status', '').strip()
+    filter_priority = request.GET.get('priority', '').strip()
+    filter_risk = request.GET.get('risk', '').strip()
+    filter_starred = request.GET.get('starred', '').strip()
+    filter_lead = request.GET.get('lead_id', '').strip()
+
+    active_filter_count = 0
+    if filter_status:
+        active_filter_count += 1
+        if filter_status.lower() == 'completed':
+            tasks = tasks.filter(Q(completed=True) | Q(status__name__iexact='Completed'))
+        else:
+            tasks = tasks.filter(status__name__iexact=filter_status)
+
+    if filter_priority:
+        active_filter_count += 1
+        tasks = tasks.filter(priority__iexact=filter_priority)
+
+    if filter_risk:
+        active_filter_count += 1
+        tasks = tasks.filter(risk_level__iexact=filter_risk)
+
+    if filter_starred == '1' or filter_starred.lower() == 'true':
+        active_filter_count += 1
+        tasks = tasks.filter(is_starred=True)
+
+    if filter_lead:
+        active_filter_count += 1
+        if filter_lead == 'inhouse':
+            tasks = tasks.filter(lead__isnull=True)
+        elif filter_lead.isdigit():
+            tasks = tasks.filter(lead_id=int(filter_lead))
+
+    # Sorting
+    sort_by = request.GET.get('sort', 'due_date').strip()
+    if sort_by == 'title':
+        tasks = tasks.order_by('title')
+    elif sort_by == '-title':
+        tasks = tasks.order_by('-title')
+    elif sort_by == 'priority':
+        tasks = tasks.order_by('priority')
+    elif sort_by == '-created_at':
+        tasks = tasks.order_by('-created_at')
+    elif sort_by == '-due_date':
+        tasks = tasks.order_by('-due_date')
+    else:
+        tasks = tasks.order_by('due_date')
+
     # Task collections by status for Kanban Board & dynamic views
     backlog_tasks = tasks.filter(status__name__iexact='Backlog')
     todo_tasks = tasks.filter(status__name__iexact='Todo')
@@ -427,7 +489,7 @@ def projects_view(request):
     task_activities = Activity.objects.filter(
         Q(lead__organization=org) | Q(lead__isnull=True),
         type='Task'
-    ).order_by('-timestamp')[:15]
+    ).order_by('-timestamp')[:20]
     
     active_tab = request.GET.get('tab', 'overview')
 
@@ -447,7 +509,15 @@ def projects_view(request):
         'review_tasks': review_tasks,
         'completed_tasks': completed_tasks,
         'task_activities': task_activities,
-        'active_tab': active_tab
+        'active_tab': active_tab,
+        'search_q': q,
+        'active_filter_count': active_filter_count,
+        'filter_status': filter_status,
+        'filter_priority': filter_priority,
+        'filter_risk': filter_risk,
+        'filter_starred': filter_starred,
+        'filter_lead': filter_lead,
+        'sort_by': sort_by
     })
 
 
@@ -1723,6 +1793,238 @@ def toggle_task_star(request, task_id):
             'is_starred': task.is_starred
         })
     return JsonResponse({'success': False, 'error': 'Invalid request.'})
+
+
+@login_required
+def upload_task_file(request, task_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        task = get_object_or_404(Task, id=task_id)
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+        uploaded_file = request.FILES.get('file')
+        if not uploaded_file:
+            return JsonResponse({'success': False, 'error': 'No file provided.'})
+
+        size_bytes = uploaded_file.size
+        if size_bytes < 1024:
+            size_str = f"{size_bytes} B"
+        elif size_bytes < 1024 * 1024:
+            size_str = f"{round(size_bytes / 1024, 1)} KB"
+        else:
+            size_str = f"{round(size_bytes / (1024 * 1024), 1)} MB"
+
+        tf = TaskFile.objects.create(
+            task=task,
+            file=uploaded_file,
+            filename=uploaded_file.name,
+            file_size=size_str,
+            uploaded_by=request.user
+        )
+
+        Activity.objects.create(
+            lead=task.lead,
+            type='Task',
+            description=f"Uploaded file '{tf.filename}' to project '{task.title}'"
+        )
+
+        return JsonResponse({
+            'success': True,
+            'file': {
+                'id': tf.id,
+                'filename': tf.filename,
+                'url': tf.file.url if tf.file else '#',
+                'file_size': tf.file_size,
+                'uploaded_at': tf.uploaded_at.strftime('%b %d, %Y')
+            }
+        })
+    return JsonResponse({'success': False, 'error': 'Invalid method.'})
+
+
+@login_required
+def delete_task_file(request, file_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        tf = get_object_or_404(TaskFile, id=file_id)
+        task = tf.task
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+        filename = tf.filename
+        tf.delete()
+
+        Activity.objects.create(
+            lead=task.lead,
+            type='Task',
+            description=f"Deleted file '{filename}' from project '{task.title}'"
+        )
+
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid method.'})
+
+
+@login_required
+def add_task_milestone(request, task_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        task = get_object_or_404(Task, id=task_id)
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+        title = request.POST.get('title', '').strip()
+        due_date_str = request.POST.get('due_date', '').strip()
+        if not title:
+            return JsonResponse({'success': False, 'error': 'Milestone title is required.'})
+
+        due_date = timezone.now().date()
+        if due_date_str:
+            try:
+                due_date = datetime.strptime(due_date_str, '%Y-%m-%d').date()
+            except ValueError:
+                pass
+
+        tm = TaskMilestone.objects.create(
+            task=task,
+            title=title,
+            due_date=due_date
+        )
+
+        Activity.objects.create(
+            lead=task.lead,
+            type='Task',
+            description=f"Added milestone '{tm.title}' to project '{task.title}'"
+        )
+
+        return JsonResponse({
+            'success': True,
+            'milestone': {
+                'id': tm.id,
+                'title': tm.title,
+                'due_date': tm.due_date.strftime('%b %d, %Y'),
+                'completed': tm.completed
+            }
+        })
+    return JsonResponse({'success': False, 'error': 'Invalid method.'})
+
+
+@login_required
+def toggle_task_milestone(request, milestone_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        tm = get_object_or_404(TaskMilestone, id=milestone_id)
+        task = tm.task
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+        tm.completed = not tm.completed
+        tm.save()
+
+        return JsonResponse({'success': True, 'completed': tm.completed})
+    return JsonResponse({'success': False, 'error': 'Invalid method.'})
+
+
+@login_required
+def delete_task_milestone(request, milestone_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        tm = get_object_or_404(TaskMilestone, id=milestone_id)
+        task = tm.task
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+        tm.delete()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False, 'error': 'Invalid method.'})
+
+
+@login_required
+def import_projects(request):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        import_file = request.FILES.get('file')
+        if not import_file:
+            messages.error(request, "No import file selected.")
+            return redirect('projects')
+
+        created_count = 0
+        errors = []
+
+        try:
+            content = import_file.read().decode('utf-8', errors='ignore')
+            if import_file.name.endswith('.csv'):
+                reader = csv.DictReader(io.StringIO(content))
+                for idx, row in enumerate(reader, start=1):
+                    title = row.get('title') or row.get('Project') or row.get('Name') or row.get('Title')
+                    if not title:
+                        errors.append(f"Row {idx}: Missing title")
+                        continue
+                    
+                    desc = row.get('description') or row.get('Description') or ''
+                    prio = (row.get('priority') or row.get('Priority') or 'Medium').strip().capitalize()
+                    risk = (row.get('risk') or row.get('Risk') or 'Low').strip().capitalize()
+                    
+                    due_date = timezone.now().date() + timedelta(days=14)
+                    due_str = row.get('due_date') or row.get('Due Date')
+                    if due_str:
+                        try:
+                            due_date = datetime.strptime(due_str.strip(), '%Y-%m-%d').date()
+                        except ValueError:
+                            pass
+
+                    Task.objects.create(
+                        organization=org,
+                        title=title.strip(),
+                        description=desc.strip(),
+                        priority=prio if prio in ['High', 'Medium', 'Low'] else 'Medium',
+                        risk_level=risk if risk in ['High', 'Medium', 'Low'] else 'Low',
+                        due_date=due_date
+                    )
+                    created_count += 1
+            elif import_file.name.endswith('.json'):
+                data = json.loads(content)
+                items = data if isinstance(data, list) else data.get('projects', [])
+                for idx, item in enumerate(items, start=1):
+                    title = item.get('title') or item.get('name')
+                    if not title:
+                        errors.append(f"Item {idx}: Missing title")
+                        continue
+                    
+                    due_date = timezone.now().date() + timedelta(days=14)
+                    due_str = item.get('due_date')
+                    if due_str:
+                        try:
+                            due_date = datetime.strptime(due_str.strip(), '%Y-%m-%d').date()
+                        except ValueError:
+                            pass
+
+                    Task.objects.create(
+                        organization=org,
+                        title=title.strip(),
+                        description=item.get('description', ''),
+                        priority=item.get('priority', 'Medium'),
+                        risk_level=item.get('risk_level', 'Low'),
+                        due_date=due_date
+                    )
+                    created_count += 1
+            else:
+                messages.error(request, "Unsupported file format. Please upload CSV or JSON.")
+                return redirect('projects')
+
+            if created_count > 0:
+                messages.success(request, f"Successfully imported {created_count} project(s) into database!")
+                Activity.objects.create(
+                    lead=None,
+                    type='Task',
+                    description=f"Imported {created_count} project(s) from {import_file.name}"
+                )
+            if errors:
+                messages.warning(request, f"Skipped {len(errors)} invalid record(s).")
+        except Exception as e:
+            messages.error(request, f"Error parsing import file: {str(e)}")
+
+        return redirect('projects')
+    return redirect('projects')
 
 
 @login_required

@@ -82,7 +82,7 @@
             </button>
 
             <!-- Import Data Button -->
-            <button onclick="alert('Import feature: Upload JSON/CSV project template')" class="flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
+            <button onclick="openImportModal()" class="flex items-center gap-2 px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-50 transition-all shadow-sm">
                 <i data-lucide="upload-cloud" class="w-3.5 h-3.5 text-slate-500"></i>
                 <span>Import</span>
             </button>
@@ -420,7 +420,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto pb-4">
                 
                 <!-- Column 1: Backlog & Todo -->
-                <div class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px]">
+                <div ondragover="handleKanbanDragOver(event)" ondrop="handleKanbanDrop(event, 'Backlog')" class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px] transition-colors hover:bg-slate-200/40">
                     <div class="flex items-center justify-between px-1 border-b border-slate-200/60 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
@@ -431,7 +431,7 @@
                     </div>
 
                     {% for task in backlog_tasks %}
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-2.5"
+                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5"
                          onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% elif task.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
@@ -472,7 +472,7 @@
                     {% endfor %}
 
                     {% for task in todo_tasks %}
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-2.5"
+                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5"
                          onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% elif task.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
@@ -518,7 +518,7 @@
                 </div>
 
                 <!-- Column 2: In Progress -->
-                <div class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px]">
+                <div ondragover="handleKanbanDragOver(event)" ondrop="handleKanbanDrop(event, 'In Progress')" class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px] transition-colors hover:bg-slate-200/40">
                     <div class="flex items-center justify-between px-1 border-b border-slate-200/60 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
@@ -529,7 +529,7 @@
                     </div>
 
                     {% for task in in_progress_tasks %}
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-2.5"
+                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5"
                          onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% elif task.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
@@ -573,7 +573,7 @@
                 </div>
 
                 <!-- Column 3: Review / Testing -->
-                <div class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px]">
+                <div ondragover="handleKanbanDragOver(event)" ondrop="handleKanbanDrop(event, 'Review')" class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px] transition-colors hover:bg-slate-200/40">
                     <div class="flex items-center justify-between px-1 border-b border-slate-200/60 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
@@ -584,7 +584,7 @@
                     </div>
 
                     {% for task in review_tasks %}
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-2.5"
+                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5"
                          onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% elif task.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
@@ -628,7 +628,7 @@
                 </div>
 
                 <!-- Column 4: Completed -->
-                <div class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px]">
+                <div ondragover="handleKanbanDragOver(event)" ondrop="handleKanbanDrop(event, 'Completed')" class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px] transition-colors hover:bg-slate-200/40">
                     <div class="flex items-center justify-between px-1 border-b border-slate-200/60 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -639,7 +639,7 @@
                     </div>
 
                     {% for task in completed_tasks %}
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm opacity-90 hover:opacity-100 transition-all cursor-pointer space-y-2.5"
+                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm opacity-90 hover:opacity-100 transition-all cursor-grab active:cursor-grabbing space-y-2.5"
                          onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full badge-low">Completed</span>
@@ -1022,6 +1022,28 @@
             </form>
         </div>
 
+        <!-- File Attachments & Documents -->
+        <div>
+            <div class="flex items-center justify-between mb-2">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400">Attachments & Documents</h4>
+                <span id="drawer-files-counter" class="text-[11px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">0 Files</span>
+            </div>
+
+            <!-- List of dynamic file items -->
+            <div id="drawer-files-container" class="space-y-2 text-xs mb-3">
+                <div class="p-3 text-center text-slate-400 text-xs italic bg-slate-50 rounded-xl border border-dashed border-slate-200">No attachments uploaded yet.</div>
+            </div>
+
+            <!-- Form for uploading new file -->
+            <form id="upload-file-form" onsubmit="handleFileUploadSubmit(event)" class="flex items-center gap-2 mt-2">
+                <input type="file" id="new-task-file" required class="flex-1 text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+                <button type="submit" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs">
+                    <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                    <span>Upload</span>
+                </button>
+            </form>
+        </div>
+
         <!-- Activity Feed -->
         <div>
             <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">Recent Updates</h4>
@@ -1255,9 +1277,35 @@
                 </label>
             </div>
 
-            <div class="pt-4 border-t border-slate-200 flex justify-end gap-2">
-                <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
-                <button type="submit" class="px-5 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold hover:bg-blue-700">Save Changes</button>
+            <div class="flex justify-end gap-2 pt-3 border-t border-slate-200">
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-semibold hover:bg-blue-700">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- IMPORT PROJECTS MODAL -->
+<div id="import-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[140] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-200 animate-in fade-in">
+        <div class="flex justify-between items-center mb-4 pb-3 border-b border-slate-200">
+            <div class="flex items-center gap-2">
+                <i data-lucide="upload-cloud" class="w-5 h-5 text-blue-600"></i>
+                <h3 class="text-base font-bold text-slate-900">Import Projects & Tasks</h3>
+            </div>
+            <button type="button" onclick="closeImportModal()" class="text-slate-400 hover:text-slate-700 p-1 rounded-lg">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <form method="POST" action="{% url 'import_projects' %}" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            <p class="text-xs text-slate-500 leading-relaxed">Upload a <strong>CSV</strong> or <strong>JSON</strong> file containing project titles, descriptions, priorities, risk levels, and due dates.</p>
+            <div class="border-2 border-dashed border-slate-200 rounded-xl p-5 text-center hover:border-blue-500 transition-colors bg-slate-50/50">
+                <input type="file" name="file" accept=".csv, .json" required class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" />
+            </div>
+            <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                <button type="button" onclick="closeImportModal()" class="px-4 py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-sm">Start Import</button>
             </div>
         </form>
     </div>
@@ -1436,6 +1484,9 @@
                 // Render Todos
                 renderDrawerTodos(task.todos);
 
+                // Render Files
+                renderDrawerFiles(task.files);
+
                 // Render Activities
                 renderDrawerActivities(task.activities);
             })
@@ -1496,6 +1547,117 @@
             </div>`;
         });
         container.innerHTML = html;
+    }
+
+    function renderDrawerFiles(files) {
+        const container = document.getElementById('drawer-files-container');
+        const counter = document.getElementById('drawer-files-counter');
+        if (!container || !counter) return;
+
+        if (!files || files.length === 0) {
+            container.innerHTML = '<div class="p-3 text-center text-slate-400 text-xs italic bg-slate-50 rounded-xl border border-dashed border-slate-200">No attachments uploaded yet.</div>';
+            counter.innerText = '0 Files';
+            return;
+        }
+
+        counter.innerText = `${files.length} File(s)`;
+        let html = '';
+        files.forEach(f => {
+            html += `
+            <div class="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 group">
+                <div class="flex items-center gap-2 overflow-hidden">
+                    <i data-lucide="file-text" class="w-4 h-4 text-blue-600 flex-shrink-0"></i>
+                    <a href="${f.url}" target="_blank" class="font-semibold text-slate-800 hover:text-blue-600 truncate text-xs">${escapeHtml(f.filename)}</a>
+                    <span class="text-[10px] text-slate-400">(${f.file_size})</span>
+                </div>
+                <button type="button" onclick="deleteTaskFile(${f.id}, event)" title="Delete File" class="text-slate-400 hover:text-rose-600 p-1 rounded-md opacity-70 group-hover:opacity-100">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>`;
+        });
+        container.innerHTML = html;
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function handleFileUploadSubmit(event) {
+        event.preventDefault();
+        if (!currentDrawerId) return;
+
+        const fileInput = document.getElementById('new-task-file');
+        if (!fileInput.files || fileInput.files.length === 0) return;
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+
+        fetch(`/task/${currentDrawerId}/file/upload/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                fileInput.value = '';
+                if (!currentDrawerTask.files) currentDrawerTask.files = [];
+                currentDrawerTask.files.push(data.file);
+                renderDrawerFiles(currentDrawerTask.files);
+            } else {
+                alert(data.error || 'Failed to upload file.');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function deleteTaskFile(fileId, event) {
+        if (event) event.stopPropagation();
+        if (!confirm('Delete this file attachment?')) return;
+
+        fetch(`/task/file/${fileId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (currentDrawerTask && currentDrawerTask.files) {
+                    currentDrawerTask.files = currentDrawerTask.files.filter(f => f.id !== fileId);
+                    renderDrawerFiles(currentDrawerTask.files);
+                }
+            } else {
+                alert(data.error || 'Failed to delete file.');
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function openImportModal() {
+        document.getElementById('import-modal').classList.remove('hidden');
+    }
+
+    function closeImportModal() {
+        document.getElementById('import-modal').classList.add('hidden');
+    }
+
+    function handleKanbanDragStart(e, taskId) {
+        e.dataTransfer.setData('text/plain', taskId);
+        e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleKanbanDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleKanbanDrop(e, statusName) {
+        e.preventDefault();
+        const taskId = e.dataTransfer.getData('text/plain');
+        if (taskId && statusName) {
+            moveTaskStatus(taskId, statusName);
+        }
     }
 
     function handleTodoSubmit(event) {

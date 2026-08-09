@@ -994,6 +994,38 @@ class TaskTodo(models.Model):
     def __str__(self):
         return f"{self.title} ({'Completed' if self.completed else 'Pending'})"
 
+
+class TaskFile(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='project_files/')
+    filename = models.CharField(max_length=255)
+    file_size = models.CharField(max_length=50, blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        db_table = 'task_files'
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return f"{self.filename} ({self.task.title})"
+
+
+class TaskMilestone(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='milestones')
+    title = models.CharField(max_length=255)
+    due_date = models.DateField()
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'task_milestones'
+        ordering = ['due_date']
+
+    def __str__(self):
+        return f"{self.title} - {self.task.title}"
+
+
 class Meeting(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='meetings')
     lead = models.ForeignKey(Lead, on_delete=models.SET_NULL, null=True, blank=True, related_name='meetings')
