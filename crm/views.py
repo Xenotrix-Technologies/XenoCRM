@@ -41,6 +41,7 @@ def page_permission_required(permission_name):
 
 
 @login_required
+@page_permission_required('clients')
 def clients_view(request):
     org = request.user.profile.organization
     
@@ -125,6 +126,7 @@ def clients_view(request):
 
 
 @login_required
+@page_permission_required('clients')
 def service_clients_view(request, service_id):
     org = request.user.profile.organization
     
@@ -183,6 +185,7 @@ def service_clients_view(request, service_id):
 
 
 @login_required
+@page_permission_required('clients')
 def client_profile_view(request, company_name):
     from urllib.parse import unquote
     from django.db.models import Q
@@ -267,6 +270,7 @@ def delete_client_company(request):
 
 
 @login_required
+@page_permission_required('support')
 def customer_support_view(request):
     org = request.user.profile.organization
     tickets = Ticket.objects.filter(organization=org)
@@ -287,6 +291,7 @@ def customer_support_view(request):
 
 
 @login_required
+@page_permission_required('support')
 def create_ticket(request):
     if request.method == 'POST':
         org = request.user.profile.organization
@@ -334,6 +339,7 @@ def create_ticket(request):
 
 
 @login_required
+@page_permission_required('support')
 def edit_ticket(request, ticket_id):
     if request.method == 'POST':
         org = request.user.profile.organization
@@ -374,6 +380,7 @@ def edit_ticket(request, ticket_id):
 
 
 @login_required
+@page_permission_required('support')
 def delete_ticket(request, ticket_id):
     if request.method == 'POST':
         org = request.user.profile.organization
@@ -388,6 +395,7 @@ def delete_ticket(request, ticket_id):
 
 
 @login_required
+@page_permission_required('projects')
 def projects_view(request):
     org = request.user.profile.organization
     tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
@@ -444,6 +452,7 @@ def projects_view(request):
 
 
 @login_required
+@page_permission_required('projects')
 def project_board_view(request):
     org = request.user.profile.organization
     tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
@@ -485,6 +494,7 @@ def project_board_view(request):
 
 
 @login_required
+@page_permission_required('projects')
 def project_timeline_view(request):
     org = request.user.profile.organization
     tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
@@ -501,6 +511,7 @@ def project_timeline_view(request):
 
 
 @login_required
+@page_permission_required('projects')
 def project_reports_view(request):
     org = request.user.profile.organization
     tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org))
@@ -535,6 +546,7 @@ def project_reports_view(request):
 
 
 @login_required
+@page_permission_required('projects')
 def project_tasks_view(request):
     org = request.user.profile.organization
     tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
@@ -551,6 +563,7 @@ def project_tasks_view(request):
 
 
 @login_required
+@page_permission_required('projects')
 def project_milestones_view(request):
     org = request.user.profile.organization
     tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
@@ -565,6 +578,7 @@ def project_milestones_view(request):
 
 
 @login_required
+@page_permission_required('projects')
 def project_files_view(request):
     org = request.user.profile.organization
     tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
@@ -577,6 +591,7 @@ def project_files_view(request):
 
 
 @login_required
+@page_permission_required('projects')
 def project_time_tracking_view(request):
     org = request.user.profile.organization
     tasks = Task.objects.filter(Q(lead__organization=org) | Q(organization=org)).order_by('due_date')
@@ -591,6 +606,7 @@ def project_time_tracking_view(request):
 
 
 @login_required
+@page_permission_required('agreements')
 def agreements_list_view(request):
     org = request.user.profile.organization
     agreements = Agreement.objects.filter(organization=org)
@@ -607,6 +623,7 @@ def agreements_list_view(request):
 
 
 @login_required
+@page_permission_required('agreements')
 def create_agreement_view(request):
     org = request.user.profile.organization
     services = Service.objects.filter(organization=org)
@@ -689,6 +706,7 @@ def create_agreement_view(request):
 
 
 @login_required
+@page_permission_required('agreements')
 def update_agreement_view(request, agreement_id):
     org = request.user.profile.organization
     agreement = get_object_or_404(Agreement, id=agreement_id, organization=org)
@@ -768,6 +786,7 @@ def update_agreement_view(request, agreement_id):
 
 
 @login_required
+@page_permission_required('agreements')
 def delete_agreement_view(request, agreement_id):
     if request.method == 'POST':
         org = request.user.profile.organization
@@ -779,6 +798,7 @@ def delete_agreement_view(request, agreement_id):
 
 
 @login_required
+@page_permission_required('agreements')
 def agreement_print_view(request, agreement_id):
     org = request.user.profile.organization
     agreement = get_object_or_404(Agreement, id=agreement_id, organization=org)
@@ -795,6 +815,7 @@ def agreement_print_view(request, agreement_id):
 
 
 @login_required
+@page_permission_required('campaigns')
 def campaign_view(request):
     org = request.user.profile.organization
     campaigns = Campaign.objects.filter(organization=org)
@@ -804,6 +825,7 @@ def campaign_view(request):
 
 @login_required
 @require_POST
+@page_permission_required('campaigns')
 def add_campaign(request):
     org = request.user.profile.organization
     name = request.POST.get('name')
@@ -834,6 +856,7 @@ def add_campaign(request):
 
 @login_required
 @require_POST
+@page_permission_required('campaigns')
 def edit_campaign(request, campaign_id):
     org = request.user.profile.organization
     campaign = get_object_or_404(Campaign, id=campaign_id, organization=org)
@@ -865,6 +888,7 @@ def edit_campaign(request, campaign_id):
 
 @login_required
 @require_POST
+@page_permission_required('campaigns')
 def delete_campaign(request, campaign_id):
     org = request.user.profile.organization
     campaign = get_object_or_404(Campaign, id=campaign_id, organization=org)
@@ -912,6 +936,7 @@ def logout_view(request):
     return redirect('login')
 
 @login_required
+@page_permission_required('dashboard')
 def dashboard_view(request):
     org = request.user.profile.organization
     
@@ -1085,6 +1110,7 @@ def dashboard_view(request):
     return render(request, 'dashboard.html', context)
 
 @login_required
+@page_permission_required('leads')
 def leads_view(request):
     org = request.user.profile.organization
     
@@ -1199,6 +1225,7 @@ def leads_view(request):
     return response
 
 @login_required
+@page_permission_required('leads')
 def pipeline_view(request):
     org = request.user.profile.organization
     leads_qs = Lead.objects.filter(organization=org, is_client=False)
@@ -1611,6 +1638,7 @@ def quick_create_lead(request):
     return redirect(request.META.get('HTTP_REFERER', 'leads'))
 
 @login_required
+@page_permission_required('calendar')
 def calendar_view(request):
     """Display calendar with events for the user's organization."""
     org = request.user.profile.organization
@@ -1620,6 +1648,7 @@ def calendar_view(request):
 
 
 @login_required
+@page_permission_required('calendar')
 def calendar_list_view(request):
     """Display list of organization events in tabular format, optionally filtered by date."""
     org = request.user.profile.organization
@@ -1645,6 +1674,7 @@ def calendar_list_view(request):
 
 
 @login_required
+@page_permission_required('calendar')
 def event_create_view(request):
     """Create a new calendar event via modal form."""
     org = request.user.profile.organization
@@ -1667,6 +1697,7 @@ def event_create_view(request):
     return render(request, 'event_form.html', {'form': form, 'action': 'Create'})
 
 @login_required
+@page_permission_required('calendar')
 def event_edit_view(request, event_id):
     """Edit an existing calendar event."""
     org = request.user.profile.organization
@@ -1687,6 +1718,7 @@ def event_edit_view(request, event_id):
     return render(request, 'event_form.html', {'form': form, 'action': 'Edit'})
 
 @login_required
+@page_permission_required('calendar')
 def event_delete_view(request, event_id):
     """Delete a calendar event."""
     org = request.user.profile.organization
@@ -1751,6 +1783,7 @@ def profile_edit_view(request):
 
 
 @login_required
+@page_permission_required('calendar')
 def calendar_events_json_view(request):
     """Return JSON list of organization events for FullCalendar."""
     org = request.user.profile.organization
@@ -2695,6 +2728,7 @@ def import_leads(request):
 
 
 @login_required
+@page_permission_required('staff')
 def staff_list_view(request):
     """List all user profiles in the current organization."""
     org = request.user.profile.organization
@@ -2715,6 +2749,7 @@ def get_or_create_default_roles(org):
 
 
 @login_required
+@page_permission_required('staff')
 def add_staff_view(request):
     """View to add a new staff member."""
     org = request.user.profile.organization
@@ -2811,6 +2846,7 @@ def add_staff_view(request):
 
 
 @login_required
+@page_permission_required('staff')
 def edit_staff_view(request, profile_id):
     """View to update a staff member."""
     org = request.user.profile.organization
@@ -2918,6 +2954,7 @@ def edit_staff_view(request, profile_id):
 
 
 @login_required
+@page_permission_required('staff')
 def delete_staff_ajax(request, profile_id):
     """AJAX endpoint to delete a staff member."""
     if request.method == 'POST':
