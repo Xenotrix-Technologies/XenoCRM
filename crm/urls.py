@@ -33,6 +33,10 @@ urlpatterns = [
     path('task/complete/', views.complete_task, name='complete_task'),
     path('task/<int:task_id>/edit/', views.edit_task, name='edit_task'),
     path('task/<int:task_id>/delete/', views.delete_task, name='delete_task'),
+    path('task/<int:task_id>/details/', views.task_details_json, name='task_details_json'),
+    path('task/<int:task_id>/todo/add/', views.add_task_todo, name='add_task_todo'),
+    path('task/todo/<int:todo_id>/toggle/', views.toggle_task_todo, name='toggle_task_todo'),
+    path('task/todo/<int:todo_id>/delete/', views.delete_task_todo, name='delete_task_todo'),
     path('activity/log/', views.log_activity, name='log_activity'),
     path('lead/quick-create/', views.quick_create_lead, name='quick_create_lead'),
 

@@ -943,6 +943,12 @@ class Task(models.Model):
         ('Low', 'Low'),
     ]
 
+    RISK_CHOICES = [
+        ('Low', 'Low'),
+        ('Medium', 'Medium'),
+        ('High', 'High'),
+    ]
+
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
     title = models.CharField(max_length=255, default='Project Task')
@@ -951,6 +957,8 @@ class Task(models.Model):
     start_date = models.DateField(blank=True, null=True)
     due_date = models.DateField()
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Medium')
+    risk_level = models.CharField(max_length=20, choices=RISK_CHOICES, default='Low')
+    progress = models.IntegerField(default=0)
     status = models.ForeignKey('ProjectStatus', on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
     completed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -959,7 +967,31 @@ class Task(models.Model):
         db_table = 'tasks'
 
     def __str__(self):
-        return f"{self.description} ({'Completed' if self.completed else 'Pending'})"
+        return f"{self.title} - {self.description} ({'Completed' if self.completed else 'Pending'})"
+
+    @property
+    def calculated_progress(self):
+        total_todos = self.todos.count()
+        if total_todos > 0:
+            completed_todos = self.todos.filter(completed=True).count()
+            return int((completed_todos / total_todos) * 100)
+        if self.progress is not None and self.progress > 0:
+            return self.progress
+        return 100 if self.completed else 0
+
+
+class TaskTodo(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='todos')
+    title = models.CharField(max_length=255)
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'task_todos'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.title} ({'Completed' if self.completed else 'Pending'})"
 
 class Meeting(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='meetings')
