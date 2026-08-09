@@ -5,7 +5,7 @@ from .models import Event, UserProfile
 
 class EventForm(forms.ModelForm):
     start_time = forms.DateTimeField(
-        input_formats=['%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M'],
+        input_formats=['iso-8601', '%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ', '%Y-%m-%d %H:%M:%S'],
         widget=forms.DateTimeInput(
             format='%Y-%m-%dT%H:%M',
             attrs={
@@ -15,7 +15,7 @@ class EventForm(forms.ModelForm):
         )
     )
     end_time = forms.DateTimeField(
-        input_formats=['%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M'],
+        input_formats=['iso-8601', '%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M', '%Y-%m-%dT%H:%M:%S.%fZ', '%Y-%m-%dT%H:%M:%SZ', '%Y-%m-%d %H:%M:%S'],
         widget=forms.DateTimeInput(
             format='%Y-%m-%dT%H:%M',
             attrs={
