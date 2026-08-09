@@ -10,7 +10,7 @@ from django.db.models import Sum, Q
 from django.utils import timezone
 from django.core.paginator import Paginator
 from django.contrib import messages
-from .models import Organization, UserProfile, Lead, Activity, Task, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable, Campaign, ContentDropdownOption, SystemNotification
+from .models import Organization, UserProfile, Lead, Activity, Task, TaskTodo, Meeting, Event, LeadStatus, get_default_badge_class, StaffRole, Service, Ticket, Agreement, AgreementService, ClientResponsibility, Deliverable, Campaign, ContentDropdownOption, SystemNotification
 from .forms import EventForm, ProfileForm
 from .models import Income, Expense, FinancePaymentMethod, FinanceExpenseCategory, PartnerPayout, FinancePaymentStatus, FinanceCommissionType
 from .models import ClientStatus, ProjectStatus, CampaignStatus, CalendarStatus, TicketStatus, PriorityStatus, InvoiceStatus
@@ -1364,6 +1364,9 @@ def add_task(request):
         start_date = request.POST.get('start_date') or None
         due_date = request.POST.get('due_date')
         priority = request.POST.get('priority', 'Medium')
+        risk_level = request.POST.get('risk_level', 'Low')
+        prog_val = request.POST.get('progress')
+        progress = int(prog_val) if prog_val and prog_val.isdigit() else 0
         completed = request.POST.get('completed') == 'true' or request.POST.get('completed') == 'on'
         org = request.user.profile.organization
         
@@ -1388,6 +1391,8 @@ def add_task(request):
                 start_date=start_date,
                 due_date=due_date,
                 priority=priority,
+                risk_level=risk_level,
+                progress=progress,
                 status=status_obj,
                 completed=completed
             )
@@ -1445,6 +1450,13 @@ def edit_task(request, task_id):
             task.title = request.POST.get('title', 'Project Task')
             task.description = request.POST.get('description', '')
             task.priority = request.POST.get('priority', 'Medium')
+            if request.POST.get('risk_level'):
+                task.risk_level = request.POST.get('risk_level')
+            if 'progress' in request.POST and request.POST.get('progress') != '':
+                try:
+                    task.progress = int(request.POST.get('progress'))
+                except ValueError:
+                    pass
             task.completed = request.POST.get('completed') == 'true' or request.POST.get('completed') == 'on'
             
             status_id = request.POST.get('status_id')
@@ -1453,6 +1465,8 @@ def edit_task(request, task_id):
                     task.status = ProjectStatus.objects.get(id=status_id, organization=org)
                 except ProjectStatus.DoesNotExist:
                     pass
+            elif status_id == "":
+                task.status = None
             
             start_date_val = request.POST.get('start_date')
             task.start_date = start_date_val if start_date_val else None
@@ -1495,6 +1509,154 @@ def edit_task(request, task_id):
 
 
 @login_required
+def task_details_json(request, task_id):
+    org = request.user.profile.organization
+    task = get_object_or_404(Task, id=task_id)
+    if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+        return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+    todos = [
+        {
+            'id': t.id,
+            'title': t.title,
+            'completed': t.completed,
+        }
+        for t in task.todos.all()
+    ]
+
+    activities = []
+    if task.lead:
+        acts = Activity.objects.filter(lead=task.lead).order_by('-timestamp')[:10]
+    else:
+        acts = Activity.objects.filter(lead__isnull=True, type='Task').order_by('-timestamp')[:10]
+
+    for act in acts:
+        activities.append({
+            'description': act.description,
+            'timestamp': act.timestamp.strftime('%b %d at %I:%M %p') if act.timestamp else ''
+        })
+
+    client_name = (task.lead.company_name or task.lead.name) if task.lead else "In-house Project"
+
+    assignees_list = [
+        {
+            'id': a.id,
+            'name': a.user.get_full_name() or a.user.username,
+            'initials': (a.user.get_full_name() or a.user.username)[:2].upper()
+        }
+        for a in task.assignees.all()
+    ]
+
+    return JsonResponse({
+        'success': True,
+        'task': {
+            'id': task.id,
+            'title': task.title,
+            'description': task.description or '',
+            'priority': task.priority,
+            'risk_level': task.risk_level,
+            'progress': task.calculated_progress,
+            'due_date': task.due_date.strftime('%Y-%m-%d') if task.due_date else '',
+            'due_date_formatted': task.due_date.strftime('%b %d, %Y') if task.due_date else 'No Due Date',
+            'start_date': task.start_date.strftime('%Y-%m-%d') if task.start_date else '',
+            'status_name': task.status.name if task.status else ('Completed' if task.completed else 'In Progress'),
+            'status_id': task.status.id if task.status else '',
+            'completed': task.completed,
+            'client_name': client_name,
+            'lead_id': task.lead.id if task.lead else 'inhouse',
+            'assignees': assignees_list,
+            'todos': todos,
+            'activities': activities
+        }
+    })
+
+
+@login_required
+def add_task_todo(request, task_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        task = get_object_or_404(Task, id=task_id)
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+        title = request.POST.get('title', '').strip()
+        if not title:
+            return JsonResponse({'success': False, 'error': 'Title is required.'})
+
+        todo = TaskTodo.objects.create(task=task, title=title)
+        
+        # Log activity
+        Activity.objects.create(
+            lead=task.lead,
+            type='Task',
+            description=f"Added todo item '{title}' to task '{task.title}'"
+        )
+
+        return JsonResponse({
+            'success': True,
+            'todo': {
+                'id': todo.id,
+                'title': todo.title,
+                'completed': todo.completed
+            },
+            'progress': task.calculated_progress,
+            'total_todos': task.todos.count(),
+            'completed_todos': task.todos.filter(completed=True).count()
+        })
+    return JsonResponse({'success': False, 'error': 'Invalid method.'})
+
+
+@login_required
+def toggle_task_todo(request, todo_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        todo = get_object_or_404(TaskTodo, id=todo_id)
+        task = todo.task
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+        todo.completed = not todo.completed
+        todo.save()
+
+        calc_prog = task.calculated_progress
+        if calc_prog == 100 and not task.completed:
+            task.completed = True
+            task.save()
+        elif calc_prog < 100 and task.completed:
+            task.completed = False
+            task.save()
+
+        return JsonResponse({
+            'success': True,
+            'completed': todo.completed,
+            'progress': calc_prog,
+            'total_todos': task.todos.count(),
+            'completed_todos': task.todos.filter(completed=True).count()
+        })
+    return JsonResponse({'success': False, 'error': 'Invalid method.'})
+
+
+@login_required
+def delete_task_todo(request, todo_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        todo = get_object_or_404(TaskTodo, id=todo_id)
+        task = todo.task
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+        todo.delete()
+
+        return JsonResponse({
+            'success': True,
+            'progress': task.calculated_progress,
+            'total_todos': task.todos.count(),
+            'completed_todos': task.todos.filter(completed=True).count()
+        })
+    return JsonResponse({'success': False, 'error': 'Invalid method.'})
+
+
+@login_required
 def delete_task(request, task_id):
     if request.method == 'POST':
         org = request.user.profile.organization
@@ -1525,9 +1687,9 @@ def complete_task(request):
             Activity.objects.create(
                 lead=task.lead,
                 type='Task',
-                description=f"Marked task '{task.description}' as {status_text}."
+                description=f"Marked task '{task.title}' as {status_text}."
             )
-            return JsonResponse({'success': True, 'completed': task.completed})
+            return JsonResponse({'success': True, 'completed': task.completed, 'progress': task.calculated_progress})
         except Task.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Task not found.'})
         except Exception as e:
