@@ -33,7 +33,12 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">Password</label>
-                    <input type="password" name="password" required placeholder="Enter password" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white transition-all"/>
+                    <div class="relative flex items-center">
+                        <input type="password" id="loginPasswordInput" name="password" required placeholder="Enter password" class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-4 pr-11 py-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 focus:bg-white transition-all"/>
+                        <button type="button" onclick="togglePasswordVisibility()" class="absolute right-3 text-slate-400 hover:text-slate-600 focus:outline-none p-1 flex items-center justify-center transition-colors" title="Toggle password visibility">
+                            <i data-lucide="eye" id="togglePasswordIcon" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -62,5 +67,20 @@
     document.addEventListener('DOMContentLoaded', () => {
         if (window.lucide) lucide.createIcons();
     });
+
+    function togglePasswordVisibility() {
+        const passwordInput = document.getElementById('loginPasswordInput');
+        const icon = document.getElementById('togglePasswordIcon');
+        if (!passwordInput || !icon) return;
+
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+            passwordInput.type = 'password';
+            icon.setAttribute('data-lucide', 'eye');
+        }
+        if (window.lucide) lucide.createIcons();
+    }
 </script>
 {% endblock %}

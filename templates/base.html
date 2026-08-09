@@ -250,7 +250,7 @@
             </a>
             {% endif %}
 
-            {% if request.user.profile.has_access_leads %}
+            {% if request.user.profile.has_access_leads or request.user.profile.has_access_leads_settings or request.user.profile.has_access_lead_statuses %}
             <!-- Leads Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" id="leads-dropdown-btn" onclick="toggleSidebarDropdown('leads')"
@@ -262,19 +262,23 @@
                     <i data-lucide="chevron-down" id="leads-arrow" class="sidebar-arrow w-3.5 h-3.5 text-slate-400 transition-transform duration-200"></i>
                 </button>
                 <div id="leads-dropdown-menu" class="pl-8 space-y-1 hidden">
+                    {% if request.user.profile.has_access_leads %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'leads' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'leads' %}">
                         <span>Overview & List</span>
                     </a>
+                    {% endif %}
+                    {% if request.user.profile.has_access_leads_settings or request.user.profile.has_access_lead_statuses %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'lead_statuses' and request.GET.tab == 'leads' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'lead_status_settings' %}?tab=leads">
                         <span>Lead Status Settings</span>
                     </a>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
 
-            {% if request.user.profile.has_access_clients %}
+            {% if request.user.profile.has_access_clients or request.user.profile.has_access_clients_status %}
             <!-- Clients Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" id="clients-dropdown-btn" onclick="toggleSidebarDropdown('clients')"
@@ -286,19 +290,23 @@
                     <i data-lucide="chevron-down" id="clients-arrow" class="sidebar-arrow w-3.5 h-3.5 text-slate-400 transition-transform duration-200"></i>
                 </button>
                 <div id="clients-dropdown-menu" class="pl-8 space-y-1 hidden">
+                    {% if request.user.profile.has_access_clients %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'clients' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'clients' %}">
                         <span>All Clients</span>
                     </a>
+                    {% endif %}
+                    {% if request.user.profile.has_access_clients_status %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'client_status_settings' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'client_status_settings' %}">
                         <span>Client Settings</span>
                     </a>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
 
-            {% if request.user.profile.has_access_projects %}
+            {% if request.user.profile.has_access_projects or request.user.profile.has_access_projects_status %}
             <!-- Projects Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" id="projects-dropdown-btn" onclick="toggleSidebarDropdown('projects')"
@@ -310,6 +318,7 @@
                     <i data-lucide="chevron-down" id="projects-arrow" class="sidebar-arrow w-3.5 h-3.5 text-slate-400 transition-transform duration-200"></i>
                 </button>
                 <div id="projects-dropdown-menu" class="pl-8 space-y-1 hidden">
+                    {% if request.user.profile.has_access_projects %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'projects' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'projects' %}">
                         <span>Overview</span>
@@ -342,15 +351,18 @@
                         href="{% url 'project_reports' %}">
                         <span>Project Analytics</span>
                     </a>
+                    {% endif %}
+                    {% if request.user.profile.has_access_projects_status %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'project_status_settings' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'project_status_settings' %}">
                         <span>Status Settings</span>
                     </a>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
 
-            {% if request.user.profile.has_access_finance %}
+            {% if request.user.profile.has_access_finance or request.user.profile.has_access_finance_dashboard or request.user.profile.has_access_finance_invoices or request.user.profile.has_access_finance_income or request.user.profile.has_access_finance_expenses or request.user.profile.has_access_finance_reports or request.user.profile.has_access_partner_payouts or request.user.profile.has_access_finance_settings or request.user.profile.has_access_finance_status %}
             <!-- Finance Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" id="finance-dropdown-btn" onclick="toggleSidebarDropdown('finance')"
@@ -398,7 +410,7 @@
                         <span>Partner Payouts</span>
                     </a>
                     {% endif %}
-                    {% if request.user.profile.has_access_finance_settings %}
+                    {% if request.user.profile.has_access_finance_settings or request.user.profile.has_access_finance_status %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'finance_settings' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'finance_settings' %}">
                         <span>Finance Settings</span>
@@ -408,7 +420,7 @@
             </div>
             {% endif %}
 
-            {% if request.user.profile.has_access_hr %}
+            {% if request.user.profile.has_access_hr or request.user.profile.has_access_hr_dashboard or request.user.profile.has_access_staff or request.user.profile.has_access_hr_attendance or request.user.profile.has_access_hr_leaves or request.user.profile.has_access_hr_payroll or request.user.profile.has_access_hr_settings %}
             <!-- HR Accordion -->
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" id="hr-dropdown-btn" onclick="toggleSidebarDropdown('hr')"
@@ -426,7 +438,7 @@
                         <span>Overview</span>
                     </a>
                     {% endif %}
-                    {% if request.user.profile.has_access_staff %}
+                    {% if request.user.profile.has_access_staff or request.user.profile.has_access_hr_employees %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'staff' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'staff' %}">
                         <span>Employees</span>
@@ -460,7 +472,7 @@
             </div>
             {% endif %}
 
-            {% if request.user.profile.has_access_calendar %}
+            {% if request.user.profile.has_access_calendar or request.user.profile.has_access_calendar_status %}
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" id="calendar-dropdown-btn" onclick="toggleSidebarDropdown('calendar')"
                     class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all {% if request.resolver_match.url_name == 'calendar' or request.resolver_match.url_name == 'calendar_status_settings' %}bg-brand-50 text-brand-600 font-bold{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
@@ -471,19 +483,23 @@
                     <i data-lucide="chevron-down" id="calendar-arrow" class="sidebar-arrow w-3.5 h-3.5 text-slate-400 transition-transform duration-200"></i>
                 </button>
                 <div id="calendar-dropdown-menu" class="pl-8 space-y-1 hidden">
+                    {% if request.user.profile.has_access_calendar %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'calendar' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'calendar' %}">
                         <span>Schedule</span>
                     </a>
+                    {% endif %}
+                    {% if request.user.profile.has_access_calendar_status %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'calendar_status_settings' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'calendar_status_settings' %}">
                         <span>Calendar Settings</span>
                     </a>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
 
-            {% if request.user.profile.has_access_support %}
+            {% if request.user.profile.has_access_support or request.user.profile.has_access_support_status %}
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" id="support-dropdown-btn" onclick="toggleSidebarDropdown('support')"
                     class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all {% if request.resolver_match.url_name == 'customer_support' or request.resolver_match.url_name == 'ticket_status_settings' %}bg-brand-50 text-brand-600 font-bold{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
@@ -494,14 +510,18 @@
                     <i data-lucide="chevron-down" id="support-arrow" class="sidebar-arrow w-3.5 h-3.5 text-slate-400 transition-transform duration-200"></i>
                 </button>
                 <div id="support-dropdown-menu" class="pl-8 space-y-1 hidden">
+                    {% if request.user.profile.has_access_support %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'customer_support' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'customer_support' %}">
                         <span>Tickets</span>
                     </a>
+                    {% endif %}
+                    {% if request.user.profile.has_access_support_status %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'ticket_status_settings' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'ticket_status_settings' %}">
                         <span>Ticket Status</span>
                     </a>
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
@@ -514,7 +534,7 @@
             </a>
             {% endif %}
 
-            {% if request.user.profile.has_access_campaigns %}
+            {% if request.user.profile.has_access_campaigns or request.user.profile.has_access_campaign or request.user.profile.has_access_post_management or request.user.profile.has_access_campaigns_status or request.user.profile.has_access_campaign_status_settings %}
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" id="campaigns-dropdown-btn" onclick="toggleSidebarDropdown('campaigns')"
                     class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all {% if request.resolver_match.url_name == 'campaign' or request.resolver_match.url_name == 'post_management' %}bg-brand-50 text-brand-600 font-bold{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
@@ -525,7 +545,7 @@
                     <i data-lucide="chevron-down" id="campaigns-arrow" class="sidebar-arrow w-3.5 h-3.5 text-slate-400 transition-transform duration-200"></i>
                 </button>
                 <div id="campaigns-dropdown-menu" class="pl-8 space-y-1 hidden">
-                    {% if request.user.profile.has_access_campaign %}
+                    {% if request.user.profile.has_access_campaign or request.user.profile.has_access_campaigns %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'campaign' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'campaign' %}">
                         <span>Overview</span>
@@ -537,7 +557,7 @@
                         <span>Posts Management</span>
                     </a>
                     {% endif %}
-                    {% if request.user.profile.has_access_campaign_status_settings %}
+                    {% if request.user.profile.has_access_campaigns_status or request.user.profile.has_access_campaign_status_settings %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'campaign_status_settings' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'campaign_status_settings' %}">
                         <span>Campaign Settings</span>
@@ -547,7 +567,7 @@
             </div>
             {% endif %}
 
-            {% if request.user.profile.has_access_cms %}
+            {% if request.user.profile.has_access_cms or request.user.profile.has_access_content_tracker or request.user.profile.has_access_editor_dashboard or request.user.profile.has_access_editor_board or request.user.profile.has_access_content_settings or request.user.profile.has_access_cms_settings %}
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" id="content-dropdown-btn" onclick="toggleSidebarDropdown('content')"
                     class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all {% if 'content' in request.resolver_match.url_name or 'editor' in request.resolver_match.url_name %}bg-brand-50 text-brand-600 font-bold{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
@@ -576,7 +596,7 @@
                         <span>Editor Board</span>
                     </a>
                     {% endif %}
-                    {% if request.user.profile.has_access_content_settings %}
+                    {% if request.user.profile.has_access_content_settings or request.user.profile.has_access_cms_settings %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'content_settings' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'content_settings' %}">
                         <span>CMS Settings</span>
