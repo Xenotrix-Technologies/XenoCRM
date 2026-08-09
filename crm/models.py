@@ -961,6 +961,7 @@ class Task(models.Model):
     progress = models.IntegerField(default=0)
     status = models.ForeignKey('ProjectStatus', on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
     completed = models.BooleanField(default=False)
+    is_starred = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

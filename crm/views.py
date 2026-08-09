@@ -1707,6 +1707,25 @@ def move_task_status(request, task_id):
 
 
 @login_required
+def toggle_task_star(request, task_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        task = get_object_or_404(Task, id=task_id)
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+        task.is_starred = not task.is_starred
+        task.save()
+
+        return JsonResponse({
+            'success': True,
+            'task_id': task.id,
+            'is_starred': task.is_starred
+        })
+    return JsonResponse({'success': False, 'error': 'Invalid request.'})
+
+
+@login_required
 def delete_task(request, task_id):
     if request.method == 'POST':
         org = request.user.profile.organization

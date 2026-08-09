@@ -35,6 +35,7 @@ urlpatterns = [
     path('task/<int:task_id>/delete/', views.delete_task, name='delete_task'),
     path('task/<int:task_id>/details/', views.task_details_json, name='task_details_json'),
     path('task/<int:task_id>/move-status/', views.move_task_status, name='move_task_status'),
+    path('task/<int:task_id>/toggle-star/', views.toggle_task_star, name='toggle_task_star'),
     path('task/<int:task_id>/todo/add/', views.add_task_todo, name='add_task_todo'),
     path('task/todo/<int:todo_id>/toggle/', views.toggle_task_todo, name='toggle_task_todo'),
     path('task/todo/<int:todo_id>/delete/', views.delete_task_todo, name='delete_task_todo'),
