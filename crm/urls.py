@@ -38,7 +38,12 @@ urlpatterns = [
     path('task/<int:task_id>/toggle-star/', views.toggle_task_star, name='toggle_task_star'),
     path('task/<int:task_id>/todo/add/', views.add_task_todo, name='add_task_todo'),
     path('task/todo/<int:todo_id>/toggle/', views.toggle_task_todo, name='toggle_task_todo'),
-    path('task/todo/<int:todo_id>/delete/', views.delete_task_todo, name='delete_task_todo'),
+    path('projects/import/', views.import_projects, name='import_projects'),
+    path('task/<int:task_id>/file/upload/', views.upload_task_file, name='upload_task_file'),
+    path('task/file/<int:file_id>/delete/', views.delete_task_file, name='delete_task_file'),
+    path('task/<int:task_id>/milestone/add/', views.add_task_milestone, name='add_task_milestone'),
+    path('task/milestone/<int:milestone_id>/toggle/', views.toggle_task_milestone, name='toggle_task_milestone'),
+    path('task/milestone/<int:milestone_id>/delete/', views.delete_task_milestone, name='delete_task_milestone'),
     path('activity/log/', views.log_activity, name='log_activity'),
     path('lead/quick-create/', views.quick_create_lead, name='quick_create_lead'),
 
