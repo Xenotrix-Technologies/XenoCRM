@@ -1657,6 +1657,56 @@ def delete_task_todo(request, todo_id):
 
 
 @login_required
+def move_task_status(request, task_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        task = get_object_or_404(Task, id=task_id)
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+        status_val = request.POST.get('status') or request.POST.get('status_id')
+        if not status_val:
+            return JsonResponse({'success': False, 'error': 'No status provided.'})
+
+        if status_val in ['Completed', 'complete', 'complete_toggle']:
+            task.completed = True
+            comp_status = ProjectStatus.objects.filter(organization=org, name__iexact='Completed').first()
+            if comp_status:
+                task.status = comp_status
+        else:
+            status_obj = None
+            if str(status_val).isdigit():
+                status_obj = ProjectStatus.objects.filter(id=int(status_val), organization=org).first()
+            if not status_obj:
+                status_obj = ProjectStatus.objects.filter(organization=org, name__iexact=status_val).first()
+            
+            if status_obj:
+                task.status = status_obj
+                task.completed = (status_obj.name.lower() == 'completed')
+            else:
+                task.completed = (str(status_val).lower() == 'completed')
+
+        task.save()
+
+        status_name = task.status.name if task.status else ("Completed" if task.completed else "In Progress")
+        
+        # Log activity
+        Activity.objects.create(
+            lead=task.lead,
+            type='Task',
+            description=f"Moved task '{task.title}' to status: {status_name}"
+        )
+
+        return JsonResponse({
+            'success': True,
+            'task_id': task.id,
+            'new_status': status_name,
+            'completed': task.completed
+        })
+    return JsonResponse({'success': False, 'error': 'Invalid request.'})
+
+
+@login_required
 def delete_task(request, task_id):
     if request.method == 'POST':
         org = request.user.profile.organization

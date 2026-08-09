@@ -417,50 +417,122 @@
 
         <!-- TAB 2: KANBAN BOARD VIEW -->
         <div id="view-board" class="hidden space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-x-auto pb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto pb-4">
                 
-                <!-- Column 1: Backlog -->
+                <!-- Column 1: Backlog & Todo -->
                 <div class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px]">
-                    <div class="flex items-center justify-between px-1">
+                    <div class="flex items-center justify-between px-1 border-b border-slate-200/60 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
-                            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Backlog</h4>
-                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200">2</span>
+                            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Backlog & Todo</h4>
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200">{{ backlog_tasks|length|add:todo_tasks|length }}</span>
                         </div>
                         <button onclick="openWizardModal()" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="plus" class="w-4 h-4"></i></button>
                     </div>
 
-                    <!-- Sample Board Card -->
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-2.5" onclick="openDrawer('sample-1', 'API Architecture Spec', 'Design REST and GraphQL specs for XenoCRM v2', 'High', 'Backlog', 'Nov 12', 'In-house')">
+                    {% for task in backlog_tasks %}
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-2.5"
+                         onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full badge-high">High</span>
-                            <span class="text-[10px] text-slate-400 font-mono">#PRJ-102</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% elif task.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
+                                {{ task.priority }}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-mono">#PRJ-{{ task.id }}</span>
                         </div>
-                        <h5 class="text-xs font-bold text-slate-900">API Architecture Specs</h5>
-                        <p class="text-[11px] text-slate-500 line-clamp-2">Design REST and GraphQL endpoints for external developer sandbox integrations.</p>
-                        <div class="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-100 pt-2">
-                            <div class="flex items-center gap-1"><i data-lucide="check-square" class="w-3 h-3"></i><span>2/5</span></div>
-                            <div class="w-5 h-5 rounded-full bg-blue-600 text-white text-[9px] font-bold flex items-center justify-center">JD</div>
+                        <h5 class="text-xs font-bold text-slate-900 line-clamp-1">{{ task.title }}</h5>
+                        <p class="text-[11px] text-slate-500 line-clamp-2">{{ task.description|default:"Backlog initiative task." }}</p>
+                        
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-blue-600 h-full rounded-full" style="width: {{ task.calculated_progress }}%;"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                            <div class="flex items-center gap-1 text-slate-600 font-semibold"><i data-lucide="calendar" class="w-3 h-3 text-blue-500"></i><span>{{ task.due_date|date:"M d" }}</span></div>
+                            <span class="font-bold text-blue-600">{{ task.calculated_progress }}%</span>
+                        </div>
+
+                        <!-- Move Status Control -->
+                        <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1" onclick="event.stopPropagation();">
+                            <span class="text-[10px] font-semibold text-slate-400">Move status:</span>
+                            <select onchange="moveTaskStatus('{{ task.id }}', this.value, event)" class="text-[10px] font-semibold px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer outline-none transition-all">
+                                <option value="" disabled selected>Move to...</option>
+                                <option value="Backlog" disabled>Backlog</option>
+                                <option value="Todo">Todo</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Review">Review & QA</option>
+                                <option value="Completed">Completed</option>
+                                {% for ps in project_statuses %}
+                                {% if ps.name not in "Backlog,Todo,In Progress,Review,Completed" %}
+                                <option value="{{ ps.id }}">{{ ps.name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
+                    {% endfor %}
+
+                    {% for task in todo_tasks %}
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-2.5"
+                         onclick="openDrawer('{{ task.id }}')">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% elif task.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
+                                {{ task.priority }}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-mono">#PRJ-{{ task.id }}</span>
+                        </div>
+                        <h5 class="text-xs font-bold text-slate-900 line-clamp-1">{{ task.title }}</h5>
+                        <p class="text-[11px] text-slate-500 line-clamp-2">{{ task.description|default:"Todo initiative task." }}</p>
+                        
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-blue-600 h-full rounded-full" style="width: {{ task.calculated_progress }}%;"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                            <div class="flex items-center gap-1 text-slate-600 font-semibold"><i data-lucide="calendar" class="w-3 h-3 text-blue-500"></i><span>{{ task.due_date|date:"M d" }}</span></div>
+                            <span class="font-bold text-blue-600">{{ task.calculated_progress }}%</span>
+                        </div>
+
+                        <!-- Move Status Control -->
+                        <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1" onclick="event.stopPropagation();">
+                            <span class="text-[10px] font-semibold text-slate-400">Move status:</span>
+                            <select onchange="moveTaskStatus('{{ task.id }}', this.value, event)" class="text-[10px] font-semibold px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer outline-none transition-all">
+                                <option value="" disabled selected>Move to...</option>
+                                <option value="Backlog">Backlog</option>
+                                <option value="Todo" disabled>Todo</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Review">Review & QA</option>
+                                <option value="Completed">Completed</option>
+                                {% for ps in project_statuses %}
+                                {% if ps.name not in "Backlog,Todo,In Progress,Review,Completed" %}
+                                <option value="{{ ps.id }}">{{ ps.name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% if not backlog_tasks and not todo_tasks %}
+                    <div class="p-6 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 italic">No tasks in backlog</div>
+                    {% endif %}
                 </div>
 
                 <!-- Column 2: In Progress -->
                 <div class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px]">
-                    <div class="flex items-center justify-between px-1">
+                    <div class="flex items-center justify-between px-1 border-b border-slate-200/60 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
                             <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">In Progress</h4>
-                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200">{{ tasks|length }}</span>
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200">{{ in_progress_tasks|length }}</span>
                         </div>
                         <button onclick="openWizardModal()" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="plus" class="w-4 h-4"></i></button>
                     </div>
 
-                    {% for task in tasks %}
+                    {% for task in in_progress_tasks %}
                     <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-2.5"
-                         onclick="openDrawer('{{ task.id }}', '{{ task.title|escapejs }}', '{{ task.description|default:''|escapejs }}', '{{ task.priority }}', 'In Progress', '{{ task.due_date|date:'M d' }}', '{% if task.lead %}{{ task.lead.name }}{% else %}In-house{% endif %}')">
+                         onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% else %}badge-medium{% endif %}">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% elif task.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
                                 {{ task.priority }}
                             </span>
                             <span class="text-[10px] text-slate-400 font-mono">#PRJ-{{ task.id }}</span>
@@ -468,69 +540,139 @@
                         <h5 class="text-xs font-bold text-slate-900 line-clamp-1">{{ task.title }}</h5>
                         <p class="text-[11px] text-slate-500 line-clamp-2">{{ task.description|default:"Active project initiative task." }}</p>
                         
-                        <!-- Progress Bar -->
                         <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                            <div class="bg-blue-600 h-full rounded-full" style="width: 60%;"></div>
+                            <div class="bg-blue-600 h-full rounded-full" style="width: {{ task.calculated_progress }}%;"></div>
                         </div>
 
-                        <div class="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-100 pt-2">
+                        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
                             <div class="flex items-center gap-1 text-slate-600 font-semibold"><i data-lucide="calendar" class="w-3 h-3 text-blue-500"></i><span>{{ task.due_date|date:"M d" }}</span></div>
-                            <div class="w-5 h-5 rounded-full bg-indigo-600 text-white text-[9px] font-bold flex items-center justify-center">
-                                {{ task.title|slice:":1"|upper }}
-                            </div>
+                            <span class="font-bold text-blue-600">{{ task.calculated_progress }}%</span>
+                        </div>
+
+                        <!-- Move Status Control -->
+                        <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1" onclick="event.stopPropagation();">
+                            <span class="text-[10px] font-semibold text-slate-400">Move status:</span>
+                            <select onchange="moveTaskStatus('{{ task.id }}', this.value, event)" class="text-[10px] font-semibold px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer outline-none transition-all">
+                                <option value="" disabled selected>Move to...</option>
+                                <option value="Backlog">Backlog</option>
+                                <option value="Todo">Todo</option>
+                                <option value="In Progress" disabled>In Progress</option>
+                                <option value="Review">Review & QA</option>
+                                <option value="Completed">Completed</option>
+                                {% for ps in project_statuses %}
+                                {% if ps.name not in "Backlog,Todo,In Progress,Review,Completed" %}
+                                <option value="{{ ps.id }}">{{ ps.name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
+                    {% empty %}
+                    <div class="p-6 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 italic">No tasks in progress</div>
                     {% endfor %}
                 </div>
 
                 <!-- Column 3: Review / Testing -->
                 <div class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px]">
-                    <div class="flex items-center justify-between px-1">
+                    <div class="flex items-center justify-between px-1 border-b border-slate-200/60 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
                             <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Review & QA</h4>
-                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200">1</span>
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200">{{ review_tasks|length }}</span>
                         </div>
                         <button onclick="openWizardModal()" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="plus" class="w-4 h-4"></i></button>
                     </div>
 
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-2.5">
+                    {% for task in review_tasks %}
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-pointer space-y-2.5"
+                         onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
-                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full badge-medium">Medium</span>
-                            <span class="text-[10px] text-slate-400 font-mono">#PRJ-88</span>
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% elif task.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
+                                {{ task.priority }}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-mono">#PRJ-{{ task.id }}</span>
                         </div>
-                        <h5 class="text-xs font-bold text-slate-900">Security Audit & Encryption</h5>
-                        <p class="text-[11px] text-slate-500 line-clamp-2">Penetration testing and SOC2 compliance validation for multi-tenant database views.</p>
-                        <div class="flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-100 pt-2">
-                            <div class="flex items-center gap-1 text-emerald-600 font-medium"><i data-lucide="shield-check" class="w-3 h-3"></i><span>Passed QA</span></div>
-                            <div class="w-5 h-5 rounded-full bg-emerald-600 text-white text-[9px] font-bold flex items-center justify-center">SA</div>
+                        <h5 class="text-xs font-bold text-slate-900 line-clamp-1">{{ task.title }}</h5>
+                        <p class="text-[11px] text-slate-500 line-clamp-2">{{ task.description|default:"Review task." }}</p>
+                        
+                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                            <div class="bg-purple-600 h-full rounded-full" style="width: {{ task.calculated_progress }}%;"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-1">
+                            <div class="flex items-center gap-1 text-slate-600 font-semibold"><i data-lucide="calendar" class="w-3 h-3 text-blue-500"></i><span>{{ task.due_date|date:"M d" }}</span></div>
+                            <span class="font-bold text-purple-600">{{ task.calculated_progress }}%</span>
+                        </div>
+
+                        <!-- Move Status Control -->
+                        <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1" onclick="event.stopPropagation();">
+                            <span class="text-[10px] font-semibold text-slate-400">Move status:</span>
+                            <select onchange="moveTaskStatus('{{ task.id }}', this.value, event)" class="text-[10px] font-semibold px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer outline-none transition-all">
+                                <option value="" disabled selected>Move to...</option>
+                                <option value="Backlog">Backlog</option>
+                                <option value="Todo">Todo</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Review" disabled>Review & QA</option>
+                                <option value="Completed">Completed</option>
+                                {% for ps in project_statuses %}
+                                {% if ps.name not in "Backlog,Todo,In Progress,Review,Completed" %}
+                                <option value="{{ ps.id }}">{{ ps.name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
+                    {% empty %}
+                    <div class="p-6 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 italic">No tasks in review</div>
+                    {% endfor %}
                 </div>
 
                 <!-- Column 4: Completed -->
                 <div class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px]">
-                    <div class="flex items-center justify-between px-1">
+                    <div class="flex items-center justify-between px-1 border-b border-slate-200/60 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                             <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider">Completed</h4>
-                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200">3</span>
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-white text-slate-600 border border-slate-200">{{ completed_tasks|length }}</span>
                         </div>
                         <button onclick="openWizardModal()" class="text-slate-400 hover:text-slate-700 p-1"><i data-lucide="plus" class="w-4 h-4"></i></button>
                     </div>
 
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm opacity-80 hover:opacity-100 transition-all cursor-pointer space-y-2.5">
+                    {% for task in completed_tasks %}
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm opacity-90 hover:opacity-100 transition-all cursor-pointer space-y-2.5"
+                         onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full badge-low">Completed</span>
-                            <span class="text-[10px] text-slate-400 font-mono">#PRJ-01</span>
+                            <span class="text-[10px] text-slate-400 font-mono">#PRJ-{{ task.id }}</span>
                         </div>
-                        <h5 class="text-xs font-bold text-slate-900 line-through">UI Design Token System</h5>
-                        <p class="text-[11px] text-slate-400 line-clamp-2">Standardized Tailwind CSS token palettes for dark & light dashboard themes.</p>
-                        <div class="flex items-center justify-between text-[11px] text-emerald-600 border-t border-slate-100 pt-2 font-medium">
-                            <div class="flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i><span>100% Done</span></div>
-                            <div class="w-5 h-5 rounded-full bg-slate-500 text-white text-[9px] font-bold flex items-center justify-center">AB</div>
+                        <h5 class="text-xs font-bold text-slate-900 line-through">{{ task.title }}</h5>
+                        <p class="text-[11px] text-slate-400 line-clamp-2">{{ task.description|default:"Completed task initiative." }}</p>
+                        
+                        <div class="flex items-center justify-between text-[11px] text-emerald-600 pt-1 font-medium">
+                            <div class="flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>100% Done</span></div>
+                        </div>
+
+                        <!-- Move Status Control -->
+                        <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1" onclick="event.stopPropagation();">
+                            <span class="text-[10px] font-semibold text-slate-400">Move status:</span>
+                            <select onchange="moveTaskStatus('{{ task.id }}', this.value, event)" class="text-[10px] font-semibold px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer outline-none transition-all">
+                                <option value="" disabled selected>Move to...</option>
+                                <option value="Backlog">Backlog</option>
+                                <option value="Todo">Todo</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Review">Review & QA</option>
+                                <option value="Completed" disabled>Completed</option>
+                                {% for ps in project_statuses %}
+                                {% if ps.name not in "Backlog,Todo,In Progress,Review,Completed" %}
+                                <option value="{{ ps.id }}">{{ ps.name }}</option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
+                    {% empty %}
+                    <div class="p-6 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 italic">No completed tasks yet</div>
+                    {% endfor %}
                 </div>
 
             </div>
@@ -1463,6 +1605,31 @@
 
     function closeEditModal() {
         document.getElementById('edit-task-modal').classList.add('hidden');
+    }
+
+    function moveTaskStatus(taskId, statusValue, event) {
+        if (event) event.stopPropagation();
+        if (!statusValue) return;
+
+        const formData = new FormData();
+        formData.append('status', statusValue);
+
+        fetch(`/task/${taskId}/move-status/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to update task status.');
+            }
+        })
+        .catch(err => console.error(err));
     }
 
     // Bulk selection table logic
