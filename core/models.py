@@ -123,9 +123,9 @@ class UserProfile(models.Model):
         if 'admin' in role_lower:
             return True
         elif 'manager' in role_lower:
-            return page_name not in ['settings', 'staff'] and page_name not in self.SETTINGS_SUBPAGES and page_name != 'content_tracker'
+            return page_name not in ['role_permissions', 'notification_settings']
         else:
-            return page_name in ['dashboard', 'leads', 'calendar', 'clients', 'support']
+            return page_name in ['dashboard', 'leads', 'calendar', 'clients', 'support', 'projects', 'hr', 'finance', 'agreements', 'campaigns', 'cms', 'staff', 'services']
 
     @property
     def has_access_dashboard(self):
