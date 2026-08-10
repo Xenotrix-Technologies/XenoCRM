@@ -23,6 +23,12 @@
 }
 
 /* Base Body Styles */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
 body {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: #f8fafc;
@@ -39,9 +45,15 @@ body {
   box-sizing: border-box !important;
 }
 
+@media (max-width: 1024px) {
+  .p-margin-edge {
+    padding: 1.25rem 1.5rem 2rem 1.5rem !important;
+  }
+}
+
 @media (max-width: 640px) {
   .p-margin-edge {
-    padding: 1rem !important;
+    padding: 1rem 0.875rem 1.5rem 0.875rem !important;
   }
 }
 
