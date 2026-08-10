@@ -547,6 +547,15 @@ Innovative For Future`;
             content: `Hi ${leadNameVal},\n\nWe would love to schedule a brief 15-minute call to demonstrate how Xenotrix Technologies can add value to ${leadCompanyVal}.\n\nPlease let us know what time slot works best for you this week.\n\nOfficial Website: https://xenotrix.in\nDirect Helpline: +91 9995544316\n\nBest regards,\n${salesExecVal}`
         },
         {
+            id: 'meeting_scheduled',
+            name: '📅 Website Dev & Digital Marketing Meeting',
+            category: 'Meeting',
+            isDefault: false,
+            isFavorite: true,
+            updated: 'Just now',
+            content: `Dear ${leadNameVal},\nThis is ${salesExecVal} from Xenotrix Technologies.\n\nAs discussed, our meeting has been scheduled to discuss your website development requirements and how we can help improve your online presence with our Digital Marketing.\n\n📅 Date: [Date]\n⏰ Time: [Time]\n\nLooking forward to speaking with you and discussing the project.\n\nThank you,\n${salesExecVal}\nXenotrix Technologies`
+        },
+        {
             id: 'proposal',
             name: '📄 Proposal Overview & Pricing',
             category: 'Sales',
@@ -605,7 +614,7 @@ Innovative For Future`;
 
         let filtered = whatsappTemplatesList.filter(t => {
             if (currentFilter === 'favorites' && !t.isFavorite) return false;
-            if (currentFilter === 'recent' && t.id !== 'greetings' && t.id !== 'followup') return false;
+            if (currentFilter === 'recent' && t.id !== 'greetings' && t.id !== 'followup' && t.id !== 'meeting_scheduled') return false;
             if (searchVal) {
                 return t.name.toLowerCase().includes(searchVal) || 
                        t.category.toLowerCase().includes(searchVal) || 
