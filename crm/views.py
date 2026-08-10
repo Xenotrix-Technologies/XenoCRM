@@ -491,6 +491,10 @@ def projects_view(request):
         type='Task'
     ).order_by('-timestamp')[:20]
     
+    all_project_files = TaskFile.objects.filter(
+        Q(task__lead__organization=org) | Q(task__organization=org)
+    ).select_related('task', 'uploaded_by').order_by('-uploaded_at')
+
     active_tab = request.GET.get('tab', 'overview')
 
     return render(request, 'projects.html', {
@@ -509,6 +513,7 @@ def projects_view(request):
         'review_tasks': review_tasks,
         'completed_tasks': completed_tasks,
         'task_activities': task_activities,
+        'all_project_files': all_project_files,
         'active_tab': active_tab,
         'search_q': q,
         'active_filter_count': active_filter_count,
@@ -1617,6 +1622,17 @@ def task_details_json(request, task_id):
         for a in task.assignees.all()
     ]
 
+    files_list = [
+        {
+            'id': f.id,
+            'filename': f.filename,
+            'url': f.file.url if f.file else '#',
+            'file_size': f.file_size or 'Unknown size',
+            'uploaded_at': f.uploaded_at.strftime('%b %d, %Y') if f.uploaded_at else ''
+        }
+        for f in task.files.all().order_by('-uploaded_at')
+    ]
+
     return JsonResponse({
         'success': True,
         'task': {
@@ -1636,6 +1652,7 @@ def task_details_json(request, task_id):
             'lead_id': task.lead.id if task.lead else 'inhouse',
             'assignees': assignees_list,
             'todos': todos,
+            'files': files_list,
             'activities': activities
         }
     })
