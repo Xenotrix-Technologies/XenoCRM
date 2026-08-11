@@ -1747,6 +1747,82 @@ def delete_task_todo(request, todo_id):
 
 
 @login_required
+def get_task_comments(request, task_id):
+    org = request.user.profile.organization
+    task = get_object_or_404(Task, id=task_id)
+    if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+        return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+    comments_data = []
+    for c in task.comments.all().order_by('created_at'):
+        user_name = c.user.get_full_name() or c.user.username
+        initials = (user_name[:2]).upper()
+        comments_data.append({
+            'id': c.id,
+            'user_name': user_name,
+            'initials': initials,
+            'is_me': (c.user == request.user),
+            'message': c.message,
+            'timestamp': c.created_at.strftime('%b %d, %I:%M %p') if c.created_at else ''
+        })
+
+    assignees_data = [
+        {
+            'name': a.user.get_full_name() or a.user.username,
+            'initials': (a.user.get_full_name() or a.user.username)[:2].upper()
+        }
+        for a in task.assignees.all()
+    ]
+
+    return JsonResponse({
+        'success': True,
+        'task': {
+            'id': task.id,
+            'title': task.title,
+            'priority': task.priority,
+            'status_name': task.status.name if task.status else ('Completed' if task.completed else 'In Progress'),
+            'assignees': assignees_data
+        },
+        'comments': comments_data
+    })
+
+
+@login_required
+def add_task_comment(request, task_id):
+    if request.method == 'POST':
+        org = request.user.profile.organization
+        task = get_object_or_404(Task, id=task_id)
+        if (task.lead and task.lead.organization != org) or (not task.lead and task.organization != org):
+            return JsonResponse({'success': False, 'error': 'Access denied.'}, status=403)
+
+        msg = request.POST.get('message', '').strip()
+        if not msg:
+            return JsonResponse({'success': False, 'error': 'Message cannot be empty.'})
+
+        comment = TaskComment.objects.create(
+            task=task,
+            user=request.user,
+            message=msg
+        )
+
+        user_name = request.user.get_full_name() or request.user.username
+        initials = (user_name[:2]).upper()
+
+        return JsonResponse({
+            'success': True,
+            'comment': {
+                'id': comment.id,
+                'user_name': user_name,
+                'initials': initials,
+                'is_me': True,
+                'message': comment.message,
+                'timestamp': comment.created_at.strftime('%b %d, %I:%M %p') if comment.created_at else 'Just now'
+            }
+        })
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+
+
+@login_required
 def move_task_status(request, task_id):
     if request.method == 'POST':
         org = request.user.profile.organization

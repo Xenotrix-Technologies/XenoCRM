@@ -258,6 +258,11 @@
                 <i data-lucide="activity" class="w-4 h-4"></i>
                 <span>Activity</span>
             </button>
+            <button onclick="switchTab('chat')" id="tab-btn-chat" class="px-4 py-2 text-xs font-semibold transition-all flex items-center gap-2 rounded-lg tab-inactive">
+                <i data-lucide="message-square" class="w-4 h-4 text-blue-600"></i>
+                <span>Dev Chat</span>
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            </button>
         </div>
 
         <!-- Quick View Switcher Icons -->
@@ -867,6 +872,82 @@
             </div>
         </div>
 
+        <!-- TAB 8: DEVELOPER CHAT VIEW -->
+        <div id="view-chat" class="hidden space-y-4">
+            <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm flex flex-col md:flex-row min-h-[580px] overflow-hidden">
+                <!-- Left Sidebar: Project Selector -->
+                <div class="w-full md:w-72 border-r border-slate-200 bg-slate-50/50 flex flex-col">
+                    <div class="p-4 border-b border-slate-200/80 bg-white">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between">
+                            <span>Project Discussions</span>
+                            <span class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px]">{{ tasks|length }} Active</span>
+                        </h3>
+                    </div>
+                    <div class="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1" id="chat-projects-list">
+                        {% for t in tasks %}
+                        <button type="button" onclick="selectChatProject('{{ t.id }}')" id="chat-project-item-{{ t.id }}"
+                                class="chat-project-btn w-full text-left p-3 rounded-xl transition-all border flex flex-col space-y-1.5 {% if forloop.first %}bg-blue-50/80 border-blue-200 text-blue-900 shadow-xs{% else %}bg-white border-slate-200/80 hover:bg-slate-100/80 text-slate-700{% endif %}">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-xs truncate max-w-[140px]">{{ t.title }}</span>
+                                <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">#PRJ-{{ t.id }}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-[10px] text-slate-500">
+                                <span>{% if t.status %}{{ t.status.name }}{% elif t.completed %}Completed{% else %}In Progress{% endif %}</span>
+                                <span class="text-blue-600 font-bold">{{ t.calculated_progress }}%</span>
+                            </div>
+                        </button>
+                        {% empty %}
+                        <div class="p-4 text-center text-xs text-slate-400 italic">No projects available for chat.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Right Area: Developer Chat Feed & Composer -->
+                <div class="flex-1 flex flex-col bg-white">
+                    <!-- Chat Header -->
+                    <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/30">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 border border-blue-200 flex items-center justify-center font-bold">
+                                <i data-lucide="messages-square" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h3 id="chat-active-title" class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                    <span>Select a Project</span>
+                                </h3>
+                                <div class="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span id="chat-active-devs">Developer Chat Room • Live Project Discussion</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2" id="chat-active-assignees">
+                            <!-- Assignee avatars populated via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Chat Message Feed -->
+                    <div id="chat-messages-container" class="flex-1 p-5 overflow-y-auto space-y-4 custom-scrollbar max-h-[420px]">
+                        <div class="text-center py-12 text-slate-400 text-xs italic">
+                            Select a project on the left to start chatting with developers.
+                        </div>
+                    </div>
+
+                    <!-- Chat Composer Form -->
+                    <div class="p-3 border-t border-slate-200 bg-slate-50/50">
+                        <form id="chat-send-form" onsubmit="handleSendChatMessage(event)" class="flex items-center gap-2">
+                            <input type="text" id="chat-input-message" placeholder="Type a message or developer update... (Press Enter to send)"
+                                   class="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-xs" required />
+                            <button type="submit" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-xl transition-all shadow-xs flex items-center gap-1.5 shrink-0 active:scale-95">
+                                <span>Send</span>
+                                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         </div>
 
     </div>
@@ -1305,7 +1386,7 @@
 
     // Tab Switching Logic
     function switchTab(tabName) {
-        const tabs = ['overview', 'board', 'list', 'timeline', 'calendar', 'files', 'activity'];
+        const tabs = ['overview', 'board', 'list', 'timeline', 'calendar', 'files', 'activity', 'chat'];
         tabs.forEach(t => {
             const btn = document.getElementById(`tab-btn-${t}`);
             const view = document.getElementById(`view-${t}`);
@@ -1321,6 +1402,154 @@
                 }
             }
         });
+
+        if (tabName === 'chat' && !activeChatTaskId) {
+            const firstBtn = document.querySelector('.chat-project-btn');
+            if (firstBtn) {
+                const firstId = firstBtn.id.replace('chat-project-item-', '');
+                selectChatProject(firstId);
+            }
+        }
+    }
+
+    // Developer Chat JS Logic
+    let activeChatTaskId = null;
+
+    function selectChatProject(taskId) {
+        if (!taskId) return;
+        activeChatTaskId = taskId;
+
+        document.querySelectorAll('.chat-project-btn').forEach(btn => {
+            btn.classList.remove('bg-blue-50/80', 'border-blue-200', 'text-blue-900', 'shadow-xs');
+            btn.classList.add('bg-white', 'border-slate-200/80', 'hover:bg-slate-100/80', 'text-slate-700');
+        });
+
+        const activeBtn = document.getElementById(`chat-project-item-${taskId}`);
+        if (activeBtn) {
+            activeBtn.classList.remove('bg-white', 'border-slate-200/80', 'hover:bg-slate-100/80', 'text-slate-700');
+            activeBtn.classList.add('bg-blue-50/80', 'border-blue-200', 'text-blue-900', 'shadow-xs');
+        }
+
+        loadChatMessages(taskId);
+    }
+
+    function loadChatMessages(taskId) {
+        const container = document.getElementById('chat-messages-container');
+        if (!container) return;
+
+        container.innerHTML = '<div class="text-center py-12 text-slate-400 text-xs italic">Loading developer discussion...</div>';
+
+        fetch(`/task/${taskId}/comments/`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    container.innerHTML = `<div class="text-center py-12 text-rose-500 text-xs">${data.error || 'Failed to load comments.'}</div>`;
+                    return;
+                }
+
+                // Update Header
+                const titleEl = document.getElementById('chat-active-title');
+                if (titleEl) titleEl.innerText = `${data.task.title} (${data.task.status_name})`;
+
+                const assigneesContainer = document.getElementById('chat-active-assignees');
+                if (assigneesContainer) {
+                    if (data.task.assignees && data.task.assignees.length > 0) {
+                        let html = '';
+                        data.task.assignees.forEach(a => {
+                            html += `<div class="w-7 h-7 rounded-full bg-blue-100 border border-white text-blue-700 text-[10px] font-bold flex items-center justify-center shadow-xs" title="${escapeHtml(a.name)}">${escapeHtml(a.initials)}</div>`;
+                        });
+                        assigneesContainer.innerHTML = html;
+                    } else {
+                        assigneesContainer.innerHTML = '<span class="text-slate-400 text-[11px] italic">No assignees</span>';
+                    }
+                }
+
+                // Render Comments
+                if (!data.comments || data.comments.length === 0) {
+                    container.innerHTML = `
+                    <div class="text-center py-12 space-y-2">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto border border-blue-100">
+                            <i data-lucide="message-square" class="w-6 h-6"></i>
+                        </div>
+                        <p class="text-xs font-bold text-slate-700">No messages in this project yet.</p>
+                        <p class="text-[11px] text-slate-400">Start the conversation with your development team!</p>
+                    </div>`;
+                    if (window.lucide) lucide.createIcons();
+                    return;
+                }
+
+                let html = '';
+                data.comments.forEach(c => {
+                    if (c.is_me) {
+                        html += `
+                        <div class="flex flex-col items-end space-y-1">
+                            <div class="flex items-center gap-2 text-[10px] text-slate-400 font-medium">
+                                <span>${escapeHtml(c.timestamp)}</span>
+                                <span class="font-bold text-slate-700">${escapeHtml(c.user_name)} (You)</span>
+                            </div>
+                            <div class="bg-blue-600 text-white p-3 rounded-2xl rounded-tr-xs text-xs max-w-md leading-relaxed shadow-sm">
+                                ${escapeHtml(c.message)}
+                            </div>
+                        </div>`;
+                    } else {
+                        html += `
+                        <div class="flex items-start gap-3">
+                            <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 border border-indigo-200 shadow-xs">
+                                ${escapeHtml(c.initials)}
+                            </div>
+                            <div class="space-y-1 flex-1">
+                                <div class="flex items-center gap-2 text-[10px] text-slate-500">
+                                    <span class="font-bold text-slate-800 text-xs">${escapeHtml(c.user_name)}</span>
+                                    <span>•</span>
+                                    <span>${escapeHtml(c.timestamp)}</span>
+                                </div>
+                                <div class="bg-slate-100/90 text-slate-800 p-3 rounded-2xl rounded-tl-xs text-xs max-w-md leading-relaxed border border-slate-200/60 shadow-xs">
+                                    ${escapeHtml(c.message)}
+                                </div>
+                            </div>
+                        </div>`;
+                    }
+                });
+                container.innerHTML = html;
+                container.scrollTop = container.scrollHeight;
+            })
+            .catch(err => {
+                console.error(err);
+                container.innerHTML = '<div class="text-center py-12 text-rose-500 text-xs">Error loading discussion thread.</div>';
+            });
+    }
+
+    function handleSendChatMessage(event) {
+        event.preventDefault();
+        if (!activeChatTaskId) {
+            alert('Please select a project first.');
+            return;
+        }
+
+        const input = document.getElementById('chat-input-message');
+        const message = input.value.trim();
+        if (!message) return;
+
+        const formData = new FormData();
+        formData.append('message', message);
+
+        fetch(`/task/${activeChatTaskId}/comment/add/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                input.value = '';
+                loadChatMessages(activeChatTaskId);
+            } else {
+                alert(data.error || 'Failed to send message.');
+            }
+        })
+        .catch(err => console.error(err));
     }
 
     // Filter Panel Toggle
