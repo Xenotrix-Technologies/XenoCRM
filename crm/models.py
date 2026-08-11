@@ -1026,6 +1026,20 @@ class TaskMilestone(models.Model):
         return f"{self.title} - {self.task.title}"
 
 
+class TaskComment(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_comments')
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'task_comments'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.user.username} on {self.task.title}: {self.message[:30]}"
+
+
 class Meeting(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='meetings')
     lead = models.ForeignKey(Lead, on_delete=models.SET_NULL, null=True, blank=True, related_name='meetings')
