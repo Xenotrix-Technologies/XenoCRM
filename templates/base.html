@@ -161,11 +161,11 @@
             font-family: 'Inter', sans-serif;
         }
 
-        /* Sidebar Collapsible Animations & Widths */
+        /* Responsive Sidebar Drawer & Off-canvas Layout */
         aside {
-            transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow-x: hidden;
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             white-space: nowrap;
+            overflow-x: hidden;
         }
 
         aside > div,
@@ -173,31 +173,71 @@
             width: 240px;
         }
 
-        .sidebar-collapsed aside {
-            width: 68px;
+        /* Desktop: Screen size >= 1024px */
+        @media (min-width: 1024px) {
+            #mobile-menu-btn {
+                display: none !important;
+            }
+            #sidebar-overlay {
+                display: none !important;
+            }
+            aside {
+                transform: translateX(0) !important;
+                width: 240px;
+            }
+            main {
+                margin-left: 240px;
+                width: calc(100% - 240px);
+            }
+            header {
+                left: 240px;
+                width: calc(100% - 240px);
+            }
+            .sidebar-collapsed aside {
+                width: 68px;
+            }
+            .sidebar-collapsed main {
+                margin-left: 68px;
+                width: calc(100% - 68px);
+            }
+            .sidebar-collapsed header {
+                left: 68px;
+                width: calc(100% - 68px);
+            }
+            .sidebar-collapsed aside .sidebar-text,
+            .sidebar-collapsed aside .sidebar-arrow {
+                opacity: 0;
+                pointer-events: none;
+                display: none !important;
+            }
+            .sidebar-collapsed aside [id$="-dropdown-menu"] {
+                display: none !important;
+            }
         }
 
-        .sidebar-collapsed main {
-            margin-left: 68px;
-        }
-
-        .sidebar-collapsed header {
-            width: calc(100% - 68px);
+        /* Mobile / Tablet: Screen size < 1024px */
+        @media (max-width: 1023.98px) {
+            aside {
+                transform: translateX(-100%);
+                width: 240px !important;
+                z-index: 60;
+            }
+            .mobile-sidebar-open aside {
+                transform: translateX(0) !important;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            main {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            header {
+                left: 0 !important;
+                width: 100% !important;
+            }
         }
 
         main, header {
-            transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .sidebar-collapsed aside .sidebar-text,
-        .sidebar-collapsed aside .sidebar-arrow {
-            opacity: 0;
-            pointer-events: none;
-            display: none !important;
-        }
-
-        .sidebar-collapsed aside [id$="-dropdown-menu"] {
-            display: none !important;
+            transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1), left 0.25s cubic-bezier(0.4, 0, 0.2, 1), width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* Standardized Workspace Margin & Alignment for All Pages */
@@ -208,9 +248,15 @@
             box-sizing: border-box !important;
         }
 
+        @media (max-width: 1024px) {
+            .p-margin-edge {
+                padding: 1.25rem 1.5rem 2rem 1.5rem !important;
+            }
+        }
+
         @media (max-width: 640px) {
             .p-margin-edge {
-                padding: 1rem !important;
+                padding: 1rem 0.875rem 1.5rem 0.875rem !important;
             }
         }
     </style>
@@ -643,25 +689,33 @@
         </div>
     </aside>
 
+    <!-- Mobile Sidebar Backdrop Overlay -->
+    <div id="sidebar-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden lg:hidden transition-opacity"></div>
+
     <!-- Main Content Area -->
-    <main class="ml-[240px] min-h-screen flex flex-col transition-all">
+    <main class="min-h-screen flex flex-col transition-all">
         <!-- Top Navigation Header -->
-        <header class="fixed top-0 right-0 w-[calc(100%-240px)] h-16 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs z-40 flex justify-between items-center px-6 transition-all">
-            <!-- Search & Breadcrumb -->
-            <div class="flex items-center gap-4 flex-1 max-w-xl">
+        <header class="fixed top-0 right-0 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-xs z-40 flex justify-between items-center px-3 sm:px-6 transition-all">
+            <!-- Mobile Menu Toggle & Search -->
+            <div class="flex items-center gap-2 sm:gap-4 flex-1 max-w-xl min-w-0">
+                <button id="mobile-menu-btn" onclick="toggleMobileSidebar()" class="lg:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors shrink-0" title="Open Menu">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
                 <form method="GET" action="{% url 'leads' %}" class="relative w-full">
                     <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
                     <input name="q" value="{{ request.GET.q|default:'' }}"
-                        class="w-full bg-slate-100/80 border border-slate-200 rounded-xl pl-10 pr-4 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-                        placeholder="Search leads, projects, clients..." type="text" />
+                        class="w-full bg-slate-100/80 border border-slate-200 rounded-xl pl-10 pr-3 sm:pr-4 py-1.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+                        placeholder="Search leads, projects..." type="text" />
                 </form>
             </div>
 
             <!-- Quick Action & User Profile -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 sm:gap-3 shrink-0 ml-2">
                 <button onclick="document.getElementById('quick-create-modal').classList.remove('hidden')"
-                    class="flex items-center gap-2 px-3.5 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-xl hover:bg-brand-700 shadow-xs shadow-brand-600/20 transition-all active:scale-[0.98]">
+                    class="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-xl hover:bg-brand-700 shadow-xs shadow-brand-600/20 transition-all active:scale-[0.98]">
                     <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                    <span class="hidden sm:inline">Quick Create</span>
+                </button>
                     <span>Quick Create</span>
                 </button>
 
@@ -809,12 +863,25 @@
 
         function toggleSidebarState(event) {
             if (event) event.stopPropagation();
-            document.getElementById('app-body').classList.toggle('sidebar-collapsed');
+            if (window.innerWidth < 1024) {
+                toggleMobileSidebar();
+            } else {
+                document.getElementById('app-body').classList.toggle('sidebar-collapsed');
+            }
+        }
+
+        function toggleMobileSidebar() {
+            const body = document.getElementById('app-body');
+            const overlay = document.getElementById('sidebar-overlay');
+            body.classList.toggle('mobile-sidebar-open');
+            if (overlay) {
+                overlay.classList.toggle('hidden');
+            }
         }
 
         function toggleSidebarDropdown(id) {
             const body = document.getElementById('app-body');
-            if (body.classList.contains('sidebar-collapsed')) {
+            if (window.innerWidth >= 1024 && body.classList.contains('sidebar-collapsed')) {
                 body.classList.remove('sidebar-collapsed');
             }
 

@@ -44,10 +44,10 @@
     .badge-low { background-color: #F0FDF4; color: #16A34A; border: 1px solid #86EFAC; }
 </style>
 
-<div class="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans p-4 sm:p-6 lg:p-8 space-y-6">
+<div class="p-margin-edge min-h-screen text-slate-800 flex flex-col font-sans space-y-6">
     
     <!-- Top Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-blue-600/10 border border-blue-200 flex items-center justify-center text-blue-600">
@@ -420,7 +420,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto pb-4">
                 
                 <!-- Column 1: Backlog & Todo -->
-                <div ondragover="handleKanbanDragOver(event)" ondrop="handleKanbanDrop(event, 'Backlog')" class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px] transition-colors hover:bg-slate-200/40">
+                <div ondragover="handleKanbanDragOver(event)" ondragenter="handleKanbanDragEnter(event)" ondragleave="handleKanbanDragLeave(event)" ondrop="handleKanbanDrop(event, 'Backlog')" class="kanban-column bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px] transition-all hover:bg-slate-200/40">
                     <div class="flex items-center justify-between px-1 border-b border-slate-200/60 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
@@ -431,7 +431,7 @@
                     </div>
 
                     {% for task in backlog_tasks %}
-                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5"
+                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" ondragend="handleKanbanDragEnd(event)" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5"
                          onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% elif task.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
@@ -450,29 +450,11 @@
                             <div class="flex items-center gap-1 text-slate-600 font-semibold"><i data-lucide="calendar" class="w-3 h-3 text-blue-500"></i><span>{{ task.due_date|date:"M d" }}</span></div>
                             <span class="font-bold text-blue-600">{{ task.calculated_progress }}%</span>
                         </div>
-
-                        <!-- Move Status Control -->
-                        <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1" onclick="event.stopPropagation();">
-                            <span class="text-[10px] font-semibold text-slate-400">Move status:</span>
-                            <select onchange="moveTaskStatus('{{ task.id }}', this.value, event)" class="text-[10px] font-semibold px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer outline-none transition-all">
-                                <option value="" disabled selected>Move to...</option>
-                                <option value="Backlog" disabled>Backlog</option>
-                                <option value="Todo">Todo</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Review">Review & QA</option>
-                                <option value="Completed">Completed</option>
-                                {% for ps in project_statuses %}
-                                {% if ps.name not in "Backlog,Todo,In Progress,Review,Completed" %}
-                                <option value="{{ ps.id }}">{{ ps.name }}</option>
-                                {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
                     </div>
                     {% endfor %}
 
                     {% for task in todo_tasks %}
-                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5"
+                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" ondragend="handleKanbanDragEnd(event)" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5"
                          onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% elif task.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
@@ -491,24 +473,6 @@
                             <div class="flex items-center gap-1 text-slate-600 font-semibold"><i data-lucide="calendar" class="w-3 h-3 text-blue-500"></i><span>{{ task.due_date|date:"M d" }}</span></div>
                             <span class="font-bold text-blue-600">{{ task.calculated_progress }}%</span>
                         </div>
-
-                        <!-- Move Status Control -->
-                        <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1" onclick="event.stopPropagation();">
-                            <span class="text-[10px] font-semibold text-slate-400">Move status:</span>
-                            <select onchange="moveTaskStatus('{{ task.id }}', this.value, event)" class="text-[10px] font-semibold px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer outline-none transition-all">
-                                <option value="" disabled selected>Move to...</option>
-                                <option value="Backlog">Backlog</option>
-                                <option value="Todo" disabled>Todo</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Review">Review & QA</option>
-                                <option value="Completed">Completed</option>
-                                {% for ps in project_statuses %}
-                                {% if ps.name not in "Backlog,Todo,In Progress,Review,Completed" %}
-                                <option value="{{ ps.id }}">{{ ps.name }}</option>
-                                {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
                     </div>
                     {% endfor %}
 
@@ -518,7 +482,7 @@
                 </div>
 
                 <!-- Column 2: In Progress -->
-                <div ondragover="handleKanbanDragOver(event)" ondrop="handleKanbanDrop(event, 'In Progress')" class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px] transition-colors hover:bg-slate-200/40">
+                <div ondragover="handleKanbanDragOver(event)" ondragenter="handleKanbanDragEnter(event)" ondragleave="handleKanbanDragLeave(event)" ondrop="handleKanbanDrop(event, 'In Progress')" class="kanban-column bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px] transition-all hover:bg-slate-200/40">
                     <div class="flex items-center justify-between px-1 border-b border-slate-200/60 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
@@ -529,7 +493,7 @@
                     </div>
 
                     {% for task in in_progress_tasks %}
-                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5"
+                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" ondragend="handleKanbanDragEnd(event)" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5"
                          onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% elif task.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
@@ -548,24 +512,6 @@
                             <div class="flex items-center gap-1 text-slate-600 font-semibold"><i data-lucide="calendar" class="w-3 h-3 text-blue-500"></i><span>{{ task.due_date|date:"M d" }}</span></div>
                             <span class="font-bold text-blue-600">{{ task.calculated_progress }}%</span>
                         </div>
-
-                        <!-- Move Status Control -->
-                        <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1" onclick="event.stopPropagation();">
-                            <span class="text-[10px] font-semibold text-slate-400">Move status:</span>
-                            <select onchange="moveTaskStatus('{{ task.id }}', this.value, event)" class="text-[10px] font-semibold px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer outline-none transition-all">
-                                <option value="" disabled selected>Move to...</option>
-                                <option value="Backlog">Backlog</option>
-                                <option value="Todo">Todo</option>
-                                <option value="In Progress" disabled>In Progress</option>
-                                <option value="Review">Review & QA</option>
-                                <option value="Completed">Completed</option>
-                                {% for ps in project_statuses %}
-                                {% if ps.name not in "Backlog,Todo,In Progress,Review,Completed" %}
-                                <option value="{{ ps.id }}">{{ ps.name }}</option>
-                                {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
                     </div>
                     {% empty %}
                     <div class="p-6 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 italic">No tasks in progress</div>
@@ -573,7 +519,7 @@
                 </div>
 
                 <!-- Column 3: Review / Testing -->
-                <div ondragover="handleKanbanDragOver(event)" ondrop="handleKanbanDrop(event, 'Review')" class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px] transition-colors hover:bg-slate-200/40">
+                <div ondragover="handleKanbanDragOver(event)" ondragenter="handleKanbanDragEnter(event)" ondragleave="handleKanbanDragLeave(event)" ondrop="handleKanbanDrop(event, 'Review')" class="kanban-column bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px] transition-all hover:bg-slate-200/40">
                     <div class="flex items-center justify-between px-1 border-b border-slate-200/60 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
@@ -584,7 +530,7 @@
                     </div>
 
                     {% for task in review_tasks %}
-                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5"
+                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" ondragend="handleKanbanDragEnd(event)" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing space-y-2.5"
                          onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full {% if task.priority == 'High' %}badge-high{% elif task.priority == 'Medium' %}badge-medium{% else %}badge-low{% endif %}">
@@ -603,24 +549,6 @@
                             <div class="flex items-center gap-1 text-slate-600 font-semibold"><i data-lucide="calendar" class="w-3 h-3 text-blue-500"></i><span>{{ task.due_date|date:"M d" }}</span></div>
                             <span class="font-bold text-purple-600">{{ task.calculated_progress }}%</span>
                         </div>
-
-                        <!-- Move Status Control -->
-                        <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1" onclick="event.stopPropagation();">
-                            <span class="text-[10px] font-semibold text-slate-400">Move status:</span>
-                            <select onchange="moveTaskStatus('{{ task.id }}', this.value, event)" class="text-[10px] font-semibold px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer outline-none transition-all">
-                                <option value="" disabled selected>Move to...</option>
-                                <option value="Backlog">Backlog</option>
-                                <option value="Todo">Todo</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Review" disabled>Review & QA</option>
-                                <option value="Completed">Completed</option>
-                                {% for ps in project_statuses %}
-                                {% if ps.name not in "Backlog,Todo,In Progress,Review,Completed" %}
-                                <option value="{{ ps.id }}">{{ ps.name }}</option>
-                                {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
                     </div>
                     {% empty %}
                     <div class="p-6 border border-dashed border-slate-300 rounded-xl text-center text-xs text-slate-400 italic">No tasks in review</div>
@@ -628,7 +556,7 @@
                 </div>
 
                 <!-- Column 4: Completed -->
-                <div ondragover="handleKanbanDragOver(event)" ondrop="handleKanbanDrop(event, 'Completed')" class="bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px] transition-colors hover:bg-slate-200/40">
+                <div ondragover="handleKanbanDragOver(event)" ondragenter="handleKanbanDragEnter(event)" ondragleave="handleKanbanDragLeave(event)" ondrop="handleKanbanDrop(event, 'Completed')" class="kanban-column bg-slate-100/70 p-3.5 rounded-2xl border border-slate-200/80 flex flex-col space-y-3 min-h-[500px] transition-all hover:bg-slate-200/40">
                     <div class="flex items-center justify-between px-1 border-b border-slate-200/60 pb-2">
                         <div class="flex items-center gap-2">
                             <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -639,7 +567,7 @@
                     </div>
 
                     {% for task in completed_tasks %}
-                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm opacity-90 hover:opacity-100 transition-all cursor-grab active:cursor-grabbing space-y-2.5"
+                    <div draggable="true" ondragstart="handleKanbanDragStart(event, '{{ task.id }}')" ondragend="handleKanbanDragEnd(event)" class="bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm opacity-90 hover:opacity-100 transition-all cursor-grab active:cursor-grabbing space-y-2.5"
                          onclick="openDrawer('{{ task.id }}')">
                         <div class="flex items-center justify-between">
                             <span class="text-[10px] font-bold px-2 py-0.5 rounded-full badge-low">Completed</span>
@@ -650,24 +578,6 @@
                         
                         <div class="flex items-center justify-between text-[11px] text-emerald-600 pt-1 font-medium">
                             <div class="flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i><span>100% Done</span></div>
-                        </div>
-
-                        <!-- Move Status Control -->
-                        <div class="mt-2 pt-2 border-t border-slate-100 flex items-center justify-between gap-1" onclick="event.stopPropagation();">
-                            <span class="text-[10px] font-semibold text-slate-400">Move status:</span>
-                            <select onchange="moveTaskStatus('{{ task.id }}', this.value, event)" class="text-[10px] font-semibold px-2 py-0.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-700 hover:border-blue-500 focus:ring-1 focus:ring-blue-500 cursor-pointer outline-none transition-all">
-                                <option value="" disabled selected>Move to...</option>
-                                <option value="Backlog">Backlog</option>
-                                <option value="Todo">Todo</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Review">Review & QA</option>
-                                <option value="Completed" disabled>Completed</option>
-                                {% for ps in project_statuses %}
-                                {% if ps.name not in "Backlog,Todo,In Progress,Review,Completed" %}
-                                <option value="{{ ps.id }}">{{ ps.name }}</option>
-                                {% endif %}
-                                {% endfor %}
-                            </select>
                         </div>
                     </div>
                     {% empty %}
@@ -1511,6 +1421,7 @@
     }
 
     function openDrawer(id) {
+        if (isDraggingCard) return;
         currentDrawerId = id;
         document.getElementById('details-drawer-backdrop').classList.remove('hidden');
         document.getElementById('details-drawer').classList.remove('translate-x-full');
@@ -1771,9 +1682,36 @@
         document.getElementById('import-modal').classList.add('hidden');
     }
 
+    let draggedCard = null;
+    let isDraggingCard = false;
+
     function handleKanbanDragStart(e, taskId) {
+        isDraggingCard = true;
+        draggedCard = e.currentTarget;
         e.dataTransfer.setData('text/plain', taskId);
         e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => {
+            if (draggedCard) draggedCard.classList.add('opacity-40', 'border-blue-400', 'scale-[0.98]');
+        }, 0);
+    }
+
+    function handleKanbanDragEnd(e) {
+        if (draggedCard) {
+            draggedCard.classList.remove('opacity-40', 'border-blue-400', 'scale-[0.98]');
+            draggedCard = null;
+        }
+        document.querySelectorAll('.kanban-column').forEach(col => {
+            col.classList.remove('border-blue-500', 'bg-blue-50/50', 'ring-2', 'ring-blue-400/30');
+        });
+        setTimeout(() => {
+            isDraggingCard = false;
+        }, 100);
+    }
+
+    function handleKanbanDragEnter(e) {
+        e.preventDefault();
+        const col = e.currentTarget;
+        col.classList.add('border-blue-500', 'bg-blue-50/50', 'ring-2', 'ring-blue-400/30');
     }
 
     function handleKanbanDragOver(e) {
@@ -1781,8 +1719,17 @@
         e.dataTransfer.dropEffect = 'move';
     }
 
+    function handleKanbanDragLeave(e) {
+        const col = e.currentTarget;
+        if (!col.contains(e.relatedTarget)) {
+            col.classList.remove('border-blue-500', 'bg-blue-50/50', 'ring-2', 'ring-blue-400/30');
+        }
+    }
+
     function handleKanbanDrop(e, statusName) {
         e.preventDefault();
+        const col = e.currentTarget;
+        col.classList.remove('border-blue-500', 'bg-blue-50/50', 'ring-2', 'ring-blue-400/30');
         const taskId = e.dataTransfer.getData('text/plain');
         if (taskId && statusName) {
             moveTaskStatus(taskId, statusName);
