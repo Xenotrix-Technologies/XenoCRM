@@ -258,10 +258,6 @@
                 <i data-lucide="activity" class="w-4 h-4"></i>
                 <span>Activity</span>
             </button>
-            <button onclick="switchTab('settings')" id="tab-btn-settings" class="px-4 py-2 text-xs font-semibold transition-all flex items-center gap-2 rounded-lg tab-inactive">
-                <i data-lucide="settings" class="w-4 h-4"></i>
-                <span>Settings</span>
-            </button>
         </div>
 
         <!-- Quick View Switcher Icons -->
@@ -871,33 +867,6 @@
             </div>
         </div>
 
-        <!-- TAB 8: SETTINGS VIEW -->
-        <div id="view-settings" class="hidden space-y-4">
-            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <h3 class="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                    <i data-lucide="settings" class="w-4 h-4 text-blue-600"></i>
-                    <span>Project Workspace Settings</span>
-                </h3>
-                <div class="flex items-center justify-between text-xs p-4 bg-slate-50 rounded-xl border border-slate-200/80">
-                    <div>
-                        <div class="font-bold text-slate-800 text-sm mb-0.5">Project Status Workflow Settings</div>
-                        <div class="text-slate-500">Configure custom workflow statuses (Backlog, Planning, In Progress, Review, Completed, etc.)</div>
-                    </div>
-                    <a href="{% url 'project_status_settings' %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition-all shadow-xs flex items-center gap-1.5">
-                        <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
-                        <span>Configure Statuses</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-                <div class="flex items-center justify-between text-xs">
-                    <div>
-                        <div class="font-bold text-slate-800">Status Settings Page</div>
-                        <div class="text-slate-500">Manage custom statuses (Planning, In Progress, On Hold, etc.)</div>
-                    </div>
-                    <a href="{% url 'project_status_settings' %}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition-all">Configure Statuses</a>
-                </div>
-            </div>
         </div>
 
     </div>
@@ -1305,7 +1274,7 @@
 
     // Tab Switching Logic
     function switchTab(tabName) {
-        const tabs = ['overview', 'board', 'list', 'timeline', 'calendar', 'files', 'activity', 'settings'];
+        const tabs = ['overview', 'board', 'list', 'timeline', 'calendar', 'files', 'activity'];
         tabs.forEach(t => {
             const btn = document.getElementById(`tab-btn-${t}`);
             const view = document.getElementById(`view-${t}`);
