@@ -1438,6 +1438,9 @@ def add_task(request):
         desc = request.POST.get('description', '')
         start_date = request.POST.get('start_date') or None
         due_date = request.POST.get('due_date')
+        if not due_date:
+            from django.utils import timezone
+            due_date = timezone.now().date() + timezone.timedelta(days=7)
         priority = request.POST.get('priority', 'Medium')
         risk_level = request.POST.get('risk_level', 'Low')
         prog_val = request.POST.get('progress')

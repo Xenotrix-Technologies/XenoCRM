@@ -1708,6 +1708,82 @@
         document.getElementById('import-modal').classList.add('hidden');
     }
 
+    // Wizard Modal Management
+    let currentWizardStep = 1;
+
+    function openWizardModal() {
+        currentWizardStep = 1;
+        updateWizardUI();
+        const modal = document.getElementById('wizard-modal');
+        const backdrop = document.getElementById('wizard-modal-backdrop');
+        if (modal) modal.classList.remove('hidden');
+        if (backdrop) backdrop.classList.remove('hidden');
+    }
+
+    function closeWizardModal() {
+        const modal = document.getElementById('wizard-modal');
+        const backdrop = document.getElementById('wizard-modal-backdrop');
+        if (modal) modal.classList.add('hidden');
+        if (backdrop) backdrop.classList.add('hidden');
+    }
+
+    function updateWizardUI() {
+        for (let i = 1; i <= 4; i++) {
+            const stepDiv = document.getElementById(`wizard-step-${i}`);
+            if (stepDiv) {
+                if (i === currentWizardStep) {
+                    stepDiv.classList.remove('hidden');
+                } else {
+                    stepDiv.classList.add('hidden');
+                }
+            }
+        }
+
+        const stepNumEl = document.getElementById('wizard-step-num');
+        if (stepNumEl) stepNumEl.innerText = currentWizardStep;
+
+        const progressBar = document.getElementById('wizard-progress-bar');
+        if (progressBar) progressBar.style.width = `${(currentWizardStep / 4) * 100}%`;
+
+        const prevBtn = document.getElementById('wizard-prev-btn');
+        const nextBtn = document.getElementById('wizard-next-btn');
+        const submitBtn = document.getElementById('wizard-submit-btn');
+
+        if (prevBtn) {
+            if (currentWizardStep === 1) prevBtn.classList.add('hidden');
+            else prevBtn.classList.remove('hidden');
+        }
+
+        if (currentWizardStep === 4) {
+            if (nextBtn) nextBtn.classList.add('hidden');
+            if (submitBtn) submitBtn.classList.remove('hidden');
+        } else {
+            if (nextBtn) nextBtn.classList.remove('hidden');
+            if (submitBtn) submitBtn.classList.add('hidden');
+        }
+    }
+
+    function nextWizardStep() {
+        if (currentWizardStep === 1) {
+            const titleInput = document.querySelector('#wizard-step-1 input[name="title"]');
+            if (titleInput && !titleInput.value.trim()) {
+                titleInput.reportValidity();
+                return;
+            }
+        }
+        if (currentWizardStep < 4) {
+            currentWizardStep++;
+            updateWizardUI();
+        }
+    }
+
+    function prevWizardStep() {
+        if (currentWizardStep > 1) {
+            currentWizardStep--;
+            updateWizardUI();
+        }
+    }
+
     let draggedCard = null;
     let isDraggingCard = false;
 
