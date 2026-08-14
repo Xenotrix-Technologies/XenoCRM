@@ -10,7 +10,7 @@
       {% if request.user.profile.has_access_content_tracker %}
       <a href="{% url 'content_tracker' %}" class="hover:text-primary transition-colors">Content Tracker</a>
       {% else %}
-      <span>Settings</span>
+      <a href="{% url 'settings_dashboard' %}" class="hover:text-primary transition-colors">Settings</a>
       {% endif %}
       <span class="material-symbols-outlined text-[12px]">chevron_right</span>
       <span class="text-primary">Content Settings</span>
