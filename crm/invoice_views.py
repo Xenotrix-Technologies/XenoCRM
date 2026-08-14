@@ -5,8 +5,22 @@ from django.http import JsonResponse
 from django.db.models import Sum, Count, Q
 from .models import Organization, Invoice, InvoiceItem, UserProfile, InvoiceStatus
 from .views import get_or_create_dynamic_statuses
-import datetime
-from django.utils import timezone
+
+def get_user_profile(user):
+    profile = UserProfile.objects.filter(user=user).first()
+    if not profile:
+        org = Organization.objects.first()
+        if not org:
+            org = Organization.objects.create(name='Xenotrix Technologies')
+        profile = UserProfile.objects.create(user=user, organization=org)
+    elif not profile.organization:
+        org = Organization.objects.first()
+        if not org:
+            org = Organization.objects.create(name='Xenotrix Technologies')
+        profile.organization = org
+        profile.save(update_fields=['organization'])
+    return profile
+
 
 def get_invoice_stats(organization):
     invoices = Invoice.objects.filter(organization=organization)
@@ -50,7 +64,7 @@ def get_invoice_stats(organization):
 
 @login_required
 def invoice_dashboard(request):
-    user_profile = UserProfile.objects.get(user=request.user)
+    user_profile = get_user_profile(request.user)
     organization = user_profile.organization
     
     invoices = Invoice.objects.filter(organization=organization).order_by('-invoice_date')
@@ -81,7 +95,7 @@ from django.db import transaction
 
 @login_required
 def invoice_create(request):
-    user_profile = UserProfile.objects.get(user=request.user)
+    user_profile = get_user_profile(request.user)
     organization = user_profile.organization
     
     if request.method == 'POST':
@@ -166,7 +180,7 @@ def invoice_create(request):
 
 @login_required
 def invoice_detail(request, invoice_id):
-    user_profile = UserProfile.objects.get(user=request.user)
+    user_profile = get_user_profile(request.user)
     invoice = get_object_or_404(Invoice, id=invoice_id, organization=user_profile.organization)
     
     return render(request, 'finance/invoice_detail.html', {
@@ -176,7 +190,7 @@ def invoice_detail(request, invoice_id):
 
 @login_required
 def invoice_edit(request, invoice_id):
-    user_profile = UserProfile.objects.get(user=request.user)
+    user_profile = get_user_profile(request.user)
     organization = user_profile.organization
     invoice = get_object_or_404(Invoice, id=invoice_id, organization=organization)
     
@@ -255,7 +269,7 @@ def invoice_edit(request, invoice_id):
 
 @login_required
 def invoice_delete(request, invoice_id):
-    user_profile = UserProfile.objects.get(user=request.user)
+    user_profile = get_user_profile(request.user)
     invoice = get_object_or_404(Invoice, id=invoice_id, organization=user_profile.organization)
     
     if request.method == 'POST':
@@ -267,7 +281,7 @@ def invoice_delete(request, invoice_id):
 @login_required
 def invoice_update_status(request, invoice_id):
     if request.method == 'POST':
-        user_profile = UserProfile.objects.get(user=request.user)
+        user_profile = get_user_profile(request.user)
         invoice = get_object_or_404(Invoice, id=invoice_id, organization=user_profile.organization)
         try:
             data = json.loads(request.body)
