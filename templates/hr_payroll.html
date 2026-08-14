@@ -10,10 +10,10 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
       <div>
         <h2 class="font-headline-lg text-headline-lg font-bold text-on-background">Payroll Processing</h2>
-        <p class="text-secondary text-body-sm mt-1">Calculate salaries, generate payslips, and manage compensation.</p>
+        <p class="text-secondary text-body-sm mt-1">Calculate salaries, record salary advances, edit salary slips, and print payslips.</p>
       </div>
       <div class="flex items-center gap-3">
-        <button onclick="document.getElementById('addPayrollModal').classList.remove('hidden')" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm">
+        <button onclick="openAddModal()" class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm">
           <span class="material-symbols-outlined text-[18px]">receipt_long</span>
           Run Payroll
         </button>
@@ -21,31 +21,68 @@
     </div>
 
     {% if payrolls %}
-    <div class="bg-white rounded-2xl shadow-sm border border-outline-variant overflow-hidden">
-      <table class="w-full text-left border-collapse">
+    <div class="bg-white rounded-2xl shadow-sm border border-outline-variant overflow-x-auto">
+      <table class="w-full text-left border-collapse min-w-[800px]">
         <thead>
-          <tr class="bg-surface-variant/30 text-secondary text-sm">
+          <tr class="bg-surface-variant/30 text-secondary text-xs uppercase tracking-wider">
             <th class="p-4 font-bold border-b border-outline-variant">Employee</th>
             <th class="p-4 font-bold border-b border-outline-variant">Cycle Dates</th>
+            <th class="p-4 font-bold border-b border-outline-variant text-right">Base Salary</th>
+            <th class="p-4 font-bold border-b border-outline-variant text-right">Bonuses</th>
+            <th class="p-4 font-bold border-b border-outline-variant text-right text-amber-700">Advance</th>
+            <th class="p-4 font-bold border-b border-outline-variant text-right text-rose-700">Deductions</th>
             <th class="p-4 font-bold border-b border-outline-variant text-right">Net Pay</th>
-            <th class="p-4 font-bold border-b border-outline-variant text-right">Status</th>
+            <th class="p-4 font-bold border-b border-outline-variant text-center">Status</th>
+            <th class="p-4 font-bold border-b border-outline-variant text-center">Actions</th>
           </tr>
         </thead>
         <tbody class="text-sm">
           {% for record in payrolls %}
           <tr class="hover:bg-surface-variant/10 transition-colors border-b border-outline-variant last:border-b-0">
-            <td class="p-4 flex items-center gap-3">
-              <span class="font-bold text-on-background">{{ record.user_profile.user.get_full_name|default:record.user_profile.user.username }}</span>
+            <td class="p-4">
+              <span class="font-bold text-on-background block">{{ record.user_profile.user.get_full_name|default:record.user_profile.user.username }}</span>
+              <span class="text-xs text-secondary">{{ record.user_profile.role|default:"Staff" }}</span>
             </td>
-            <td class="p-4 text-secondary">{{ record.cycle_start_date|date:"M d" }} - {{ record.cycle_end_date|date:"M d, Y" }}</td>
-            <td class="p-4 text-right font-bold text-primary">${{ record.net_pay }}</td>
-            <td class="p-4 text-right">
-              <span class="px-2 py-1 text-xs font-bold rounded-full 
-                {% if record.status == 'Paid' %}bg-emerald-100 text-emerald-700
-                {% elif record.status == 'Draft' %}bg-surface-variant text-secondary
-                {% else %}bg-amber-100 text-amber-700{% endif %}">
+            <td class="p-4 text-secondary text-xs">
+              {{ record.cycle_start_date|date:"M d, Y" }} <br>to {{ record.cycle_end_date|date:"M d, Y" }}
+            </td>
+            <td class="p-4 text-right font-medium text-on-background">${{ record.base_salary }}</td>
+            <td class="p-4 text-right font-medium text-emerald-600">+${{ record.bonuses }}</td>
+            <td class="p-4 text-right font-medium text-amber-600">-${{ record.advance }}</td>
+            <td class="p-4 text-right font-medium text-rose-600">-${{ record.deductions }}</td>
+            <td class="p-4 text-right font-bold text-primary text-base">${{ record.net_pay }}</td>
+            <td class="p-4 text-center">
+              <span class="px-2.5 py-1 text-xs font-bold rounded-full inline-block
+                {% if record.status == 'Paid' %}bg-emerald-100 text-emerald-800
+                {% elif record.status == 'Draft' %}bg-slate-100 text-slate-700
+                {% else %}bg-amber-100 text-amber-800{% endif %}">
                 {{ record.status }}
               </span>
+            </td>
+            <td class="p-4 text-center">
+              <div class="flex items-center justify-center gap-1">
+                <!-- View Slip -->
+                <button type="button" 
+                  onclick="openPayslipModal('{{ record.id }}', '{{ record.user_profile.user.get_full_name|default:record.user_profile.user.username|escapejs }}', '{{ record.user_profile.role|default:"Staff"|escapejs }}', '{{ record.cycle_start_date|date:"M d, Y" }}', '{{ record.cycle_end_date|date:"M d, Y" }}', '{{ record.base_salary }}', '{{ record.bonuses }}', '{{ record.advance }}', '{{ record.deductions }}', '{{ record.net_pay }}', '{{ record.status }}', '{{ record.processed_on|date:"M d, Y" }}')"
+                  title="View / Print Salary Slip"
+                  class="p-1.5 text-primary hover:bg-primary/10 rounded-lg transition-colors">
+                  <span class="material-symbols-outlined text-[18px]">visibility</span>
+                </button>
+                <!-- Edit -->
+                <button type="button" 
+                  onclick="openEditModal('{{ record.id }}', '{{ record.user_profile.id }}', '{{ record.cycle_start_date|date:"Y-m-d" }}', '{{ record.cycle_end_date|date:"Y-m-d" }}', '{{ record.base_salary }}', '{{ record.bonuses }}', '{{ record.advance }}', '{{ record.deductions }}', '{{ record.net_pay }}', '{{ record.status }}')"
+                  title="Edit Salary Slip"
+                  class="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors">
+                  <span class="material-symbols-outlined text-[18px]">edit</span>
+                </button>
+                <!-- Delete -->
+                <form method="POST" action="{% url 'delete_payroll' record.id %}" onsubmit="return confirm('Are you sure you want to delete this salary slip?');" class="inline">
+                  {% csrf_token %}
+                  <button type="submit" title="Delete Salary Slip" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+                    <span class="material-symbols-outlined text-[18px]">delete</span>
+                  </button>
+                </form>
+              </div>
             </td>
           </tr>
           {% endfor %}
@@ -53,51 +90,417 @@
       </table>
     </div>
     {% else %}
-    <!-- Empty State Content Area -->
+    <!-- Empty State -->
     <div class="glass-card rounded-2xl p-12 border border-outline-variant/30 shadow-sm bg-white flex flex-col items-center justify-center text-center mt-6">
       <div class="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-6">
         <span class="material-symbols-outlined text-4xl text-amber-600">payments</span>
       </div>
       <h3 class="text-xl font-bold text-on-background mb-2">No Payroll Data</h3>
-      <p class="text-secondary max-w-md mx-auto mb-6">There is no active payroll cycle. Ensure all attendance and leaves are processed before running payroll.</p>
+      <p class="text-secondary max-w-md mx-auto mb-6">There is no active payroll cycle. Click "Run Payroll" below to process salaries and handle advance payments.</p>
+      <button onclick="openAddModal()" class="px-5 py-2.5 bg-primary text-on-primary font-bold rounded-lg hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">add</span>
+        Run Payroll
+      </button>
     </div>
     {% endif %}
 
   </div>
 </div>
 
-<!-- Add Modal -->
+<!-- Run Payroll (Add) Modal -->
 <div id="addPayrollModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-  <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
     <div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-variant/10">
-      <h3 class="font-bold text-lg text-on-background">Run Payroll</h3>
-      <button onclick="document.getElementById('addPayrollModal').classList.add('hidden')" class="text-secondary hover:text-error transition-colors">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">receipt_long</span>
+        <h3 class="font-bold text-lg text-on-background">Run Payroll</h3>
+      </div>
+      <button onclick="closeAddModal()" class="text-secondary hover:text-error transition-colors">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
     <div class="p-6 overflow-y-auto">
-      <form method="POST" class="space-y-4">
+      <form method="POST" action="{% url 'hr_payroll' %}" class="space-y-4" id="addPayrollForm">
         {% csrf_token %}
-        {% for field in form %}
-        <div class="mb-4">
-            <label for="{{ field.id_for_label }}" class="block text-sm font-bold text-secondary mb-1">
-                {{ field.label }}
-            </label>
-            {{ field }}
-            {% if field.errors %}
-            <p class="text-error text-xs mt-1 font-medium">{{ field.errors.0 }}</p>
-            {% endif %}
-            {% if field.help_text %}
-            <p class="text-secondary text-xs mt-1">{{ field.help_text }}</p>
-            {% endif %}
+        <div>
+          <label class="block text-sm font-bold text-secondary mb-1">Employee</label>
+          {{ form.user_profile }}
         </div>
-        {% endfor %}
-        <div class="pt-4 flex justify-end gap-3">
-          <button type="button" onclick="document.getElementById('addPayrollModal').classList.add('hidden')" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg font-bold hover:bg-surface-variant/30 transition-all">Cancel</button>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-secondary mb-1">Cycle Start Date</label>
+            {{ form.cycle_start_date }}
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-secondary mb-1">Cycle End Date</label>
+            {{ form.cycle_end_date }}
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-secondary mb-1">Base Salary ($)</label>
+            {{ form.base_salary }}
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-secondary mb-1">Bonuses ($)</label>
+            {{ form.bonuses }}
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-amber-700 mb-1">Advance Amount ($)</label>
+            {{ form.advance }}
+            <p class="text-[11px] text-secondary mt-0.5">Deducted from net pay</p>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-rose-700 mb-1">Other Deductions ($)</label>
+            {{ form.deductions }}
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 pt-2 border-t border-outline-variant">
+          <div>
+            <label class="block text-sm font-bold text-primary mb-1">Calculated Net Pay ($)</label>
+            {{ form.net_pay }}
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-secondary mb-1">Status</label>
+            {{ form.status }}
+          </div>
+        </div>
+        <div class="pt-4 flex justify-end gap-3 border-t border-outline-variant">
+          <button type="button" onclick="closeAddModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg font-bold hover:bg-surface-variant/30 transition-all">Cancel</button>
           <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary/90 transition-all shadow-sm">Save Payroll</button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+<!-- Edit Salary Slip Modal -->
+<div id="editPayrollModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+    <div class="p-4 border-b border-outline-variant flex justify-between items-center bg-amber-50">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-amber-700">edit_note</span>
+        <h3 class="font-bold text-lg text-on-background">Edit Salary Slip</h3>
+      </div>
+      <button onclick="closeEditModal()" class="text-secondary hover:text-error transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="p-6 overflow-y-auto">
+      <form method="POST" id="editPayrollForm" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-bold text-secondary mb-1">Employee</label>
+          <select name="user_profile" id="edit_user_profile" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+            {% for choice in form.user_profile.field.queryset %}
+            <option value="{{ choice.id }}">{{ choice.user.get_full_name|default:choice.user.username }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-secondary mb-1">Cycle Start Date</label>
+            <input type="date" name="cycle_start_date" id="edit_cycle_start_date" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" required>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-secondary mb-1">Cycle End Date</label>
+            <input type="date" name="cycle_end_date" id="edit_cycle_end_date" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" required>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-secondary mb-1">Base Salary ($)</label>
+            <input type="number" step="0.01" name="base_salary" id="edit_base_salary" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" required>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-secondary mb-1">Bonuses ($)</label>
+            <input type="number" step="0.01" name="bonuses" id="edit_bonuses" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" required>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-bold text-amber-700 mb-1">Advance Amount ($)</label>
+            <input type="number" step="0.01" name="advance" id="edit_advance" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" required>
+            <p class="text-[11px] text-secondary mt-0.5">Salary advance deduction</p>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-rose-700 mb-1">Other Deductions ($)</label>
+            <input type="number" step="0.01" name="deductions" id="edit_deductions" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" required>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 pt-2 border-t border-outline-variant">
+          <div>
+            <label class="block text-sm font-bold text-primary mb-1">Calculated Net Pay ($)</label>
+            <input type="number" step="0.01" name="net_pay" id="edit_net_pay" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all" required>
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-secondary mb-1">Status</label>
+            <select name="status" id="edit_status" class="w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all">
+              <option value="Draft">Draft</option>
+              <option value="Processed">Processed</option>
+              <option value="Paid">Paid</option>
+            </select>
+          </div>
+        </div>
+        <div class="pt-4 flex justify-end gap-3 border-t border-outline-variant">
+          <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg font-bold hover:bg-surface-variant/30 transition-all">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-amber-600 text-white rounded-lg font-bold hover:bg-amber-700 transition-all shadow-sm">Update Salary Slip</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- View / Print Payslip Modal -->
+<div id="viewPayslipModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[95vh]">
+    <!-- Modal Header -->
+    <div class="p-4 border-b border-outline-variant flex justify-between items-center bg-slate-50 print:hidden">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary">description</span>
+        <h3 class="font-bold text-lg text-on-background">Salary Slip Details</h3>
+      </div>
+      <button onclick="closePayslipModal()" class="text-secondary hover:text-error transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    
+    <!-- Printable Slip Content -->
+    <div id="payslipPrintArea" class="p-8 overflow-y-auto space-y-6 bg-white">
+      <!-- Payslip Header -->
+      <div class="flex justify-between items-start border-b border-gray-200 pb-6">
+        <div>
+          <h1 class="text-2xl font-black text-primary tracking-tight">XenoCRM</h1>
+          <p class="text-xs text-secondary mt-1">Human Resources & Payroll Department</p>
+        </div>
+        <div class="text-right">
+          <span class="px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider inline-block mb-1" id="ps_status_badge">
+            PAID
+          </span>
+          <p class="text-xs text-secondary">Salary Slip: <span class="font-semibold text-on-background" id="ps_cycle_period">Aug 01 - Aug 25, 2026</span></p>
+          <p class="text-xs text-secondary">Processed: <span id="ps_processed_date">Aug 14, 2026</span></p>
+        </div>
+      </div>
+
+      <!-- Employee Info Box -->
+      <div class="bg-slate-50 rounded-xl p-4 grid grid-cols-2 gap-4 border border-slate-200 text-sm">
+        <div>
+          <p class="text-xs text-secondary font-medium">Employee Name</p>
+          <p class="font-bold text-on-background text-base" id="ps_emp_name">Midhun</p>
+        </div>
+        <div>
+          <p class="text-xs text-secondary font-medium">Role / Position</p>
+          <p class="font-semibold text-on-background" id="ps_emp_role">Staff</p>
+        </div>
+      </div>
+
+      <!-- Breakdown Table -->
+      <div class="border border-gray-200 rounded-xl overflow-hidden text-sm">
+        <div class="grid grid-cols-2 bg-slate-100 font-bold p-3 border-b border-gray-200 text-xs uppercase tracking-wider">
+          <div>Earnings</div>
+          <div class="text-right">Amount ($)</div>
+        </div>
+        <div class="divide-y divide-gray-100">
+          <div class="flex justify-between p-3">
+            <span class="text-secondary">Base Salary</span>
+            <span class="font-semibold" id="ps_base_salary">$0.00</span>
+          </div>
+          <div class="flex justify-between p-3">
+            <span class="text-secondary">Bonuses & Allowances</span>
+            <span class="font-semibold text-emerald-600" id="ps_bonuses">+$0.00</span>
+          </div>
+          <div class="flex justify-between p-3 bg-slate-50/50 font-bold">
+            <span>Total Earnings</span>
+            <span id="ps_total_earnings">$0.00</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 bg-slate-100 font-bold p-3 border-t border-b border-gray-200 text-xs uppercase tracking-wider">
+          <div>Deductions & Advances</div>
+          <div class="text-right">Amount ($)</div>
+        </div>
+        <div class="divide-y divide-gray-100">
+          <div class="flex justify-between p-3 bg-amber-50/50">
+            <span class="text-amber-800 font-medium">Salary Advance</span>
+            <span class="font-semibold text-amber-700" id="ps_advance">-$0.00</span>
+          </div>
+          <div class="flex justify-between p-3">
+            <span class="text-secondary">Other Deductions</span>
+            <span class="font-semibold text-rose-600" id="ps_deductions">-$0.00</span>
+          </div>
+          <div class="flex justify-between p-3 bg-slate-50/50 font-bold">
+            <span>Total Deductions</span>
+            <span id="ps_total_deductions">-$0.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Net Payable Summary -->
+      <div class="bg-primary/5 border border-primary/20 rounded-xl p-5 flex justify-between items-center">
+        <div>
+          <p class="text-xs font-bold text-primary uppercase tracking-wider">Net Amount Payable</p>
+          <p class="text-xs text-secondary">Final salary payout after advance & deductions</p>
+        </div>
+        <div class="text-3xl font-black text-primary" id="ps_net_pay">
+          $0.00
+        </div>
+      </div>
+
+      <!-- Authorized Stamp / Note -->
+      <div class="pt-4 text-xs text-secondary border-t border-gray-100 flex justify-between items-end">
+        <p>This is a computer-generated salary slip and does not require a physical signature.</p>
+        <p class="font-semibold text-on-background">XenoCRM Payroll System</p>
+      </div>
+    </div>
+
+    <!-- Modal Footer Actions -->
+    <div class="p-4 border-t border-outline-variant bg-slate-50 flex justify-end gap-3 print:hidden">
+      <button type="button" onclick="closePayslipModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg font-bold hover:bg-surface-variant/30 transition-all">Close</button>
+      <button type="button" onclick="printPayslip()" class="px-5 py-2 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary/90 transition-all shadow-sm flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px]">print</span>
+        Print Payslip
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Add Modal functions
+  function openAddModal() {
+    document.getElementById('addPayrollModal').classList.remove('hidden');
+  }
+  function closeAddModal() {
+    document.getElementById('addPayrollModal').classList.add('hidden');
+  }
+
+  // Edit Modal functions
+  function openEditModal(id, userProfileId, startDate, endDate, baseSalary, bonuses, advance, deductions, netPay, status) {
+    const form = document.getElementById('editPayrollForm');
+    form.action = `/hr/payroll/${id}/edit/`;
+    
+    document.getElementById('edit_user_profile').value = userProfileId;
+    document.getElementById('edit_cycle_start_date').value = startDate;
+    document.getElementById('edit_cycle_end_date').value = endDate;
+    document.getElementById('edit_base_salary').value = parseFloat(baseSalary).toFixed(2);
+    document.getElementById('edit_bonuses').value = parseFloat(bonuses).toFixed(2);
+    document.getElementById('edit_advance').value = parseFloat(advance).toFixed(2);
+    document.getElementById('edit_deductions').value = parseFloat(deductions).toFixed(2);
+    document.getElementById('edit_net_pay').value = parseFloat(netPay).toFixed(2);
+    document.getElementById('edit_status').value = status;
+    
+    document.getElementById('editPayrollModal').classList.remove('hidden');
+  }
+  function closeEditModal() {
+    document.getElementById('editPayrollModal').classList.add('hidden');
+  }
+
+  // View Payslip Modal functions
+  function openPayslipModal(id, empName, empRole, startDate, endDate, baseSalary, bonuses, advance, deductions, netPay, status, processedDate) {
+    document.getElementById('ps_emp_name').textContent = empName;
+    document.getElementById('ps_emp_role').textContent = empRole;
+    document.getElementById('ps_cycle_period').textContent = startDate + ' - ' + endDate;
+    document.getElementById('ps_processed_date').textContent = processedDate;
+
+    const baseVal = parseFloat(baseSalary) || 0;
+    const bonusVal = parseFloat(bonuses) || 0;
+    const advVal = parseFloat(advance) || 0;
+    const dedVal = parseFloat(deductions) || 0;
+    const netVal = parseFloat(netPay) || 0;
+
+    document.getElementById('ps_base_salary').textContent = '$' + baseVal.toFixed(2);
+    document.getElementById('ps_bonuses').textContent = '+$' + bonusVal.toFixed(2);
+    document.getElementById('ps_total_earnings').textContent = '$' + (baseVal + bonusVal).toFixed(2);
+
+    document.getElementById('ps_advance').textContent = '-$' + advVal.toFixed(2);
+    document.getElementById('ps_deductions').textContent = '-$' + dedVal.toFixed(2);
+    document.getElementById('ps_total_deductions').textContent = '-$' + (advVal + dedVal).toFixed(2);
+
+    document.getElementById('ps_net_pay').textContent = '$' + netVal.toFixed(2);
+
+    const badge = document.getElementById('ps_status_badge');
+    badge.textContent = status.toUpperCase();
+    if (status === 'Paid') {
+      badge.className = 'px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider inline-block mb-1 bg-emerald-100 text-emerald-800';
+    } else if (status === 'Draft') {
+      badge.className = 'px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider inline-block mb-1 bg-slate-100 text-slate-700';
+    } else {
+      badge.className = 'px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider inline-block mb-1 bg-amber-100 text-amber-800';
+    }
+
+    document.getElementById('viewPayslipModal').classList.remove('hidden');
+  }
+
+  function closePayslipModal() {
+    document.getElementById('viewPayslipModal').classList.add('hidden');
+  }
+
+  function printPayslip() {
+    const printContent = document.getElementById('payslipPrintArea').innerHTML;
+    const originalContent = document.body.innerHTML;
+    
+    document.body.innerHTML = `
+      <div style="padding: 40px; font-family: sans-serif;">
+        ${printContent}
+      </div>
+    `;
+    window.print();
+    document.body.innerHTML = originalContent;
+    window.location.reload();
+  }
+
+  // Real-time calculation listeners for Add Form
+  document.addEventListener('DOMContentLoaded', function() {
+    function setupCalculation(baseId, bonusId, advanceId, dedId, netId) {
+      const baseEl = document.getElementById(baseId);
+      const bonusEl = document.getElementById(bonusId);
+      const advEl = document.getElementById(advanceId);
+      const dedEl = document.getElementById(dedId);
+      const netEl = document.getElementById(netId);
+
+      function calc() {
+        if (!netEl) return;
+        const b = parseFloat(baseEl?.value) || 0;
+        const bon = parseFloat(bonusEl?.value) || 0;
+        const adv = parseFloat(advEl?.value) || 0;
+        const ded = parseFloat(dedEl?.value) || 0;
+        const net = Math.max(0, b + bon - adv - ded);
+        netEl.value = net.toFixed(2);
+      }
+
+      [baseEl, bonusEl, advEl, dedEl].forEach(el => {
+        if (el) {
+          el.addEventListener('input', calc);
+        }
+      });
+    }
+
+    // Connect Django form fields if they have standard IDs
+    const addForm = document.getElementById('addPayrollForm');
+    if (addForm) {
+      const baseInput = addForm.querySelector('[name="base_salary"]');
+      const bonusInput = addForm.querySelector('[name="bonuses"]');
+      const advInput = addForm.querySelector('[name="advance"]');
+      const dedInput = addForm.querySelector('[name="deductions"]');
+      const netInput = addForm.querySelector('[name="net_pay"]');
+
+      function calcAdd() {
+        if (!netInput) return;
+        const b = parseFloat(baseInput?.value) || 0;
+        const bon = parseFloat(bonusInput?.value) || 0;
+        const adv = parseFloat(advInput?.value) || 0;
+        const ded = parseFloat(dedInput?.value) || 0;
+        netInput.value = Math.max(0, b + bon - adv - ded).toFixed(2);
+      }
+
+      [baseInput, bonusInput, advInput, dedInput].forEach(input => {
+        if (input) input.addEventListener('input', calcAdd);
+      });
+    }
+
+    // Connect Edit form
+    setupCalculation('edit_base_salary', 'edit_bonuses', 'edit_advance', 'edit_deductions', 'edit_net_pay');
+  });
+</script>
 {% endblock %}

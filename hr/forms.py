@@ -79,7 +79,7 @@ class LeaveRequestForm(forms.ModelForm):
 class PayrollForm(forms.ModelForm):
     class Meta:
         model = Payroll
-        fields = ['user_profile', 'cycle_start_date', 'cycle_end_date', 'base_salary', 'bonuses', 'deductions', 'net_pay', 'status']
+        fields = ['user_profile', 'cycle_start_date', 'cycle_end_date', 'base_salary', 'bonuses', 'advance', 'deductions', 'net_pay', 'status']
         widgets = {
             'cycle_start_date': forms.DateInput(attrs={'type': 'date'}),
             'cycle_end_date': forms.DateInput(attrs={'type': 'date'}),
@@ -95,6 +95,18 @@ class PayrollForm(forms.ModelForm):
             field.widget.attrs.update({
                 'class': 'w-full px-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all'
             })
+
+    def clean(self):
+        cleaned_data = super().clean()
+        base = cleaned_data.get('base_salary') or 0
+        bonuses = cleaned_data.get('bonuses') or 0
+        advance = cleaned_data.get('advance') or 0
+        deductions = cleaned_data.get('deductions') or 0
+        # Ensure net_pay is correctly computed
+        net = base + bonuses - advance - deductions
+        cleaned_data['net_pay'] = max(net, 0)
+        return cleaned_data
+
 
 
 class LeaveTypeForm(forms.ModelForm):
