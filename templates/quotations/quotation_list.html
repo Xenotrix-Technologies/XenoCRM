@@ -145,7 +145,13 @@
                             </div>
                         </td>
                         <td class="px-5 py-4 font-medium text-slate-600">
-                            {{ q.salesperson|default:q.prepared_by.user.get_full_name|default:"Admin" }}
+                            {% if q.salesperson %}
+                                {{ q.salesperson }}
+                            {% elif q.prepared_by and q.prepared_by.user %}
+                                {{ q.prepared_by.user.get_full_name|default:q.prepared_by.user.username }}
+                            {% else %}
+                                Admin
+                            {% endif %}
                         </td>
                         <td class="px-5 py-4 text-right">
                             <span class="font-bold text-slate-900 text-sm">₹{{ q.grand_total|floatformat:2 }}</span>

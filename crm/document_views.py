@@ -19,9 +19,22 @@ from .models import (
 from .views import page_permission_required
 
 
-# ==========================================
-# HELPER FUNCTIONS
-# ==========================================
+
+def get_user_profile(user):
+    profile = UserProfile.objects.filter(user=user).first()
+    if not profile:
+        org = Organization.objects.first()
+        if not org:
+            org = Organization.objects.create(name='Xenotrix Technologies')
+        profile = UserProfile.objects.create(user=user, organization=org)
+    elif not profile.organization:
+        org = Organization.objects.first()
+        if not org:
+            org = Organization.objects.create(name='Xenotrix Technologies')
+        profile.organization = org
+        profile.save(update_fields=['organization'])
+    return profile
+
 
 def get_or_create_document_settings(organization):
     settings, created = DocumentSettings.objects.get_or_create(
@@ -205,7 +218,7 @@ def create_quotation_version_snapshot(quotation, user, summary="Saved version"):
 @login_required
 @page_permission_required('agreements')
 def quotation_list(request):
-    profile = UserProfile.objects.get(user=request.user)
+    profile = get_user_profile(request.user)
     org = profile.organization
     
     # Auto-expire outdated quotations
@@ -267,7 +280,7 @@ def quotation_list(request):
 @login_required
 @page_permission_required('agreements')
 def quotation_create(request):
-    profile = UserProfile.objects.get(user=request.user)
+    profile = get_user_profile(request.user)
     org = profile.organization
     doc_settings = get_or_create_document_settings(org)
 
@@ -454,7 +467,7 @@ def quotation_create(request):
 @login_required
 @page_permission_required('agreements')
 def quotation_edit(request, quotation_id):
-    profile = UserProfile.objects.get(user=request.user)
+    profile = get_user_profile(request.user)
     org = profile.organization
     quotation = get_object_or_404(Quotation, organization=org, id=quotation_id)
     doc_settings = get_or_create_document_settings(org)
@@ -590,7 +603,7 @@ def quotation_edit(request, quotation_id):
 @login_required
 @page_permission_required('agreements')
 def quotation_detail(request, quotation_id):
-    profile = UserProfile.objects.get(user=request.user)
+    profile = get_user_profile(request.user)
     org = profile.organization
     quotation = get_object_or_404(Quotation, organization=org, id=quotation_id)
     doc_settings = get_or_create_document_settings(org)
@@ -608,7 +621,7 @@ def quotation_detail(request, quotation_id):
 @login_required
 @page_permission_required('agreements')
 def quotation_duplicate(request, quotation_id):
-    profile = UserProfile.objects.get(user=request.user)
+    profile = get_user_profile(request.user)
     org = profile.organization
     orig_q = get_object_or_404(Quotation, organization=org, id=quotation_id)
 
@@ -710,7 +723,7 @@ def quotation_duplicate(request, quotation_id):
 @login_required
 @page_permission_required('agreements')
 def quotation_update_status(request, quotation_id):
-    profile = UserProfile.objects.get(user=request.user)
+    profile = get_user_profile(request.user)
     org = profile.organization
     quotation = get_object_or_404(Quotation, organization=org, id=quotation_id)
 
@@ -732,7 +745,7 @@ def quotation_update_status(request, quotation_id):
 @login_required
 @page_permission_required('agreements')
 def quotation_delete(request, quotation_id):
-    profile = UserProfile.objects.get(user=request.user)
+    profile = get_user_profile(request.user)
     org = profile.organization
     quotation = get_object_or_404(Quotation, organization=org, id=quotation_id)
 
@@ -749,7 +762,7 @@ def quotation_delete(request, quotation_id):
 @login_required
 @page_permission_required('agreements')
 def quotation_convert_to_agreement(request, quotation_id):
-    profile = UserProfile.objects.get(user=request.user)
+    profile = get_user_profile(request.user)
     org = profile.organization
     quotation = get_object_or_404(Quotation, organization=org, id=quotation_id)
 
@@ -988,7 +1001,7 @@ def public_agreement_sign(request, public_token):
 @login_required
 @page_permission_required('settings')
 def document_settings_view(request):
-    profile = UserProfile.objects.get(user=request.user)
+    profile = get_user_profile(request.user)
     org = profile.organization
     settings_obj = get_or_create_document_settings(org)
 
@@ -1031,7 +1044,7 @@ def document_settings_view(request):
 @login_required
 @page_permission_required('settings')
 def document_templates_view(request):
-    profile = UserProfile.objects.get(user=request.user)
+    profile = get_user_profile(request.user)
     org = profile.organization
     templates = DocumentTemplate.objects.filter(organization=org)
 
@@ -1061,7 +1074,7 @@ def document_templates_view(request):
 @login_required
 @page_permission_required('settings')
 def document_template_delete(request, template_id):
-    profile = UserProfile.objects.get(user=request.user)
+    profile = get_user_profile(request.user)
     org = profile.organization
     tmpl = get_object_or_404(DocumentTemplate, organization=org, id=template_id)
     tmpl.delete()
@@ -1075,7 +1088,7 @@ def document_template_delete(request, template_id):
 @login_required
 @page_permission_required('leads')
 def convert_lead_to_client(request, lead_id):
-    profile = UserProfile.objects.get(user=request.user)
+    profile = get_user_profile(request.user)
     org = profile.organization
     lead = get_object_or_404(Lead, organization=org, id=lead_id)
 

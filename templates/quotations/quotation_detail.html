@@ -96,7 +96,15 @@
                     </div>
                     <div class="text-right">
                         <span class="font-bold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">SALES REPRESENTATIVE</span>
-                        <p class="font-bold text-slate-900 text-sm">{{ quotation.salesperson|default:quotation.prepared_by.user.get_full_name }}</p>
+                        <p class="font-bold text-slate-900 text-sm">
+                            {% if quotation.salesperson %}
+                                {{ quotation.salesperson }}
+                            {% elif quotation.prepared_by and quotation.prepared_by.user %}
+                                {{ quotation.prepared_by.user.get_full_name|default:quotation.prepared_by.user.username }}
+                            {% else %}
+                                Admin
+                            {% endif %}
+                        </p>
                         <p class="text-slate-600">{{ doc_settings.company_name }}</p>
                         <p class="text-slate-500">{{ doc_settings.email }}</p>
                     </div>
