@@ -86,19 +86,6 @@
           </select>
         </div>
 
-        <!-- Campaign Status -->
-        <div>
-          <label class="block text-label-md font-label-md text-outline uppercase mb-1">Campaign Status</label>
-          <select name="campaign_status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-            <option value="Not Started" {% if form_data.campaign_status == 'Not Started' %}selected{% endif %}>Not Started</option>
-            <option value="Planning" {% if form_data.campaign_status == 'Planning' %}selected{% endif %}>Planning</option>
-            <option value="In Progress" {% if form_data.campaign_status == 'In Progress' %}selected{% endif %}>In Progress</option>
-            <option value="Paused" {% if form_data.campaign_status == 'Paused' %}selected{% endif %}>Paused</option>
-            <option value="Completed" {% if form_data.campaign_status == 'Completed' %}selected{% endif %}>Completed</option>
-            <option value="Cancelled" {% if form_data.campaign_status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
-          </select>
-        </div>
-
         <!-- Priority -->
         <div>
           <label class="block text-label-md font-label-md text-outline uppercase mb-1">Priority</label>
@@ -118,16 +105,6 @@
         <div>
           <label class="block text-label-md font-label-md text-outline uppercase mb-1">Due Date</label>
           <input type="date" name="due_date" value="{{ form_data.due_date|default:'' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
-        </div>
-        <div>
-          <label class="block text-label-md font-label-md text-outline uppercase mb-1">Upload Date</label>
-          <input type="date" name="upload_date" value="{{ form_data.upload_date|default:'' }}" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
-        </div>
-
-        <!-- Video Link -->
-        <div>
-          <label class="block text-label-md font-label-md text-outline uppercase mb-1">Video Link (URL)</label>
-          <input type="url" name="video_link" value="{{ form_data.video_link|default:'' }}" placeholder="e.g. https://youtube.com/watch?v=..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
         </div>
 
         <!-- Notes -->

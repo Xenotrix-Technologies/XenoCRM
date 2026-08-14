@@ -259,6 +259,22 @@
                 padding: 1rem 0.875rem 1.5rem 0.875rem !important;
             }
         }
+
+        /* Global Print Optimization */
+        @media print {
+            aside, header, nav, footer, .no-print, .no-print * {
+                display: none !important;
+            }
+            body, main {
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                background: #ffffff !important;
+            }
+            @page {
+                margin: 10mm;
+            }
+        }
     </style>
     {% block extra_css %}{% endblock %}
 </head>

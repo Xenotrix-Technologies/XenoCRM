@@ -4130,10 +4130,6 @@ def content_tracker_view(request):
     if priority_filter:
         items = items.filter(priority=priority_filter)
         
-    campaign_filter = request.GET.get('campaign_filter', '').strip()
-    if campaign_filter:
-        items = items.filter(campaign_status=campaign_filter)
-        
     date_filter = request.GET.get('date_filter', '').strip()
     if date_filter:
         today = date.today()
@@ -4152,7 +4148,7 @@ def content_tracker_view(request):
         'id', '-id', 'client__company', '-client__company', 'video_title', '-video_title',
         'editor__user__username', '-editor__user__username', 'date_received', '-date_received',
         'due_date', '-due_date', 'status', '-status', 'platform', '-platform',
-        'priority', '-priority', 'campaign_status', '-campaign_status'
+        'priority', '-priority'
     ]
     if sort_by not in allowed_sort_fields:
         sort_by = '-due_date'
@@ -4178,7 +4174,6 @@ def content_tracker_view(request):
     platforms = _get_content_options(org, 'platform')
     post_types = _get_content_options(org, 'post_type')
     status_options = _get_content_options(org, 'status')
-    campaign_status_options = _get_content_options(org, 'campaign_status')
     priority_options = _get_content_options(org, 'priority')
     
     context = {
@@ -4193,7 +4188,6 @@ def content_tracker_view(request):
         'platforms': platforms,
         'post_types': post_types,
         'status_options': status_options,
-        'campaign_status_options': campaign_status_options,
         'priority_options': priority_options,
         'q': q,
         'client_filter': client_filter,
@@ -4201,7 +4195,6 @@ def content_tracker_view(request):
         'status_filter': status_filter,
         'platform_filter': platform_filter,
         'priority_filter': priority_filter,
-        'campaign_filter': campaign_filter,
         'date_filter': date_filter,
         'sort_by': sort_by,
         'limit': limit_val,
@@ -4232,12 +4225,9 @@ def add_content_item(request):
         video_title = request.POST.get('video_title', '').strip()
         date_received = request.POST.get('date_received') or None
         due_date = request.POST.get('due_date') or None
-        upload_date = request.POST.get('upload_date') or None
         status = request.POST.get('status', 'Pending')
         platform = request.POST.get('platform', 'YouTube')
         post_type = request.POST.get('post_type', 'Reel')
-        campaign_status = request.POST.get('campaign_status', 'Not Started')
-        video_link = request.POST.get('video_link', '').strip()
         priority = request.POST.get('priority', 'Medium')
         notes = request.POST.get('notes', '').strip()
         client_month = request.POST.get('client_month', '').strip()
@@ -4247,9 +4237,8 @@ def add_content_item(request):
 
         form_data = {
             'client_id': client_id, 'video_title': video_title, 'editor_id': editor_id,
-            'date_received': date_received or '', 'due_date': due_date or '', 'upload_date': upload_date or '',
+            'date_received': date_received or '', 'due_date': due_date or '',
             'status': status, 'platform': platform, 'post_type': post_type,
-            'campaign_status': campaign_status, 'video_link': video_link,
             'priority': priority, 'notes': notes,
             'client_month': client_month, 'editor_month': editor_month,
             'campaign_run_date': campaign_run_date or '', 'salary': salary or '',
@@ -4271,9 +4260,9 @@ def add_content_item(request):
             ContentItem.objects.create(
                 organization=org, client=client_obj, video_title=video_title,
                 editor=editor_obj, date_received=date_received, due_date=due_date,
-                status=status, platform=platform, upload_date=upload_date,
-                post_type=post_type, campaign_status=campaign_status,
-                video_link=video_link or None, priority=priority, notes=notes,
+                status=status, platform=platform,
+                post_type=post_type,
+                priority=priority, notes=notes,
                 client_month=client_month, editor_month=editor_month,
                 campaign_run_date=campaign_run_date, salary=salary,
             )
@@ -4321,12 +4310,9 @@ def edit_content_item(request, item_id):
         video_title = request.POST.get('video_title', '').strip()
         date_received = request.POST.get('date_received') or None
         due_date = request.POST.get('due_date') or None
-        upload_date = request.POST.get('upload_date') or None
         status = request.POST.get('status', 'Pending')
         platform = request.POST.get('platform', 'YouTube')
         post_type = request.POST.get('post_type', 'Reel')
-        campaign_status = request.POST.get('campaign_status', 'Not Started')
-        video_link = request.POST.get('video_link', '').strip()
         priority = request.POST.get('priority', 'Medium')
         notes = request.POST.get('notes', '').strip()
         client_month = request.POST.get('client_month', '').strip()
@@ -4335,9 +4321,8 @@ def edit_content_item(request, item_id):
         salary = request.POST.get('salary') or None
         form_data = {
             'client_id': client_id, 'video_title': video_title, 'editor_id': editor_id,
-            'date_received': date_received or '', 'due_date': due_date or '', 'upload_date': upload_date or '',
+            'date_received': date_received or '', 'due_date': due_date or '',
             'status': status, 'platform': platform, 'post_type': post_type,
-            'campaign_status': campaign_status, 'video_link': video_link,
             'priority': priority, 'notes': notes,
             'client_month': client_month, 'editor_month': editor_month,
             'campaign_run_date': campaign_run_date or '', 'salary': salary or '',
@@ -4363,10 +4348,7 @@ def edit_content_item(request, item_id):
             item.due_date = due_date
             item.status = status
             item.platform = platform
-            item.upload_date = upload_date
             item.post_type = post_type
-            item.campaign_status = campaign_status
-            item.video_link = video_link or None
             item.priority = priority
             item.notes = notes
             item.client_month = client_month
@@ -4383,19 +4365,16 @@ def edit_content_item(request, item_id):
                 'clients': clients, 'editors': editors, 'platforms': platforms, 'post_types': post_types,
             })
 
-    # GET request â€” populate from existing item
+    # GET request — populate from existing item
     form_data = {
         'client_id': str(item.client_id),
         'video_title': item.video_title,
         'editor_id': str(item.editor_id) if item.editor_id else '',
         'date_received': str(item.date_received) if item.date_received else '',
         'due_date': str(item.due_date) if item.due_date else '',
-        'upload_date': str(item.upload_date) if item.upload_date else '',
         'status': item.status,
         'platform': item.platform,
         'post_type': item.post_type,
-        'campaign_status': item.campaign_status,
-        'video_link': item.video_link or '',
         'priority': item.priority,
         'notes': item.notes or '',
         'client_month': item.client_month or '',
@@ -4528,8 +4507,6 @@ def import_content_items(request):
         'platform': ['platform', 'channel', 'social platform'],
         'upload_date': ['upload date', 'upload_date', 'publish date', 'publish_date', 'uploaded'],
         'post_type': ['post type', 'post_type', 'type', 'content type', 'content_type', 'format'],
-        'campaign_status': ['campaign status', 'campaign_status', 'campaign'],
-        'video_link': ['video link', 'video_link', 'link', 'url', 'video url', 'video_url'],
         'priority': ['priority', 'urgency', 'importance'],
         'notes': ['notes', 'note', 'comments', 'comment', 'description', 'remarks'],
         'client_month': ['client month', 'client_month'],
@@ -4577,7 +4554,6 @@ def import_content_items(request):
 
     # Valid choices
     valid_statuses = [c[0] for c in ContentItem.STATUS_CHOICES]
-    valid_campaign_statuses = [c[0] for c in ContentItem.CAMPAIGN_STATUS_CHOICES]
     valid_priorities = [c[0] for c in ContentItem.PRIORITY_CHOICES]
     platforms = _get_content_options(org, 'platform')
     post_types = _get_content_options(org, 'post_type')
@@ -4654,7 +4630,6 @@ def import_content_items(request):
         # Parse dates (optional)
         date_received = safe_parse_date(row.get(mapped.get('date_received', ''), ''))
         due_date = safe_parse_date(row.get(mapped.get('due_date', ''), ''))
-        upload_date = safe_parse_date(row.get(mapped.get('upload_date', ''), ''))
 
         # Match choice fields with defaults
         raw_status = row.get(mapped.get('status', ''), '').strip()
@@ -4680,13 +4655,9 @@ def import_content_items(request):
         if not post_type:
             post_type = post_types[0] if post_types else 'Reel'
 
-        raw_campaign = row.get(mapped.get('campaign_status', ''), '').strip()
-        campaign_status = match_choice(raw_campaign, valid_campaign_statuses) or 'Not Started'
-
         raw_priority = row.get(mapped.get('priority', ''), '').strip()
         priority = match_choice(raw_priority, valid_priorities) or 'Medium'
 
-        video_link = row.get(mapped.get('video_link', ''), '').strip() or None
         notes = row.get(mapped.get('notes', ''), '').strip() or None
         
         client_month = row.get(mapped.get('client_month', ''), '').strip() or None
@@ -4715,10 +4686,7 @@ def import_content_items(request):
                     due_date=due_date,
                     status=status,
                     platform=platform,
-                    upload_date=upload_date,
                     post_type=post_type,
-                    campaign_status=campaign_status,
-                    video_link=video_link,
                     priority=priority,
                     notes=notes,
                     client_month=client_month,
@@ -4748,7 +4716,6 @@ DEFAULT_CONTENT_OPTIONS = {
     'platform': ['YouTube', 'TikTok', 'Instagram', 'LinkedIn', 'Facebook', 'Twitter'],
     'post_type': ['Reel', 'Short', 'Long-form', 'TikTok Video', 'Carousel', 'Post'],
     'status': ['Pending', 'Editing', 'Review', 'Approved', 'Published', 'Rejected', 'Scheduled'],
-    'campaign_status': ['Not Started', 'Planning', 'In Progress', 'Paused', 'Completed', 'Cancelled'],
     'priority': ['Low', 'Medium', 'High', 'Urgent'],
 }
 
