@@ -50,12 +50,12 @@
                         <span class="w-6 h-6 rounded-full bg-primary-100 text-primary-700 text-xs flex items-center justify-center font-bold">1</span>
                         Client & Contact Information
                     </h3>
-                    <select id="leadSelect" onchange="onLeadSelect(this.value)" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 font-medium focus:ring-primary-500">
+                    <select id="leadSelect" onchange="onLeadSelect(this)" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 font-medium focus:ring-primary-500">
                         <option value="">-- Select Existing Lead / Client --</option>
                         {% for l in leads %}
                         <option value="{{ l.id }}" {% if selected_lead and selected_lead.id == l.id %}selected{% elif quotation and quotation.lead_id == l.id %}selected{% endif %}
                             data-name="{{ l.name }}" data-company="{{ l.company }}" data-email="{{ l.email }}" data-phone="{{ l.phone_number }}" data-address="{{ l.location }}" data-gstin="">
-                            {{ l.name }} ({{ l.company }})
+                            {% if l.company %}{{ l.company }}{% else %}{{ l.name }}{% endif %}
                         </option>
                         {% endfor %}
                     </select>
@@ -64,7 +64,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">Client Name *</label>
-                        <input type="text" id="client_name" value="{% if quotation %}{{ quotation.client_name }}{% elif selected_lead %}{{ selected_lead.name }}{% else %}Veta Spoken English Academy{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl font-semibold text-slate-800">
+                        <input type="text" id="client_name" value="{% if quotation %}{{ quotation.client_name }}{% elif selected_lead %}{{ selected_lead.company|default:selected_lead.name }}{% else %}Veta Academy Pvt Ltd{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl font-semibold text-slate-800">
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">Company Name</label>
@@ -625,6 +625,25 @@
             li.innerText = t;
             termsList.appendChild(li);
         });
+    }
+
+    function onLeadSelect(selectEl) {
+        const opt = selectEl.options[selectEl.selectedIndex];
+        if (!opt || !opt.value) return;
+
+        const company = opt.getAttribute('data-company') || '';
+        const name = opt.getAttribute('data-name') || '';
+        const email = opt.getAttribute('data-email') || '';
+        const phone = opt.getAttribute('data-phone') || '';
+        const address = opt.getAttribute('data-address') || '';
+
+        document.getElementById('client_name').value = company || name;
+        document.getElementById('company_name').value = company;
+        if (email) document.getElementById('email').value = email;
+        if (phone) document.getElementById('phone').value = phone;
+        if (address) document.getElementById('address').value = address;
+
+        updatePreview();
     }
 
     function saveQuotation(targetStatus) {
