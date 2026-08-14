@@ -117,6 +117,7 @@ class Payroll(models.Model):
     cycle_end_date = models.DateField()
     base_salary = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     bonuses = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    advance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     deductions = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     net_pay = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Draft')
@@ -126,5 +127,13 @@ class Payroll(models.Model):
         db_table = 'hr_payrolls'
         ordering = ['-processed_on']
 
+    def save(self, *args, **kwargs):
+        # Auto calculate net pay if base_salary is provided
+        calc_net = (self.base_salary or 0) + (self.bonuses or 0) - (self.deductions or 0) - (self.advance or 0)
+        if self.net_pay == 0.00 or self.net_pay is None or self.net_pay != calc_net:
+            self.net_pay = calc_net
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.user_profile.user.get_full_name()} - {self.cycle_start_date} to {self.cycle_end_date}"
+

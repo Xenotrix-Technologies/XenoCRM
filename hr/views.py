@@ -106,6 +106,32 @@ def hr_payroll(request):
 
 @login_required
 @page_permission_required('hr')
+def edit_payroll(request, payroll_id):
+    org = request.user.profile.organization
+    payroll = get_object_or_404(Payroll, id=payroll_id, organization=org)
+    
+    if request.method == 'POST':
+        form = PayrollForm(request.POST, instance=payroll, organization=org)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Salary slip updated successfully.')
+        else:
+            messages.error(request, 'Error updating salary slip. Please check the values entered.')
+    return redirect('hr_payroll')
+
+@login_required
+@page_permission_required('hr')
+def delete_payroll(request, payroll_id):
+    org = request.user.profile.organization
+    payroll = get_object_or_404(Payroll, id=payroll_id, organization=org)
+    if request.method == 'POST':
+        payroll.delete()
+        messages.success(request, 'Salary slip deleted successfully.')
+    return redirect('hr_payroll')
+
+
+@login_required
+@page_permission_required('hr')
 def hr_settings(request):
     """
     Settings page for HR module to manage statuses and configurations.

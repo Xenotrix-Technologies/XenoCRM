@@ -7,5 +7,7 @@ urlpatterns = [
     path('attendance/', views.hr_attendance, name='hr_attendance'),
     path('leaves/', views.hr_leaves, name='hr_leaves'),
     path('payroll/', views.hr_payroll, name='hr_payroll'),
+    path('payroll/<int:payroll_id>/edit/', views.edit_payroll, name='edit_payroll'),
+    path('payroll/<int:payroll_id>/delete/', views.delete_payroll, name='delete_payroll'),
     path('settings/', views.hr_settings, name='hr_settings'),
 ]
