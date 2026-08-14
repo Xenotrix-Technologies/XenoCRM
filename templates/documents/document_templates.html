@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Document Templates | XenoCRM{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6 bg-slate-50 min-h-screen">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <i data-lucide="layout-template" class="w-7 h-7 text-primary-600"></i>
+                Document Templates Manager
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">Manage reusable templates for quotations, agreements, terms & conditions, payment schedules, and exclusions.</p>
+        </div>
+        <button onclick="openCreateModal()" class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-xs flex items-center gap-2 shadow-sm shadow-primary-500/20">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>+ Create Template</span>
+        </button>
+    </div>
+
+    <!-- Templates Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for tmpl in templates %}
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 space-y-3 flex flex-col justify-between">
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary-50 text-primary-700 border border-primary-200">
+                        {{ tmpl.get_category_display }}
+                    </span>
+                    {% if tmpl.is_default %}
+                    <span class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded text-[9px] font-bold">DEFAULT</span>
+                    {% endif %}
+                </div>
+                <h3 class="font-bold text-slate-900 text-sm">{{ tmpl.title }}</h3>
+                <p class="text-xs text-slate-500 line-clamp-2">{{ tmpl.description|default:"No description provided." }}</p>
+            </div>
+
+            <div class="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
+                <span class="text-[10px] text-slate-400">Created: {{ tmpl.created_at|date:"M d, Y" }}</span>
+                <form method="POST" action="{% url 'document_template_delete' tmpl.id %}" onsubmit="return confirm('Delete template {{ tmpl.title }}?');" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="text-rose-600 hover:text-rose-800 text-xs font-semibold">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full bg-white p-12 rounded-2xl border border-slate-200 text-center text-slate-400">
+            <i data-lucide="layout-template" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+            <p class="font-medium text-slate-700">No custom templates created yet.</p>
+            <p class="text-xs mt-1">Default built-in templates are available when creating proposals and agreements.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Create Template Modal -->
+    <div id="createTemplateModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="plus-circle" class="w-5 h-5 text-primary-600"></i>
+                Create New Template
+            </h3>
+
+            <form method="POST" class="space-y-3 text-xs">
+                {% csrf_token %}
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Category *</label>
+                    <select name="category" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold">
+                        <option value="quotation">Quotation Template</option>
+                        <option value="agreement">Agreement Template</option>
+                        <option value="terms">Terms & Conditions Template</option>
+                        <option value="payment">Payment Terms Template</option>
+                        <option value="exclusion">Exclusions Template</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Template Title *</label>
+                    <input type="text" name="title" placeholder="e.g. Website Development Agreement Template" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Description</label>
+                    <input type="text" name="description" placeholder="Brief summary of when to use this template" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Template Content / Clauses (Text or JSON)</label>
+                    <textarea name="content_json" rows="4" placeholder="Enter terms, clauses, or JSON structure..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono text-[11px]"></textarea>
+                </div>
+
+                <label class="flex items-center gap-2 pt-1 cursor-pointer">
+                    <input type="checkbox" name="is_default" class="rounded text-primary-600">
+                    <span class="font-bold text-slate-700">Set as Default Template for category</span>
+                </label>
+
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="closeCreateModal()" class="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-xl text-xs">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl text-xs shadow-md">
+                        Save Template
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openCreateModal() { document.getElementById('createTemplateModal').classList.remove('hidden'); }
+    function closeCreateModal() { document.getElementById('createTemplateModal').classList.add('hidden'); }
+</script>
+{% endblock %}

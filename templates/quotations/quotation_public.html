@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation {{ quotation.quotation_number }} | {{ doc_settings.company_name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-paper { shadow: none !important; border: none !important; width: 100% !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 antialiased pb-12">
+
+    <!-- Top Sticky Bar -->
+    <div class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs no-print">
+        <div class="max-w-5xl mx-auto px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">
+                    {{ doc_settings.company_name|slice:":2"|upper }}
+                </div>
+                <div>
+                    <h1 class="text-sm font-extrabold text-slate-900">{{ doc_settings.company_name }}</h1>
+                    <p class="text-xs text-slate-500">Commercial Proposal {{ quotation.quotation_number }}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button onclick="window.print()" class="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-xs transition-all">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Download / Print PDF</span>
+                </button>
+
+                {% if quotation.status == 'Accepted' %}
+                <span class="px-4 py-2 bg-emerald-100 text-emerald-800 font-bold rounded-xl text-xs flex items-center gap-1.5 border border-emerald-200">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+                    <span>Proposal Accepted</span>
+                </span>
+                {% elif quotation.status == 'Rejected' %}
+                <span class="px-4 py-2 bg-rose-100 text-rose-800 font-bold rounded-xl text-xs flex items-center gap-1.5 border border-rose-200">
+                    <i data-lucide="x-circle" class="w-4 h-4 text-rose-600"></i>
+                    <span>Proposal Rejected</span>
+                </span>
+                {% else %}
+                <button onclick="openRejectModal()" class="px-3.5 py-2 bg-white border border-rose-200 hover:bg-rose-50 text-rose-700 font-semibold rounded-xl text-xs transition-all">
+                    Reject / Feedback
+                </button>
+                <button onclick="openAcceptModal()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 active:scale-98 transition-all">
+                    <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                    <span>Accept Quotation</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Paper Container -->
+    <div class="max-w-4xl mx-auto my-8 px-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200/80 p-8 sm:p-12 space-y-8 print-paper relative overflow-hidden">
+            
+            <!-- Banner Status if accepted/rejected -->
+            {% if quotation.status == 'Accepted' %}
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3 no-print">
+                <i data-lucide="check-circle-2" class="w-6 h-6 text-emerald-600 flex-shrink-0"></i>
+                <div class="text-xs text-emerald-800">
+                    <p class="font-bold text-emerald-900">Quotation accepted on {{ quotation.accepted_at|date:"M d, Y H:i" }}</p>
+                    <p>Confirmed by {{ quotation.accepted_by_name }} ({{ quotation.accepted_by_email }})</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Header Branding -->
+            <div class="flex flex-col sm:flex-row justify-between items-start border-b-2 border-blue-600 pb-8 gap-4">
+                <div>
+                    <h2 class="text-2xl font-black text-blue-900 tracking-tight">{{ doc_settings.company_name }}</h2>
+                    <p class="text-xs text-slate-500 font-medium mt-1">{{ doc_settings.address }}</p>
+                    <p class="text-xs text-slate-400">GSTIN: {{ doc_settings.gstin }} | Email: {{ doc_settings.email }} | Web: {{ doc_settings.website }}</p>
+                </div>
+                <div class="sm:text-right">
+                    <span class="inline-block px-3 py-1 bg-blue-600 text-white font-black text-xs uppercase tracking-widest rounded">QUOTATION</span>
+                    <p class="text-sm font-mono font-bold text-slate-900 mt-2">{{ quotation.quotation_number }}</p>
+                    <p class="text-xs text-slate-500">Date: <span class="font-semibold text-slate-700">{{ quotation.date|date:"M d, Y" }}</span></p>
+                    <p class="text-xs text-slate-500">Valid Until: <span class="font-semibold text-slate-700">{{ quotation.valid_until|date:"M d, Y" }}</span></p>
+                </div>
+            </div>
+
+            <!-- Client Info Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-slate-50 p-5 rounded-2xl border border-slate-200/80 text-xs">
+                <div>
+                    <span class="font-bold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">PREPARED FOR</span>
+                    <h4 class="font-bold text-slate-900 text-sm">{{ quotation.client_name }}</h4>
+                    {% if quotation.company_name %}<p class="font-semibold text-slate-700">{{ quotation.company_name }}</p>{% endif %}
+                    <p class="text-slate-600 mt-1">{{ quotation.email }} | {{ quotation.phone }}</p>
+                    {% if quotation.address %}<p class="text-slate-500">{{ quotation.address }}</p>{% endif %}
+                </div>
+                <div class="sm:text-right">
+                    <span class="font-bold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">PREPARED BY</span>
+                    <p class="font-bold text-slate-900 text-sm">{{ quotation.salesperson|default:doc_settings.authorized_person_name }}</p>
+                    <p class="text-slate-600">{{ doc_settings.company_name }}</p>
+                    <p class="text-slate-500">{{ doc_settings.email }}</p>
+                </div>
+            </div>
+
+            <!-- Line Items Table -->
+            <div>
+                <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-3 border-l-4 border-blue-600 pl-2">Services & Deliverables</h4>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] border-y border-slate-200">
+                                <th class="py-3 px-3">Service / Description</th>
+                                <th class="py-3 px-3 text-center">Type</th>
+                                <th class="py-3 px-3 text-center">Qty</th>
+                                <th class="py-3 px-3 text-right">Unit Price</th>
+                                <th class="py-3 px-3 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for item in included_items %}
+                            <tr>
+                                <td class="py-3 px-3">
+                                    <p class="font-bold text-slate-900">{{ item.title }}</p>
+                                    {% if item.description %}<p class="text-[11px] text-slate-500 mt-0.5">{{ item.description }}</p>{% endif %}
+                                </td>
+                                <td class="py-3 px-3 text-center uppercase text-[10px] font-semibold text-slate-600">{{ item.pricing_type }}</td>
+                                <td class="py-3 px-3 text-center font-medium">{{ item.quantity }} {{ item.unit }}</td>
+                                <td class="py-3 px-3 text-right font-mono text-slate-700">₹{{ item.unit_price|floatformat:2 }}</td>
+                                <td class="py-3 px-3 text-right font-bold font-mono text-slate-900">₹{{ item.line_total|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Optional Items -->
+            {% if optional_items.exists %}
+            <div>
+                <h5 class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-2 border-l-4 border-amber-500 pl-2">Optional Services (Not Included in Total)</h5>
+                <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-200/80 space-y-2 text-xs">
+                    {% for item in optional_items %}
+                    <div class="flex justify-between items-center text-amber-900">
+                        <span>• <strong>{{ item.title }}</strong> - {{ item.description }}</span>
+                        <span class="font-bold font-mono">₹{{ item.line_total|floatformat:2 }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Domain Options -->
+            {% if domain_options.exists %}
+            <div>
+                <h5 class="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2 border-l-4 border-blue-600 pl-2">Domain Options</h5>
+                <div class="bg-blue-50/60 p-4 rounded-xl border border-blue-200 space-y-2 text-xs">
+                    {% for dom in domain_options %}
+                    <div class="flex justify-between items-center text-slate-800">
+                        <span>○ <strong>{{ dom.domain_name }}</strong> ({{ dom.period }}) {% if dom.is_recommended %}<span class="px-2 py-0.5 bg-blue-600 text-white rounded text-[9px] font-bold uppercase">RECOMMENDED</span>{% endif %}</span>
+                        <span class="font-bold font-mono text-blue-900">₹{{ dom.price|floatformat:2 }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Totals & Payment Milestones -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-200">
+                <div>
+                    <h5 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Payment Milestones</h5>
+                    <div class="space-y-1.5 text-xs">
+                        {% for stage in payment_stages %}
+                        <div class="flex justify-between items-center text-slate-700">
+                            <span>{{ stage.stage_name }} ({{ stage.percentage }}%)</span>
+                            <span class="font-bold font-mono">₹{{ stage.amount|floatformat:2 }}</span>
+                        </div>
+                        {% empty %}
+                        <p class="text-slate-500">{{ quotation.payment_terms_summary }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="space-y-2 text-xs text-right">
+                    <div class="flex justify-between text-slate-600">
+                        <span>Subtotal:</span>
+                        <span class="font-semibold font-mono">₹{{ quotation.subtotal|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>Discount:</span>
+                        <span class="font-semibold font-mono">₹{{ quotation.discount_amount|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between text-slate-600">
+                        <span>Tax:</span>
+                        <span class="font-semibold font-mono">₹{{ quotation.tax_amount|floatformat:2 }}</span>
+                    </div>
+                    <div class="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-200">
+                        <span>Grand Total:</span>
+                        <span class="text-blue-700 font-mono">₹{{ quotation.grand_total|floatformat:2 }}</span>
+                    </div>
+                    {% if quotation.monthly_recurring_total > 0 %}
+                    <div class="text-xs text-blue-600 font-bold">
+                        Recurring: ₹{{ quotation.monthly_recurring_total|floatformat:2 }}/Month
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Exclusions -->
+            {% if exclusions.exists %}
+            <div class="pt-4 border-t border-slate-100">
+                <h5 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-1.5">Exclusions</h5>
+                <ul class="list-disc pl-4 text-xs text-slate-500 space-y-0.5">
+                    {% for ex in exclusions %}
+                    <li><strong>{{ ex.service_name }}:</strong> {{ ex.charges_description }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Terms & Conditions -->
+            {% if terms.exists %}
+            <div class="pt-4 border-t border-slate-100">
+                <h5 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-1.5">Terms & Conditions</h5>
+                <ol class="list-decimal pl-4 text-xs text-slate-500 space-y-1">
+                    {% for t in terms %}
+                    <li>{{ t.content }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+            {% endif %}
+
+            <!-- Signatures Section -->
+            <div class="pt-8 border-t border-slate-200 flex justify-between items-end text-xs">
+                <div>
+                    <p class="text-[10px] text-slate-400">Accepted By Client</p>
+                    <div class="h-10 border-b border-dashed border-slate-300 w-44 mt-1 flex items-end">
+                        {% if quotation.accepted_at %}
+                        <span class="font-semibold text-emerald-700 text-xs">{{ quotation.accepted_by_name }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-1">Signature & Date</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] text-slate-400">For {{ doc_settings.company_name }}</p>
+                    <div class="h-10 border-b border-dashed border-slate-300 w-44 ml-auto mt-1 flex items-end justify-end pb-1 font-serif italic text-blue-700 text-sm">
+                        {{ doc_settings.authorized_person_name }}
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-1">Authorized Representative</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Acceptance Modal -->
+    <div id="acceptModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden no-print">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
+                Confirm Proposal Acceptance
+            </h3>
+            <p class="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200">
+                "By accepting this quotation, you confirm your acceptance of the scope of services, pricing structure, payment terms, and terms & conditions."
+            </p>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Your Full Name *</label>
+                    <input type="text" id="accept_name" value="{{ quotation.client_name }}" class="w-full px-3 py-2 border border-slate-300 rounded-xl font-medium">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Your Email Address *</label>
+                    <input type="email" id="accept_email" value="{{ quotation.email }}" class="w-full px-3 py-2 border border-slate-300 rounded-xl font-medium">
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeAcceptModal()" class="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-xl text-xs">Cancel</button>
+                <button onclick="submitAcceptance()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md">
+                    Confirm & Accept
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejection Modal -->
+    <div id="rejectModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden no-print">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="x-circle" class="w-5 h-5 text-rose-600"></i>
+                Decline Proposal / Feedback
+            </h3>
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Reason for Rejection *</label>
+                    <select id="reject_reason" class="w-full px-3 py-2 border border-slate-300 rounded-xl font-medium">
+                        <option value="Price">Price higher than expected</option>
+                        <option value="Scope">Scope does not match requirements</option>
+                        <option value="Timing">Project timeline constraints</option>
+                        <option value="Competitor">Chose another service provider</option>
+                        <option value="Other">Other reason</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Additional Feedback</label>
+                    <textarea id="reject_notes" rows="3" placeholder="Please share details on how we can improve..." class="w-full px-3 py-2 border border-slate-300 rounded-xl"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 pt-2">
+                <button onclick="closeRejectModal()" class="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-xl text-xs">Cancel</button>
+                <button onclick="submitRejection()" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-md">
+                    Submit Rejection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function openAcceptModal() { document.getElementById('acceptModal').classList.remove('hidden'); }
+        function closeAcceptModal() { document.getElementById('acceptModal').classList.add('hidden'); }
+        function openRejectModal() { document.getElementById('rejectModal').classList.remove('hidden'); }
+        function closeRejectModal() { document.getElementById('rejectModal').classList.add('hidden'); }
+
+        function submitAcceptance() {
+            const name = document.getElementById('accept_name').value;
+            const email = document.getElementById('accept_email').value;
+
+            fetch('{% url "public_quotation_accept" quotation.public_token %}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+
+        function submitRejection() {
+            const reason = document.getElementById('reject_reason').value;
+            const notes = document.getElementById('reject_notes').value;
+
+            fetch('{% url "public_quotation_reject" quotation.public_token %}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason, notes })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

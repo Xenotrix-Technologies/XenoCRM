@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+import uuid
+
 
 class Organization(models.Model):
     name = models.CharField(max_length=255)
@@ -174,6 +176,23 @@ class UserProfile(models.Model):
     @property
     def has_access_agreements(self):
         return self.check_page_permission('agreements')
+
+    @property
+    def has_access_quotations(self):
+        return self.check_page_permission('quotations') or self.check_page_permission('agreements')
+
+    @property
+    def has_access_documents(self):
+        return self.has_access_quotations or self.has_access_agreements
+
+    @property
+    def has_access_document_settings(self):
+        return self.check_page_permission('document_settings') or self.has_access_settings
+
+    @property
+    def has_access_document_templates(self):
+        return self.check_page_permission('document_templates') or self.has_access_settings
+
 
     @property
     def has_access_campaigns(self):
@@ -1120,29 +1139,340 @@ class Ticket(models.Model):
         return f"{self.ticket_id} - {self.subject}"
 
 
+class DocumentSettings(models.Model):
+    organization = models.OneToOneField(Organization, on_delete=models.CASCADE, related_name='document_settings')
+    company_name = models.CharField(max_length=255, default='Xenotrix Technologies')
+    logo_url = models.URLField(max_length=1000, blank=True, null=True)
+    address = models.TextField(default='123 Tech Park, Suite 400, Hyderabad, Telangana, India')
+    phone = models.CharField(max_length=50, default='+91 98765 43210')
+    email = models.EmailField(default='contact@xenotrix.in')
+    website = models.URLField(default='https://xenotrix.in')
+    gstin = models.CharField(max_length=50, blank=True, null=True, default='36AAAAA0000A1Z5')
+    pan = models.CharField(max_length=50, blank=True, null=True, default='ABCDE1234F')
+    
+    bank_name = models.CharField(max_length=255, blank=True, null=True, default='HDFC Bank')
+    account_name = models.CharField(max_length=255, blank=True, null=True, default='Xenotrix Technologies Pvt Ltd')
+    account_number = models.CharField(max_length=100, blank=True, null=True, default='50200012345678')
+    ifsc_code = models.CharField(max_length=50, blank=True, null=True, default='HDFC0001234')
+    upi_id = models.CharField(max_length=100, blank=True, null=True, default='xenotrix@hdfcbank')
+    
+    default_currency = models.CharField(max_length=10, default='INR')
+    default_tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    quotation_prefix = models.CharField(max_length=20, default='XT-QT')
+    agreement_prefix = models.CharField(max_length=20, default='XT-AGR')
+    next_quotation_number = models.IntegerField(default=1)
+    next_agreement_number = models.IntegerField(default=1)
+    
+    footer_text = models.TextField(default='Thank you for choosing Xenotrix Technologies. For any queries, contact info@xenotrix.in.')
+    authorized_person_name = models.CharField(max_length=255, default='Authorized Signatory')
+    authorized_signature_url = models.URLField(max_length=1000, blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'document_settings'
+
+    def __str__(self):
+        return f"Document Settings - {self.company_name}"
+
+
+class Quotation(models.Model):
+    STATUS_CHOICES = [
+        ('Draft', 'Draft'),
+        ('Sent', 'Sent'),
+        ('Viewed', 'Viewed'),
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+        ('Expired', 'Expired'),
+        ('Cancelled', 'Cancelled'),
+    ]
+
+    TEMPLATE_CHOICES = [
+        ('corporate', 'Professional Corporate'),
+        ('minimal', 'Minimal'),
+        ('modern', 'Modern'),
+        ('default', 'Xenotrix Default'),
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='quotations')
+    quotation_number = models.CharField(max_length=50, unique=True)
+    lead = models.ForeignKey(Lead, on_delete=models.SET_NULL, null=True, blank=True, related_name='quotations')
+    
+    client_name = models.CharField(max_length=255)
+    company_name = models.CharField(max_length=255, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=50, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    gstin = models.CharField(max_length=50, blank=True, null=True)
+    contact_person = models.CharField(max_length=255, blank=True, null=True)
+    lead_source = models.CharField(max_length=100, blank=True, null=True)
+    
+    date = models.DateField(default=timezone.now)
+    valid_until = models.DateField()
+    prepared_by = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='prepared_quotations')
+    salesperson = models.CharField(max_length=255, blank=True, null=True)
+    currency = models.CharField(max_length=10, default='INR')
+    payment_terms_summary = models.CharField(max_length=255, blank=True, null=True, default='50% Advance / 50% Completion')
+    notes = models.TextField(blank=True, null=True)
+    template_style = models.CharField(max_length=50, choices=TEMPLATE_CHOICES, default='default')
+    
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Draft')
+    public_token = models.CharField(max_length=64, unique=True, blank=True, null=True)
+    version = models.IntegerField(default=1)
+    
+    subtotal = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    discount_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    tax_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    grand_total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    
+    one_time_total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    monthly_recurring_total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    yearly_recurring_total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+
+    rejection_reason = models.CharField(max_length=255, blank=True, null=True)
+    rejection_notes = models.TextField(blank=True, null=True)
+    accepted_at = models.DateTimeField(blank=True, null=True)
+    accepted_by_name = models.CharField(max_length=255, blank=True, null=True)
+    accepted_by_email = models.EmailField(blank=True, null=True)
+    accepted_ip = models.CharField(max_length=50, blank=True, null=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'quotations'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.quotation_number} - {self.client_name}"
+
+    def save(self, *args, **kwargs):
+        if not self.public_token:
+            self.public_token = uuid.uuid4().hex
+        super().save(*args, **kwargs)
+
+    @property
+    def is_expired(self):
+        if self.status not in ['Accepted', 'Rejected', 'Cancelled'] and self.valid_until:
+            return timezone.now().date() > self.valid_until
+        return False
+
+
+class QuotationItem(models.Model):
+    PRICING_TYPES = [
+        ('fixed', 'Fixed Price'),
+        ('monthly', 'Monthly Recurring'),
+        ('yearly', 'Yearly Recurring'),
+        ('one_time', 'One-time Price'),
+        ('custom', 'Custom Pricing'),
+    ]
+
+    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='items')
+    section_name = models.CharField(max_length=255, default='Services')
+    service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, blank=True)
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    pricing_type = models.CharField(max_length=50, choices=PRICING_TYPES, default='fixed')
+    quantity = models.DecimalField(max_digits=10, decimal_places=2, default=1.00)
+    unit = models.CharField(max_length=50, default='Item')
+    unit_price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    discount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    line_total = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    is_optional = models.BooleanField(default=False)
+    position = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = 'quotation_items'
+        ordering = ['position', 'id']
+
+    def __str__(self):
+        return f"{self.title} - {self.line_total}"
+
+
+class QuotationPackage(models.Model):
+    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='packages')
+    package_name = models.CharField(max_length=255)
+    price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    billing_frequency = models.CharField(max_length=50, default='Monthly')
+    description = models.TextField(blank=True, null=True)
+    deliverables_text = models.TextField(blank=True, null=True)
+    inclusions_text = models.TextField(blank=True, null=True)
+    exclusions_text = models.TextField(blank=True, null=True)
+    terms_text = models.TextField(blank=True, null=True)
+
+    class Meta:
+        db_table = 'quotation_packages'
+
+    def __str__(self):
+        return f"{self.package_name} - {self.price}/{self.billing_frequency}"
+
+
+class QuotationDomainOption(models.Model):
+    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='domain_options')
+    domain_name = models.CharField(max_length=255)
+    period = models.CharField(max_length=50, default='3 Years')
+    price = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    is_recommended = models.BooleanField(default=False)
+    is_selected = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'quotation_domain_options'
+
+    def __str__(self):
+        return f"{self.domain_name} - ₹{self.price}"
+
+
+class QuotationPaymentStage(models.Model):
+    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='payment_stages')
+    stage_name = models.CharField(max_length=255)
+    percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    due_date = models.DateField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    position = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = 'quotation_payment_stages'
+        ordering = ['position', 'id']
+
+    def __str__(self):
+        return f"{self.stage_name} ({self.percentage}%)"
+
+
+class QuotationTerm(models.Model):
+    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='terms')
+    clause_title = models.CharField(max_length=255, blank=True, null=True)
+    content = models.TextField()
+    position = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = 'quotation_terms'
+        ordering = ['position', 'id']
+
+    def __str__(self):
+        return self.clause_title or self.content[:30]
+
+
+class QuotationExclusion(models.Model):
+    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='exclusions')
+    service_name = models.CharField(max_length=255)
+    charges_description = models.CharField(max_length=255)
+    position = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = 'quotation_exclusions'
+        ordering = ['position', 'id']
+
+    def __str__(self):
+        return f"{self.service_name} - {self.charges_description}"
+
+
+class QuotationActivity(models.Model):
+    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='activities')
+    user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True)
+    activity_type = models.CharField(max_length=100)
+    description = models.TextField()
+    ip_address = models.CharField(max_length=50, blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'quotation_activities'
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.quotation.quotation_number} - {self.activity_type}"
+
+
+class QuotationVersion(models.Model):
+    quotation = models.ForeignKey(Quotation, on_delete=models.CASCADE, related_name='versions')
+    version_number = models.IntegerField()
+    data_snapshot_json = models.TextField()
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    change_summary = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'quotation_versions'
+        ordering = ['-version_number']
+
+    def __str__(self):
+        return f"{self.quotation.quotation_number} v{self.version_number}"
+
+
 class Agreement(models.Model):
+    STATUS_CHOICES = [
+        ('Draft', 'Draft'),
+        ('Sent', 'Sent'),
+        ('Viewed', 'Viewed'),
+        ('Pending Signature', 'Pending Signature'),
+        ('Signed', 'Signed'),
+        ('Active', 'Active'),
+        ('Expired', 'Expired'),
+        ('Terminated', 'Terminated'),
+        ('Cancelled', 'Cancelled'),
+    ]
+
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='agreements')
     agreement_number = models.CharField(max_length=50, unique=True)
-    date = models.DateField()
+    quotation = models.ForeignKey(Quotation, on_delete=models.SET_NULL, null=True, blank=True, related_name='agreements')
+    lead = models.ForeignKey(Lead, on_delete=models.SET_NULL, null=True, blank=True, related_name='agreements')
+    
+    date = models.DateField(default=timezone.now)
     start_date = models.DateField()
     end_date = models.DateField()
+    
     client_name = models.CharField(max_length=255)
     company_name = models.CharField(max_length=255, blank=True, null=True)
     client_email = models.EmailField(blank=True, null=True)
     client_phone = models.CharField(max_length=50, blank=True, null=True)
     client_address = models.TextField(blank=True, null=True)
+    gstin = models.CharField(max_length=50, blank=True, null=True)
+    
     service = models.ForeignKey(Service, on_delete=models.SET_NULL, null=True, blank=True, related_name='agreements')
+    agreement_type = models.CharField(max_length=100, default='Website Development Agreement')
+    project_name = models.CharField(max_length=255, blank=True, null=True)
+    
     monthly_fee = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     advance_payment = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    total_value = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     payment_cycle = models.CharField(max_length=100, default='Monthly')
     payment_method = models.CharField(max_length=100, default='Bank Transfer')
+    
+    scope_of_work = models.TextField(blank=True, null=True)
+    deliverables_text = models.TextField(blank=True, null=True)
+    project_timeline = models.TextField(blank=True, null=True)
+    payment_terms_text = models.TextField(blank=True, null=True)
+    client_responsibilities_text = models.TextField(blank=True, null=True)
+    provider_responsibilities_text = models.TextField(blank=True, null=True)
+    confidentiality_clause = models.TextField(blank=True, null=True)
+    ip_clause = models.TextField(blank=True, null=True)
+    termination_clause = models.TextField(blank=True, null=True)
+    refund_policy = models.TextField(blank=True, null=True)
+    limitation_liability = models.TextField(blank=True, null=True)
+    dispute_resolution = models.TextField(blank=True, null=True)
+    governing_law = models.TextField(blank=True, null=True, default='Laws of Telangana, India')
+    
     posts_count = models.IntegerField(default=0)
     campaigns_count = models.IntegerField(default=0)
     revisions = models.IntegerField(default=3)
     notice_period = models.IntegerField(default=30)
     notes = models.TextField(blank=True, null=True)
     project_estimation_json = models.TextField(blank=True, null=True)
-    status = models.CharField(max_length=50, default='Draft')
+    
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='Draft')
+    public_token = models.CharField(max_length=64, unique=True, blank=True, null=True)
+    version = models.IntegerField(default=1)
+
+    # Signature fields
+    signature_type = models.CharField(max_length=50, blank=True, null=True) # draw, type
+    signature_data = models.TextField(blank=True, null=True)
+    signed_at = models.DateTimeField(blank=True, null=True)
+    signed_by_name = models.CharField(max_length=255, blank=True, null=True)
+    signed_by_email = models.EmailField(blank=True, null=True)
+    signed_ip = models.CharField(max_length=50, blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1153,6 +1483,11 @@ class Agreement(models.Model):
     def __str__(self):
         return f"{self.agreement_number} - {self.client_name}"
 
+    def save(self, *args, **kwargs):
+        if not self.public_token:
+            self.public_token = uuid.uuid4().hex
+        super().save(*args, **kwargs)
+
     @property
     def parsed_estimation(self):
         import json
@@ -1162,6 +1497,50 @@ class Agreement(models.Model):
             except Exception:
                 pass
         return None
+
+
+class AgreementVersion(models.Model):
+    agreement = models.ForeignKey(Agreement, on_delete=models.CASCADE, related_name='versions')
+    version_number = models.IntegerField()
+    snapshot_json = models.TextField()
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    change_summary = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'agreement_versions'
+        ordering = ['-version_number']
+
+    def __str__(self):
+        return f"{self.agreement.agreement_number} v{self.version_number}"
+
+
+class DocumentTemplate(models.Model):
+    CATEGORY_CHOICES = [
+        ('quotation', 'Quotation Template'),
+        ('agreement', 'Agreement Template'),
+        ('terms', 'Terms & Conditions Template'),
+        ('payment', 'Payment Terms Template'),
+        ('exclusion', 'Exclusions Template'),
+    ]
+
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='document_templates')
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    content_json = models.TextField(default='{}')
+    is_default = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'document_templates'
+        ordering = ['category', '-is_default', 'title']
+
+    def __str__(self):
+        return f"[{self.get_category_display()}] {self.title}"
+
 
 
 class AgreementService(models.Model):

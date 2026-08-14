@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agreement {{ agreement.agreement_number }} | {{ doc_settings.company_name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Great+Vibes&display=swap" rel="stylesheet" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-signature { font-family: 'Great Vibes', cursive; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-paper { shadow: none !important; border: none !important; width: 100% !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 antialiased pb-12">
+
+    <!-- Top Sticky Bar -->
+    <div class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs no-print">
+        <div class="max-w-5xl mx-auto px-6 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-primary-600 text-white flex items-center justify-center font-bold text-sm">
+                    AG
+                </div>
+                <div>
+                    <h1 class="text-sm font-extrabold text-slate-900">{{ doc_settings.company_name }}</h1>
+                    <p class="text-xs text-slate-500">Service Agreement {{ agreement.agreement_number }}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button onclick="window.print()" class="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-xs transition-all">
+                    <i data-lucide="printer" class="w-4 h-4"></i>
+                    <span>Print / PDF</span>
+                </button>
+
+                {% if agreement.status == 'Signed' %}
+                <span class="px-4 py-2 bg-emerald-100 text-emerald-800 font-bold rounded-xl text-xs flex items-center gap-1.5 border border-emerald-200">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i>
+                    <span>Executed & Signed</span>
+                </span>
+                {% else %}
+                <button onclick="openSignModal()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 active:scale-98 transition-all">
+                    <i data-lucide="pen-tool" class="w-4 h-4"></i>
+                    <span>Review & Sign Agreement</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Paper Container -->
+    <div class="max-w-4xl mx-auto my-8 px-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-slate-200/80 p-8 sm:p-12 space-y-8 print-paper relative overflow-hidden">
+            
+            {% if agreement.status == 'Signed' %}
+            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center gap-3 no-print">
+                <i data-lucide="shield-check" class="w-6 h-6 text-emerald-600 flex-shrink-0"></i>
+                <div class="text-xs text-emerald-800">
+                    <p class="font-bold text-emerald-900">Agreement Digitally Signed on {{ agreement.signed_at|date:"M d, Y H:i" }}</p>
+                    <p>Signed by {{ agreement.signed_by_name }} ({{ agreement.signed_by_email }}) | Verified IP: {{ agreement.signed_ip }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Header -->
+            <div class="text-center border-b-2 border-slate-900 pb-6 space-y-1">
+                <h1 class="text-2xl font-black text-slate-900 uppercase tracking-tight">{{ agreement.agreement_type }}</h1>
+                <p class="text-xs font-mono font-bold text-slate-600">Agreement No: {{ agreement.agreement_number }}</p>
+                <p class="text-xs text-slate-500">Effective Date: {{ agreement.date|date:"F d, Y" }}</p>
+            </div>
+
+            <!-- Parties Section -->
+            <div class="space-y-3 text-xs leading-relaxed text-slate-700">
+                <h3 class="font-bold text-slate-900 uppercase text-xs tracking-wider border-l-4 border-slate-900 pl-2">1. PARTIES TO THIS AGREEMENT</h3>
+                <p>This Service Agreement ("Agreement") is entered into and made effective as of <strong>{{ agreement.date|date:"F d, Y" }}</strong>, by and between:</p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div>
+                        <span class="font-bold text-slate-400 text-[10px] uppercase">SERVICE PROVIDER</span>
+                        <p class="font-bold text-slate-900 text-sm mt-0.5">{{ doc_settings.company_name }}</p>
+                        <p>{{ doc_settings.address }}</p>
+                        <p>GSTIN: {{ doc_settings.gstin }} | Email: {{ doc_settings.email }}</p>
+                    </div>
+                    <div>
+                        <span class="font-bold text-slate-400 text-[10px] uppercase">CLIENT</span>
+                        <p class="font-bold text-slate-900 text-sm mt-0.5">{{ agreement.client_name }}</p>
+                        {% if agreement.company_name %}<p class="font-semibold text-slate-800">{{ agreement.company_name }}</p>{% endif %}
+                        <p>{{ agreement.client_address|default:"Address on file" }}</p>
+                        <p>Email: {{ agreement.client_email }} | Phone: {{ agreement.client_phone }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scope of Work -->
+            <div class="space-y-2 text-xs leading-relaxed text-slate-700">
+                <h3 class="font-bold text-slate-900 uppercase text-xs tracking-wider border-l-4 border-slate-900 pl-2">2. SCOPE OF WORK & DELIVERABLES</h3>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 whitespace-pre-line">
+                    {{ agreement.scope_of_work|default:"Scope as defined in approved quotation." }}
+                </div>
+            </div>
+
+            <!-- Pricing & Payment Terms -->
+            <div class="space-y-2 text-xs leading-relaxed text-slate-700">
+                <h3 class="font-bold text-slate-900 uppercase text-xs tracking-wider border-l-4 border-slate-900 pl-2">3. FINANCIAL CONSIDERATION & PAYMENT TERMS</h3>
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-2">
+                    <p class="font-bold text-slate-900 text-sm">Total Agreement Value: ₹{{ agreement.total_value|floatformat:2 }}</p>
+                    {% if agreement.monthly_fee > 0 %}
+                    <p class="font-bold text-primary-700">Recurring Monthly Fee: ₹{{ agreement.monthly_fee|floatformat:2 }} / Month</p>
+                    {% endif %}
+                    <div class="whitespace-pre-line text-slate-600 pt-2 border-t border-slate-200">
+                        {{ agreement.payment_terms_text|default:"Payment schedule according to agreed milestones." }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terms & Governing Law -->
+            <div class="space-y-3 text-xs leading-relaxed text-slate-700">
+                <h3 class="font-bold text-slate-900 uppercase text-xs tracking-wider border-l-4 border-slate-900 pl-2">4. GENERAL TERMS & GOVERNING LAW</h3>
+                <ul class="list-disc pl-5 space-y-1 text-slate-600">
+                    <li><strong>Confidentiality:</strong> Both parties agree to maintain strict confidentiality regarding project materials and intellectual property.</li>
+                    <li><strong>Governing Law:</strong> This Agreement shall be governed by and construed in accordance with the <strong>{{ agreement.governing_law }}</strong>.</li>
+                    <li><strong>Termination:</strong> Either party may terminate this agreement by providing a 30-day written notice.</li>
+                </ul>
+            </div>
+
+            <!-- Signatures Section -->
+            <div class="pt-8 border-t-2 border-slate-900 flex justify-between items-end text-xs">
+                <div>
+                    <p class="text-[10px] font-bold uppercase text-slate-400">CLIENT SIGNATURE</p>
+                    <div class="h-16 border-b border-dashed border-slate-300 w-56 mt-1 flex items-center justify-center">
+                        {% if agreement.status == 'Signed' %}
+                            {% if agreement.signature_type == 'draw' %}
+                            <img src="{{ agreement.signature_data }}" class="max-h-12 max-w-full">
+                            {% else %}
+                            <span class="font-signature text-2xl text-slate-900">{{ agreement.signature_data|default:agreement.signed_by_name }}</span>
+                            {% endif %}
+                        {% else %}
+                        <span class="text-xs text-slate-400 font-mono">Pending Signature</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-800 mt-1">{{ agreement.signed_by_name|default:agreement.client_name }}</p>
+                    <p class="text-[9px] text-slate-400">Date: {{ agreement.signed_at|date:"M d, Y H:i"|default:"Unsigned" }}</p>
+                </div>
+
+                <div class="text-right">
+                    <p class="text-[10px] font-bold uppercase text-slate-400">SERVICE PROVIDER SIGNATURE</p>
+                    <div class="h-16 border-b border-dashed border-slate-300 w-56 ml-auto mt-1 flex items-end justify-end pb-1">
+                        <span class="font-signature text-2xl text-blue-900">{{ doc_settings.authorized_person_name }}</span>
+                    </div>
+                    <p class="text-[10px] font-bold text-slate-800 mt-1">For {{ doc_settings.company_name }}</p>
+                    <p class="text-[9px] text-slate-400">Authorized Representative</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- E-Signature Modal -->
+    <div id="signModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 hidden no-print">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <i data-lucide="pen-tool" class="w-5 h-5 text-emerald-600"></i>
+                Sign Agreement Digitally
+            </h3>
+
+            <!-- Signature Tabs: Draw or Type -->
+            <div class="flex border-b border-slate-200 text-xs font-semibold">
+                <button type="button" id="tabDrawBtn" onclick="switchSigTab('draw')" class="py-2 px-4 border-b-2 border-emerald-600 text-emerald-600 font-bold">Draw Signature</button>
+                <button type="button" id="tabTypeBtn" onclick="switchSigTab('type')" class="py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800">Type Signature</button>
+            </div>
+
+            <!-- Draw Canvas -->
+            <div id="drawSigBox" class="space-y-2">
+                <p class="text-[11px] text-slate-500">Draw your signature in the box below using your mouse or touchscreen:</p>
+                <div class="border border-slate-300 rounded-xl bg-slate-50 p-1 relative">
+                    <canvas id="sigCanvas" width="440" height="130" class="w-full bg-white rounded-lg cursor-crosshair touch-none"></canvas>
+                    <button type="button" onclick="clearCanvas()" class="absolute right-3 top-3 text-[10px] font-bold text-slate-400 hover:text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200">Clear</button>
+                </div>
+            </div>
+
+            <!-- Type Input -->
+            <div id="typeSigBox" class="space-y-2 hidden">
+                <label class="block text-xs font-bold text-slate-700">Type Full Legal Name</label>
+                <input type="text" id="typeSigInput" value="{{ agreement.client_name }}" oninput="updateTypedPreview(this.value)" class="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
+                <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center">
+                    <span id="typedSigPreview" class="font-signature text-3xl text-slate-900">{{ agreement.client_name }}</span>
+                </div>
+            </div>
+
+            <div class="space-y-2 text-xs">
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Full Name *</label>
+                        <input type="text" id="signer_name" value="{{ agreement.client_name }}" class="w-full px-3 py-1.5 border border-slate-300 rounded-xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Email *</label>
+                        <input type="email" id="signer_email" value="{{ agreement.client_email }}" class="w-full px-3 py-1.5 border border-slate-300 rounded-xl text-xs">
+                    </div>
+                </div>
+
+                <label class="flex items-start gap-2 pt-2 cursor-pointer">
+                    <input type="checkbox" id="legalConsent" class="mt-0.5 rounded text-emerald-600">
+                    <span class="text-[11px] text-slate-600">I confirm that I am authorized to sign this agreement and understand that my digital signature constitutes a legally binding acceptance.</span>
+                </label>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                <button onclick="closeSignModal()" class="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-xl text-xs">Cancel</button>
+                <button onclick="submitSignature()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs shadow-md">
+                    Accept & Sign
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let activeTab = 'draw';
+        const canvas = document.getElementById('sigCanvas');
+        const ctx = canvas ? canvas.getContext('2d') : null;
+        let isDrawing = false;
+
+        if (canvas && ctx) {
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2.5;
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: (e.clientX || e.touches[0].clientX) - rect.left,
+                    y: (e.clientY || e.touches[0].clientY) - rect.top
+                };
+            }
+
+            canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); const pos = getPos(e); ctx.moveTo(pos.x, pos.y); });
+            canvas.addEventListener('mousemove', (e) => { if (isDrawing) { const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); } });
+            canvas.addEventListener('mouseup', () => isDrawing = false);
+            canvas.addEventListener('touchstart', (e) => { isDrawing = true; ctx.beginPath(); const pos = getPos(e); ctx.moveTo(pos.x, pos.y); });
+            canvas.addEventListener('touchmove', (e) => { if (isDrawing) { const pos = getPos(e); ctx.lineTo(pos.x, pos.y); ctx.stroke(); } });
+            canvas.addEventListener('touchend', () => isDrawing = false);
+        }
+
+        function clearCanvas() {
+            if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function openSignModal() { document.getElementById('signModal').classList.remove('hidden'); }
+        function closeSignModal() { document.getElementById('signModal').classList.add('hidden'); }
+
+        function switchSigTab(tab) {
+            activeTab = tab;
+            if (tab === 'draw') {
+                document.getElementById('drawSigBox').classList.remove('hidden');
+                document.getElementById('typeSigBox').classList.add('hidden');
+                document.getElementById('tabDrawBtn').className = "py-2 px-4 border-b-2 border-emerald-600 text-emerald-600 font-bold";
+                document.getElementById('tabTypeBtn').className = "py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800";
+            } else {
+                document.getElementById('drawSigBox').classList.add('hidden');
+                document.getElementById('typeSigBox').classList.remove('hidden');
+                document.getElementById('tabTypeBtn').className = "py-2 px-4 border-b-2 border-emerald-600 text-emerald-600 font-bold";
+                document.getElementById('tabDrawBtn').className = "py-2 px-4 border-b-2 border-transparent text-slate-500 hover:text-slate-800";
+            }
+        }
+
+        function updateTypedPreview(val) {
+            document.getElementById('typedSigPreview').innerText = val || 'Your Signature';
+        }
+
+        function submitSignature() {
+            if (!document.getElementById('legalConsent').checked) {
+                alert('Please check the confirmation box to proceed.');
+                return;
+            }
+
+            let sigData = '';
+            if (activeTab === 'draw') {
+                sigData = canvas.toDataURL('image/png');
+            } else {
+                sigData = document.getElementById('typeSigInput').value;
+            }
+
+            const payload = {
+                signer_name: document.getElementById('signer_name').value,
+                signer_email: document.getElementById('signer_email').value,
+                signature_type: activeTab,
+                signature_data: sigData
+            };
+
+            fetch('{% url "public_agreement_sign" agreement.public_token %}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>

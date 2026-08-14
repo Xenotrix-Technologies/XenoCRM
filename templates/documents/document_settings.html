@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Document Settings | XenoCRM{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6 bg-slate-50 min-h-screen">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <i data-lucide="settings-2" class="w-7 h-7 text-primary-600"></i>
+                Company Document Settings
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">Configure company branding, banking, tax details, and document numbering defaults for generated PDFs.</p>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <form method="POST" class="space-y-6 max-w-4xl">
+        {% csrf_token %}
+
+        <!-- Company Information -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <i data-lucide="building" class="w-4 h-4 text-primary-600"></i>
+                Company Information & Branding
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div class="sm:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">Company Legal Name *</label>
+                    <input type="text" name="company_name" value="{{ settings.company_name }}" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Email Address *</label>
+                    <input type="email" name="email" value="{{ settings.email }}" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Phone Number *</label>
+                    <input type="text" name="phone" value="{{ settings.phone }}" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">Company Website</label>
+                    <input type="url" name="website" value="{{ settings.website }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">Registered Address *</label>
+                    <textarea name="address" rows="2" required class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">{{ settings.address }}</textarea>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">GSTIN Number</label>
+                    <input type="text" name="gstin" value="{{ settings.gstin }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">PAN Number</label>
+                    <input type="text" name="pan" value="{{ settings.pan }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono">
+                </div>
+            </div>
+        </div>
+
+        <!-- Banking & UPI Details -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <i data-lucide="landmark" class="w-4 h-4 text-primary-600"></i>
+                Bank Account & Payment Details
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Bank Name</label>
+                    <input type="text" name="bank_name" value="{{ settings.bank_name }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Account Beneficiary Name</label>
+                    <input type="text" name="account_name" value="{{ settings.account_name }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Account Number</label>
+                    <input type="text" name="account_number" value="{{ settings.account_number }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono">
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">IFSC Code</label>
+                    <input type="text" name="ifsc_code" value="{{ settings.ifsc_code }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono uppercase">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block font-bold text-slate-700 mb-1">UPI ID</label>
+                    <input type="text" name="upi_id" value="{{ settings.upi_id }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono">
+                </div>
+            </div>
+        </div>
+
+        <!-- Document Formats & Prefixes -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <i data-lucide="hash" class="w-4 h-4 text-primary-600"></i>
+                Document Numbering & Formatting
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Quotation Prefix</label>
+                    <input type="text" name="quotation_prefix" value="{{ settings.quotation_prefix }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-primary-700">
+                    <p class="text-[10px] text-slate-400 mt-1">Example: XT-QT-2026-0001</p>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Agreement Prefix</label>
+                    <input type="text" name="agreement_prefix" value="{{ settings.agreement_prefix }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-primary-700">
+                    <p class="text-[10px] text-slate-400 mt-1">Example: XT-AGR-2026-0001</p>
+                </div>
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1">Default Currency</label>
+                    <select name="default_currency" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold">
+                        <option value="INR" {% if settings.default_currency == 'INR' %}selected{% endif %}>INR (₹)</option>
+                        <option value="USD" {% if settings.default_currency == 'USD' %}selected{% endif %}>USD ($)</option>
+                        <option value="EUR" {% if settings.default_currency == 'EUR' %}selected{% endif %}>EUR (€)</option>
+                    </select>
+                </div>
+                <div class="sm:col-span-3">
+                    <label class="block font-bold text-slate-700 mb-1">Authorized Representative Name</label>
+                    <input type="text" name="authorized_person_name" value="{{ settings.authorized_person_name }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">
+                </div>
+                <div class="sm:col-span-3">
+                    <label class="block font-bold text-slate-700 mb-1">Document Footer Notice</label>
+                    <textarea name="footer_text" rows="2" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl">{{ settings.footer_text }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+            <button type="submit" class="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl text-xs shadow-md active:scale-98 transition-all">
+                Save Document Settings
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

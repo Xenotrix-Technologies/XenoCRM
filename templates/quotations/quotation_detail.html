@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Quotation {{ quotation.quotation_number }} | XenoCRM{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6 bg-slate-50 min-h-screen">
+    <!-- Header Navigation & Quick Actions -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'quotation_list' %}" class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition-all">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </a>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tight">{{ quotation.quotation_number }}</h1>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider
+                        {% if quotation.status == 'Draft' %}bg-slate-100 text-slate-700 border border-slate-200
+                        {% elif quotation.status == 'Sent' %}bg-blue-50 text-blue-700 border border-blue-200
+                        {% elif quotation.status == 'Viewed' %}bg-indigo-50 text-indigo-700 border border-indigo-200
+                        {% elif quotation.status == 'Accepted' %}bg-emerald-50 text-emerald-700 border border-emerald-200
+                        {% elif quotation.status == 'Rejected' %}bg-rose-50 text-rose-700 border border-rose-200
+                        {% elif quotation.status == 'Expired' %}bg-amber-50 text-amber-700 border border-amber-200
+                        {% else %}bg-slate-100 text-slate-600{% endif %}">
+                        {{ quotation.status }}
+                    </span>
+                    {% if quotation.version > 1 %}
+                    <span class="text-xs px-2 py-0.5 bg-slate-200 text-slate-700 rounded-full font-mono">v{{ quotation.version }}</span>
+                    {% endif %}
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">Created on {{ quotation.date|date:"M d, Y" }} | Valid until {{ quotation.valid_until|date:"M d, Y" }}</p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{% url 'public_quotation_view' quotation.public_token %}" target="_blank" class="px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-xs transition-all">
+                <i data-lucide="external-link" class="w-4 h-4 text-blue-600"></i>
+                <span>Public Link</span>
+            </a>
+            <button onclick="copyPublicLink()" class="px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-xs transition-all">
+                <i data-lucide="copy" class="w-4 h-4 text-slate-500"></i>
+                <span>Copy Link</span>
+            </button>
+            <button onclick="window.print()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-xs transition-all">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Download PDF</span>
+            </button>
+
+            {% if quotation.status == 'Accepted' %}
+            <form method="POST" action="{% url 'quotation_convert_to_agreement' quotation.id %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-sm shadow-emerald-500/20 transition-all">
+                    <i data-lucide="file-signature" class="w-4 h-4"></i>
+                    <span>Convert to Agreement</span>
+                </button>
+            </form>
+            {% elif quotation.status != 'Rejected' %}
+            <a href="{% url 'quotation_edit' quotation.id %}" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-sm shadow-primary-500/20 transition-all">
+                <i data-lucide="edit" class="w-4 h-4"></i>
+                <span>Edit Proposal</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Grid: Proposal Details & Activity Timeline -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Left 2 Cols: Full Document Render -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:border-none print:shadow-none">
+
+                <!-- Branding Header -->
+                <div class="flex justify-between items-start border-b-2 border-primary-600 pb-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-primary-700 tracking-tight">{{ doc_settings.company_name }}</h2>
+                        <p class="text-xs text-slate-500 font-medium mt-1">{{ doc_settings.address }}</p>
+                        <p class="text-xs text-slate-400">GSTIN: {{ doc_settings.gstin }} | Email: {{ doc_settings.email }}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block px-3 py-1 bg-primary-600 text-white font-black text-xs uppercase tracking-widest rounded">QUOTATION</span>
+                        <p class="text-sm font-mono font-bold text-slate-900 mt-2">{{ quotation.quotation_number }}</p>
+                        <p class="text-xs text-slate-500">Date: <span class="font-semibold text-slate-700">{{ quotation.date|date:"M d, Y" }}</span></p>
+                        <p class="text-xs text-slate-500">Valid Until: <span class="font-semibold text-slate-700">{{ quotation.valid_until|date:"M d, Y" }}</span></p>
+                    </div>
+                </div>
+
+                <!-- Client Details -->
+                <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/80 text-xs">
+                    <div>
+                        <span class="font-bold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">PREPARED FOR</span>
+                        <h4 class="font-bold text-slate-900 text-sm">{{ quotation.client_name }}</h4>
+                        {% if quotation.company_name %}<p class="font-semibold text-slate-700">{{ quotation.company_name }}</p>{% endif %}
+                        <p class="text-slate-600 mt-1">{{ quotation.email }} | {{ quotation.phone }}</p>
+                        {% if quotation.address %}<p class="text-slate-500">{{ quotation.address }}</p>{% endif %}
+                    </div>
+                    <div class="text-right">
+                        <span class="font-bold text-slate-400 text-[10px] uppercase tracking-wider block mb-1">SALES REPRESENTATIVE</span>
+                        <p class="font-bold text-slate-900 text-sm">{{ quotation.salesperson|default:quotation.prepared_by.user.get_full_name }}</p>
+                        <p class="text-slate-600">{{ doc_settings.company_name }}</p>
+                        <p class="text-slate-500">{{ doc_settings.email }}</p>
+                    </div>
+                </div>
+
+                <!-- Line Items Table -->
+                <div>
+                    <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2 border-l-4 border-primary-600 pl-2">Services & Deliverables</h4>
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] border-y border-slate-200">
+                                <th class="py-2.5 px-3">Service / Description</th>
+                                <th class="py-2.5 px-3 text-center">Type</th>
+                                <th class="py-2.5 px-3 text-center">Qty</th>
+                                <th class="py-2.5 px-3 text-right">Unit Price</th>
+                                <th class="py-2.5 px-3 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for item in quotation.items.all %}
+                            {% if not item.is_optional %}
+                            <tr>
+                                <td class="py-3 px-3">
+                                    <p class="font-bold text-slate-900">{{ item.title }}</p>
+                                    {% if item.description %}<p class="text-[11px] text-slate-500 mt-0.5">{{ item.description }}</p>{% endif %}
+                                </td>
+                                <td class="py-3 px-3 text-center uppercase text-[10px] font-semibold text-slate-600">{{ item.pricing_type }}</td>
+                                <td class="py-3 px-3 text-center font-medium">{{ item.quantity }} {{ item.unit }}</td>
+                                <td class="py-3 px-3 text-right font-mono text-slate-700">₹{{ item.unit_price|floatformat:2 }}</td>
+                                <td class="py-3 px-3 text-right font-bold font-mono text-slate-900">₹{{ item.line_total|floatformat:2 }}</td>
+                            </tr>
+                            {% endif %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Optional Items -->
+                {% with quotation.items.all as all_items %}
+                <div class="space-y-2">
+                    <h5 class="text-xs font-bold text-amber-700 uppercase tracking-wider border-l-4 border-amber-500 pl-2">Optional Services</h5>
+                    <div class="bg-amber-50/60 p-3 rounded-xl border border-amber-200 text-xs space-y-1.5">
+                        {% for item in quotation.items.all %}
+                        {% if item.is_optional %}
+                        <div class="flex justify-between items-center text-amber-900 font-medium">
+                            <span>• {{ item.title }} - <span class="text-amber-700 font-normal">{{ item.description }}</span></span>
+                            <span class="font-bold font-mono">₹{{ item.line_total|floatformat:2 }}</span>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endwith %}
+
+                <!-- Domain Options -->
+                {% if quotation.domain_options.exists %}
+                <div>
+                    <h5 class="text-xs font-bold text-blue-900 uppercase tracking-wider mb-2 border-l-4 border-blue-600 pl-2">Domain Options</h5>
+                    <div class="bg-blue-50/60 p-3 rounded-xl border border-blue-200 space-y-1 text-xs">
+                        {% for dom in quotation.domain_options.all %}
+                        <div class="flex justify-between items-center">
+                            <span class="text-slate-800">○ <strong>{{ dom.domain_name }}</strong> ({{ dom.period }}) {% if dom.is_recommended %}<span class="px-1.5 py-0.5 bg-blue-600 text-white rounded text-[9px] font-bold uppercase">RECOMMENDED</span>{% endif %}</span>
+                            <span class="font-bold font-mono text-blue-900">₹{{ dom.price|floatformat:2 }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Totals Breakdown & Payment Schedule -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-200">
+                    <div>
+                        <h5 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">Payment Milestones</h5>
+                        <div class="space-y-1 text-xs">
+                            {% for stage in quotation.payment_stages.all %}
+                            <div class="flex justify-between items-center text-slate-700">
+                                <span>{{ stage.stage_name }} ({{ stage.percentage }}%)</span>
+                                <span class="font-bold font-mono">₹{{ stage.amount|floatformat:2 }}</span>
+                            </div>
+                            {% empty %}
+                            <p class="text-slate-500">{{ quotation.payment_terms_summary }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-xs text-right">
+                        <div class="flex justify-between text-slate-600">
+                            <span>Subtotal:</span>
+                            <span class="font-semibold font-mono">₹{{ quotation.subtotal|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>Discount:</span>
+                            <span class="font-semibold font-mono">₹{{ quotation.discount_amount|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>Tax:</span>
+                            <span class="font-semibold font-mono">₹{{ quotation.tax_amount|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-200">
+                            <span>Grand Total:</span>
+                            <span class="text-primary-700 font-mono">₹{{ quotation.grand_total|floatformat:2 }}</span>
+                        </div>
+                        {% if quotation.monthly_recurring_total > 0 %}
+                        <div class="text-xs text-primary-600 font-bold">
+                            Recurring: ₹{{ quotation.monthly_recurring_total|floatformat:2 }}/Month
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Terms & Conditions -->
+                {% if quotation.terms.exists %}
+                <div class="pt-4 border-t border-slate-100">
+                    <h5 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-1.5">Terms & Conditions</h5>
+                    <ol class="list-decimal pl-4 text-xs text-slate-600 space-y-1">
+                        {% for t in quotation.terms.all %}
+                        <li>{{ t.content }}</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <!-- Right 1 Col: Status Update & Activity Timeline -->
+        <div class="space-y-6">
+            <!-- Status Update Panel -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center justify-between">
+                    <span>Manage Status</span>
+                    <i data-lucide="sliders" class="w-4 h-4 text-slate-400"></i>
+                </h3>
+
+                <form method="POST" action="{% url 'quotation_update_status' quotation.id %}" class="space-y-3">
+                    {% csrf_token %}
+                    <div>
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Current Status</label>
+                        <select name="status" class="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800">
+                            <option value="Draft" {% if quotation.status == 'Draft' %}selected{% endif %}>Draft</option>
+                            <option value="Sent" {% if quotation.status == 'Sent' %}selected{% endif %}>Sent</option>
+                            <option value="Viewed" {% if quotation.status == 'Viewed' %}selected{% endif %}>Viewed</option>
+                            <option value="Accepted" {% if quotation.status == 'Accepted' %}selected{% endif %}>Accepted</option>
+                            <option value="Rejected" {% if quotation.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                            <option value="Expired" {% if quotation.status == 'Expired' %}selected{% endif %}>Expired</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all">
+                        Update Status
+                    </button>
+                </form>
+
+                {% if quotation.accepted_at %}
+                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 space-y-1">
+                    <p class="font-bold flex items-center gap-1"><i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600"></i> Accepted by Client</p>
+                    <p class="text-[11px] text-emerald-700">Name: {{ quotation.accepted_by_name }}</p>
+                    <p class="text-[11px] text-emerald-700">Email: {{ quotation.accepted_by_email }}</p>
+                    <p class="text-[10px] text-emerald-600">Date: {{ quotation.accepted_at|date:"M d, Y H:i" }} (IP: {{ quotation.accepted_ip }})</p>
+                </div>
+                {% endif %}
+
+                {% if quotation.rejection_reason %}
+                <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 space-y-1">
+                    <p class="font-bold flex items-center gap-1"><i data-lucide="x-circle" class="w-4 h-4 text-rose-600"></i> Rejected by Client</p>
+                    <p class="text-[11px] text-rose-700">Reason: {{ quotation.rejection_reason }}</p>
+                    {% if quotation.rejection_notes %}<p class="text-[11px] text-rose-600">Notes: {{ quotation.rejection_notes }}</p>{% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Activity Log Timeline -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <i data-lucide="history" class="w-4 h-4 text-primary-600"></i>
+                    Activity Timeline
+                </h3>
+
+                <div class="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                    {% for act in activities %}
+                    <div class="flex items-start gap-3 relative pl-6">
+                        <span class="w-3 h-3 rounded-full bg-primary-600 border-2 border-white absolute left-1.5 top-1"></span>
+                        <div class="text-xs">
+                            <p class="font-bold text-slate-800">{{ act.activity_type }}</p>
+                            <p class="text-slate-600 text-[11px]">{{ act.description }}</p>
+                            <p class="text-[10px] text-slate-400 mt-0.5">{{ act.timestamp|date:"M d, Y H:i" }} {% if act.user %}({{ act.user.user.username }}){% endif %}</p>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-xs text-slate-400">No activity recorded yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyPublicLink() {
+        const link = "{{ request.scheme }}://{{ request.get_host }}/quotation/view/{{ quotation.public_token }}/";
+        navigator.clipboard.writeText(link).then(() => {
+            alert('Public Quotation link copied to clipboard!');
+        });
+    }
+</script>
+{% endblock %}
