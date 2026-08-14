@@ -9,7 +9,7 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
         <div class="flex items-center gap-2 text-xs text-outline font-semibold mb-1">
-          <span>Settings</span>
+          <a href="{% url 'settings_dashboard' %}" class="hover:underline">Settings</a>
           <span class="material-symbols-outlined text-[12px]">chevron_right</span>
           <span class="text-primary">Content Tracker</span>
         </div>
@@ -103,15 +103,7 @@
           </select>
         </div>
 
-        <!-- Campaign Filter -->
-        <div class="lg:col-span-2">
-          <select name="campaign_filter" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-2 py-2 text-xs focus:ring-1 focus:ring-primary focus:border-primary">
-            <option value="">All Campaign Status</option>
-            {% for opt in campaign_status_options %}
-            <option value="{{ opt }}" {% if campaign_filter == opt %}selected{% endif %}>{{ opt }}</option>
-            {% endfor %}
-          </select>
-        </div>
+
 
         <!-- Date Range Filter -->
         <div class="lg:col-span-2">
@@ -168,11 +160,8 @@
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('due_date')">Due Date</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('status')">Status</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('platform')">Platform</th>
-              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('upload_date')">Upload Date</th>
               <th class="p-4">Post Type</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('campaign_run_date')">Campaign Run Date</th>
-              <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('campaign_status')">Campaign Status</th>
-              <th class="p-4">Video Link</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('priority')">Priority</th>
               <th class="p-4 cursor-pointer hover:bg-slate-100" onclick="sortByColumn('salary')">Salary</th>
               <th class="p-4">Notes</th>
@@ -220,33 +209,8 @@
                 </span>
               </td>
               <td class="p-4 font-semibold text-secondary">{{ item.platform }}</td>
-              <td class="p-4 text-secondary">{{ item.upload_date|date:"Y-m-d"|default:"-" }}</td>
               <td class="p-4 text-secondary">{{ item.post_type }}</td>
               <td class="p-4 text-secondary">{{ item.campaign_run_date|date:"Y-m-d"|default:"-" }}</td>
-              <td class="p-4">
-                {% if item.campaign_status == 'Not Started' %}
-                  <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 text-[9px] font-bold">Not Started</span>
-                {% elif item.campaign_status == 'Planning' %}
-                  <span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-150 text-[9px] font-bold">Planning</span>
-                {% elif item.campaign_status == 'In Progress' %}
-                  <span class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-150 text-[9px] font-bold">In Progress</span>
-                {% elif item.campaign_status == 'Paused' %}
-                  <span class="px-1.5 py-0.5 rounded bg-rose-50 text-rose-600 border border-rose-150 text-[9px] font-bold">Paused</span>
-                {% elif item.campaign_status == 'Completed' %}
-                  <span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-150 text-[9px] font-bold">Completed</span>
-                {% elif item.campaign_status == 'Cancelled' %}
-                  <span class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 border border-slate-200 text-[9px] font-bold">Cancelled</span>
-                {% endif %}
-              </td>
-              <td class="p-4">
-                {% if item.video_link %}
-                <a href="{{ item.video_link }}" target="_blank" class="text-primary hover:underline font-bold flex items-center gap-0.5">
-                  <span class="material-symbols-outlined text-[14px]">play_circle</span> View
-                </a>
-                {% else %}
-                <span class="text-outline/40">-</span>
-                {% endif %}
-              </td>
               <td class="p-4">
                 {% if item.priority == 'Low' %}
                   <span class="text-slate-500 font-semibold">• Low</span>
@@ -272,7 +236,7 @@
                   <div id="dropdown-menu-{{ item.id }}" class="hidden absolute right-0 mt-1 w-36 rounded-lg bg-white border border-outline-variant/30 shadow-lg z-[40] divide-y divide-outline-variant/10 text-xs">
                     {% if request.user.profile.has_edit_content_tracker %}
                     <div class="py-1">
-                      <a href="#" onclick="openEditModal({{ item.id }}, '{{ item.client.id|escapejs }}', '{{ item.video_title|escapejs }}', '{{ item.editor.id|default:''|escapejs }}', '{{ item.date_received|date:'Y-m-d'|escapejs }}', '{{ item.due_date|date:'Y-m-d'|escapejs }}', '{{ item.status|escapejs }}', '{{ item.platform|escapejs }}', '{{ item.upload_date|date:'Y-m-d'|escapejs }}', '{{ item.post_type|escapejs }}', '{{ item.campaign_status|escapejs }}', '{{ item.video_link|escapejs }}', '{{ item.priority|escapejs }}', '{{ item.notes|escapejs }}', '{{ item.client_month|escapejs }}', '{{ item.editor_month|escapejs }}', '{{ item.campaign_run_date|date:'Y-m-d'|escapejs }}', '{{ item.salary|escapejs }}')" class="w-full text-left px-3 py-2 text-on-surface hover:bg-slate-50 flex items-center gap-2">
+                      <a href="#" onclick="openEditModal({{ item.id }}, '{{ item.client.id|escapejs }}', '{{ item.video_title|escapejs }}', '{{ item.editor.id|default:''|escapejs }}', '{{ item.date_received|date:'Y-m-d'|escapejs }}', '{{ item.due_date|date:'Y-m-d'|escapejs }}', '{{ item.status|escapejs }}', '{{ item.platform|escapejs }}', '{{ item.post_type|escapejs }}', '{{ item.priority|escapejs }}', '{{ item.notes|escapejs }}', '{{ item.client_month|escapejs }}', '{{ item.editor_month|escapejs }}', '{{ item.campaign_run_date|date:'Y-m-d'|escapejs }}', '{{ item.salary|escapejs }}')" class="w-full text-left px-3 py-2 text-on-surface hover:bg-slate-50 flex items-center gap-2">
                         <span class="material-symbols-outlined text-[14px]">edit</span> Edit
                       </a>
                       <button onclick="duplicateItem({{ item.id }})" class="w-full text-left px-3 py-2 text-on-surface hover:bg-slate-50 flex items-center gap-2">
@@ -438,16 +402,6 @@
         </select>
       </div>
 
-      <!-- Campaign Status -->
-      <div>
-        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Campaign Status</label>
-        <select name="campaign_status" id="form-campaign-status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary">
-          {% for opt in campaign_status_options %}
-          <option value="{{ opt }}">{{ opt }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
       <!-- Priority -->
       <div>
         <label class="block text-label-md font-label-md text-outline uppercase mb-1">Priority</label>
@@ -466,16 +420,6 @@
       <div>
         <label class="block text-label-md font-label-md text-outline uppercase mb-1">Due Date</label>
         <input type="date" name="due_date" id="form-due-date" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
-      </div>
-      <div>
-        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Publish Date</label>
-        <input type="date" name="upload_date" id="form-upload-date" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
-      </div>
-
-      <!-- Video Link -->
-      <div>
-        <label class="block text-label-md font-label-md text-outline uppercase mb-1">Video Link (URL)</label>
-        <input type="url" name="video_link" id="form-video-link" placeholder="e.g. https://youtube.com/watch?v=..." class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-primary focus:border-primary"/>
       </div>
 
       <!-- Notes -->
@@ -552,7 +496,7 @@
       document.getElementById('content-modal').classList.remove('hidden');
   }
 
-  function openEditModal(id, clientId, title, editorId, dateRecd, dueDate, status, platform, uploadDate, postType, campaignStatus, videoLink, priority, notes, clientMonth, editorMonth, campaignRunDate, salary) {
+  function openEditModal(id, clientId, title, editorId, dateRecd, dueDate, status, platform, postType, priority, notes, clientMonth, editorMonth, campaignRunDate, salary) {
       document.getElementById('form-item-id').value = id;
       document.getElementById('form-client-id').value = clientId;
       document.getElementById('form-video-title').value = title;
@@ -561,10 +505,7 @@
       document.getElementById('form-due-date').value = dueDate || '';
       document.getElementById('form-status').value = status;
       document.getElementById('form-platform').value = platform;
-      document.getElementById('form-upload-date').value = uploadDate || '';
       document.getElementById('form-post-type').value = postType;
-      document.getElementById('form-campaign-status').value = campaignStatus;
-      document.getElementById('form-video-link').value = videoLink || '';
       document.getElementById('form-priority').value = priority;
       document.getElementById('form-notes').value = notes || '';
       document.getElementById('form-client-month').value = clientMonth || '';

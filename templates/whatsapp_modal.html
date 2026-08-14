@@ -230,6 +230,70 @@
                 </div>
             </div>
 
+            <!-- Message Attachments & Documents Card (PDF, Docs, Media, etc.) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px] text-emerald-400">attach_file</span>
+                            Message Attachments
+                        </label>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Attach PDF documents, proposals, catalogs, spreadsheets, or images to send with your message.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="wa-attachments-count-badge" class="px-2.5 py-0.5 text-[11px] font-extrabold bg-slate-800 text-slate-400 border border-slate-700 rounded-lg">0 Attached</span>
+                        <button type="button" id="wa-clear-attachments-btn" onclick="clearAllWhatsAppAttachments()" class="hidden px-2.5 py-1 text-xs font-bold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl transition-all flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px]">delete</span>
+                            Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Presets / Business Documents Picker -->
+                <div class="space-y-2">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Quick Add Business Documents</span>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="addWhatsAppPresetAttachment('brochure')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-200 transition-all flex items-center gap-2 group">
+                            <span class="w-5 h-5 rounded-md bg-rose-500/20 text-rose-400 flex items-center justify-center text-[11px] font-bold">PDF</span>
+                            <span>Xenotrix Company Profile.pdf</span>
+                            <span class="material-symbols-outlined text-[15px] text-slate-500 group-hover:text-emerald-400 transition-colors">add_circle</span>
+                        </button>
+                        <button type="button" onclick="addWhatsAppPresetAttachment('quotation')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-200 transition-all flex items-center gap-2 group">
+                            <span class="w-5 h-5 rounded-md bg-rose-500/20 text-rose-400 flex items-center justify-center text-[11px] font-bold">PDF</span>
+                            <span>Services_Quotation_Proposal.pdf</span>
+                            <span class="material-symbols-outlined text-[15px] text-slate-500 group-hover:text-emerald-400 transition-colors">add_circle</span>
+                        </button>
+                        <button type="button" onclick="addWhatsAppPresetAttachment('catalog')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-200 transition-all flex items-center gap-2 group">
+                            <span class="w-5 h-5 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center text-[11px] font-bold">DOC</span>
+                            <span>Product_Catalog_&_Pricing.docx</span>
+                            <span class="material-symbols-outlined text-[15px] text-slate-500 group-hover:text-emerald-400 transition-colors">add_circle</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Drag & Drop File Upload Zone -->
+                <div id="wa-drop-zone" class="relative border-2 border-dashed border-slate-800 hover:border-emerald-500/50 bg-slate-950/60 rounded-xl p-4 text-center transition-all cursor-pointer group" onclick="triggerWhatsAppFileUpload()">
+                    <input type="file" id="wa-file-input" multiple onchange="handleWhatsAppFileSelect(event)" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.webp,.zip,.rar,.txt" class="hidden" />
+                    
+                    <div class="flex flex-col items-center justify-center gap-2">
+                        <div class="w-10 h-10 rounded-xl bg-slate-900 text-emerald-400 border border-slate-800 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500/10 transition-all">
+                            <span class="material-symbols-outlined text-[24px]">cloud_upload</span>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold text-slate-200 group-hover:text-emerald-400 transition-colors">
+                                Click to upload attachments <span class="font-normal text-slate-400">or drag & drop files here</span>
+                            </p>
+                            <p class="text-[10px] text-slate-500 mt-0.5">Supports PDF, DOCX, XLSX, PPTX, Images (PNG/JPG), ZIP up to 25MB each</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attached Files List -->
+                <div id="wa-attachments-list" class="space-y-2.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
+                    <!-- Files dynamically rendered here -->
+                </div>
+            </div>
+
             <!-- Message Telemetry & Insights Card -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
                 <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
@@ -237,7 +301,7 @@
                     Message Telemetry & Insights
                 </span>
 
-                <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                         <span class="text-[10px] font-bold text-slate-500 uppercase block">Characters</span>
                         <span id="wa-stat-chars" class="text-lg font-extrabold text-white">0</span>
@@ -245,6 +309,10 @@
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                         <span class="text-[10px] font-bold text-slate-500 uppercase block">Words</span>
                         <span id="wa-stat-words" class="text-lg font-extrabold text-white">0</span>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase block">Attachments</span>
+                        <span id="wa-stat-attachments" class="text-lg font-extrabold text-rose-400">0</span>
                     </div>
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
                         <span class="text-[10px] font-bold text-slate-500 uppercase block">Variables</span>
@@ -323,6 +391,7 @@
 
                             <!-- Outgoing Message Bubble -->
                             <div class="bg-[#005c4b] text-white shadow-md border border-emerald-700/50 rounded-2xl rounded-tr-none p-4 text-xs leading-relaxed max-w-[92%] ml-auto relative space-y-2">
+                                <div id="whatsapp-preview-attachments" class="space-y-2 mb-2.5 hidden"></div>
                                 <div id="whatsapp-preview-text" class="whitespace-pre-wrap font-sans break-words text-[12.5px] text-white"></div>
                                 
                                 <div class="flex items-center justify-end gap-1 text-[10px] text-emerald-200/80 select-none pt-1">
@@ -577,6 +646,226 @@ Innovative For Future`;
 
     let currentFilter = 'all';
 
+    // WhatsApp Attachments Store
+    let whatsappAttachmentsList = [];
+
+    const PRESET_ATTACHMENTS = {
+        brochure: {
+            id: 'preset_brochure',
+            name: 'Xenotrix_Company_Profile.pdf',
+            size: '1.4 MB',
+            type: 'pdf',
+            extension: 'PDF',
+            url: 'https://xenotrix.in/docs/Xenotrix_Company_Profile.pdf',
+            isPreset: true,
+            includeInText: true
+        },
+        quotation: {
+            id: 'preset_quotation',
+            name: 'Services_Quotation_Proposal.pdf',
+            size: '850 KB',
+            type: 'pdf',
+            extension: 'PDF',
+            url: 'https://xenotrix.in/docs/Services_Quotation_Proposal.pdf',
+            isPreset: true,
+            includeInText: true
+        },
+        catalog: {
+            id: 'preset_catalog',
+            name: 'Product_Catalog_&_Pricing.docx',
+            size: '2.1 MB',
+            type: 'doc',
+            extension: 'DOCX',
+            url: 'https://xenotrix.in/docs/Product_Catalog_&_Pricing.docx',
+            isPreset: true,
+            includeInText: true
+        }
+    };
+
+    window.triggerWhatsAppFileUpload = function() {
+        const input = document.getElementById('wa-file-input');
+        if (input) input.click();
+    };
+
+    window.handleWhatsAppFileSelect = function(e) {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const typeInfo = getWhatsAppFileTypeInfo(file.name, file.type);
+            const attId = 'att_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+            
+            const fileObj = {
+                id: attId,
+                name: file.name,
+                size: formatBytes(file.size),
+                type: typeInfo.category,
+                extension: typeInfo.extension,
+                url: URL.createObjectURL(file),
+                rawFile: file,
+                isPreset: false,
+                includeInText: true
+            };
+
+            if (!whatsappAttachmentsList.some(a => a.name === file.name)) {
+                whatsappAttachmentsList.push(fileObj);
+            }
+        }
+
+        if (e.target) e.target.value = '';
+        renderWhatsAppAttachmentsList();
+        updateWhatsAppPreview();
+    };
+
+    window.addWhatsAppPresetAttachment = function(key) {
+        const preset = PRESET_ATTACHMENTS[key];
+        if (!preset) return;
+
+        if (whatsappAttachmentsList.some(a => a.name === preset.name)) {
+            alert(`"${preset.name}" is already attached!`);
+            return;
+        }
+
+        whatsappAttachmentsList.push({ ...preset, id: 'att_' + Date.now() + '_' + key });
+        renderWhatsAppAttachmentsList();
+        updateWhatsAppPreview();
+    };
+
+    window.removeWhatsAppAttachment = function(id) {
+        whatsappAttachmentsList = whatsappAttachmentsList.filter(a => a.id !== id);
+        renderWhatsAppAttachmentsList();
+        updateWhatsAppPreview();
+    };
+
+    window.clearAllWhatsAppAttachments = function() {
+        whatsappAttachmentsList = [];
+        renderWhatsAppAttachmentsList();
+        updateWhatsAppPreview();
+    };
+
+    window.toggleWhatsAppAttachmentText = function(id) {
+        const item = whatsappAttachmentsList.find(a => a.id === id);
+        if (item) {
+            item.includeInText = !item.includeInText;
+            updateWhatsAppPreview();
+        }
+    };
+
+    function getWhatsAppFileTypeInfo(filename, mimeType) {
+        const ext = (filename.split('.').pop() || '').toUpperCase();
+        let category = 'other';
+
+        if (['PDF'].includes(ext) || (mimeType && mimeType.includes('pdf'))) {
+            category = 'pdf';
+        } else if (['DOC', 'DOCX', 'TXT', 'RTF'].includes(ext) || (mimeType && (mimeType.includes('word') || mimeType.includes('text')))) {
+            category = 'doc';
+        } else if (['XLS', 'XLSX', 'CSV'].includes(ext) || (mimeType && (mimeType.includes('excel') || mimeType.includes('spreadsheet')))) {
+            category = 'xls';
+        } else if (['PPT', 'PPTX'].includes(ext) || (mimeType && (mimeType.includes('presentation') || mimeType.includes('powerpoint')))) {
+            category = 'ppt';
+        } else if (['JPG', 'JPEG', 'PNG', 'GIF', 'WEBP', 'SVG'].includes(ext) || (mimeType && mimeType.includes('image'))) {
+            category = 'image';
+        } else if (['ZIP', 'RAR', '7Z', 'TAR', 'GZ'].includes(ext) || (mimeType && (mimeType.includes('zip') || mimeType.includes('archive')))) {
+            category = 'archive';
+        }
+
+        return { category, extension: ext || 'FILE' };
+    }
+
+    function formatBytes(bytes, decimals = 1) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    window.renderWhatsAppAttachmentsList = function() {
+        const container = document.getElementById('wa-attachments-list');
+        const badge = document.getElementById('wa-attachments-count-badge');
+        const clearBtn = document.getElementById('wa-clear-attachments-btn');
+
+        if (!container) return;
+        container.innerHTML = '';
+
+        if (badge) badge.textContent = `${whatsappAttachmentsList.length} Attached`;
+        if (clearBtn) {
+            if (whatsappAttachmentsList.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+        }
+
+        if (whatsappAttachmentsList.length === 0) {
+            container.innerHTML = `
+                <div class="p-3 text-center text-xs text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800/60">
+                    <span class="material-symbols-outlined text-[20px] text-slate-600 mb-0.5">attach_file_off</span>
+                    <p class="font-medium">No attachments added yet. Drag & drop files or click preset buttons above.</p>
+                </div>
+            `;
+            return;
+        }
+
+        whatsappAttachmentsList.forEach(att => {
+            const row = document.createElement('div');
+            row.className = "bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3 group hover:border-slate-700 transition-all";
+            
+            let badgeBg = "bg-slate-800 text-slate-300";
+            let iconName = "description";
+
+            if (att.type === 'pdf') {
+                badgeBg = "bg-rose-500/20 text-rose-400 border border-rose-500/30";
+                iconName = "picture_as_pdf";
+            } else if (att.type === 'doc') {
+                badgeBg = "bg-blue-500/20 text-blue-400 border border-blue-500/30";
+                iconName = "article";
+            } else if (att.type === 'xls') {
+                badgeBg = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                iconName = "table_chart";
+            } else if (att.type === 'ppt') {
+                badgeBg = "bg-amber-500/20 text-amber-400 border border-amber-500/30";
+                iconName = "slideshow";
+            } else if (att.type === 'image') {
+                badgeBg = "bg-purple-500/20 text-purple-400 border border-purple-500/30";
+                iconName = "image";
+            } else if (att.type === 'archive') {
+                badgeBg = "bg-slate-700 text-slate-200 border border-slate-600";
+                iconName = "folder_zip";
+            }
+
+            row.innerHTML = `
+                <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-9 h-9 rounded-xl ${badgeBg} flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                        <span class="material-symbols-outlined text-[20px]">${iconName}</span>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-xs font-bold text-slate-100 truncate">${att.name}</p>
+                        <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
+                            <span class="font-mono font-semibold">${att.size}</span>
+                            <span>•</span>
+                            <span class="uppercase font-extrabold text-slate-400">${att.extension}</span>
+                            ${att.isPreset ? '<span class="px-1.5 py-0.2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded font-semibold text-[9px]">Preset</span>' : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0">
+                    <label class="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 hover:text-slate-200 cursor-pointer select-none" title="Include attachment download link in message text">
+                        <input type="checkbox" ${att.includeInText ? 'checked' : ''} onchange="toggleWhatsAppAttachmentText('${att.id}')" class="rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-emerald-500" />
+                        <span class="hidden sm:inline">Add link to text</span>
+                    </label>
+                    <button type="button" onclick="removeWhatsAppAttachment('${att.id}')" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-800 flex items-center justify-center transition-all" title="Remove Attachment">
+                        <span class="material-symbols-outlined text-[16px]">close</span>
+                    </button>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    };
+
     window.openWhatsAppModal = function() {
         const modal = document.getElementById('whatsapp-modal');
         const input = document.getElementById('whatsapp-msg-input');
@@ -588,6 +877,7 @@ Innovative For Future`;
         }
 
         renderWhatsAppTemplatesList();
+        renderWhatsAppAttachmentsList();
         
         if (input && !input.value.trim()) {
             input.value = defaultXenotrixTemplate;
@@ -711,6 +1001,65 @@ Innovative For Future`;
         if (elVars) elVars.textContent = varsCount;
         if (elLinks) elLinks.textContent = linksCount;
         if (elReadTime) elReadTime.textContent = `${readTimeSec}s`;
+
+        // Render attachments inside live smartphone WhatsApp bubble
+        const previewAttachments = document.getElementById('whatsapp-preview-attachments');
+        if (previewAttachments) {
+            if (whatsappAttachmentsList.length === 0) {
+                previewAttachments.classList.add('hidden');
+                previewAttachments.innerHTML = '';
+            } else {
+                previewAttachments.classList.remove('hidden');
+                previewAttachments.innerHTML = '';
+
+                whatsappAttachmentsList.forEach(att => {
+                    const card = document.createElement('div');
+                    card.className = "bg-[#034a3c] rounded-xl p-2.5 border border-emerald-600/30 flex items-center justify-between gap-3 text-white shadow-xs";
+                    
+                    let tagBg = "bg-slate-700";
+                    let tagLabel = att.extension || "FILE";
+                    let icon = "description";
+
+                    if (att.type === 'pdf') {
+                        tagBg = "bg-rose-600";
+                        icon = "picture_as_pdf";
+                    } else if (att.type === 'doc') {
+                        tagBg = "bg-blue-600";
+                        icon = "article";
+                    } else if (att.type === 'xls') {
+                        tagBg = "bg-emerald-600";
+                        icon = "table_chart";
+                    } else if (att.type === 'image') {
+                        tagBg = "bg-purple-600";
+                        icon = "image";
+                    } else if (att.type === 'archive') {
+                        tagBg = "bg-amber-600";
+                        icon = "folder_zip";
+                    }
+
+                    card.innerHTML = `
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-8 h-8 rounded-lg ${tagBg} text-white font-black text-[10px] flex items-center justify-center shrink-0 shadow-inner">
+                                <span class="material-symbols-outlined text-[18px]">${icon}</span>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-[12px] font-bold text-white truncate max-w-[170px] leading-tight">${att.name}</p>
+                                <p class="text-[10px] text-emerald-200/80 mt-0.5 leading-tight">${att.size} • ${tagLabel}</p>
+                            </div>
+                        </div>
+                        <div class="w-7 h-7 rounded-full bg-emerald-800/60 border border-emerald-500/30 text-white flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-[15px]">download</span>
+                        </div>
+                    `;
+                    previewAttachments.appendChild(card);
+                });
+            }
+        }
+
+        const elAtts = document.getElementById('wa-stat-attachments');
+        if (elAtts) {
+            elAtts.textContent = `${whatsappAttachmentsList.length} File${whatsappAttachmentsList.length === 1 ? '' : 's'}`;
+        }
     };
 
     window.insertWhatsAppTag = function(tag) {
@@ -741,6 +1090,8 @@ Innovative For Future`;
         const input = document.getElementById('whatsapp-msg-input');
         if (input) {
             input.value = defaultXenotrixTemplate;
+            whatsappAttachmentsList = [];
+            renderWhatsAppAttachmentsList();
             updateWhatsAppPreview();
         }
     };
@@ -748,8 +1099,19 @@ Innovative For Future`;
     window.copyWhatsAppText = function() {
         const input = document.getElementById('whatsapp-msg-input');
         if (!input) return;
-        navigator.clipboard.writeText(input.value).then(() => {
-            alert("WhatsApp message copied to clipboard!");
+        
+        let fullText = input.value;
+        const textAttachments = whatsappAttachmentsList.filter(a => a.includeInText);
+        if (textAttachments.length > 0) {
+            fullText += "\n\n📎 Attached Documents:\n";
+            textAttachments.forEach((att, idx) => {
+                const fileUrl = att.url.startsWith('blob:') ? `[${att.name}]` : att.url;
+                fullText += `${idx + 1}. ${att.name} (${att.size}) - ${fileUrl}\n`;
+            });
+        }
+
+        navigator.clipboard.writeText(fullText).then(() => {
+            alert("WhatsApp message & attachment links copied to clipboard!");
         }).catch(err => {
             console.error("Copy failed", err);
         });
@@ -854,7 +1216,18 @@ Innovative For Future`;
             return;
         }
 
-        const message = input.value;
+        let message = input.value;
+        const textAttachments = whatsappAttachmentsList.filter(a => a.includeInText);
+
+        if (textAttachments.length > 0) {
+            let attachmentSummary = "\n\n📎 Attached Documents:\n";
+            textAttachments.forEach((att, idx) => {
+                const fileUrl = att.url.startsWith('blob:') ? `[${att.name}]` : att.url;
+                attachmentSummary += `${idx + 1}. ${att.name} (${att.size}) - ${fileUrl}\n`;
+            });
+            message += attachmentSummary;
+        }
+
         let rawPhone = leadPhoneVal.trim();
         let cleanedPhone = rawPhone.replace(/[^\d+]/g, '');
         if (cleanedPhone.startsWith('+')) {
@@ -871,7 +1244,14 @@ Innovative For Future`;
 
         // Log interaction automatically to XenoCRM timeline
         const csrfToken = "{{ csrf_token }}";
-        const logDescription = `Sent WhatsApp Message to ${leadPhoneVal} from +919995544316:\n"${message.substring(0, 120)}${message.length > 120 ? '...' : ''}"`;
+        
+        let attLogText = "";
+        if (whatsappAttachmentsList.length > 0) {
+            attLogText = `\n\nAttachments (${whatsappAttachmentsList.length}):\n` + 
+                whatsappAttachmentsList.map(a => `- ${a.name} (${a.size})`).join('\n');
+        }
+
+        const logDescription = `Sent WhatsApp Message to ${leadPhoneVal} from +919995544316:\n"${input.value.substring(0, 120)}${input.value.length > 120 ? '...' : ''}"${attLogText}`;
 
         fetch("{% url 'log_activity' %}", {
             method: "POST",
@@ -898,5 +1278,33 @@ Innovative For Future`;
             closeWhatsAppModal();
         });
     };
+
+    // Setup drag and drop for upload zone
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropZone = document.getElementById('wa-drop-zone');
+        if (dropZone) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.add('border-emerald-500', 'bg-emerald-500/5');
+                }, false);
+            });
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dropZone.classList.remove('border-emerald-500', 'bg-emerald-500/5');
+                }, false);
+            });
+            dropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files && files.length > 0) {
+                    handleWhatsAppFileSelect({ target: { files: files, value: '' } });
+                }
+            }, false);
+        }
+    });
 })();
 </script>

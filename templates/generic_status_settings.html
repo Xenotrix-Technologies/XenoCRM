@@ -8,7 +8,7 @@
     <!-- Breadcrumb & Header -->
     <div>
       <div class="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
-        <span>Settings</span>
+        <a href="{% url 'settings_dashboard' %}" class="hover:text-brand-600 transition-colors">Settings</a>
         <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
         <span class="text-brand-600 font-bold">{{ category_title }} Statuses</span>
       </div>

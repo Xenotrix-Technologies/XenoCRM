@@ -3,6 +3,31 @@
 
 {% block title %}Quotation {{ quotation.quotation_number }} | XenoCRM{% endblock %}
 
+<style>
+@media print {
+    /* Hide top header bar, right timeline column, sidebar, navbar, buttons */
+    header, aside, nav, .no-print, .lg\:col-span-3 > div:first-child, .flex.flex-col.md\:flex-row, .lg\:col-span-3 > div:last-child {
+        display: none !important;
+    }
+    
+    .lg\:col-span-2 {
+        width: 100% !important;
+    }
+
+    #quotationPaperDoc {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    @page {
+        size: A4 portrait;
+        margin: 12mm 10mm;
+    }
+}
+</style>
+
 {% block content %}
 <div class="p-6 space-y-6 bg-slate-50 min-h-screen">
     <!-- Header Navigation & Quick Actions -->
@@ -68,7 +93,7 @@
 
         <!-- Left 2 Cols: Full Document Render -->
         <div class="lg:col-span-2 space-y-6">
-            <div class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:border-none print:shadow-none">
+            <div id="quotationPaperDoc" class="bg-white p-8 rounded-2xl border border-slate-200/80 shadow-xs space-y-6 print:p-0 print:border-none print:shadow-none">
 
                 <!-- Branding Header -->
                 <div class="flex justify-between items-start border-b-2 border-primary-600 pb-6">
