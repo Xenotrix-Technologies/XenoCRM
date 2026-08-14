@@ -3,6 +3,8 @@ from django.shortcuts import redirect
 from django.contrib.auth import views as auth_views
 from . import views
 from . import invoice_views
+from . import document_views
+
 
 urlpatterns = [
     path('', lambda r: redirect('dashboard'), name='root'),
@@ -67,14 +69,42 @@ urlpatterns = [
     path('projects/files/', views.project_files_view, name='project_files'),
     path('projects/time-tracking/', views.project_time_tracking_view, name='project_time_tracking'),
     path('projects/reports/', views.project_reports_view, name='project_reports'),
+
+    # Agreement URLs
     path('agreements/', views.agreements_list_view, name='agreements'),
     path('agreements/create/', views.create_agreement_view, name='create_agreement'),
     path('agreements/<int:agreement_id>/', views.agreement_print_view, name='agreement_detail'),
     path('agreements/<int:agreement_id>/edit/', views.update_agreement_view, name='edit_agreement'),
     path('agreements/<int:agreement_id>/delete/', views.delete_agreement_view, name='delete_agreement'),
     path('agreements/<int:agreement_id>/print/', views.agreement_print_view, name='print_agreement'),
-    path('reports/', lambda r: redirect('agreements')),
-    path('quotations/', lambda r: redirect('agreements')),
+
+    # Quotation URLs
+    path('quotations/', document_views.quotation_list, name='quotations'),
+    path('quotations/list/', document_views.quotation_list, name='quotation_list'),
+    path('quotations/create/', document_views.quotation_create, name='quotation_create'),
+    path('quotations/<int:quotation_id>/', document_views.quotation_detail, name='quotation_detail'),
+    path('quotations/<int:quotation_id>/edit/', document_views.quotation_edit, name='quotation_edit'),
+    path('quotations/<int:quotation_id>/duplicate/', document_views.quotation_duplicate, name='quotation_duplicate'),
+    path('quotations/<int:quotation_id>/status/', document_views.quotation_update_status, name='quotation_update_status'),
+    path('quotations/<int:quotation_id>/convert-to-agreement/', document_views.quotation_convert_to_agreement, name='quotation_convert_to_agreement'),
+    path('quotations/<int:quotation_id>/delete/', document_views.quotation_delete, name='quotation_delete'),
+
+    # Public Client Portal URLs
+    path('quotation/view/<str:public_token>/', document_views.public_quotation_view, name='public_quotation_view'),
+    path('quotation/view/<str:public_token>/accept/', document_views.public_quotation_accept, name='public_quotation_accept'),
+    path('quotation/view/<str:public_token>/reject/', document_views.public_quotation_reject, name='public_quotation_reject'),
+
+    path('agreement/view/<str:public_token>/', document_views.public_agreement_view, name='public_agreement_view'),
+    path('agreement/view/<str:public_token>/sign/', document_views.public_agreement_sign, name='public_agreement_sign'),
+
+    # Document Settings & Templates
+    path('documents/settings/', document_views.document_settings_view, name='document_settings'),
+    path('documents/templates/', document_views.document_templates_view, name='document_templates'),
+    path('documents/templates/<int:template_id>/delete/', document_views.document_template_delete, name='document_template_delete'),
+
+    # Lead to Client Conversion
+    path('leads/<int:lead_id>/convert-to-client/', document_views.convert_lead_to_client, name='convert_lead_to_client'),
+
 
     path('calendar/', views.calendar_view, name='calendar'),
     path('calendar/list/', views.calendar_list_view, name='calendar_list'),

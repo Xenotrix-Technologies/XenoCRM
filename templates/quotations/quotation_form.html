@@ -1,0 +1,679 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if quotation %}Edit Quotation {{ quotation.quotation_number }}{% else %}Create Quotation{% endif %} | XenoCRM{% endblock %}
+
+{% block content %}
+<div class="h-screen flex flex-col bg-slate-100 overflow-hidden" id="quotationBuilderApp">
+    <!-- Header Bar -->
+    <div class="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-between z-10 flex-shrink-0">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'quotation_list' %}" class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-all">
+                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+            </a>
+            <div>
+                <h1 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <span>{% if quotation %}Edit {{ quotation.quotation_number }}{% else %}New Quotation Builder{% endif %}</span>
+                    <span class="text-xs px-2 py-0.5 bg-primary-50 text-primary-700 font-bold rounded-full border border-primary-200" id="qNumHeader">
+                        {% if quotation %}{{ quotation.quotation_number }}{% else %}{{ default_q_num }}{% endif %}
+                    </span>
+                </h1>
+                <p class="text-xs text-slate-500">Configure line items, pricing options, packages, terms, and live preview.</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button type="button" onclick="saveQuotation('Draft')" class="px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-xs transition-all">
+                <i data-lucide="save" class="w-4 h-4 text-slate-500"></i>
+                <span>Save Draft</span>
+            </button>
+            <button type="button" onclick="window.print()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-xs transition-all">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                <span>Print / PDF</span>
+            </button>
+            <button type="button" onclick="saveQuotation('Sent')" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl text-xs flex items-center gap-1.5 shadow-sm shadow-primary-500/20 transition-all">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>Save & Send</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Workspace: Split Screen -->
+    <div class="flex-1 flex overflow-hidden">
+        <!-- LEFT PANEL: Form Builder -->
+        <div class="w-full lg:w-1/2 p-6 overflow-y-auto custom-scrollbar space-y-6 border-r border-slate-200/80 bg-slate-50/50">
+
+            <!-- Step 1: Client / Lead Selection -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-primary-100 text-primary-700 text-xs flex items-center justify-center font-bold">1</span>
+                        Client & Contact Information
+                    </h3>
+                    <select id="leadSelect" onchange="onLeadSelect(this.value)" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-slate-700 font-medium focus:ring-primary-500">
+                        <option value="">-- Select Existing Lead / Client --</option>
+                        {% for l in leads %}
+                        <option value="{{ l.id }}" {% if selected_lead and selected_lead.id == l.id %}selected{% elif quotation and quotation.lead_id == l.id %}selected{% endif %}
+                            data-name="{{ l.name }}" data-company="{{ l.company }}" data-email="{{ l.email }}" data-phone="{{ l.phone_number }}" data-address="{{ l.location }}" data-gstin="">
+                            {{ l.name }} ({{ l.company }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Client Name *</label>
+                        <input type="text" id="client_name" value="{% if quotation %}{{ quotation.client_name }}{% elif selected_lead %}{{ selected_lead.name }}{% else %}Veta Spoken English Academy{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl font-semibold text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Company Name</label>
+                        <input type="text" id="company_name" value="{% if quotation %}{{ quotation.company_name }}{% elif selected_lead %}{{ selected_lead.company }}{% else %}Veta Academy Pvt Ltd{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Email Address</label>
+                        <input type="email" id="email" value="{% if quotation %}{{ quotation.email }}{% elif selected_lead %}{{ selected_lead.email }}{% else %}contact@vetaenglish.in{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Phone Number</label>
+                        <input type="text" id="phone" value="{% if quotation %}{{ quotation.phone }}{% elif selected_lead %}{{ selected_lead.phone_number }}{% else %}+91 98765 12345{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Billing Address</label>
+                        <textarea id="address" rows="2" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">{% if quotation %}{{ quotation.address }}{% elif selected_lead %}{{ selected_lead.location }}{% else %}Building 42, Main Road, Ameerpet, Hyderabad, Telangana - 500016{% endif %}</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">GSTIN Number</label>
+                        <input type="text" id="gstin" value="{% if quotation %}{{ quotation.gstin }}{% else %}36ABCDE1234F1Z9{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl font-mono text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Salesperson / Prepared By</label>
+                        <input type="text" id="salesperson" value="{% if quotation %}{{ quotation.salesperson }}{% else %}{{ profile.user.get_full_name|default:profile.user.username }}{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Quotation Metadata -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
+                    <span class="w-6 h-6 rounded-full bg-primary-100 text-primary-700 text-xs flex items-center justify-center font-bold">2</span>
+                    Quotation Information & Template
+                </h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Quotation Number</label>
+                        <input type="text" id="quotation_number" value="{% if quotation %}{{ quotation.quotation_number }}{% else %}{{ default_q_num }}{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-primary-700">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Quotation Date</label>
+                        <input type="date" id="date" value="{% if quotation %}{{ quotation.date|date:'Y-m-d' }}{% else %}{{ today_date }}{% endif %}" onchange="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Valid Until</label>
+                        <input type="date" id="valid_until" value="{% if quotation %}{{ quotation.valid_until|date:'Y-m-d' }}{% else %}{{ valid_date }}{% endif %}" onchange="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Currency</label>
+                        <select id="currency" onchange="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 font-semibold">
+                            <option value="INR" selected>INR (₹)</option>
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="AED">AED (AED)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Template Style</label>
+                        <select id="template_style" onchange="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800">
+                            <option value="default" selected>Xenotrix Default</option>
+                            <option value="corporate">Professional Corporate</option>
+                            <option value="minimal">Minimalist</option>
+                            <option value="modern">Modern Gradient</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-600 mb-1">Payment Structure</label>
+                        <select id="preset_payment_terms" onchange="applyPaymentPreset(this.value)" class="w-full text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-800">
+                            <option value="30_40_30" selected>30% Advance / 40% Second / 30% Final</option>
+                            <option value="50_50">50% Advance / 50% Completion</option>
+                            <option value="monthly">Monthly Advance</option>
+                            <option value="custom">Custom Schedule</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Line Items & Pricing Editor -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-primary-100 text-primary-700 text-xs flex items-center justify-center font-bold">3</span>
+                        Services & Line Items
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="addItemRow()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1 transition-all">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            <span>+ Add Item</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Line Items Table -->
+                <div class="space-y-3" id="lineItemsContainer">
+                    <!-- Dynamic Item Rows populated by JS -->
+                </div>
+            </div>
+
+            <!-- Step 4: Service Packages (Optional Quick Add) -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-primary-100 text-primary-700 text-xs flex items-center justify-center font-bold">4</span>
+                        Service Packages
+                    </h3>
+                    <button type="button" onclick="addPackageModal()" class="px-3 py-1.5 bg-primary-50 text-primary-700 hover:bg-primary-100 rounded-xl text-xs font-semibold transition-all">
+                        + Select Package
+                    </button>
+                </div>
+
+                <div id="selectedPackageBox" class="p-4 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold text-slate-800" id="pkgNameDisplay">Starter Growth Package</span>
+                        <p class="text-[11px] text-slate-500" id="pkgDescDisplay">10 Posts, 8 Ad Creatives, Social Media Management, Monthly Reports</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-sm font-extrabold text-primary-600" id="pkgPriceDisplay">₹18,000 / Mo</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Domain Options -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-primary-100 text-primary-700 text-xs flex items-center justify-center font-bold">5</span>
+                        Domain Name Options
+                    </h3>
+                    <button type="button" onclick="addDomainOptionRow()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold">
+                        + Add Domain Choice
+                    </button>
+                </div>
+
+                <div id="domainOptionsContainer" class="space-y-2">
+                    <!-- Domain choices inserted by JS -->
+                </div>
+            </div>
+
+            <!-- Step 6: Terms, Conditions & Exclusions -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
+                    <span class="w-6 h-6 rounded-full bg-primary-100 text-primary-700 text-xs flex items-center justify-center font-bold">6</span>
+                    Terms & Exclusions
+                </h3>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Exclusions & Extra Charges</label>
+                    <div id="exclusionsContainer" class="space-y-2 mb-2"></div>
+                    <button type="button" onclick="addExclusionRow()" class="text-xs text-primary-600 font-semibold hover:underline">+ Add Exclusion Item</button>
+                </div>
+
+                <div>
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Terms & Conditions Clauses</label>
+                    <div id="termsContainer" class="space-y-2 mb-2"></div>
+                    <button type="button" onclick="addTermRow()" class="text-xs text-primary-600 font-semibold hover:underline">+ Add Clause</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL: Live Interactive A4 Quotation Preview -->
+        <div class="hidden lg:block lg:w-1/2 p-6 bg-slate-200/60 overflow-y-auto custom-scrollbar flex items-center justify-center">
+            <div id="a4PreviewPaper" class="w-[210mm] min-h-[297mm] bg-white shadow-2xl rounded-sm p-10 font-sans text-slate-800 space-y-6 relative border border-slate-300">
+                <!-- Watermark -->
+                <div class="absolute inset-0 flex items-center justify-center opacity-3 pointer-events-none select-none">
+                    <span class="text-7xl font-black uppercase tracking-widest text-slate-900">XENOTRIX</span>
+                </div>
+
+                <!-- Header Branding -->
+                <div class="flex justify-between items-start border-b-2 border-primary-600 pb-6">
+                    <div>
+                        <h2 class="text-2xl font-black tracking-tight text-primary-700">XENOTRIX TECHNOLOGIES</h2>
+                        <p class="text-[11px] text-slate-500 font-medium">Enterprise Software & Digital Marketing Solutions</p>
+                        <p class="text-[10px] text-slate-400">123 Tech Park, Suite 400, Hyderabad | GSTIN: 36AAAAA0000A1Z5</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-block px-3 py-1 bg-primary-600 text-white font-extrabold text-sm tracking-widest rounded uppercase">QUOTATION</span>
+                        <p class="text-xs font-mono font-bold text-slate-900 mt-2" id="prev_q_num">XT-QT-2026-0001</p>
+                        <p class="text-[10px] text-slate-500">Date: <span id="prev_date" class="font-semibold text-slate-700">13 Aug 2026</span></p>
+                        <p class="text-[10px] text-slate-500">Valid Until: <span id="prev_valid" class="font-semibold text-slate-700">23 Aug 2026</span></p>
+                    </div>
+                </div>
+
+                <!-- Prepared For / Prepared By -->
+                <div class="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                    <div>
+                        <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">PREPARED FOR</span>
+                        <h4 class="font-bold text-slate-900 text-sm mt-0.5" id="prev_client">Veta Spoken English Academy</h4>
+                        <p class="text-[11px] text-slate-600" id="prev_company">Veta Academy Pvt Ltd</p>
+                        <p class="text-[10px] text-slate-500" id="prev_email">contact@vetaenglish.in | +91 98765 12345</p>
+                        <p class="text-[10px] text-slate-400" id="prev_gstin">GSTIN: 36ABCDE1234F1Z9</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">PREPARED BY</span>
+                        <p class="font-bold text-slate-900 text-sm mt-0.5" id="prev_salesperson">Sanju (Sales Executive)</p>
+                        <p class="text-[11px] text-slate-600">Xenotrix Technologies</p>
+                        <p class="text-[10px] text-slate-500">contact@xenotrix.in</p>
+                    </div>
+                </div>
+
+                <!-- Line Items Table -->
+                <div>
+                    <h5 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2 border-l-4 border-primary-600 pl-2">SCOPE OF SERVICES & PRICING</h5>
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] border-y border-slate-200">
+                                <th class="py-2 px-3">Service / Description</th>
+                                <th class="py-2 px-3 text-center">Type</th>
+                                <th class="py-2 px-3 text-center">Qty</th>
+                                <th class="py-2 px-3 text-right">Unit Price</th>
+                                <th class="py-2 px-3 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prev_items_table" class="divide-y divide-slate-100">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Optional Services (If Any) -->
+                <div id="prev_optional_box" class="hidden">
+                    <h5 class="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 border-l-4 border-amber-500 pl-2">OPTIONAL SERVICES (NOT INCLUDED IN GRAND TOTAL)</h5>
+                    <table class="w-full text-left text-xs border-collapse">
+                        <tbody id="prev_optional_table" class="divide-y divide-slate-100 text-slate-500"></tbody>
+                    </table>
+                </div>
+
+                <!-- Domain Options (If Any) -->
+                <div id="prev_domain_box" class="hidden bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                    <h5 class="text-[11px] font-bold text-blue-900 uppercase tracking-wider mb-1">DOMAIN NAME OPTIONS</h5>
+                    <div id="prev_domain_list" class="space-y-1 text-xs"></div>
+                </div>
+
+                <!-- Totals Breakdown & Payment Schedule -->
+                <div class="grid grid-cols-2 gap-6 pt-4 border-t border-slate-200">
+                    <div>
+                        <h5 class="text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-1.5">PAYMENT STAGES</h5>
+                        <div id="prev_payment_stages" class="space-y-1 text-xs"></div>
+                    </div>
+                    <div class="space-y-1.5 text-xs text-right">
+                        <div class="flex justify-between text-slate-600">
+                            <span>Subtotal:</span>
+                            <span id="prev_subtotal" class="font-semibold">₹13,799</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>Discount:</span>
+                            <span id="prev_discount" class="font-semibold">₹0</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>Tax:</span>
+                            <span id="prev_tax" class="font-semibold">₹0</span>
+                        </div>
+                        <div class="flex justify-between text-base font-extrabold text-slate-900 pt-2 border-t border-slate-200">
+                            <span>Grand Total:</span>
+                            <span id="prev_grand_total" class="text-primary-700">₹13,799</span>
+                        </div>
+                        <div id="prev_recurring_row" class="text-[11px] text-primary-600 font-bold hidden">
+                            Recurring: <span id="prev_recurring_val">₹18,000/Month</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exclusions -->
+                <div id="prev_exclusions_box">
+                    <h5 class="text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-1">EXCLUSIONS</h5>
+                    <ul id="prev_exclusions_list" class="list-disc pl-4 text-[10px] text-slate-500 space-y-0.5"></ul>
+                </div>
+
+                <!-- Terms & Conditions -->
+                <div>
+                    <h5 class="text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-1">TERMS & CONDITIONS</h5>
+                    <ol id="prev_terms_list" class="list-decimal pl-4 text-[10px] text-slate-500 space-y-0.5"></ol>
+                </div>
+
+                <!-- Footer Signatures -->
+                <div class="pt-8 border-t border-slate-200 flex justify-between items-end text-xs">
+                    <div>
+                        <p class="text-[10px] text-slate-400">Accepted By Client</p>
+                        <div class="h-10 border-b border-dashed border-slate-300 w-40 mt-1"></div>
+                        <p class="text-[10px] text-slate-500 mt-1">Signature & Date</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-slate-400">For Xenotrix Technologies</p>
+                        <div class="h-10 border-b border-dashed border-slate-300 w-40 ml-auto mt-1 flex items-end justify-end pb-1 font-serif italic text-primary-700 text-sm">Authorized Signatory</div>
+                        <p class="text-[10px] text-slate-500 mt-1">Authorized Person</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let lineItems = [
+        { title: 'Business Website Development', description: 'Responsive 5-page business website with contact form & SEO setup', pricing_type: 'fixed', quantity: 1, unit: 'Project', unit_price: 12000, discount: 0, tax_rate: 0, is_optional: false },
+        { title: 'Domain Registration – 3 Years', description: '3-Year .in Domain registration & DNS configuration', pricing_type: 'one_time', quantity: 1, unit: 'Domain', unit_price: 1799, discount: 0, tax_rate: 0, is_optional: false },
+        { title: 'Google Maps Integration', description: 'Location map integration on contact page', pricing_type: 'fixed', quantity: 1, unit: 'Setup', unit_price: 500, discount: 0, tax_rate: 0, is_optional: true }
+    ];
+
+    let domainOptions = [
+        { domain_name: 'vetaspokenenglish.com', period: '3-Year Registration', price: 3199, is_recommended: true, is_selected: false },
+        { domain_name: 'vetaspoken.in', period: '3-Year Registration', price: 1799, is_recommended: false, is_selected: true },
+        { domain_name: 'vetaenglish.in', period: '3-Year Registration', price: 1799, is_recommended: false, is_selected: false }
+    ];
+
+    let paymentStages = [
+        { stage_name: '30% Advance Payment', percentage: 30, amount: 4140, due_date: '', description: 'Upon signing quotation' },
+        { stage_name: '40% Second Payment', percentage: 40, amount: 5520, due_date: '', description: 'Upon design approval' },
+        { stage_name: '30% Final Payment', percentage: 30, amount: 4139, due_date: '', description: 'Before final launch' }
+    ];
+
+    let terms = [
+        "This quotation is valid for 10 days.",
+        "The Starter Growth Package is billed at ₹18,000 per month.",
+        "Payment will follow the agreed 30%-40%-30% structure.",
+        "Paid advertising spend is not included.",
+        "Additional services will be charged separately."
+    ];
+
+    let exclusions = [
+        { service_name: "Premium Plugins", charges_description: "At actual cost + setup" },
+        { service_name: "Paid APIs", charges_description: "At actual cost + integration" },
+        { service_name: "Professional Photography", charges_description: "Starting from ₹3,000/session" },
+        { service_name: "Additional Website Pages", charges_description: "₹750/page" }
+    ];
+
+    function renderItemRows() {
+        const container = document.getElementById('lineItemsContainer');
+        container.innerHTML = '';
+
+        lineItems.forEach((item, idx) => {
+            const row = document.createElement('div');
+            row.className = 'p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2';
+            row.innerHTML = `
+                <div class="flex items-center justify-between gap-2">
+                    <input type="text" value="${item.title}" oninput="lineItems[${idx}].title=this.value; updatePreview();" placeholder="Service Title" class="flex-1 text-xs px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg font-bold text-slate-800">
+                    <select onchange="lineItems[${idx}].pricing_type=this.value; updatePreview();" class="text-[11px] px-2 py-1.5 bg-white border border-slate-200 rounded-lg font-semibold text-slate-700">
+                        <option value="fixed" ${item.pricing_type==='fixed'?'selected':''}>Fixed Price</option>
+                        <option value="monthly" ${item.pricing_type==='monthly'?'selected':''}>Monthly (/Mo)</option>
+                        <option value="yearly" ${item.pricing_type==='yearly'?'selected':''}>Yearly (/Yr)</option>
+                        <option value="one_time" ${item.pricing_type==='one_time'?'selected':''}>One-time</option>
+                    </select>
+                    <label class="flex items-center gap-1 text-[11px] font-bold text-slate-600 cursor-pointer">
+                        <input type="checkbox" ${item.is_optional?'checked':''} onchange="lineItems[${idx}].is_optional=this.checked; updatePreview();" class="rounded text-amber-500">
+                        <span>Optional</span>
+                    </label>
+                    <button type="button" onclick="lineItems.splice(${idx},1); renderItemRows(); updatePreview();" class="text-rose-500 hover:text-rose-700 p-1">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <textarea rows="1" oninput="lineItems[${idx}].description=this.value; updatePreview();" placeholder="Description / Scope" class="w-full text-xs px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-slate-600">${item.description||''}</textarea>
+                <div class="grid grid-cols-4 gap-2 text-xs">
+                    <div>
+                        <span class="text-[10px] text-slate-400">Qty</span>
+                        <input type="number" value="${item.quantity}" oninput="lineItems[${idx}].quantity=parseFloat(this.value)||0; updatePreview();" class="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg">
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-slate-400">Unit</span>
+                        <input type="text" value="${item.unit}" oninput="lineItems[${idx}].unit=this.value; updatePreview();" class="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg">
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-slate-400">Price (₹)</span>
+                        <input type="number" value="${item.unit_price}" oninput="lineItems[${idx}].unit_price=parseFloat(this.value)||0; updatePreview();" class="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg font-bold">
+                    </div>
+                    <div>
+                        <span class="text-[10px] text-slate-400">Total (₹)</span>
+                        <div class="px-2 py-1 bg-slate-100 rounded-lg font-bold text-slate-800 text-right">₹${((item.quantity||1)*(item.unit_price||0)).toLocaleString('en-IN')}</div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+        lucide.createIcons();
+    }
+
+    function addItemRow() {
+        lineItems.push({ title: 'New Service Item', description: '', pricing_type: 'fixed', quantity: 1, unit: 'Item', unit_price: 1000, discount: 0, tax_rate: 0, is_optional: false });
+        renderItemRows();
+        updatePreview();
+    }
+
+    function renderDomainRows() {
+        const container = document.getElementById('domainOptionsContainer');
+        container.innerHTML = '';
+        domainOptions.forEach((dom, idx) => {
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs';
+            div.innerHTML = `
+                <input type="text" value="${dom.domain_name}" oninput="domainOptions[${idx}].domain_name=this.value; updatePreview();" class="flex-1 px-2 py-1 bg-white border border-slate-200 rounded-lg font-mono font-semibold">
+                <input type="number" value="${dom.price}" oninput="domainOptions[${idx}].price=parseFloat(this.value)||0; updatePreview();" class="w-24 px-2 py-1 bg-white border border-slate-200 rounded-lg font-bold">
+                <label class="text-[10px] font-bold text-blue-600 flex items-center gap-1 cursor-pointer">
+                    <input type="checkbox" ${dom.is_recommended?'checked':''} onchange="domainOptions[${idx}].is_recommended=this.checked; updatePreview();" class="rounded">
+                    <span>Rec</span>
+                </label>
+                <button type="button" onclick="domainOptions.splice(${idx},1); renderDomainRows(); updatePreview();" class="text-rose-500 p-1">✕</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function addDomainOptionRow() {
+        domainOptions.push({ domain_name: 'newdomain.in', period: '3-Year Registration', price: 1799, is_recommended: false, is_selected: false });
+        renderDomainRows();
+        updatePreview();
+    }
+
+    function renderExclusions() {
+        const container = document.getElementById('exclusionsContainer');
+        container.innerHTML = '';
+        exclusions.forEach((ex, idx) => {
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 text-xs';
+            div.innerHTML = `
+                <input type="text" value="${ex.service_name}" oninput="exclusions[${idx}].service_name=this.value; updatePreview();" placeholder="Service" class="w-1/2 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg font-semibold">
+                <input type="text" value="${ex.charges_description}" oninput="exclusions[${idx}].charges_description=this.value; updatePreview();" placeholder="Charges / Note" class="w-1/2 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg">
+                <button type="button" onclick="exclusions.splice(${idx},1); renderExclusions(); updatePreview();" class="text-rose-500">✕</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function addExclusionRow() {
+        exclusions.push({ service_name: "Additional Feature", charges_description: "At actual cost" });
+        renderExclusions();
+        updatePreview();
+    }
+
+    function renderTerms() {
+        const container = document.getElementById('termsContainer');
+        container.innerHTML = '';
+        terms.forEach((t, idx) => {
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 text-xs';
+            div.innerHTML = `
+                <span class="font-bold text-slate-400">${idx+1}.</span>
+                <input type="text" value="${t}" oninput="terms[${idx}]=this.value; updatePreview();" class="flex-1 px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg">
+                <button type="button" onclick="terms.splice(${idx},1); renderTerms(); updatePreview();" class="text-rose-500">✕</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function addTermRow() {
+        terms.push("Additional services will be charged separately.");
+        renderTerms();
+        updatePreview();
+    }
+
+    function updatePreview() {
+        document.getElementById('prev_q_num').innerText = document.getElementById('quotation_number').value || 'XT-QT-2026-0001';
+        document.getElementById('prev_date').innerText = document.getElementById('date').value || '';
+        document.getElementById('prev_valid').innerText = document.getElementById('valid_until').value || '';
+        document.getElementById('prev_client').innerText = document.getElementById('client_name').value || 'Unnamed Client';
+        document.getElementById('prev_company').innerText = document.getElementById('company_name').value || '';
+        document.getElementById('prev_email').innerText = (document.getElementById('email').value || '') + ' | ' + (document.getElementById('phone').value || '');
+        document.getElementById('prev_gstin').innerText = 'GSTIN: ' + (document.getElementById('gstin').value || 'N/A');
+        document.getElementById('prev_salesperson').innerText = document.getElementById('salesperson').value || 'Sanju';
+
+        // Calculate Totals & Populate Items Table
+        const itemsTable = document.getElementById('prev_items_table');
+        itemsTable.innerHTML = '';
+
+        let subtotal = 0;
+        let monthlyTotal = 0;
+
+        lineItems.filter(i => !i.is_optional).forEach(item => {
+            const lineTot = (item.quantity || 1) * (item.unit_price || 0);
+            subtotal += lineTot;
+            if (item.pricing_type === 'monthly') monthlyTotal += lineTot;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="py-2 px-3">
+                    <p class="font-bold text-slate-900">${item.title}</p>
+                    <p class="text-[10px] text-slate-500">${item.description||''}</p>
+                </td>
+                <td class="py-2 px-3 text-center uppercase text-[10px] font-semibold text-slate-600">${item.pricing_type}</td>
+                <td class="py-2 px-3 text-center">${item.quantity} ${item.unit}</td>
+                <td class="py-2 px-3 text-right font-mono">₹${(item.unit_price||0).toLocaleString('en-IN')}</td>
+                <td class="py-2 px-3 text-right font-bold font-mono">₹${lineTot.toLocaleString('en-IN')}</td>
+            `;
+            itemsTable.appendChild(tr);
+        });
+
+        document.getElementById('prev_subtotal').innerText = '₹' + subtotal.toLocaleString('en-IN');
+        document.getElementById('prev_grand_total').innerText = '₹' + subtotal.toLocaleString('en-IN');
+
+        if (monthlyTotal > 0) {
+            document.getElementById('prev_recurring_row').classList.remove('hidden');
+            document.getElementById('prev_recurring_val').innerText = '₹' + monthlyTotal.toLocaleString('en-IN') + '/Month';
+        } else {
+            document.getElementById('prev_recurring_row').classList.add('hidden');
+        }
+
+        // Optional Box
+        const optItems = lineItems.filter(i => i.is_optional);
+        const optBox = document.getElementById('prev_optional_box');
+        const optTable = document.getElementById('prev_optional_table');
+        if (optItems.length > 0) {
+            optBox.classList.remove('hidden');
+            optTable.innerHTML = '';
+            optItems.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-1.5 px-3 font-semibold">${item.title} (${item.description||''})</td>
+                    <td class="py-1.5 px-3 text-right font-bold">₹${((item.quantity||1)*(item.unit_price||0)).toLocaleString('en-IN')}</td>
+                `;
+                optTable.appendChild(tr);
+            });
+        } else {
+            optBox.classList.add('hidden');
+        }
+
+        // Domain Options
+        const domBox = document.getElementById('prev_domain_box');
+        const domList = document.getElementById('prev_domain_list');
+        if (domainOptions.length > 0) {
+            domBox.classList.remove('hidden');
+            domList.innerHTML = '';
+            domainOptions.forEach(dom => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center';
+                div.innerHTML = `
+                    <span>○ ${dom.domain_name} (${dom.period}) ${dom.is_recommended?'<span class="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">RECOMMENDED</span>':''}</span>
+                    <span class="font-bold text-blue-900">₹${(dom.price||0).toLocaleString('en-IN')}</span>
+                `;
+                domList.appendChild(div);
+            });
+        } else {
+            domBox.classList.add('hidden');
+        }
+
+        // Payment Stages
+        const pmtContainer = document.getElementById('prev_payment_stages');
+        pmtContainer.innerHTML = '';
+        paymentStages.forEach(stg => {
+            const div = document.createElement('div');
+            div.className = 'flex justify-between text-slate-700';
+            div.innerHTML = `<span>${stg.stage_name} (${stg.percentage}%)</span> <span class="font-bold">₹${Math.round(subtotal * (stg.percentage/100)).toLocaleString('en-IN')}</span>`;
+            pmtContainer.appendChild(div);
+        });
+
+        // Exclusions
+        const exList = document.getElementById('prev_exclusions_list');
+        exList.innerHTML = '';
+        exclusions.forEach(ex => {
+            const li = document.createElement('li');
+            li.innerHTML = `<strong>${ex.service_name}:</strong> ${ex.charges_description}`;
+            exList.appendChild(li);
+        });
+
+        // Terms
+        const termsList = document.getElementById('prev_terms_list');
+        termsList.innerHTML = '';
+        terms.forEach(t => {
+            const li = document.createElement('li');
+            li.innerText = t;
+            termsList.appendChild(li);
+        });
+    }
+
+    function saveQuotation(targetStatus) {
+        const payload = {
+            quotation_number: document.getElementById('quotation_number').value,
+            client_name: document.getElementById('client_name').value,
+            company_name: document.getElementById('company_name').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value,
+            gstin: document.getElementById('gstin').value,
+            salesperson: document.getElementById('salesperson').value,
+            date: document.getElementById('date').value,
+            valid_until: document.getElementById('valid_until').value,
+            currency: document.getElementById('currency').value,
+            template_style: document.getElementById('template_style').value,
+            status: targetStatus,
+            items: lineItems,
+            domain_options: domainOptions,
+            payment_stages: paymentStages,
+            terms: terms.map(t => ({ content: t })),
+            exclusions: exclusions
+        };
+
+        fetch('{% if quotation %}{% url "quotation_edit" quotation.id %}{% else %}{% url "quotation_create" %}{% endif %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                alert('Error saving quotation: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => alert('Network error: ' + err));
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderItemRows();
+        renderDomainRows();
+        renderExclusions();
+        renderTerms();
+        updatePreview();
+    });
+</script>
+{% endblock %}

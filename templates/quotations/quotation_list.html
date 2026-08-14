@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Quotations | XenoCRM{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6 bg-slate-50 min-h-screen">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                <i data-lucide="file-spreadsheet" class="w-7 h-7 text-primary-600"></i>
+                Quotations Management
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">Create, track, and manage commercial proposals and quotations for leads & clients.</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'document_settings' %}" class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all text-xs flex items-center gap-2 shadow-xs">
+                <i data-lucide="settings-2" class="w-4 h-4 text-slate-500"></i>
+                <span>Document Settings</span>
+            </a>
+            <a href="{% url 'quotation_create' %}" class="px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-semibold rounded-xl transition-all text-xs flex items-center gap-2 shadow-sm shadow-primary-500/20 active:scale-98">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                <span>Create Quotation</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Dashboard Stat Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+            <span class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total</span>
+            <div class="mt-2 flex items-baseline justify-between">
+                <span class="text-xl font-bold text-slate-900">{{ total_count }}</span>
+                <i data-lucide="files" class="w-4 h-4 text-slate-400"></i>
+            </div>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+            <span class="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Draft</span>
+            <div class="mt-2 flex items-baseline justify-between">
+                <span class="text-xl font-bold text-slate-600">{{ draft_count }}</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span>
+            </div>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-blue-200/80 shadow-xs flex flex-col justify-between">
+            <span class="text-[11px] font-semibold text-blue-600 uppercase tracking-wider">Sent</span>
+            <div class="mt-2 flex items-baseline justify-between">
+                <span class="text-xl font-bold text-blue-700">{{ sent_count }}</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+            </div>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-indigo-200/80 shadow-xs flex flex-col justify-between">
+            <span class="text-[11px] font-semibold text-indigo-600 uppercase tracking-wider">Viewed</span>
+            <div class="mt-2 flex items-baseline justify-between">
+                <span class="text-xl font-bold text-indigo-700">{{ viewed_count }}</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+            </div>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-emerald-200/80 shadow-xs flex flex-col justify-between">
+            <span class="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider">Accepted</span>
+            <div class="mt-2 flex items-baseline justify-between">
+                <span class="text-xl font-bold text-emerald-700">{{ accepted_count }}</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+            </div>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-rose-200/80 shadow-xs flex flex-col justify-between">
+            <span class="text-[11px] font-semibold text-rose-600 uppercase tracking-wider">Rejected</span>
+            <div class="mt-2 flex items-baseline justify-between">
+                <span class="text-xl font-bold text-rose-700">{{ rejected_count }}</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+            </div>
+        </div>
+        <div class="bg-white p-3.5 rounded-2xl border border-amber-200/80 shadow-xs flex flex-col justify-between">
+            <span class="text-[11px] font-semibold text-amber-600 uppercase tracking-wider">Expired</span>
+            <div class="mt-2 flex items-baseline justify-between">
+                <span class="text-xl font-bold text-amber-700">{{ expired_count }}</span>
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            </div>
+        </div>
+        <div class="bg-gradient-to-br from-primary-600 to-primary-800 p-3.5 rounded-2xl text-white shadow-sm flex flex-col justify-between col-span-2 sm:col-span-1">
+            <span class="text-[10px] font-semibold text-primary-200 uppercase tracking-wider">Total Value</span>
+            <div class="mt-2">
+                <span class="text-lg font-extrabold">₹{{ total_quoted_val|floatformat:0 }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters & Controls -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row items-center justify-between gap-4">
+        <form method="GET" class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <div class="relative flex-1 md:w-72">
+                <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+                <input type="text" name="search" value="{{ search_q }}" placeholder="Search quotation #, client, email..." class="w-full pl-9 pr-4 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all">
+            </div>
+            <select name="status" onchange="this.form.submit()" class="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-700">
+                <option value="">All Statuses</option>
+                <option value="Draft" {% if status_filter == 'Draft' %}selected{% endif %}>Draft</option>
+                <option value="Sent" {% if status_filter == 'Sent' %}selected{% endif %}>Sent</option>
+                <option value="Viewed" {% if status_filter == 'Viewed' %}selected{% endif %}>Viewed</option>
+                <option value="Accepted" {% if status_filter == 'Accepted' %}selected{% endif %}>Accepted</option>
+                <option value="Rejected" {% if status_filter == 'Rejected' %}selected{% endif %}>Rejected</option>
+                <option value="Expired" {% if status_filter == 'Expired' %}selected{% endif %}>Expired</option>
+            </select>
+            {% if search_q or status_filter %}
+            <a href="{% url 'quotation_list' %}" class="text-xs text-slate-500 hover:text-slate-700 underline">Clear filters</a>
+            {% endif %}
+        </form>
+
+        <div class="text-xs text-slate-500">
+            Showing <span class="font-bold text-slate-800">{{ quotations|length }}</span> quotations
+        </div>
+    </div>
+
+    <!-- Quotations Table -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50/80 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        <th class="px-5 py-3.5">Quotation No</th>
+                        <th class="px-5 py-3.5">Client / Lead</th>
+                        <th class="px-5 py-3.5">Prepared By</th>
+                        <th class="px-5 py-3.5 text-right">Amount</th>
+                        <th class="px-5 py-3.5">Date</th>
+                        <th class="px-5 py-3.5">Valid Until</th>
+                        <th class="px-5 py-3.5 text-center">Status</th>
+                        <th class="px-5 py-3.5 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-xs text-slate-700">
+                    {% for q in quotations %}
+                    <tr class="hover:bg-slate-50/70 transition-colors">
+                        <td class="px-5 py-4 font-mono font-bold text-primary-600">
+                            <a href="{% url 'quotation_detail' q.id %}" class="hover:underline flex items-center gap-1.5">
+                                <span>{{ q.quotation_number }}</span>
+                                {% if q.version > 1 %}
+                                <span class="px-1.5 py-0.5 text-[9px] bg-slate-100 text-slate-600 rounded font-normal">v{{ q.version }}</span>
+                                {% endif %}
+                            </a>
+                        </td>
+                        <td class="px-5 py-4">
+                            <div>
+                                <p class="font-bold text-slate-900">{{ q.client_name }}</p>
+                                {% if q.company_name %}<p class="text-[11px] text-slate-500">{{ q.company_name }}</p>{% endif %}
+                            </div>
+                        </td>
+                        <td class="px-5 py-4 font-medium text-slate-600">
+                            {{ q.salesperson|default:q.prepared_by.user.get_full_name|default:"Admin" }}
+                        </td>
+                        <td class="px-5 py-4 text-right">
+                            <span class="font-bold text-slate-900 text-sm">₹{{ q.grand_total|floatformat:2 }}</span>
+                            {% if q.monthly_recurring_total > 0 %}
+                            <p class="text-[10px] text-primary-600 font-semibold">+₹{{ q.monthly_recurring_total|floatformat:0 }}/mo</p>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-4 text-slate-500 font-mono">
+                            {{ q.date|date:"M d, Y" }}
+                        </td>
+                        <td class="px-5 py-4 text-slate-500 font-mono">
+                            {{ q.valid_until|date:"M d, Y" }}
+                        </td>
+                        <td class="px-5 py-4 text-center">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider
+                                {% if q.status == 'Draft' %}bg-slate-100 text-slate-700 border border-slate-200
+                                {% elif q.status == 'Sent' %}bg-blue-50 text-blue-700 border border-blue-200
+                                {% elif q.status == 'Viewed' %}bg-indigo-50 text-indigo-700 border border-indigo-200
+                                {% elif q.status == 'Accepted' %}bg-emerald-50 text-emerald-700 border border-emerald-200
+                                {% elif q.status == 'Rejected' %}bg-rose-50 text-rose-700 border border-rose-200
+                                {% elif q.status == 'Expired' %}bg-amber-50 text-amber-700 border border-amber-200
+                                {% else %}bg-slate-100 text-slate-600{% endif %}">
+                                {{ q.status }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                                <a href="{% url 'quotation_detail' q.id %}" class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-all" title="View Details">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </a>
+                                {% if q.status != 'Accepted' %}
+                                <a href="{% url 'quotation_edit' q.id %}" class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-all" title="Edit">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                </a>
+                                {% endif %}
+                                <a href="{% url 'public_quotation_view' q.public_token %}" target="_blank" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Public Link">
+                                    <i data-lucide="external-link" class="w-4 h-4"></i>
+                                </a>
+                                {% if q.status == 'Accepted' %}
+                                <form method="POST" action="{% url 'quotation_convert_to_agreement' q.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1">
+                                        <i data-lucide="file-signature" class="w-3.5 h-3.5"></i>
+                                        <span>Convert</span>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <form method="POST" action="{% url 'quotation_duplicate' q.id %}" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-all" title="Duplicate">
+                                        <i data-lucide="copy" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{% url 'quotation_delete' q.id %}" onsubmit="return confirm('Delete quotation {{ q.quotation_number }}?');" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-all" title="Delete">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="px-6 py-12 text-center text-slate-500">
+                            <i data-lucide="file-spreadsheet" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+                            <p class="font-medium text-slate-700">No quotations found.</p>
+                            <p class="text-xs text-slate-400 mt-1">Click 'Create Quotation' to generate your first proposal.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

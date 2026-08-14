@@ -552,13 +552,41 @@
             </div>
             {% endif %}
 
-            {% if request.user.profile.has_access_agreements %}
-            <a class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-semibold transition-all {% if 'agreement' in request.resolver_match.url_name %}bg-brand-50 text-brand-600 font-bold border-l-4 border-brand-600 shadow-xs{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}"
-                href="{% url 'agreements' %}">
-                <i data-lucide="file-signature" class="w-4 h-4 flex-shrink-0"></i>
-                <span class="sidebar-text truncate">Agreements</span>
-            </a>
+            {% if request.user.profile.has_access_agreements or request.user.profile.has_access_quotations %}
+            <div class="space-y-1">
+                <button type="button" aria-expanded="false" id="documents-dropdown-btn" onclick="toggleSidebarDropdown('documents')"
+                    class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all {% if 'quotation' in request.resolver_match.url_name or 'agreement' in request.resolver_match.url_name or 'document' in request.resolver_match.url_name %}bg-brand-50 text-brand-600 font-bold{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                    <div class="flex items-center gap-3 flex-1 overflow-hidden">
+                        <i data-lucide="file-text" class="w-4 h-4 flex-shrink-0"></i>
+                        <span class="sidebar-text truncate">Sales Documents</span>
+                    </div>
+                    <i data-lucide="chevron-down" id="documents-arrow" class="sidebar-arrow w-3.5 h-3.5 text-slate-400 transition-transform duration-200"></i>
+                </button>
+                <div id="documents-dropdown-menu" class="pl-8 space-y-1 {% if 'quotation' in request.resolver_match.url_name or 'agreement' in request.resolver_match.url_name or 'document' in request.resolver_match.url_name %}{% else %}hidden{% endif %}">
+                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if 'quotation' in request.resolver_match.url_name %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
+                        href="{% url 'quotation_list' %}">
+                        <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+                        <span>Quotations</span>
+                    </a>
+                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if 'agreement' in request.resolver_match.url_name %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
+                        href="{% url 'agreements' %}">
+                        <i data-lucide="file-signature" class="w-3.5 h-3.5"></i>
+                        <span>Agreements</span>
+                    </a>
+                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'document_templates' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
+                        href="{% url 'document_templates' %}">
+                        <i data-lucide="layout-template" class="w-3.5 h-3.5"></i>
+                        <span>Templates</span>
+                    </a>
+                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'document_settings' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
+                        href="{% url 'document_settings' %}">
+                        <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
+                        <span>Document Settings</span>
+                    </a>
+                </div>
+            </div>
             {% endif %}
+
 
             {% if request.user.profile.has_access_campaigns or request.user.profile.has_access_campaign or request.user.profile.has_access_post_management or request.user.profile.has_access_campaigns_status or request.user.profile.has_access_campaign_status_settings %}
             <div class="space-y-1">

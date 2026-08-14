@@ -5368,8 +5368,6 @@ def finance_add_income_view(request):
     for lead in client_leads:
         if lead.company and lead.company.strip() and lead.company.strip() != "No Client / General":
             client_names.add(lead.company.strip())
-        if lead.name and lead.name.strip() and lead.name.strip() != "No Client / General":
-            client_names.add(lead.name.strip())
     clients = sorted(list(client_names))
     payment_methods = FinancePaymentMethod.objects.filter(organization=org).order_by('name')
     return render(request, 'finance_add_income.html', {'clients': clients, 'payment_methods': payment_methods})

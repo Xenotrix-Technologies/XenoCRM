@@ -132,6 +132,31 @@
             </div>
         </div>
 
+        <!-- Sales Documents KPI -->
+        <div class="kpi-card p-6 relative overflow-hidden bg-gradient-to-br from-white to-slate-50">
+            <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                        <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-wider block">Sales Documents</span>
+                        <a href="{% url 'quotation_list' %}" class="text-[10px] text-blue-600 hover:underline font-bold">Manage Suite →</a>
+                    </div>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                    <span class="text-[10px] text-slate-400 font-semibold block">Quotations</span>
+                    <a href="{% url 'quotation_list' %}" class="text-lg font-extrabold text-slate-900 hover:text-blue-600">{{ quotation_count }}</a>
+                </div>
+                <div>
+                    <span class="text-[10px] text-slate-400 font-semibold block">Agreements</span>
+                    <a href="{% url 'agreements' %}" class="text-lg font-extrabold text-slate-900 hover:text-blue-600">{{ agreement_count }}</a>
+                </div>
+            </div>
+        </div>
+
         <!-- Active Deals KPI -->
         <div class="kpi-card p-6 relative overflow-hidden">
             <div class="flex justify-between items-start mb-4">
@@ -151,7 +176,6 @@
                 <span>₹{{ active_deals_value|floatformat:0 }}</span>
             </div>
         </div>
-
         <!-- Total Clients KPI -->
         <div class="kpi-card p-6 relative overflow-hidden">
             <div class="flex justify-between items-start mb-4">
