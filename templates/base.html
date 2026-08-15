@@ -219,12 +219,20 @@
         @media (max-width: 1023.98px) {
             aside {
                 transform: translateX(-100%);
-                width: 240px !important;
+                width: 280px !important;
+                max-width: 80vw !important;
                 z-index: 60;
+            }
+            aside > div,
+            aside > nav {
+                width: 100% !important;
             }
             .mobile-sidebar-open aside {
                 transform: translateX(0) !important;
-                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            }
+            #sidebar-overlay {
+                z-index: 55;
             }
             main {
                 margin-left: 0 !important;
@@ -295,9 +303,10 @@
                     <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Enterprise ERP</span>
                 </div>
             </div>
-            <button onclick="toggleSidebarState(event)" title="Toggle Sidebar"
+            <button onclick="toggleSidebarState(event)" title="Close Menu"
                 class="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg flex-shrink-0 transition-colors">
-                <i data-lucide="panel-left-close" class="w-5 h-5"></i>
+                <i data-lucide="x" class="w-5 h-5 lg:hidden"></i>
+                <i data-lucide="panel-left-close" class="w-5 h-5 hidden lg:block"></i>
             </button>
         </div>
 
@@ -734,7 +743,7 @@
     </aside>
 
     <!-- Mobile Sidebar Backdrop Overlay -->
-    <div id="sidebar-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-50 hidden lg:hidden transition-opacity"></div>
+    <div id="sidebar-overlay" onclick="closeMobileSidebar()" ontouchstart="closeMobileSidebar()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-55 hidden lg:hidden transition-opacity cursor-pointer"></div>
 
     <!-- Main Content Area -->
     <main class="min-h-screen flex flex-col transition-all">
@@ -914,11 +923,26 @@
 
         function toggleMobileSidebar() {
             const body = document.getElementById('app-body');
-            const overlay = document.getElementById('sidebar-overlay');
-            body.classList.toggle('mobile-sidebar-open');
-            if (overlay) {
-                overlay.classList.toggle('hidden');
+            if (!body) return;
+            if (body.classList.contains('mobile-sidebar-open')) {
+                closeMobileSidebar();
+            } else {
+                openMobileSidebar();
             }
+        }
+
+        function openMobileSidebar() {
+            const body = document.getElementById('app-body');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (body) body.classList.add('mobile-sidebar-open');
+            if (overlay) overlay.classList.remove('hidden');
+        }
+
+        function closeMobileSidebar() {
+            const body = document.getElementById('app-body');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (body) body.classList.remove('mobile-sidebar-open');
+            if (overlay) overlay.classList.add('hidden');
         }
 
         function toggleSidebarDropdown(id) {
@@ -1053,6 +1077,29 @@
                     const arrow = document.getElementById(baseId + '-arrow');
                     if (btn) btn.setAttribute('aria-expanded', 'true');
                     if (arrow) arrow.style.transform = 'rotate(180deg)';
+                }
+            });
+
+            // Auto close mobile sidebar when clicking any navigation link
+            document.querySelectorAll('aside nav a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (window.innerWidth < 1024) {
+                        closeMobileSidebar();
+                    }
+                });
+            });
+
+            // Close mobile sidebar on Escape key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && window.innerWidth < 1024) {
+                    closeMobileSidebar();
+                }
+            });
+
+            // Close mobile sidebar on window resize to desktop
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) {
+                    closeMobileSidebar();
                 }
             });
         });
