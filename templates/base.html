@@ -221,7 +221,7 @@
                 transform: translateX(-100%);
                 width: 280px !important;
                 max-width: 80vw !important;
-                z-index: 60;
+                z-index: 70 !important;
             }
             aside > div,
             aside > nav {
@@ -232,7 +232,7 @@
                 box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
             }
             #sidebar-overlay {
-                z-index: 55;
+                z-index: 50 !important;
             }
             main {
                 margin-left: 0 !important;
@@ -291,7 +291,7 @@
 
     {% if user.is_authenticated %}
     <!-- Sidebar Shell -->
-    <aside class="fixed left-0 top-0 h-full w-[240px] bg-white border-r border-slate-200/80 shadow-sm z-50 flex flex-col py-4">
+    <aside class="fixed left-0 top-0 h-full w-[240px] bg-white border-r border-slate-200/80 shadow-sm z-[70] flex flex-col py-4">
         <!-- Logo & Sidebar Toggle -->
         <div class="px-4 mb-6 flex items-center justify-between">
             <div onclick="toggleSidebarState(event)" title="Toggle Sidebar" class="flex items-center gap-3 overflow-hidden cursor-pointer group select-none">
@@ -743,7 +743,7 @@
     </aside>
 
     <!-- Mobile Sidebar Backdrop Overlay -->
-    <div id="sidebar-overlay" onclick="closeMobileSidebar()" ontouchstart="closeMobileSidebar()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-55 hidden lg:hidden transition-opacity cursor-pointer"></div>
+    <div id="sidebar-overlay" onclick="closeMobileSidebar()" ontouchstart="closeMobileSidebar()" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-[50] hidden lg:hidden transition-opacity cursor-pointer"></div>
 
     <!-- Main Content Area -->
     <main class="min-h-screen flex flex-col transition-all">
