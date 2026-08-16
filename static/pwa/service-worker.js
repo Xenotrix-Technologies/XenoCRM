@@ -1,36 +1,37 @@
-const CACHE_NAME = 'xenocrm-static-v1.0';
+const CACHE_NAME = 'xenocrm-static-v3.0';
 const OFFLINE_URL = '/offline/';
 
 // Safe static assets ONLY - NO authenticated HTML views, NO private ERP data, NO APIs!
 const STATIC_ASSETS = [
-  '/static/pwa/manifest.json',
+  '/static/pwa/manifest.json?v=3.0',
   '/static/pwa/pwa-init.js',
   '/static/css/main.css',
   '/static/css/form_styles.css',
   '/static/css/invoices.css',
   '/static/js/nav.js',
-  '/static/pwa/icons/icon-192.png',
-  '/static/pwa/icons/icon-512.png',
-  '/static/pwa/icons/icon-maskable-192.png',
-  '/static/pwa/icons/icon-maskable-512.png',
-  '/static/pwa/icons/apple-touch-icon.png',
-  '/static/pwa/icons/favicon.ico',
+  '/static/pwa/icons/icon-192.png?v=3.0',
+  '/static/pwa/icons/icon-512.png?v=3.0',
+  '/static/pwa/icons/icon-maskable-192.png?v=3.0',
+  '/static/pwa/icons/icon-maskable-512.png?v=3.0',
+  '/static/pwa/icons/apple-touch-icon.png?v=3.0',
+  '/static/pwa/icons/favicon.ico?v=3.0',
   OFFLINE_URL
 ];
 
 // Install Event - Pre-cache safe app shell & offline assets
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[XenoCRM SW] Pre-caching static assets and offline fallback');
+      console.log('[XenoCRM SW] Pre-caching static assets and offline fallback v3.0');
       return cache.addAll(STATIC_ASSETS).catch((err) => {
         console.warn('[XenoCRM SW] Pre-cache error (ignored for non-critical files):', err);
       });
-    }).then(() => self.skipWaiting())
+    })
   );
 });
 
-// Activate Event - Clean up stale caches
+// Activate Event - Clean up stale caches and notify clients
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -57,11 +58,9 @@ self.addEventListener('fetch', (event) => {
   }
 
   // 2. HTML Navigation Requests (ERP Pages, Views, Reports, APIs)
-  // SECURITY REQUIREMENT: Never cache private authenticated HTML data!
   if (request.mode === 'navigate' || (request.headers.get('accept') && request.headers.get('accept').includes('text/html'))) {
     event.respondWith(
       fetch(request).catch(() => {
-        // Network failed (Offline) -> Serve pre-cached safe Offline Fallback Page
         console.log('[XenoCRM SW] Offline navigation fallback for:', request.url);
         return caches.match(OFFLINE_URL).then((offlineResponse) => {
           return offlineResponse || new Response(
@@ -74,7 +73,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // 3. Static Assets (CSS, JS, Web Fonts, PWA Icons, Images)
+  // 3. Manifest & PWA Icon Updates -> Network First to reflect brand/icon updates instantly
+  if (url.pathname.includes('manifest.json') || url.pathname.includes('/pwa/icons/')) {
+    event.respondWith(
+      fetch(request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseToCache));
+        }
+        return networkResponse;
+      }).catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // 4. Static Assets (CSS, JS, Web Fonts, Images)
   if (
     url.pathname.startsWith('/static/') ||
     url.hostname.includes('cdn.jsdelivr.net') ||
@@ -86,16 +99,14 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
         if (cachedResponse) {
-          // Return cached static asset immediately & update cache in background
           fetch(request).then((networkResponse) => {
             if (networkResponse && networkResponse.status === 200) {
               caches.open(CACHE_NAME).then((cache) => cache.put(request, networkResponse));
             }
-          }).catch(() => {/* Ignore network error for background revalidation */});
+          }).catch(() => {});
           return cachedResponse;
         }
 
-        // Asset not in cache -> Fetch from network & cache it safely
         return fetch(request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
             const responseToCache = networkResponse.clone();
