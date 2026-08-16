@@ -21,20 +21,47 @@ from decimal import Decimal
 # Views for navigation pages with proper multi-tenant database queries
 
 
+PERM_REDIRECT_ORDER = [
+    ('dashboard', 'dashboard'),
+    ('leads', 'leads'),
+    ('clients', 'clients'),
+    ('support', 'customer_support'),
+    ('projects', 'projects'),
+    ('agreements', 'agreements'),
+    ('quotations', 'quotations'),
+    ('campaigns', 'campaign'),
+    ('calendar', 'calendar'),
+    ('staff', 'staff'),
+    ('services', 'services'),
+    ('finance', 'finance_dashboard'),
+    ('hr', 'hr_dashboard'),
+]
+
+
 def page_permission_required(permission_name):
     """Require a UserProfile permission property such as has_access_content_settings."""
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
-            profile = getattr(request.user, 'profile', None)
+            try:
+                profile = getattr(request.user, 'profile', None)
+            except Exception:
+                profile = None
+
             if profile and getattr(profile, f'has_access_{permission_name}', False):
                 return view_func(request, *args, **kwargs)
 
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'error': 'You do not have permission to access this page.'}, status=403)
 
             messages.error(request, 'You do not have permission to access this page.')
-            return redirect('dashboard')
+
+            if profile:
+                for perm, target_name in PERM_REDIRECT_ORDER:
+                    if perm != permission_name and getattr(profile, f'has_access_{perm}', False):
+                        return redirect(target_name)
+
+            return redirect('login')
         return wrapper
     return decorator
 

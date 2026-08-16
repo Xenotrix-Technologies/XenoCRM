@@ -106,7 +106,7 @@
                     <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
                         <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Assigned Executive</span>
                         <span class="font-semibold text-slate-200 block truncate mt-0.5">
-                            {% if lead.owner %}
+                            {% if lead.owner and lead.owner.user %}
                                 {{ lead.owner.user.get_full_name|default:lead.owner.user.username }}
                             {% else %}
                                 Sales Executive
@@ -558,7 +558,7 @@
     const leadEmailVal = "{{ lead.email|default:''|escapejs }}";
     const leadStatusVal = "{{ lead.status|default:'Active'|escapejs }}";
     const leadStageVal = "{{ lead.stage|default:'New'|escapejs }}";
-    const salesExecVal = "{% if lead.owner %}{{ lead.owner.user.get_full_name|default:lead.owner.user.username|escapejs }}{% else %}Team Xenotrix{% endif %}";
+    const salesExecVal = "{% if lead.owner and lead.owner.user %}{{ lead.owner.user.get_full_name|default:lead.owner.user.username|escapejs }}{% else %}Team Xenotrix{% endif %}";
     
     let servicesVal = "{% for s in lead.services.all %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% empty %}Custom CRM & Enterprise Solutions{% endfor %}";
 
