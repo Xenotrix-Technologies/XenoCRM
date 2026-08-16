@@ -1,0 +1,79 @@
+{
+  "name": "XenoCRM ERP",
+  "short_name": "XenoCRM",
+  "description": "Enterprise SaaS CRM & ERP System",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "lang": "en-US",
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "/static/pwa/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/pwa/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/pwa/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/static/pwa/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/static/pwa/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View executive metrics and status",
+      "url": "/dashboard/",
+      "icons": [{ "src": "/static/pwa/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Leads",
+      "short_name": "Leads",
+      "description": "Manage sales pipeline & leads",
+      "url": "/leads/",
+      "icons": [{ "src": "/static/pwa/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Projects",
+      "short_name": "Projects",
+      "description": "Track ongoing projects & tasks",
+      "url": "/projects/",
+      "icons": [{ "src": "/static/pwa/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Finance",
+      "short_name": "Finance",
+      "description": "View financial dashboard & expenses",
+      "url": "/finance/dashboard/",
+      "icons": [{ "src": "/static/pwa/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

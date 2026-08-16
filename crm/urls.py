@@ -226,4 +226,5 @@ urlpatterns = [
     path('finance/invoices/<int:invoice_id>/edit/', invoice_views.invoice_edit, name='invoice_edit'),
     path('finance/invoices/<int:invoice_id>/delete/', invoice_views.invoice_delete, name='invoice_delete'),
     path('finance/invoices/<int:invoice_id>/update-status/', invoice_views.invoice_update_status, name='invoice_update_status'),
+    path('offline/', views.offline_view, name='offline'),
 ]
