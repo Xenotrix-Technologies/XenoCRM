@@ -704,7 +704,7 @@
             {% if request.user.profile.has_any_settings_access %}
             <div class="space-y-1">
                 <button type="button" aria-expanded="false" id="settings-dropdown-btn" onclick="toggleSidebarDropdown('settings')"
-                    class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all {% if request.resolver_match.url_name == 'services' or request.resolver_match.url_name == 'staff_roles' or request.resolver_match.url_name == 'notification_settings' or request.resolver_match.url_name == 'role_permissions' or request.resolver_match.url_name == 'departments' %}bg-brand-50 text-brand-600 font-bold{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
+                    class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all {% if request.resolver_match.url_name == 'settings_dashboard' or request.resolver_match.url_name == 'services' or request.resolver_match.url_name == 'staff_roles' or request.resolver_match.url_name == 'notification_settings' or request.resolver_match.url_name == 'role_permissions' or request.resolver_match.url_name == 'departments' or request.resolver_match.url_name == 'finance_settings' or request.resolver_match.url_name == 'content_settings' %}bg-brand-50 text-brand-600 font-bold{% else %}text-slate-600 hover:bg-slate-100 hover:text-slate-900{% endif %}">
                     <div class="flex items-center gap-3 flex-1 overflow-hidden">
                         <i data-lucide="settings" class="w-4 h-4 flex-shrink-0"></i>
                         <span class="sidebar-text truncate">System Settings</span>
@@ -712,10 +712,14 @@
                     <i data-lucide="chevron-down" id="settings-arrow" class="sidebar-arrow w-3.5 h-3.5 text-slate-400 transition-transform duration-200"></i>
                 </button>
                 <div id="settings-dropdown-menu" class="pl-8 space-y-1 hidden">
-                    {% if request.user.profile.has_access_services %}
-                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'services' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
-                        href="{% url 'services' %}">
-                        <span>Services</span>
+                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'settings_dashboard' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
+                        href="{% url 'settings_dashboard' %}">
+                        <span>Settings Control Hub</span>
+                    </a>
+                    {% if request.user.profile.has_access_role_permissions %}
+                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'role_permissions' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
+                        href="{% url 'role_permissions' %}">
+                        <span>Role Permissions</span>
                     </a>
                     {% endif %}
                     {% if request.user.profile.has_access_staff_roles %}
@@ -724,22 +728,26 @@
                         <span>Staff Roles</span>
                     </a>
                     {% endif %}
-                    {% if request.user.profile.has_access_notification_settings %}
-                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'notification_settings' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
-                        href="{% url 'notification_settings' %}">
-                        <span>Notification Config</span>
-                    </a>
-                    {% endif %}
-                    {% if request.user.profile.has_access_role_permissions %}
-                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'role_permissions' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
-                        href="{% url 'role_permissions' %}">
-                        <span>Role Permissions</span>
-                    </a>
-                    {% endif %}
                     {% if request.user.profile.has_access_departments %}
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'departments' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'departments' %}">
                         <span>Departments</span>
+                    </a>
+                    {% endif %}
+                    {% if request.user.profile.has_access_services %}
+                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'services' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
+                        href="{% url 'services' %}">
+                        <span>Services</span>
+                    </a>
+                    {% endif %}
+                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'finance_settings' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
+                        href="{% url 'finance_settings' %}">
+                        <span>Finance & Billing</span>
+                    </a>
+                    {% if request.user.profile.has_access_notification_settings %}
+                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'notification_settings' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
+                        href="{% url 'notification_settings' %}">
+                        <span>Notification Config</span>
                     </a>
                     {% endif %}
                 </div>
