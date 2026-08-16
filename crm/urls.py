@@ -175,6 +175,7 @@ urlpatterns = [
     path('services/<int:service_id>/edit/', views.edit_service, name='edit_service'),
     path('services/<int:service_id>/delete/', views.delete_service, name='delete_service'),
     path('notifications/', views.notifications_view, name='notifications'),
+    path('settings/', views.settings_dashboard_view, name='settings_dashboard'),
     path('settings/notifications/', views.notification_settings_view, name='notification_settings'),
     path('settings/permissions/', views.role_permissions_view, name='role_permissions'),
     path('settings/departments/', views.departments_view, name='departments'),

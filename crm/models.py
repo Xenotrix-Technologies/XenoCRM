@@ -215,6 +215,14 @@ class UserProfile(models.Model):
         return self.check_page_permission('content_tracker')
 
     @property
+    def has_edit_content_tracker(self):
+        return self.check_page_permission('content_tracker')
+
+    @property
+    def has_delete_content_tracker(self):
+        return self.check_page_permission('content_tracker')
+
+    @property
     def has_access_settings(self):
         return self.check_page_permission('settings')
 

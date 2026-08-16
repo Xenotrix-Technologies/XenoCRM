@@ -4102,7 +4102,10 @@ def assign_staff_to_department(request):
             })
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)})
-    return JsonResponse({'success': False, 'error': 'Invalid request method.'})
+@login_required
+def settings_dashboard_view(request):
+    """Central settings dashboard routing view."""
+    return redirect('notification_settings')
 
 
 from django.db.models import Q
