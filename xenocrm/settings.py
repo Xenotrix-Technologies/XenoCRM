@@ -35,7 +35,6 @@ DEBUG = env('DEBUG', default=True)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 ALLOWED_HOSTS.extend(['.onrender.com', 'xeno.xenotrix.in', 'www.xeno.xenotrix.in', 'localhost', '127.0.0.1'])
-# Allow all host headers in development or when wildcard host is specified
 if '*' in ALLOWED_HOSTS or env.bool('ALLOW_ALL_HOSTS', default=False):
     ALLOWED_HOSTS = ['*']
 
@@ -43,8 +42,8 @@ RENDER_EXTERNAL_HOSTNAME = env('RENDER_EXTERNAL_HOSTNAME', default=None)
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=['http://*.xenotrix.in', 'https://*.xenotrix.in', 'http://*.onrender.com', 'https://*.onrender.com'])
-CSRF_TRUSTED_ORIGINS.extend(['https://xeno.xenotrix.in', 'https://www.xeno.xenotrix.in', 'http://localhost:8000', 'http://127.0.0.1:8000'])
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=['https://xeno.xenotrix.in', 'https://www.xeno.xenotrix.in', 'https://*.xenotrix.in', 'https://*.onrender.com'])
+CSRF_TRUSTED_ORIGINS.extend(['http://localhost:8000', 'http://127.0.0.1:8000'])
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
@@ -54,10 +53,9 @@ if not DEBUG and 'test' not in sys.argv:
     # Tell Django it's secure if Render's proxy forwards it as HTTPS
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     
-    # Only enforce SSL redirect if explicitly enabled in env or running in production with RENDER_EXTERNAL_HOSTNAME
-    SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=bool(RENDER_EXTERNAL_HOSTNAME))
-    SESSION_COOKIE_SECURE = env.bool('SESSION_COOKIE_SECURE', default=SECURE_SSL_REDIRECT)
-    CSRF_COOKIE_SECURE = env.bool('CSRF_COOKIE_SECURE', default=SECURE_SSL_REDIRECT)
+    SECURE_SSL_REDIRECT = env.bool('SECURE_SSL_REDIRECT', default=True)
+    SESSION_COOKIE_SECURE = env.bool('SESSION_COOKIE_SECURE', default=True)
+    CSRF_COOKIE_SECURE = env.bool('CSRF_COOKIE_SECURE', default=True)
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
 
