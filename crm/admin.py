@@ -58,7 +58,7 @@ class AgreementAdmin(admin.ModelAdmin):
     inlines = [AgreementServiceInline, DeliverableInline, ClientResponsibilityInline]
 
 from .models import (
-    Income, Expense, PartnerPayout,
+    Income, Expense, PartnerPayout, DeletedIncome, DeletedExpense,
     FinancePaymentMethod, FinanceExpenseCategory, FinancePaymentStatus, FinanceCommissionType,
     DocumentSettings, Quotation, QuotationItem, QuotationPackage, QuotationDomainOption,
     QuotationPaymentStage, QuotationTerm, QuotationExclusion, QuotationActivity, QuotationVersion,
@@ -67,6 +67,8 @@ from .models import (
 
 admin.site.register(Income)
 admin.site.register(Expense)
+admin.site.register(DeletedIncome)
+admin.site.register(DeletedExpense)
 admin.site.register(PartnerPayout)
 admin.site.register(FinancePaymentMethod)
 admin.site.register(FinanceExpenseCategory)

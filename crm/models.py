@@ -1767,6 +1767,48 @@ class Expense(models.Model):
         return f"{self.category} - {self.amount}"
 
 
+class DeletedIncome(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='deleted_incomes')
+    original_id = models.IntegerField(null=True, blank=True)
+    date = models.DateField()
+    client_name = models.CharField(max_length=255)
+    project_name = models.CharField(max_length=255, blank=True, null=True)
+    payment_method_name = models.CharField(max_length=100, blank=True, null=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    deleted_at = models.DateTimeField(auto_now_add=True)
+    deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'deleted_incomes'
+        ordering = ['-deleted_at']
+
+    def __str__(self):
+        return f"[DELETED] {self.client_name} - {self.amount}"
+
+
+class DeletedExpense(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='deleted_expenses')
+    original_id = models.IntegerField(null=True, blank=True)
+    date = models.DateField()
+    category_name = models.CharField(max_length=100, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    cost_center = models.CharField(max_length=150, blank=True, null=True)
+    payment_method_name = models.CharField(max_length=100, blank=True, null=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    deleted_at = models.DateTimeField(auto_now_add=True)
+    deleted_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'deleted_expenses'
+        ordering = ['-deleted_at']
+
+    def __str__(self):
+        return f"[DELETED] {self.category_name or 'Expense'} - {self.amount}"
+
+
+
 class PartnerPayout(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='partner_payouts')
     payout_id = models.CharField(max_length=50)
