@@ -13,8 +13,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="XenoCRM">
-    <link rel="apple-touch-icon" href="{% static 'pwa/icons/apple-touch-icon.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'pwa/icons/apple-touch-icon.png' %}">
     <link rel="icon" type="image/x-icon" href="{% static 'pwa/icons/favicon.ico' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/favicon.png' %}">
+    <link rel="icon" type="image/png" sizes="192x192" href="{% static 'pwa/icons/icon-192.png' %}">
 
     <!-- Tailwind CSS with Forms and Container Queries -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -311,9 +313,7 @@
         <!-- Logo & Sidebar Toggle -->
         <div class="px-4 mb-6 flex items-center justify-between">
             <div onclick="toggleSidebarState(event)" title="Toggle Sidebar" class="flex items-center gap-3 overflow-hidden cursor-pointer group select-none">
-                <div class="w-9 h-9 rounded-xl bg-brand-600 flex items-center justify-center text-white font-black text-lg shadow-md shadow-brand-600/20 flex-shrink-0 transition-transform group-hover:scale-105 active:scale-95">
-                    X
-                </div>
+                <img src="{% static 'images/Logo.png' %}" alt="XenoCRM Logo" class="w-9 h-9 rounded-xl shadow-md shadow-brand-600/20 flex-shrink-0 object-cover transition-transform group-hover:scale-105 active:scale-95">
                 <div class="sidebar-text flex flex-col">
                     <span class="font-bold text-slate-900 tracking-tight text-base leading-tight">XenoCRM</span>
                     <span class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Enterprise ERP</span>
