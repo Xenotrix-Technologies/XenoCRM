@@ -57,9 +57,11 @@
         <div class="flex items-center gap-3">
             <div class="flex -space-x-2">
                 {% for owner in owners|slice:":3" %}
+                {% if owner and owner.user %}
                 <div class="w-7 h-7 rounded-full border-2 border-white bg-slate-100 text-slate-700 flex items-center justify-center text-[10px] font-bold overflow-hidden" title="{{ owner.user.username }}">
                     {{ owner.user.username|slice:":2"|upper }}
                 </div>
+                {% endif %}
                 {% endfor %}
                 <div class="w-7 h-7 rounded-full border-2 border-white bg-brand-600 text-white flex items-center justify-center text-[10px] font-bold">+{{ owners.count }}</div>
             </div>
@@ -106,11 +108,13 @@
                         <p class="text-[11px] text-slate-500 mb-3">{{ lead.company }}</p>
                         <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-100">
                             <div class="flex items-center gap-2">
-                                <div class="w-5 h-5 rounded-full overflow-hidden bg-brand-50 text-brand-600 text-[8px] flex items-center justify-center font-bold border border-brand-200" title="Owner: {{ lead.owner.user.username }}">
+                                <div class="w-5 h-5 rounded-full overflow-hidden bg-brand-50 text-brand-600 text-[8px] flex items-center justify-center font-bold border border-brand-200" title="Owner: {% if lead.owner and lead.owner.user %}{{ lead.owner.user.username }}{% else %}-{% endif %}">
                                     {% if lead.profile_image_url %}
                                     <img class="w-full h-full object-cover" src="{{ lead.profile_image_url }}" alt=""/>
-                                    {% else %}
+                                    {% elif lead.owner and lead.owner.user %}
                                     {{ lead.owner.user.username|slice:":2"|upper }}
+                                    {% else %}
+                                    -
                                     {% endif %}
                                 </div>
                                 <span class="text-xs font-extrabold text-slate-900">₹{{ lead.value|floatformat:0 }}</span>
