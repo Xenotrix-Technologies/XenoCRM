@@ -123,6 +123,7 @@ urlpatterns = [
 
     # Lead Status Management
     
+    path('statuses/lead-statuses/', views.lead_statuses_view, name='lead_statuses'),
     path('statuses/leads/', views.lead_status_settings, name='lead_status_settings'),
     path('statuses/clients/', views.client_status_settings, name='client_status_settings'),
     path('statuses/projects/', views.project_status_settings, name='project_status_settings'),

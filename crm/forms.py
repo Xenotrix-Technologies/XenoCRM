@@ -56,6 +56,13 @@ class EventForm(forms.ModelForm):
             )
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'color' in self.fields:
+            self.fields['color'].required = False
+        if 'description' in self.fields:
+            self.fields['description'].required = False
+
 
 class ProfileForm(forms.ModelForm):
     class Meta:

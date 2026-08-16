@@ -1019,6 +1019,11 @@ def document_settings_view(request):
         settings_obj.account_number = request.POST.get('account_number', settings_obj.account_number)
         settings_obj.ifsc_code = request.POST.get('ifsc_code', settings_obj.ifsc_code)
         settings_obj.upi_id = request.POST.get('upi_id', settings_obj.upi_id)
+        if request.POST.get('opening_balance') is not None and request.POST.get('opening_balance') != '':
+            try:
+                settings_obj.opening_balance = float(request.POST.get('opening_balance'))
+            except (ValueError, TypeError):
+                pass
         
         settings_obj.default_currency = request.POST.get('default_currency', settings_obj.default_currency)
         settings_obj.quotation_prefix = request.POST.get('quotation_prefix', settings_obj.quotation_prefix)

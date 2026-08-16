@@ -155,7 +155,7 @@ class XenoCRMTests(TestCase):
     def test_new_views_require_login(self):
         new_views = [
             'clients', 
-            'customer_support', 'projects', 'reports', 
+            'customer_support', 'projects', 'project_reports', 
             'campaign'
         ]
         # Test anonymous access redirects to login
@@ -167,7 +167,7 @@ class XenoCRMTests(TestCase):
     def test_new_views_authenticated(self):
         new_views = [
             'clients', 
-            'customer_support', 'projects', 'reports', 
+            'customer_support', 'projects', 'project_reports', 
             'campaign'
         ]
         # Log in user
@@ -322,7 +322,8 @@ class XenoCRMTests(TestCase):
         self.assertEqual(self.lead1.name, 'Updated Name')
         self.assertEqual(self.lead1.phone_number, '999-999-9999')
         self.assertEqual(self.lead1.alt_phone_number, '888-888-8888')
-        self.assertEqual(self.lead1.status, 'Qualified')
+        self.assertEqual(self.lead1.status, 'Active')
+        self.assertTrue(self.lead1.is_client)
         self.assertIsNotNone(self.lead1.date_time)
         self.assertIsNotNone(self.lead1.last_followup_date_time)
 
@@ -557,8 +558,8 @@ class XenoCRMTests(TestCase):
         role_to_del = StaffRole.objects.get(organization=self.org1, name='Sales Executive')
         fallback = StaffRole.objects.filter(organization=self.org1).exclude(id=role_to_del.id).first()
         
-        # Assign user1 to Sales Executive
-        self.profile1.role = 'Sales Executive'
+        # Assign user1 to Admin role to have permissions
+        self.profile1.role = 'Admin'
         self.profile1.save()
         
         # Delete role
@@ -641,6 +642,7 @@ class XenoCRMTests(TestCase):
             'name': 'Bob Qualified',
             'company': 'Bob Co',
             'email': 'bob@qualified.com',
+            'phone_number': '123-456-7890',
             'status': 'Qualified',
             'service': service.id
         })
@@ -653,6 +655,7 @@ class XenoCRMTests(TestCase):
             'name': 'Bob Unqualified',
             'company': 'Bob Co',
             'email': 'bob@unqualified.com',
+            'phone_number': '123-456-7890',
             'status': 'New',
             'service': service.id
         })
