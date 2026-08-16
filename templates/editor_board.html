@@ -7,8 +7,8 @@
 <!-- CSRF Token for AJAX -->
 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 
-<main class="flex-1 overflow-x-hidden overflow-y-auto bg-background animate-fade-in p-4 md:p-6 lg:p-8 custom-scrollbar">
-  <div class="max-w-7xl mx-auto space-y-6">
+<div class="p-4 sm:p-6 space-y-6 bg-slate-50 min-h-screen">
+  <div class="space-y-6">
 
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -133,7 +133,7 @@
     </div>
 
   </div>
-</main>
+</div>
 
 <script>
   function getCSRFToken() {

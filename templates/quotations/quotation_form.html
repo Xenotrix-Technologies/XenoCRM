@@ -99,27 +99,27 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">Client Name *</label>
-                        <input type="text" id="client_name" value="{% if quotation %}{{ quotation.client_name }}{% elif selected_lead %}{{ selected_lead.company|default:selected_lead.name }}{% else %}Veta Academy Pvt Ltd{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl font-semibold text-slate-800">
+                        <input type="text" id="client_name" value="{% if quotation %}{{ quotation.client_name }}{% elif selected_lead %}{{ selected_lead.company|default:selected_lead.name }}{% endif %}" placeholder="e.g. Acme Corp / John Doe" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl font-semibold text-slate-800">
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">Company Name</label>
-                        <input type="text" id="company_name" value="{% if quotation %}{{ quotation.company_name }}{% elif selected_lead %}{{ selected_lead.company }}{% else %}Veta Academy Pvt Ltd{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">
+                        <input type="text" id="company_name" value="{% if quotation %}{{ quotation.company_name }}{% elif selected_lead %}{{ selected_lead.company }}{% endif %}" placeholder="e.g. Acme Pvt Ltd" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">Email Address</label>
-                        <input type="email" id="email" value="{% if quotation %}{{ quotation.email }}{% elif selected_lead %}{{ selected_lead.email }}{% else %}contact@vetaenglish.in{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">
+                        <input type="email" id="email" value="{% if quotation %}{{ quotation.email }}{% elif selected_lead %}{{ selected_lead.email }}{% endif %}" placeholder="e.g. client@example.com" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">Phone Number</label>
-                        <input type="text" id="phone" value="{% if quotation %}{{ quotation.phone }}{% elif selected_lead %}{{ selected_lead.phone_number }}{% else %}+91 98765 12345{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">
+                        <input type="text" id="phone" value="{% if quotation %}{{ quotation.phone }}{% elif selected_lead %}{{ selected_lead.phone_number }}{% endif %}" placeholder="e.g. +91 98765 43210" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">
                     </div>
                     <div class="sm:col-span-2">
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">Billing Address</label>
-                        <textarea id="address" rows="2" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">{% if quotation %}{{ quotation.address }}{% elif selected_lead %}{{ selected_lead.location }}{% else %}Building 42, Main Road, Ameerpet, Hyderabad, Telangana - 500016{% endif %}</textarea>
+                        <textarea id="address" rows="2" placeholder="Billing Address..." oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl text-slate-800">{% if quotation %}{{ quotation.address }}{% elif selected_lead %}{{ selected_lead.location }}{% endif %}</textarea>
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">GSTIN Number</label>
-                        <input type="text" id="gstin" value="{% if quotation %}{{ quotation.gstin }}{% else %}36ABCDE1234F1Z9{% endif %}" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl font-mono text-slate-800">
+                        <input type="text" id="gstin" value="{% if quotation %}{{ quotation.gstin }}{% endif %}" placeholder="GSTIN (optional)" oninput="updatePreview()" class="w-full text-xs px-3 py-2 bg-slate-50/50 border border-slate-200 rounded-xl font-mono text-slate-800">
                     </div>
                     <div>
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">Salesperson / Prepared By</label>
@@ -288,16 +288,16 @@
                 <div class="grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                     <div>
                         <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">PREPARED FOR</span>
-                        <h4 class="font-bold text-slate-900 text-sm mt-0.5" id="prev_client">Veta Spoken English Academy</h4>
-                        <p class="text-[11px] text-slate-600" id="prev_company">Veta Academy Pvt Ltd</p>
-                        <p class="text-[10px] text-slate-500" id="prev_email">contact@vetaenglish.in | +91 98765 12345</p>
-                        <p class="text-[10px] text-slate-400" id="prev_gstin">GSTIN: 36ABCDE1234F1Z9</p>
+                        <h4 class="font-bold text-slate-900 text-sm mt-0.5" id="prev_client">{% if quotation %}{{ quotation.client_name }}{% elif selected_lead %}{{ selected_lead.company|default:selected_lead.name }}{% else %}Client Name{% endif %}</h4>
+                        <p class="text-[11px] text-slate-600" id="prev_company">{% if quotation %}{{ quotation.company_name }}{% elif selected_lead %}{{ selected_lead.company }}{% endif %}</p>
+                        <p class="text-[10px] text-slate-500" id="prev_email">{% if quotation %}{{ quotation.email }}{% if quotation.phone %} | {{ quotation.phone }}{% endif %}{% elif selected_lead %}{{ selected_lead.email }}{% if selected_lead.phone_number %} | {{ selected_lead.phone_number }}{% endif %}{% endif %}</p>
+                        <p class="text-[10px] text-slate-400" id="prev_gstin">{% if quotation and quotation.gstin %}GSTIN: {{ quotation.gstin }}{% endif %}</p>
                     </div>
                     <div class="text-right">
                         <span class="text-[10px] font-bold uppercase text-slate-400 tracking-wider">PREPARED BY</span>
-                        <p class="font-bold text-slate-900 text-sm mt-0.5" id="prev_salesperson">Sanju (Sales Executive)</p>
-                        <p class="text-[11px] text-slate-600">Xenotrix Technologies</p>
-                        <p class="text-[10px] text-slate-500">contact@xenotrix.in</p>
+                        <p class="font-bold text-slate-900 text-sm mt-0.5" id="prev_salesperson">{% if quotation %}{{ quotation.salesperson }}{% else %}{{ profile.user.get_full_name|default:profile.user.username }}{% endif %}</p>
+                        <p class="text-[11px] text-slate-600">{{ doc_settings.company_name|default:'Xenotrix Technologies' }}</p>
+                        <p class="text-[10px] text-slate-500">{{ doc_settings.email|default:profile.user.email }}</p>
                     </div>
                 </div>
 
@@ -394,38 +394,57 @@
 </div>
 
 <script>
+    {% if quotation %}
     let lineItems = [
-        { title: 'Business Website Development', description: 'Responsive 5-page business website with contact form & SEO setup', pricing_type: 'fixed', quantity: 1, unit: 'Project', unit_price: 12000, discount: 0, tax_rate: 0, is_optional: false },
-        { title: 'Domain Registration – 3 Years', description: '3-Year .in Domain registration & DNS configuration', pricing_type: 'one_time', quantity: 1, unit: 'Domain', unit_price: 1799, discount: 0, tax_rate: 0, is_optional: false },
-        { title: 'Google Maps Integration', description: 'Location map integration on contact page', pricing_type: 'fixed', quantity: 1, unit: 'Setup', unit_price: 500, discount: 0, tax_rate: 0, is_optional: true }
+        {% for item in quotation.items.all %}
+        { title: "{{ item.title|escapejs }}", description: "{{ item.description|escapejs }}", pricing_type: "{{ item.pricing_type|escapejs }}", quantity: {{ item.quantity|default:1 }}, unit: "{{ item.unit|escapejs }}", unit_price: {{ item.unit_price|default:0 }}, discount: {{ item.discount|default:0 }}, tax_rate: {{ item.tax_rate|default:0 }}, is_optional: {% if item.is_optional %}true{% else %}false{% endif %} }{% if not forloop.last %},{% endif %}
+        {% endfor %}
     ];
 
     let domainOptions = [
-        { domain_name: 'vetaspokenenglish.com', period: '3-Year Registration', price: 3199, is_recommended: true, is_selected: false },
-        { domain_name: 'vetaspoken.in', period: '3-Year Registration', price: 1799, is_recommended: false, is_selected: true },
-        { domain_name: 'vetaenglish.in', period: '3-Year Registration', price: 1799, is_recommended: false, is_selected: false }
+        {% for dom in quotation.domain_options.all %}
+        { domain_name: "{{ dom.domain_name|escapejs }}", period: "{{ dom.period|escapejs }}", price: {{ dom.price|default:0 }}, is_recommended: {% if dom.is_recommended %}true{% else %}false{% endif %}, is_selected: {% if dom.is_selected %}true{% else %}false{% endif %} }{% if not forloop.last %},{% endif %}
+        {% endfor %}
     ];
 
     let paymentStages = [
-        { stage_name: '30% Advance Payment', percentage: 30, amount: 4140, due_date: '', description: 'Upon signing quotation' },
-        { stage_name: '40% Second Payment', percentage: 40, amount: 5520, due_date: '', description: 'Upon design approval' },
-        { stage_name: '30% Final Payment', percentage: 30, amount: 4139, due_date: '', description: 'Before final launch' }
+        {% for stage in quotation.payment_stages.all %}
+        { stage_name: "{{ stage.stage_name|escapejs }}", percentage: {{ stage.percentage|default:0 }}, amount: {{ stage.amount|default:0 }}, due_date: "{{ stage.due_date|date:'Y-m-d'|default:'' }}", description: "{{ stage.description|escapejs }}" }{% if not forloop.last %},{% endif %}
+        {% endfor %}
     ];
 
     let terms = [
-        "This quotation is valid for 10 days.",
-        "The Starter Growth Package is billed at ₹18,000 per month.",
-        "Payment will follow the agreed 30%-40%-30% structure.",
-        "Paid advertising spend is not included.",
-        "Additional services will be charged separately."
+        {% for t in quotation.terms.all %}
+        "{{ t.content|escapejs }}"{% if not forloop.last %},{% endif %}
+        {% endfor %}
     ];
 
     let exclusions = [
-        { service_name: "Premium Plugins", charges_description: "At actual cost + setup" },
-        { service_name: "Paid APIs", charges_description: "At actual cost + integration" },
-        { service_name: "Professional Photography", charges_description: "Starting from ₹3,000/session" },
-        { service_name: "Additional Website Pages", charges_description: "₹750/page" }
+        {% for ex in quotation.exclusions.all %}
+        { service_name: "{{ ex.service_name|escapejs }}", charges_description: "{{ ex.charges_description|escapejs }}" }{% if not forloop.last %},{% endif %}
+        {% endfor %}
     ];
+    {% else %}
+    let lineItems = [
+        { title: '', description: '', pricing_type: 'fixed', quantity: 1, unit: 'Item', unit_price: 0, discount: 0, tax_rate: 0, is_optional: false }
+    ];
+
+    let domainOptions = [];
+
+    let paymentStages = [
+        { stage_name: '30% Advance Payment', percentage: 30, amount: 0, due_date: '', description: 'Upon signing quotation' },
+        { stage_name: '40% Second Payment', percentage: 40, amount: 0, due_date: '', description: 'Upon milestone approval' },
+        { stage_name: '30% Final Payment', percentage: 30, amount: 0, due_date: '', description: 'Before final launch' }
+    ];
+
+    let terms = [
+        "This quotation is valid for 10 days from issue date.",
+        "Payment will follow the agreed stage structure.",
+        "Additional services outside the scope will be charged separately."
+    ];
+
+    let exclusions = [];
+    {% endif %}
 
     function renderItemRows() {
         const container = document.getElementById('lineItemsContainer');
