@@ -14,7 +14,7 @@ from .models import Organization, UserProfile, Lead, Activity, Task, TaskTodo, T
 from datetime import datetime, timedelta
 import io, json
 from .forms import EventForm, ProfileForm
-from .models import Income, Expense, FinancePaymentMethod, FinanceExpenseCategory, PartnerPayout, FinancePaymentStatus, FinanceCommissionType
+from .models import Income, Expense, DeletedIncome, DeletedExpense, FinancePaymentMethod, FinanceExpenseCategory, PartnerPayout, FinancePaymentStatus, FinanceCommissionType
 from .models import ClientStatus, ProjectStatus, CampaignStatus, CalendarStatus, TicketStatus, PriorityStatus, InvoiceStatus
 from datetime import datetime
 from decimal import Decimal
@@ -6184,8 +6184,21 @@ def bulk_delete_incomes(request):
         data = json.loads(request.body)
         ids = data.get('ids', [])
         if ids:
-            Income.objects.filter(organization=request.user.profile.organization, id__in=ids).delete()
-            return JsonResponse({'success': True, 'message': 'Selected income records deleted successfully.'})
+            items = Income.objects.filter(organization=request.user.profile.organization, id__in=ids)
+            for item in items:
+                DeletedIncome.objects.create(
+                    organization=item.organization,
+                    original_id=item.id,
+                    date=item.date,
+                    client_name=item.client_name,
+                    project_name=item.project_name,
+                    payment_method_name=item.payment_method.name if item.payment_method else None,
+                    amount=item.amount,
+                    deleted_by=request.user if request.user.is_authenticated else None,
+                    created_at=item.created_at
+                )
+            items.delete()
+            return JsonResponse({'success': True, 'message': 'Selected income records backed up and deleted successfully.'})
         return JsonResponse({'success': False, 'error': 'No records selected.'})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
@@ -6198,11 +6211,74 @@ def bulk_delete_expenses(request):
         data = json.loads(request.body)
         ids = data.get('ids', [])
         if ids:
-            Expense.objects.filter(organization=request.user.profile.organization, id__in=ids).delete()
-            return JsonResponse({'success': True, 'message': 'Selected expense records deleted successfully.'})
+            items = Expense.objects.filter(organization=request.user.profile.organization, id__in=ids)
+            for item in items:
+                DeletedExpense.objects.create(
+                    organization=item.organization,
+                    original_id=item.id,
+                    date=item.date,
+                    category_name=item.category.name if item.category else None,
+                    description=item.description,
+                    cost_center=item.cost_center,
+                    payment_method_name=item.payment_method.name if item.payment_method else None,
+                    amount=item.amount,
+                    deleted_by=request.user if request.user.is_authenticated else None,
+                    created_at=item.created_at
+                )
+            items.delete()
+            return JsonResponse({'success': True, 'message': 'Selected expense records backed up and deleted successfully.'})
         return JsonResponse({'success': False, 'error': 'No records selected.'})
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_POST
+def restore_deleted_income(request, deleted_id):
+    try:
+        org = request.user.profile.organization
+        del_item = get_object_or_404(DeletedIncome, id=deleted_id, organization=org)
+        pm = None
+        if del_item.payment_method_name:
+            pm = FinancePaymentMethod.objects.filter(organization=org, name__iexact=del_item.payment_method_name).first()
+        Income.objects.create(
+            organization=del_item.organization,
+            date=del_item.date,
+            client_name=del_item.client_name,
+            project_name=del_item.project_name,
+            payment_method=pm,
+            amount=del_item.amount,
+        )
+        del_item.delete()
+        return JsonResponse({'success': True, 'message': 'Income record restored successfully.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
+@require_POST
+def restore_deleted_expense(request, deleted_id):
+    try:
+        org = request.user.profile.organization
+        del_item = get_object_or_404(DeletedExpense, id=deleted_id, organization=org)
+        pm = None
+        if del_item.payment_method_name:
+            pm = FinancePaymentMethod.objects.filter(organization=org, name__iexact=del_item.payment_method_name).first()
+        cat = None
+        if del_item.category_name:
+            cat = FinanceExpenseCategory.objects.filter(organization=org, name__iexact=del_item.category_name).first()
+        Expense.objects.create(
+            organization=del_item.organization,
+            date=del_item.date,
+            category=cat,
+            description=del_item.description,
+            cost_center=del_item.cost_center,
+            payment_method=pm,
+            amount=del_item.amount,
+        )
+        del_item.delete()
+        return JsonResponse({'success': True, 'message': 'Expense record restored successfully.'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
 
 
 def offline_view(request):
