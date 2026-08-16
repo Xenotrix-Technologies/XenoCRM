@@ -4104,8 +4104,29 @@ def assign_staff_to_department(request):
             return JsonResponse({'success': False, 'error': str(e)})
 @login_required
 def settings_dashboard_view(request):
-    """Central settings dashboard routing view."""
-    return redirect('notification_settings')
+    """Central ERP settings & system control hub view."""
+    org = request.user.profile.organization
+    from crm.models import StaffRole, Department, Service, UserProfile, Lead, ContentItem
+    
+    total_staff = UserProfile.objects.filter(organization=org).count() if org else 0
+    total_roles = StaffRole.objects.filter(organization=org).count() if org else 0
+    total_departments = Department.objects.filter(organization=org).count() if org else 0
+    total_services = Service.objects.filter(organization=org).count() if org else 0
+    total_leads = Lead.objects.filter(organization=org).count() if org else 0
+    total_content_items = ContentItem.objects.filter(organization=org).count() if org else 0
+    
+    context = {
+        'org': org,
+        'total_staff': total_staff,
+        'total_roles': total_roles,
+        'total_departments': total_departments,
+        'total_services': total_services,
+        'total_leads': total_leads,
+        'total_content_items': total_content_items,
+        'system_version': 'v2.4 Enterprise ERP',
+        'db_status': 'Operational',
+    }
+    return render(request, 'settings_dashboard.html', context)
 
 
 from django.db.models import Q

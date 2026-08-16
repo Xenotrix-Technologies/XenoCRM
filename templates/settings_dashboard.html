@@ -1,0 +1,492 @@
+{% extends 'base.html' %}
+{% block title %}System Settings Control Hub - XenoCRM{% endblock %}
+
+{% block content %}
+<div class="p-4 sm:p-6 space-y-6 bg-slate-50 min-h-screen">
+  
+  <!-- Header & Live Search Bar -->
+  <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 text-xs text-slate-500 font-semibold mb-1">
+        <a href="{% url 'dashboard' %}" class="hover:underline hover:text-slate-700">Workspace</a>
+        <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-400"></i>
+        <span class="text-primary-600">System Settings Control Hub</span>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-primary-600/10 text-primary-600 flex items-center justify-center">
+          <i data-lucide="settings" class="w-5 h-5"></i>
+        </div>
+        <span>Enterprise ERP System Settings</span>
+      </h1>
+      <p class="text-xs text-slate-500 mt-1 max-w-2xl">Configure global system rules, user permissions, finance defaults, sales pipelines, CMS options, and automated integrations.</p>
+    </div>
+
+    <!-- Live Search & System Version Badge -->
+    <div class="flex items-center gap-3 flex-wrap sm:flex-nowrap shrink-0">
+      <div class="relative w-full sm:w-64">
+        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-slate-400"></i>
+        <input type="text" id="settings-search" onkeyup="filterSettingsCards()" placeholder="Search settings or modules..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs font-medium text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 shadow-xs transition-all"/>
+      </div>
+      <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold shrink-0 shadow-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>{{ system_version }}</span>
+      </span>
+    </div>
+  </div>
+
+  <!-- System Health & KPI Metric Cards -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <!-- Organization Info -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Organization</span>
+        <div class="w-7 h-7 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center">
+          <i data-lucide="building-2" class="w-4 h-4"></i>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-sm font-bold text-slate-900 truncate">{{ org.name|default:"XenoCRM Enterprise" }}</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5">Enterprise Plan Active</p>
+      </div>
+    </div>
+
+    <!-- Staff & Access Stats -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Users & Roles</span>
+        <div class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+          <i data-lucide="shield-check" class="w-4 h-4"></i>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-sm font-bold text-slate-900">{{ total_staff }} Staff Members</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5">{{ total_roles }} System Roles Defined</p>
+      </div>
+    </div>
+
+    <!-- Departments & Catalog -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Departments & Services</span>
+        <div class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+          <i data-lucide="layers" class="w-4 h-4"></i>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-sm font-bold text-slate-900">{{ total_departments }} Active Departments</h3>
+        <p class="text-[11px] text-slate-500 mt-0.5">{{ total_services }} Services in Catalog</p>
+      </div>
+    </div>
+
+    <!-- System Health -->
+    <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col justify-between">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">System Status</span>
+        <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <i data-lucide="activity" class="w-4 h-4"></i>
+        </div>
+      </div>
+      <div>
+        <h3 class="text-sm font-bold text-emerald-700 flex items-center gap-1.5">
+          <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+          <span>{{ db_status }}</span>
+        </h3>
+        <p class="text-[11px] text-slate-500 mt-0.5">Automated Daily Backups Enabled</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Category Groups -->
+  <div class="space-y-6">
+
+    <!-- Group 1: Security, Access & User Management -->
+    <div class="settings-group">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="lock" class="w-4 h-4 text-primary-600"></i>
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Access Control & Team Security</h2>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Role Permissions Matrix -->
+        <a href="{% url 'role_permissions' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-primary-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="shield-alert" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-primary-600 transition-colors">Role Permissions Matrix</h3>
+            <p class="text-xs text-slate-500 mt-1">Configure granular page read, write, edit, and delete permissions for each role.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-primary-600">
+            <span>Manage Matrix</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Staff Roles -->
+        <a href="{% url 'staff_roles' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-primary-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="user-cog" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-primary-600 transition-colors">Staff Roles & Titles</h3>
+            <p class="text-xs text-slate-500 mt-1">Create, edit, and assign employee job roles across your organization.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600">
+            <span>Manage Roles</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Departments -->
+        <a href="{% url 'departments' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-primary-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="building" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-primary-600 transition-colors">Company Departments</h3>
+            <p class="text-xs text-slate-500 mt-1">Define organizational departments, assign department heads and team members.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-purple-600">
+            <span>Manage Departments</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Staff Directory -->
+        <a href="{% url 'staff' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-primary-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="users" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-primary-600 transition-colors">Staff Directory & Credentials</h3>
+            <p class="text-xs text-slate-500 mt-1">Add new staff members, edit account profiles, passwords, and active status.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-600">
+            <span>Manage Staff</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Group 2: Sales, Pipeline & Catalog Management -->
+    <div class="settings-group">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i>
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Sales, Funnel & Service Catalog</h2>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Services Catalog -->
+        <a href="{% url 'services' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="briefcase" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Services & Pricing Catalog</h3>
+            <p class="text-xs text-slate-500 mt-1">Manage service offerings, pricing rate cards, and billing terms.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-600">
+            <span>Manage Services</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Lead Funnel & Statuses -->
+        <a href="{% url 'leads' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="filter" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Lead Pipeline & Statuses</h3>
+            <p class="text-xs text-slate-500 mt-1">Configure lead stages, pipeline funnels, lead scoring, and status tags.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-600">
+            <span>Configure Funnel</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Document Settings -->
+        <a href="{% url 'quotation_list' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="file-text" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Quotation & Document Settings</h3>
+            <p class="text-xs text-slate-500 mt-1">Default terms, quotation numbering rules, discount caps, and branding.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-600">
+            <span>Manage Templates</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Marketing Campaigns -->
+        <a href="{% url 'campaign' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="megaphone" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Campaign & Channel Rules</h3>
+            <p class="text-xs text-slate-500 mt-1">Set default outreach channels, campaign tags, and conversion tracking.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-rose-600">
+            <span>Configure Channels</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Group 3: Finance, Invoices & Data Backups -->
+    <div class="settings-group">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="dollar-sign" class="w-4 h-4 text-blue-600"></i>
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Finance, Billing & Data Protection</h2>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Finance Settings -->
+        <a href="{% url 'finance_settings' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="credit-card" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Finance & Invoice Preferences</h3>
+            <p class="text-xs text-slate-500 mt-1">Tax rates, payment methods, currency formatting, and invoice numbering.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600">
+            <span>Finance Options</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Invoice Dashboard -->
+        <a href="{% url 'invoice_dashboard' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="receipt" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Invoice & Billing Dashboard</h3>
+            <p class="text-xs text-slate-500 mt-1">Manage client billing, payment status updates, and automated reminders.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-teal-600">
+            <span>Manage Invoices</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Income & Expense Backup -->
+        <a href="{% url 'finance_income' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="database-backup" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Financial Data Backup & Restore</h3>
+            <p class="text-xs text-slate-500 mt-1">Automated deleted income/expense archiving with one-click DB restoration.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-600">
+            <span>Restore & Archives</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Partner Payouts -->
+        <a href="{% url 'partner_payouts' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-blue-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="handshake" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Partner Commission Rules</h3>
+            <p class="text-xs text-slate-500 mt-1">Configure referral commission rates and partner payout schedules.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-600">
+            <span>Payout Rules</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Group 4: CMS, Production & Content Settings -->
+    <div class="settings-group">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="video" class="w-4 h-4 text-purple-600"></i>
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">CMS, Video Production & Workflows</h2>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- CMS Content Options -->
+        <a href="{% url 'content_settings' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-purple-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="sliders" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">CMS Options & Dropdowns</h3>
+            <p class="text-xs text-slate-500 mt-1">Platforms (YouTube, IG), Post Types, Statuses, and Priority dropdowns.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-purple-600">
+            <span>Manage Dropdowns</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Content Tracker Master -->
+        <a href="{% url 'content_tracker' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-purple-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="clapperboard" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">Content Deliverables Tracker</h3>
+            <p class="text-xs text-slate-500 mt-1">Master spreadsheet & deliverables grid for client video management.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-600">
+            <span>Open Tracker</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Editor Dashboard -->
+        <a href="{% url 'editor_dashboard' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-purple-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">Editor Department Analytics</h3>
+            <p class="text-xs text-slate-500 mt-1">Editor KPI metrics, delivery performance, and overdue tracking.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-sky-600">
+            <span>View Analytics</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Editor Board -->
+        <a href="{% url 'editor_board' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-purple-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="kanban" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">Editor Task Queue Board</h3>
+            <p class="text-xs text-slate-500 mt-1">Kanban and card view for editor team task status updates.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600">
+            <span>Open Task Board</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+    <!-- Group 5: Notifications & System Maintenance -->
+    <div class="settings-group">
+      <div class="flex items-center gap-2 mb-3">
+        <i data-lucide="bell" class="w-4 h-4 text-amber-600"></i>
+        <h2 class="text-sm font-bold text-slate-900 uppercase tracking-wider">Notifications & System Maintenance</h2>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Notification Config -->
+        <a href="{% url 'notification_settings' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="bell-ring" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors">Notification & API Config</h3>
+            <p class="text-xs text-slate-500 mt-1">Configure WhatsApp API tokens, Email webhooks, and push notifications.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-amber-600">
+            <span>Notification Settings</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- HR & Payroll -->
+        <a href="{% url 'hr_dashboard' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="calendar-check" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors">HR, Leaves & Payroll Config</h3>
+            <p class="text-xs text-slate-500 mt-1">Configure office attendance rules, leave categories, and salary structures.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-600">
+            <span>HR Settings</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- Support Tickets -->
+        <a href="{% url 'customer_support' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="headphones" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors">Support & Ticketing SLA</h3>
+            <p class="text-xs text-slate-500 mt-1">Support priority levels, response SLAs, and ticket auto-assignment.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-blue-600">
+            <span>Support Config</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+        <!-- System Offline & PWA -->
+        <a href="{% url 'offline' %}" class="settings-card bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-amber-300 transition-all flex flex-col justify-between group">
+          <div>
+            <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <i data-lucide="wifi-off" class="w-5 h-5"></i>
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors">PWA & Offline Sync Mode</h3>
+            <p class="text-xs text-slate-500 mt-1">Inspect PWA Service Worker caching, offline data queues, and PWA manifest.</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-slate-600">
+            <span>PWA Status</span>
+            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Filter JS -->
+<script>
+  function filterSettingsCards() {
+    const input = document.getElementById('settings-search').value.toLowerCase();
+    const cards = document.querySelectorAll('.settings-card');
+    const groups = document.querySelectorAll('.settings-group');
+
+    cards.forEach(card => {
+      const text = card.innerText.toLowerCase();
+      if (text.includes(input)) {
+        card.style.display = 'flex';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    groups.forEach(group => {
+      const visibleCards = group.querySelectorAll('.settings-card[style*="display: flex"], .settings-card:not([style*="display: none"])');
+      if (visibleCards.length === 0 && input !== '') {
+        group.style.display = 'none';
+      } else {
+        group.style.display = 'block';
+      }
+    });
+  }
+</script>
+{% endblock %}
