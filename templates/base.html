@@ -6,6 +6,16 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>{% block title %}XenoCRM ERP | Enterprise SaaS{% endblock %}</title>
     {% load static %}
+    <!-- Progressive Web App (PWA) Meta & Manifest -->
+    <link rel="manifest" href="{% static 'pwa/manifest.json' %}">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="XenoCRM">
+    <link rel="apple-touch-icon" href="{% static 'pwa/icons/apple-touch-icon.png' %}">
+    <link rel="icon" type="image/x-icon" href="{% static 'pwa/icons/favicon.ico' %}">
+
     <!-- Tailwind CSS with Forms and Container Queries -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     
@@ -14,6 +24,12 @@
 
     <link href="{% static 'css/form_styles.css' %}" rel="stylesheet">
     <link href="{% static 'css/main.css' %}" rel="stylesheet">
+
+    <!-- PWA Init Script -->
+    <script>
+        window.XENOCRM_SW_URL = "{% static 'pwa/service-worker.js' %}";
+    </script>
+    <script src="{% static 'pwa/pwa-init.js' %}"></script>
 
     <!-- Google Fonts: Inter & Material Symbols -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -800,11 +816,60 @@
             </div>
         </header>
 
+        <!-- Offline Network Banner -->
+        <div id="offline-network-banner" class="fixed top-16 left-0 right-0 bg-amber-500 text-slate-950 px-4 py-2 text-center text-xs font-bold shadow-md z-[120] hidden flex items-center justify-center gap-2">
+            <i data-lucide="wifi-off" class="w-4 h-4"></i>
+            <span>Offline Mode: Live server updates are unavailable until connection is restored.</span>
+        </div>
+
         <!-- Main Workspace Content -->
-        <div class="flex-1 flex flex-col mt-16">
+        <div class="flex-1 flex flex-col mt-16 pb-20 lg:pb-0">
             {% block content %}{% endblock %}
         </div>
+
+        <!-- Mobile Bottom Navigation Bar (Visible on screens < 1024px) -->
+        <nav class="fixed bottom-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shadow-2xl z-[60] flex items-center justify-around px-2 lg:hidden no-print">
+            <a href="{% url 'dashboard' %}" class="flex flex-col items-center justify-center w-full h-full text-slate-500 transition-colors {% if request.resolver_match.url_name == 'dashboard' %}text-brand-600 font-bold{% else %}hover:text-slate-900{% endif %}">
+                <i data-lucide="layout-dashboard" class="w-5 h-5 mb-0.5"></i>
+                <span class="text-[10px] tracking-tight">Home</span>
+            </a>
+            <a href="{% url 'leads' %}" class="flex flex-col items-center justify-center w-full h-full text-slate-500 transition-colors {% if request.resolver_match.url_name == 'leads' %}text-brand-600 font-bold{% else %}hover:text-slate-900{% endif %}">
+                <i data-lucide="user-check" class="w-5 h-5 mb-0.5"></i>
+                <span class="text-[10px] tracking-tight">Leads</span>
+            </a>
+            <a href="{% url 'projects' %}" class="flex flex-col items-center justify-center w-full h-full text-slate-500 transition-colors {% if 'project' in request.resolver_match.url_name %}text-brand-600 font-bold{% else %}hover:text-slate-900{% endif %}">
+                <i data-lucide="folder-kanban" class="w-5 h-5 mb-0.5"></i>
+                <span class="text-[10px] tracking-tight">Projects</span>
+            </a>
+            <a href="{% url 'finance_dashboard' %}" class="flex flex-col items-center justify-center w-full h-full text-slate-500 transition-colors {% if 'finance' in request.resolver_match.url_name %}text-brand-600 font-bold{% else %}hover:text-slate-900{% endif %}">
+                <i data-lucide="wallet" class="w-5 h-5 mb-0.5"></i>
+                <span class="text-[10px] tracking-tight">Finance</span>
+            </a>
+            <button onclick="toggleMobileSidebar()" type="button" class="flex flex-col items-center justify-center w-full h-full text-slate-500 hover:text-slate-900 transition-colors">
+                <i data-lucide="menu" class="w-5 h-5 mb-0.5"></i>
+                <span class="text-[10px] tracking-tight">Menu</span>
+            </button>
+        </nav>
     </main>
+
+    <!-- PWA Install Banner (Mobile & Supported Browsers) -->
+    <div id="pwa-install-banner" class="fixed bottom-20 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-sm bg-slate-900 text-white p-4 rounded-2xl shadow-2xl z-[150] hidden transition-all border border-slate-700 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center text-white font-black text-lg shadow-md shrink-0">
+            X
+        </div>
+        <div class="flex-1 min-w-0">
+            <h4 class="text-xs font-bold text-white tracking-tight">Install XenoCRM App</h4>
+            <p class="text-[11px] text-slate-300 truncate">Add to home screen for fast mobile ERP access</p>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+            <button onclick="triggerPWAInstall()" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold rounded-xl shadow-xs transition-colors">
+                Install
+            </button>
+            <button onclick="document.getElementById('pwa-install-banner').classList.add('hidden')" class="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+    </div>
 
     <!-- Quick Create Lead Modal -->
     <div id="quick-create-modal"

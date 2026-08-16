@@ -6133,3 +6133,9 @@ def bulk_delete_expenses(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
+
+def offline_view(request):
+    """Offline page rendered when user loses internet connection."""
+    return render(request, 'offline.html')
+
+
