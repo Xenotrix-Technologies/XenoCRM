@@ -5100,7 +5100,7 @@ def editor_dashboard_view(request):
 
 @login_required
 def finance_dashboard_view(request):
-    from .models import Invoice, InvoiceItem, Lead
+    from .models import Invoice, InvoiceItem, Lead, PartnerPayout, DocumentSettings, FinancePaymentMethod
     import calendar
     import datetime
 
@@ -5112,10 +5112,40 @@ def finance_dashboard_view(request):
     paid_inv_total = float(Invoice.objects.filter(organization=org, status__iexact='Paid').aggregate(total=Sum('grand_total'))['total'] or 0)
     total_revenue = manual_inc_total + paid_inv_total
 
-    # 2. Total Expenses
+    # 2. Total Outflows (Expenses + Paid Partner Payouts)
     total_expenses = float(Expense.objects.filter(organization=org).aggregate(total=Sum('amount'))['total'] or 0)
+    total_payouts = float(PartnerPayout.objects.filter(organization=org, status__name='Paid').aggregate(total=Sum('amount'))['total'] or 0)
+    total_outflow = total_expenses + total_payouts
 
-    # 3. Monthly & Yearly Revenue (Income + Paid Invoices)
+    # 3. Document Settings & Opening Bank Balance
+    doc_settings = DocumentSettings.objects.filter(organization=org).first()
+    bank_name = doc_settings.bank_name if doc_settings and doc_settings.bank_name else 'Primary Bank Account'
+    account_number = doc_settings.account_number if doc_settings and doc_settings.account_number else ''
+    account_name = doc_settings.account_name if doc_settings and doc_settings.account_name else ''
+    ifsc_code = doc_settings.ifsc_code if doc_settings and doc_settings.ifsc_code else ''
+    upi_id = doc_settings.upi_id if doc_settings and doc_settings.upi_id else ''
+    opening_balance = float(getattr(doc_settings, 'opening_balance', 0.0) or 0.0)
+
+    # 4. Current Bank Balance Calculation
+    current_bank_balance = opening_balance + total_revenue - total_outflow
+
+    # 5. Payment Methods / Accounts Summary Breakdown
+    payment_methods = FinancePaymentMethod.objects.filter(organization=org)
+    payment_methods_summary = []
+    for pm in payment_methods:
+        pm_inflow = float(Income.objects.filter(organization=org, payment_method=pm).aggregate(total=Sum('amount'))['total'] or 0)
+        pm_expense = float(Expense.objects.filter(organization=org, payment_method=pm).aggregate(total=Sum('amount'))['total'] or 0)
+        pm_payout = float(PartnerPayout.objects.filter(organization=org, payment_method=pm, status__name='Paid').aggregate(total=Sum('amount'))['total'] or 0)
+        pm_outflow = pm_expense + pm_payout
+        pm_balance = pm_inflow - pm_outflow
+        payment_methods_summary.append({
+            'name': pm.name,
+            'inflow': pm_inflow,
+            'outflow': pm_outflow,
+            'balance': pm_balance
+        })
+
+    # 6. Monthly & Yearly Revenue (Income + Paid Invoices)
     manual_inc_this_month = float(Income.objects.filter(organization=org, date__year=today.year, date__month=today.month).aggregate(total=Sum('amount'))['total'] or 0)
     paid_inv_this_month = float(Invoice.objects.filter(organization=org, status__iexact='Paid', invoice_date__year=today.year, invoice_date__month=today.month).aggregate(total=Sum('grand_total'))['total'] or 0)
     revenue_this_month = manual_inc_this_month + paid_inv_this_month
@@ -5126,7 +5156,7 @@ def finance_dashboard_view(request):
 
     expenses_this_month = float(Expense.objects.filter(organization=org, date__year=today.year, date__month=today.month).aggregate(total=Sum('amount'))['total'] or 0)
 
-    # 4. MoM Growth Calculations
+    # 7. MoM Growth Calculations
     last_month_date = today.replace(day=1) - datetime.timedelta(days=1)
     manual_inc_last_month = float(Income.objects.filter(organization=org, date__year=last_month_date.year, date__month=last_month_date.month).aggregate(total=Sum('amount'))['total'] or 0)
     paid_inv_last_month = float(Invoice.objects.filter(organization=org, status__iexact='Paid', invoice_date__year=last_month_date.year, invoice_date__month=last_month_date.month).aggregate(total=Sum('grand_total'))['total'] or 0)
@@ -5143,17 +5173,17 @@ def finance_dashboard_view(request):
     else:
         expenses_mom = 100 if expenses_this_month > 0 else 0
 
-    # 5. Profitability Metrics
+    # 8. Profitability Metrics
     net_profit = total_revenue - total_expenses
     profit_margin = (net_profit / total_revenue) * 100 if total_revenue > 0 else 0
 
-    # 6. Invoice Data
+    # 9. Invoice Data
     invoices = Invoice.objects.filter(organization=org)
     outstanding_invoices_count = invoices.exclude(status__iexact='Paid').count()
     pending_payments_amount = float(invoices.exclude(status__iexact='Paid').aggregate(total=Sum('grand_total'))['total'] or 0)
     total_invoices_count = invoices.count()
 
-    # 7. Chart Data (6 Months Cash Flow)
+    # 10. Chart Data (6 Months Cash Flow)
     months_labels = []
     revenue_data = []
     expense_data = []
@@ -5171,7 +5201,7 @@ def finance_dashboard_view(request):
         revenue_data.append(inc + paid_inv)
         expense_data.append(exp)
 
-    # 8. Top Clients by Revenue (Income + Paid Invoices)
+    # 11. Top Clients by Revenue (Income + Paid Invoices)
     client_totals = {}
     for inc in Income.objects.filter(organization=org):
         c_name = inc.client_name or 'Other'
@@ -5184,12 +5214,12 @@ def finance_dashboard_view(request):
     client_labels = [c[0] for c in sorted_clients]
     client_revenue = [c[1] for c in sorted_clients]
 
-    # 9. Expense Category Breakdown
+    # 12. Expense Category Breakdown
     expense_categories = Expense.objects.filter(organization=org).exclude(category__isnull=True).values('category__name').annotate(total=Sum('amount')).order_by('-total')[:5]
     expense_cat_labels = [c['category__name'] for c in expense_categories]
     expense_cat_data = [float(c['total']) for c in expense_categories]
 
-    # 10. Revenue Distribution (Income Projects + Paid Invoice Items)
+    # 13. Revenue Distribution (Income Projects + Paid Invoice Items)
     service_totals = {}
     for inc in Income.objects.filter(organization=org).exclude(project_name__isnull=True).exclude(project_name=''):
         s_name = inc.project_name
@@ -5203,6 +5233,16 @@ def finance_dashboard_view(request):
     service_revenue = [s[1] for s in sorted_services]
 
     context = {
+        'current_bank_balance': current_bank_balance,
+        'opening_balance': opening_balance,
+        'total_outflow': total_outflow,
+        'total_payouts': total_payouts,
+        'bank_name': bank_name,
+        'account_number': account_number,
+        'account_name': account_name,
+        'ifsc_code': ifsc_code,
+        'upi_id': upi_id,
+        'payment_methods_summary': payment_methods_summary,
         'total_revenue': total_revenue,
         'outstanding_invoices': outstanding_invoices_count,
         'payments_received': total_revenue,
@@ -5229,6 +5269,7 @@ def finance_dashboard_view(request):
         'service_revenue': json.dumps(service_revenue),
     }
     return render(request, 'finance_dashboard.html', context)
+
 
 @login_required
 def finance_income_view(request):
