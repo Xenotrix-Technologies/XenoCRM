@@ -4,22 +4,34 @@
 
     // 1. Service Worker Registration
     if ('serviceWorker' in navigator) {
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                refreshing = true;
+                console.log('[XenoCRM PWA] ServiceWorker updated, refreshing application...');
+                window.location.reload();
+            }
+        });
+
         window.addEventListener('load', () => {
-            // Using Django static path dynamically supplied or fallback
             const swUrl = window.XENOCRM_SW_URL || '/static/pwa/service-worker.js';
             
             navigator.serviceWorker.register(swUrl)
                 .then((registration) => {
                     console.log('[XenoCRM PWA] ServiceWorker registered with scope:', registration.scope);
                     
+                    // Force update check
+                    registration.update();
+
                     // Check for SW updates
                     registration.addEventListener('updatefound', () => {
                         const newWorker = registration.installing;
                         if (newWorker) {
                             newWorker.addEventListener('statechange', () => {
                                 if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
                                     if (window.showToast) {
-                                        showToast('App update available. Refresh to get the latest version.', 'info');
+                                        showToast('App updated to the latest version.', 'info');
                                     }
                                 }
                             });
