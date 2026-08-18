@@ -34,7 +34,7 @@ class Command(BaseCommand):
                 'account_number': '50200012345678',
                 'ifsc_code': 'HDFC0001234',
                 'upi_id': 'xenotrix@hdfcbank',
-                'opening_balance': Decimal('10285.21'),
+                'opening_balance': Decimal('0.00'),
                 'quotation_prefix': 'XT-QT',
                 'agreement_prefix': 'XT-AGR',
                 'footer_text': 'Thank you for choosing Xenotrix Technologies. For any queries, contact info@xenotrix.in.',

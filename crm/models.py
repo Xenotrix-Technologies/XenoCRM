@@ -1163,7 +1163,7 @@ class DocumentSettings(models.Model):
     account_number = models.CharField(max_length=100, blank=True, null=True, default='50200012345678')
     ifsc_code = models.CharField(max_length=50, blank=True, null=True, default='HDFC0001234')
     upi_id = models.CharField(max_length=100, blank=True, null=True, default='xenotrix@hdfcbank')
-    opening_balance = models.DecimalField(max_digits=12, decimal_places=2, default=10285.21)
+    opening_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     
     default_currency = models.CharField(max_length=10, default='INR')
     default_tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
