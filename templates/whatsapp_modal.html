@@ -131,12 +131,14 @@
                 <!-- Searchable Select Input -->
                 <div class="relative">
                     <select id="wa-template-select" onchange="applySelectedTemplate(this.value)" class="w-full bg-slate-950 border border-slate-800 text-xs font-semibold text-slate-200 rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
-                        <option value="">Search or select a message template...</option>
-                        <option value="xenotrix_intro" selected>Xenotrix Corporate Overview & Core Services (Default Meta Approved)</option>
-                        <option value="followup">Website Development & CRM Project Follow-up</option>
-                        <option value="greetings">Welcome Greeting & Introduction</option>
-                        <option value="meeting_scheduled">Meeting Confirmation & Calendar Invite</option>
-                        <option value="quotation">Service Quotation & Proposal Share</option>
+                        <option value="xenotrix_intro" data-category="greetings" selected>Xenotrix Corporate Overview & Core Services (Default Meta Approved)</option>
+                        <option value="webdev_proposal" data-category="webdev">Web & Mobile App Development Proposal Follow-up</option>
+                        <option value="crm_demo_pitch" data-category="sales">XenoCRM & ERP System Live Walkthrough Demo</option>
+                        <option value="quotation_share" data-category="quotation">Service Quotation & Commercial Proposal Share</option>
+                        <option value="meeting_confirm" data-category="greetings">Meeting Confirmation & Calendar Schedule</option>
+                        <option value="payment_reminder" data-category="quotation">Milestone Payment & Invoice Update</option>
+                        <option value="digital_marketing" data-category="sales">Digital Marketing, SEO & Ads Retainer Package</option>
+                        <option value="technical_support" data-category="followup">Technical Support & Ticket Resolution Update</option>
                     </select>
                 </div>
             </div>
@@ -456,6 +458,47 @@
     </div>
 </div>
 
+<!-- Modal 5: Create New Template Modal -->
+<div id="create-template-modal" class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-emerald-400">add_circle</span>
+                Create Custom WhatsApp Template
+            </h3>
+            <button type="button" onclick="closeCreateTemplateModal()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined text-[18px]">close</span></button>
+        </div>
+
+        <div class="space-y-3">
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Template Name</label>
+                <input type="text" id="new-template-name" placeholder="e.g. Website Maintenance Renewal Pitch" class="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500" />
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Category</label>
+                <select id="new-template-category" class="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500">
+                    <option value="greetings">Greetings & Welcome</option>
+                    <option value="followup">Follow-up & Check-in</option>
+                    <option value="sales">Sales & Demo Pitch</option>
+                    <option value="webdev">Web & App Development</option>
+                    <option value="quotation">Quotation & Proposal</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Message Content (Use {{name}}, {{company}}, {{service}}, {{phone}})</label>
+                <textarea id="new-template-content" rows="5" placeholder="Type template message here..." class="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-xl p-3.5 focus:ring-1 focus:ring-emerald-500 leading-relaxed custom-scrollbar"></textarea>
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="closeCreateTemplateModal()" class="px-4 py-2 bg-slate-950 text-slate-400 hover:text-white font-bold text-xs rounded-xl border border-slate-800">Cancel</button>
+            <button type="button" onclick="saveCustomWhatsAppTemplate()" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-lg">Save & Use Template</button>
+        </div>
+    </div>
+</div>
+
 <!-- JavaScript Logic Engine -->
 <script>
 (function() {
@@ -465,7 +508,48 @@
     let leadCompanyVal = "{{ lead.company|escapejs }}";
     let leadEmailVal = "{{ lead.email|escapejs }}";
 
-    const defaultXenotrixTemplate = `Hello ${leadNameVal},\n\nGreetings from Xenotrix Technologies! We provide custom web applications, mobile apps, AI solutions, and CRM systems.\n\nSimply reply to this message or click the action buttons below to download our catalog or connect with us.`;
+    const XENOTRIX_TEMPLATES = {
+        'xenotrix_intro': {
+            name: "Xenotrix Corporate Overview & Core Services (Default Meta Approved)",
+            category: "greetings",
+            text: `Hello {{name}},\n\nGreetings from *Xenotrix Technologies*! 👋\n\nThank you for reaching out to us regarding IT & Software solutions for *{{company}}*. We specialize in:\n\n🚀 *Our Core Services:*\n• Custom Web Application & Portal Development\n• Mobile App Development (iOS & Android)\n• Enterprise CRM & ERP Suite Implementation\n• AI Solutions & Workflow Automation\n• SEO, PPC & Performance Digital Marketing\n\n🌐 Explore our portfolio: https://xenotrix.in\n📞 Direct Hotline: +91 9995544316\n\nHow can we assist you with *{{company}}*'s upcoming project?\n\nBest regards,\n*{{executive_name}}*\nSenior Solutions Consultant | Xenotrix Technologies`
+        },
+        'webdev_proposal': {
+            name: "Web & Mobile App Development Proposal Follow-up",
+            category: "webdev",
+            text: `Hi {{name}},\n\nFollowing up on your web development & mobile app inquiry for *{{company}}*.\n\nOur engineering team has reviewed your technical requirements and prepared a customized project scope covering responsive UI/UX, database architecture, security, and API integrations.\n\n📋 *Next Steps:*\n1. Quick 10-minute discovery call to finalize scope.\n2. Delivery of official commercial proposal & delivery timeline.\n\nAre you available for a brief call today or tomorrow?\n\nBest regards,\n*{{executive_name}}* | Xenotrix Technologies`
+        },
+        'crm_demo_pitch': {
+            name: "XenoCRM & ERP System Live Walkthrough Demo",
+            category: "sales",
+            text: `Hello {{name}},\n\nStreamline your sales pipeline and operations with *XenoCRM & ERP System*! 📈\n\n✨ *Key Capabilities for {{company}}:*\n• Lead Tracking & Pipeline Automation\n• Automated WhatsApp & Email Dispatch\n• Invoicing, GST Billing & Financial Reports\n• Staff Performance & Task Dashboards\n\n📅 Schedule your live demo: https://xenotrix.in/book-demo\nOr reply directly to book a session.\n\nBest regards,\n*{{executive_name}}* | Xenotrix Technologies`
+        },
+        'quotation_share': {
+            name: "Service Quotation & Commercial Proposal Share",
+            category: "quotation",
+            text: `Dear {{name}},\n\nPlease find attached the official project proposal for *{{service}}* for *{{company}}*.\n\n💼 *Proposal Highlights:*\n• Complete Scope of Work & Technical Deliverables\n• Milestone-based Payment Breakdown\n• 6-Month Complimentary Maintenance & SLA Support\n\n📄 Download Proposal: https://xenotrix.in/docs/proposal.pdf\n\nPlease let us know if you need any adjustments to the scope!\n\nBest regards,\n*{{executive_name}}* | Xenotrix Technologies`
+        },
+        'meeting_confirm': {
+            name: "Meeting Confirmation & Calendar Schedule",
+            category: "greetings",
+            text: `Hi {{name}},\n\nYour strategy meeting with *Xenotrix Technologies* is confirmed! 🗓️\n\n📌 *Meeting Details:*\n• Client: {{name}} ({{company}})\n• Executive: {{executive_name}}\n• Topic: {{service}} Project Scope & Architecture\n• Mode: Google Meet / Phone Call\n\nWe look forward to speaking with you!\n\nBest regards,\n*{{executive_name}}* | Xenotrix Technologies`
+        },
+        'payment_reminder': {
+            name: "Milestone Payment & Invoice Update",
+            category: "quotation",
+            text: `Hello {{name}},\n\nThis is a gentle update regarding the project milestone payment for *{{company}}*.\n\n💳 *Invoice Summary:*\n• Project: {{service}}\n• Direct Bank Transfer / UPI available\n\nThank you for choosing Xenotrix Technologies as your technology partner!\n\nBest regards,\nAccounts Team | Xenotrix Technologies`
+        },
+        'digital_marketing': {
+            name: "Digital Marketing, SEO & Ads Retainer Package",
+            category: "sales",
+            text: `Hi {{name}},\n\nReady to scale *{{company}}*'s online visibility and qualified leads? 🚀\n\n🎯 *Xenotrix Marketing Package includes:*\n• Technical SEO & Top 10 Google Ranking Strategy\n• High-ROI Google Search & Meta Ad Campaigns\n• Monthly Lead Analytics & ROI Reporting\n\nLet's connect for a custom growth strategy for *{{company}}*!\n\nBest regards,\n*{{executive_name}}* | Xenotrix Technologies`
+        },
+        'technical_support': {
+            name: "Technical Support & Ticket Resolution Update",
+            category: "followup",
+            text: `Hello {{name}},\n\nYour support query regarding *{{service}}* for *{{company}}* has been resolved by our technical engineering team. ✅\n\nIf you need further assistance, please feel free to reply directly to this message.\n\nBest regards,\nSupport Engineering | Xenotrix Technologies`
+        }
+    };
 
     let whatsappAttachmentsList = [];
 
@@ -475,12 +559,104 @@
         if (!modal) return;
 
         if (input && !input.value.trim()) {
-            input.value = defaultXenotrixTemplate;
+            input.value = XENOTRIX_TEMPLATES['xenotrix_intro'].text;
         }
 
         renderWhatsAppAttachmentsList();
         updateWhatsAppPreview();
         modal.classList.remove('opacity-0', 'pointer-events-none');
+    };
+
+    window.applySelectedTemplate = function(val) {
+        const input = document.getElementById('whatsapp-msg-input');
+        if (!input || !val) return;
+
+        let templateObj = XENOTRIX_TEMPLATES[val];
+        if (!templateObj) return;
+
+        input.value = templateObj.text;
+        updateWhatsAppPreview();
+    };
+
+    window.filterWhatsAppTemplates = function(category) {
+        const select = document.getElementById('wa-template-select');
+        if (!select) return;
+
+        const catIds = ['all', 'greetings', 'followup', 'sales', 'webdev', 'quotation'];
+        catIds.forEach(c => {
+            const btn = document.getElementById(`wa-filter-${c}`);
+            if (!btn) return;
+            if (c === category) {
+                btn.className = "px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 shrink-0";
+            } else {
+                btn.className = "px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0";
+            }
+        });
+
+        let firstMatch = null;
+        for (let i = 0; i < select.options.length; i++) {
+            const opt = select.options[i];
+            const optCat = opt.getAttribute('data-category');
+            if (category === 'all' || optCat === category) {
+                opt.style.display = "";
+                if (!firstMatch) firstMatch = opt.value;
+            } else {
+                opt.style.display = "none";
+            }
+        }
+
+        if (firstMatch) {
+            select.value = firstMatch;
+            applySelectedTemplate(firstMatch);
+        }
+    };
+
+    window.openCreateTemplateModal = function() {
+        const m = document.getElementById('create-template-modal');
+        if (m) m.classList.remove('opacity-0', 'pointer-events-none');
+    };
+
+    window.closeCreateTemplateModal = function() {
+        const m = document.getElementById('create-template-modal');
+        if (m) m.classList.add('opacity-0', 'pointer-events-none');
+    };
+
+    window.saveCustomWhatsAppTemplate = function() {
+        const nameInput = document.getElementById('new-template-name');
+        const catSelect = document.getElementById('new-template-category');
+        const contentInput = document.getElementById('new-template-content');
+
+        if (!nameInput || !nameInput.value.trim() || !contentInput || !contentInput.value.trim()) {
+            alert("Please fill in both the template name and message content.");
+            return;
+        }
+
+        const templateKey = 'custom_' + Date.now();
+        const tName = nameInput.value.trim();
+        const tCat = catSelect ? catSelect.value : 'greetings';
+        const tContent = contentInput.value.trim();
+
+        XENOTRIX_TEMPLATES[templateKey] = {
+            name: tName,
+            category: tCat,
+            text: tContent
+        };
+
+        const select = document.getElementById('wa-template-select');
+        if (select) {
+            const newOpt = document.createElement('option');
+            newOpt.value = templateKey;
+            newOpt.setAttribute('data-category', tCat);
+            newOpt.textContent = `★ ${tName} (Custom Saved)`;
+            select.appendChild(newOpt);
+            select.value = templateKey;
+            applySelectedTemplate(templateKey);
+        }
+
+        nameInput.value = '';
+        contentInput.value = '';
+        closeCreateTemplateModal();
+        alert(`Custom template "${tName}" saved successfully!`);
     };
 
     window.closeWhatsAppModal = function() {
