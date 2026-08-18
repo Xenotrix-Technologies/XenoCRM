@@ -57,6 +57,9 @@
     // 3. Track App Installed State
     window.addEventListener('appinstalled', () => {
         deferredPrompt = null;
+        try {
+            localStorage.setItem('pwa_installed', 'true');
+        } catch (err) {}
         hideInstallBanner();
         if (window.showToast) {
             showToast('XenoCRM installed successfully on your home screen!', 'success');
@@ -87,8 +90,14 @@
             deferredPrompt.userChoice.then((choiceResult) => {
                 if (choiceResult.outcome === 'accepted') {
                     console.log('[XenoCRM PWA] User accepted the install prompt');
+                    try {
+                        localStorage.setItem('pwa_installed', 'true');
+                    } catch (err) {}
                 } else {
                     console.log('[XenoCRM PWA] User dismissed the install prompt');
+                    try {
+                        localStorage.setItem('pwa_install_dismissed', 'true');
+                    } catch (err) {}
                 }
                 deferredPrompt = null;
                 hideInstallBanner();
@@ -102,20 +111,32 @@
         }
     };
 
+    window.dismissPWAInstallBanner = function () {
+        try {
+            localStorage.setItem('pwa_install_dismissed', 'true');
+        } catch (err) {}
+        hideInstallBanner();
+    };
+
     function isIOS() {
         return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     }
 
     function isInStandaloneMode() {
-        return (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone) || document.referrer.includes('android-app://');
+        return (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone) || (document.referrer && document.referrer.includes('android-app://'));
     }
 
     function showInstallBanner() {
         if (isInStandaloneMode()) return;
+        try {
+            if (localStorage.getItem('pwa_install_dismissed') === 'true') return;
+            if (localStorage.getItem('pwa_installed') === 'true') return;
+        } catch (err) {}
         
         const banner = document.getElementById('pwa-install-banner');
         if (banner) {
             banner.classList.remove('hidden');
+            banner.classList.add('flex');
         }
     }
 
@@ -123,6 +144,7 @@
         const banner = document.getElementById('pwa-install-banner');
         if (banner) {
             banner.classList.add('hidden');
+            banner.classList.remove('flex');
         }
     }
 
@@ -135,11 +157,8 @@
         }
     }
 
-    // Auto check on load if on iOS & not standalone
+    // Auto check on load if not standalone & not dismissed
     document.addEventListener('DOMContentLoaded', () => {
-        if (isIOS() && !isInStandaloneMode()) {
-            const iosBanner = document.getElementById('pwa-install-banner');
-            if (iosBanner) iosBanner.classList.remove('hidden');
-        }
+        showInstallBanner();
     });
 })();
