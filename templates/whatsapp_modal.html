@@ -74,10 +74,8 @@
                         {% endif %}
                         <div>
                             <div class="flex items-center gap-2 flex-wrap">
-                                <h2 id="lead-display-name" class="text-base font-extrabold text-white leading-tight">{{
-                                    lead.name }}</h2>
-                                <span
-                                    class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                <h2 id="lead-display-name" class="text-base font-extrabold text-white leading-tight">{{ lead.name }}</h2>
+                                <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                                     {{ lead.stage|default:lead.status|default:'New' }}
                                 </span>
                             </div>
@@ -111,15 +109,12 @@
                     <div class="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
                         <span class="text-[9px] font-bold text-slate-500 uppercase block">Assigned Executive</span>
                         <span class="font-semibold text-slate-300 truncate block mt-0.5">
-                            {% if lead.owner and lead.owner.user %}{{
-                            lead.owner.user.get_full_name|default:lead.owner.user.username }}{% else %}Unassigned{%
-                            endif %}
+                            {% if lead.owner and lead.owner.user %}{{ lead.owner.user.get_full_name|default:lead.owner.user.username }}{% else %}Unassigned{% endif %}
                         </span>
                     </div>
                     <div class="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
                         <span class="text-[9px] font-bold text-slate-500 uppercase block">Email Address</span>
-                        <span class="font-semibold text-slate-300 truncate block mt-0.5">{{ lead.email|default:'None'
-                            }}</span>
+                        <span class="font-semibold text-slate-300 truncate block mt-0.5">{{ lead.email|default:'None' }}</span>
                     </div>
                     <div class="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
                         <span class="text-[9px] font-bold text-slate-500 uppercase block">Lead Source</span>
@@ -127,8 +122,7 @@
                     </div>
                     <div class="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
                         <span class="text-[9px] font-bold text-slate-500 uppercase block">Last Activity</span>
-                        <span class="font-semibold text-slate-300 truncate block mt-0.5">{{ lead.last_activity|date:"M
-                            d, H:i" }}</span>
+                        <span class="font-semibold text-slate-300 truncate block mt-0.5">{{ lead.last_activity|date:"M d, H:i" }}</span>
                     </div>
                 </div>
             </div>
@@ -293,8 +287,7 @@
                         <div class="min-w-0 space-y-1">
                             <div class="flex items-center gap-2">
                                 <span class="font-bold text-slate-200">{{ msg.recipient_phone }}</span>
-                                <span class="text-[10px] text-slate-500 font-mono">{{ msg.sent_at|date:"M d, H:i"
-                                    }}</span>
+                                <span class="text-[10px] text-slate-500 font-mono">{{ msg.sent_at|date:"M d, H:i" }}</span>
                             </div>
                             <p class="text-slate-400 text-[11px] truncate max-w-md">"{{ msg.message_content }}"</p>
                         </div>
@@ -410,8 +403,7 @@
                         <div
                             class="bg-slate-900/90 backdrop-blur-sm px-4 py-2 border-t border-slate-800 text-center shrink-0">
                             <p class="text-[11px] text-slate-400 font-medium truncate">
-                                Sending to <span id="wa-footer-phone-display" class="font-bold text-emerald-400">{{
-                                    lead.phone_number|default:'Recipient Phone' }}</span>
+                                Sending to <span id="wa-footer-phone-display" class="font-bold text-emerald-400">{{ lead.phone_number|default:'Recipient Phone' }}</span>
                             </p>
                         </div>
                     </div>
