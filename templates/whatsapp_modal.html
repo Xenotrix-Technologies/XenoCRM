@@ -622,546 +622,67 @@
 
 <!-- JavaScript Logic Engine -->
 <script>
-    (function () {
-        "use strict";
-
-        // ============================================================
-        // LEAD CONTEXT
-        // ============================================================
-
-        const activeLeadId = "{{ lead.id }}";
-
-        const lead = {
-            name: "{{ lead.name|escapejs }}",
-            phone: "{{ lead.phone_number|escapejs }}",
-            company: "{{ lead.company|escapejs }}",
-            email: "{{ lead.email|escapejs }}"
-        };
-
-        // ============================================================
-        // XENOTRIX WHATSAPP MESSAGE TEMPLATES
-        // ============================================================
-
-        const XENOTRIX_TEMPLATES = {
-
-            // --------------------------------------------------------
-            // 01. INTRODUCTION
-            // --------------------------------------------------------
-            xenotrix_intro: {
-                name: "Xenotrix Introduction",
-                category: "utility",
-                description: "Professional first-contact message introducing Xenotrix Technologies and its services.",
-
-                text: `Hello {{name}},
-
-    Greetings from *Xenotrix Technologies*.
-
-    Thank you for your interest in our technology solutions for *{{company}}*.
-
-    We help businesses build and grow through:
-
-    • Custom Website & Web Application Development
-    • Mobile App Development
-    • CRM & ERP Solutions
-    • AI Solutions & Business Automation
-    • Digital Marketing, SEO & Performance Ads
-
-    🌐 Website: https://xenotrix.in
-    📞 +91 9995544316
-
-    We would be happy to understand your requirements and recommend the right solution for *{{company}}*.
-
-    Best regards,
-    *{{executive_name}}*
-    Xenotrix Technologies`
-            },
-
-
-            // --------------------------------------------------------
-            // 02. WEBSITE / SOFTWARE DEVELOPMENT
-            // --------------------------------------------------------
-            webdev_proposal: {
-                name: "Website & Software Development Follow-up",
-                category: "utility",
-                description: "Follow-up for website, web application and software development enquiries.",
-
-                text: `Hi {{name}},
-
-    Thank you for discussing your requirements for *{{company}}*.
-
-    Our team can help you build a professional, scalable and secure digital solution tailored to your business.
-
-    Our development process typically covers:
-
-    • UI/UX Design
-    • Responsive Web Development
-    • Backend & Database Development
-    • API Integrations
-    • Security & Performance
-    • Deployment & Technical Support
-
-    We can schedule a short discussion to understand your requirements and prepare a suitable proposal.
-
-    Would you be available for a quick call today or tomorrow?
-
-    Best regards,
-    *{{executive_name}}*
-    Xenotrix Technologies`
-            },
-
-
-            // --------------------------------------------------------
-            // 03. CRM / ERP
-            // --------------------------------------------------------
-            crm_demo_pitch: {
-                name: "XenoCRM & ERP Demo",
-                category: "marketing",
-                description: "Promotional message for XenoCRM and ERP solutions.",
-
-                text: `Hello {{name}},
-
-    Looking to streamline sales and business operations at *{{company}}*?
-
-    *XenoCRM & ERP* helps businesses manage their operations from one centralized platform.
-
-    Key capabilities include:
-
-    • Lead & Customer Management
-    • Sales Pipeline Tracking
-    • Task & Staff Management
-    • WhatsApp & Email Automation
-    • Quotations & Invoicing
-    • Business Reports & Dashboards
-
-    We can arrange a personalized walkthrough based on your business requirements.
-
-    📅 Book a demo:
-    https://xenotrix.in/book-demo
-
-    Or simply reply to this message and our team will assist you.
-
-    Best regards,
-    *{{executive_name}}*
-    Xenotrix Technologies`
-            },
-
-
-            // --------------------------------------------------------
-            // 04. QUOTATION
-            // --------------------------------------------------------
-            quotation_share: {
-                name: "Quotation & Project Proposal",
-                category: "utility",
-                description: "Professional quotation sharing message.",
-
-                text: `Dear {{name}},
-
-    Thank you for considering *Xenotrix Technologies* for your project.
-
-    We have prepared the proposal for:
-
-    *Service:* {{service}}
-    *Company:* {{company}}
-
-    The proposal includes:
-
-    • Project Scope
-    • Deliverables
-    • Development Timeline
-    • Commercial Details
-    • Payment Milestones
-    • Support & Maintenance Terms
-
-    📄 Proposal:
-    {{proposal_url}}
-
-    Please review the proposal and let us know if you would like to discuss any part of the scope or pricing.
-
-    We look forward to working with *{{company}}*.
-
-    Best regards,
-    *{{executive_name}}*
-    Xenotrix Technologies`
-            },
-
-
-            // --------------------------------------------------------
-            // 05. MEETING CONFIRMATION
-            // --------------------------------------------------------
-            meeting_confirm: {
-                name: "Meeting Confirmation",
-                category: "utility",
-                description: "Confirmation message for scheduled client meetings.",
-
-                text: `Hello {{name}},
-
-    Your meeting with *Xenotrix Technologies* has been confirmed.
-
-    *Meeting Details*
-
-    Client: {{name}}
-    Company: {{company}}
-    Executive: {{executive_name}}
-    Discussion: {{service}}
-
-    We look forward to understanding your requirements and discussing the best solution for *{{company}}*.
-
-    If you need to reschedule, simply reply to this message.
-
-    Best regards,
-    *{{executive_name}}*
-    Xenotrix Technologies`
-            },
-
-
-            // --------------------------------------------------------
-            // 06. PAYMENT REMINDER
-            // --------------------------------------------------------
-            payment_reminder: {
-                name: "Payment Reminder",
-                category: "utility",
-                description: "Professional payment follow-up without sounding aggressive.",
-
-                text: `Hello {{name}},
-
-    This is a gentle reminder regarding the pending payment for the *{{service}}* project for *{{company}}*.
-
-    *Payment Details*
-
-    Project: {{service}}
-    Amount Due: {{amount}}
-    Due Date: {{due_date}}
-
-    Payment can be completed through the available bank transfer or UPI details provided in the invoice.
-
-    If the payment has already been completed, please disregard this message and share the payment confirmation when convenient.
-
-    Thank you for choosing *Xenotrix Technologies*.
-
-    Best regards,
-    Accounts Team
-    Xenotrix Technologies`
-            },
-
-
-            // --------------------------------------------------------
-            // 07. DIGITAL MARKETING
-            // --------------------------------------------------------
-            digital_marketing: {
-                name: "Digital Marketing & Growth",
-                category: "marketing",
-                description: "Lead-generation focused digital marketing message.",
-
-                text: `Hi {{name}},
-
-    Would you like to increase the online visibility and qualified enquiries for *{{company}}*?
-
-    *Xenotrix Technologies* provides result-oriented digital marketing solutions covering:
-
-    • SEO & Search Visibility
-    • Google Ads
-    • Meta Ads
-    • Social Media Marketing
-    • Content & Creative Strategy
-    • Lead Generation
-    • Performance & Monthly Reporting
-
-    We can review your current digital presence and suggest a practical growth strategy based on your business goals.
-
-    Would you like us to share the details?
-
-    Best regards,
-    *{{executive_name}}*
-    Xenotrix Technologies`
-            },
-
-
-            // --------------------------------------------------------
-            // 08. TECHNICAL SUPPORT
-            // --------------------------------------------------------
-            technical_support: {
-                name: "Technical Support Update",
-                category: "utility",
-                description: "Client support and issue-resolution update.",
-
-                text: `Hello {{name}},
-
-    We wanted to update you regarding your support request for *{{service}}*.
-
-    Our technical team has reviewed the issue and the requested resolution has been completed.
-
-    If you experience any further issues or require additional assistance, simply reply to this message and our support team will assist you.
-
-    Thank you for choosing *Xenotrix Technologies*.
-
-    Best regards,
-    Support Team
-    Xenotrix Technologies`
-            },
-
-
-            // --------------------------------------------------------
-            // 09. LEAD FOLLOW-UP
-            // --------------------------------------------------------
-            lead_followup: {
-                name: "Lead Follow-up",
-                category: "utility",
-                description: "General follow-up for leads who have not responded.",
-
-                text: `Hello {{name}},
-
-    Just following up regarding your enquiry with *Xenotrix Technologies*.
-
-    We would be happy to understand your requirements for *{{company}}* and help you identify the right technology solution.
-
-    If you're still interested, simply reply to this message and we'll take it from there.
-
-    Best regards,
-    *{{executive_name}}*
-    Xenotrix Technologies`
-            },
-
-
-            // --------------------------------------------------------
-            // 10. REQUIREMENT COLLECTION
-            // --------------------------------------------------------
-            requirement_followup: {
-                name: "Requirement Collection",
-                category: "utility",
-                description: "Collect missing project requirements from a potential client.",
-
-                text: `Hello {{name}},
-
-    To prepare the right solution for *{{company}}*, could you please share a few details about your requirement?
-
-    • What solution do you need?
-    • What are the main features you require?
-    • Do you currently have an existing website or software?
-    • What is your expected timeline?
-    • Do you have an approximate project budget?
-
-    Once we have these details, our team can recommend the most suitable approach.
-
-    Best regards,
-    *{{executive_name}}*
-    Xenotrix Technologies`
-            },
-
-
-            // --------------------------------------------------------
-            // 11. PROJECT START
-            // --------------------------------------------------------
-            project_confirmation: {
-                name: "Project Confirmation",
-                category: "utility",
-                description: "Message confirming project onboarding.",
-
-                text: `Hello {{name}},
-
-    Thank you for choosing *Xenotrix Technologies* for your *{{service}}* project.
-
-    We are pleased to begin working with *{{company}}*.
-
-    Our team will now proceed with the project onboarding and initial requirements.
-
-    Your assigned executive:
-    *{{executive_name}}*
-
-    We look forward to building a successful solution for your business.
-
-    Best regards,
-    Xenotrix Technologies`
-            },
-
-
-            // --------------------------------------------------------
-            // 12. PROJECT COMPLETION
-            // --------------------------------------------------------
-            project_completion: {
-                name: "Project Completion Update",
-                category: "utility",
-                description: "Professional project completion notification.",
-
-                text: `Hello {{name}},
-
-    We are pleased to inform you that the *{{service}}* project for *{{company}}* has reached the completion stage.
-
-    Our team has completed the agreed project scope and the final review is now ready.
-
-    Please review the delivered work and share any feedback or required changes.
-
-    Thank you for trusting *Xenotrix Technologies*.
-
-    Best regards,
-    *{{executive_name}}*
-    Xenotrix Technologies`
-            }
-        };
-
-
-        // ============================================================
-        // WHATSAPP ATTACHMENTS
-        // ============================================================
-
-        let whatsappAttachmentsList = [];
-
-
-        // ============================================================
-        // TEMPLATE UTILITIES
-        // ============================================================
-
-        function getTemplate(templateKey) {
-            return XENOTRIX_TEMPLATES[templateKey] || null;
+(function() {
+    "use strict";
+
+    let activeLeadId = "{{ lead.id }}";
+    let leadNameVal = "{{ lead.name|escapejs }}";
+    let leadPhoneVal = "{{ lead.phone_number|escapejs }}";
+    let leadCompanyVal = "{{ lead.company|escapejs }}";
+    let leadEmailVal = "{{ lead.email|escapejs }}";
+
+    window.XENOTRIX_TEMPLATES = {
+        'xenotrix_intro': {
+            name: "Xenotrix Corporate Overview & Core Services (Default Meta Approved)",
+            category: "greetings",
+            text: `Hello {{name}},\n\nGreetings from *Xenotrix Technologies*! 👋\n\nThank you for reaching out to us regarding IT & Software solutions for *{{company}}*. We specialize in:\n\n🚀 *Our Core Services:*\n• Custom Web Application & Portal Development\n• Mobile App Development (iOS & Android)\n• Enterprise CRM & ERP Suite Implementation\n• AI Solutions & Workflow Automation\n• SEO, PPC & Performance Digital Marketing\n\n🌐 Explore our portfolio: https://xenotrix.in\n📞 Direct Hotline: +91 9995544316\n\nHow can we assist you with *{{company}}*'s upcoming project?\n\nBest regards,\n*Senior Solutions Consultant* | Xenotrix Technologies`
+        },
+        'webdev_proposal': {
+            name: "Web & Mobile App Development Proposal Follow-up",
+            category: "webdev",
+            text: `Hi {{name}},\n\nFollowing up on your web development & mobile app inquiry for *{{company}}*.\n\nOur engineering team has reviewed your technical requirements and prepared a customized project scope covering responsive UI/UX, database architecture, security, and API integrations.\n\n📋 *Next Steps:*\n1. Quick 10-minute discovery call to finalize scope.\n2. Delivery of official commercial proposal & delivery timeline.\n\nAre you available for a brief call today or tomorrow?\n\nBest regards,\n*Project Engineering Team* | Xenotrix Technologies`
+        },
+        'crm_demo_pitch': {
+            name: "XenoCRM & ERP System Live Walkthrough Demo",
+            category: "sales",
+            text: `Hello {{name}},\n\nStreamline your sales pipeline and operations with *XenoCRM & ERP System*! 📈\n\n✨ *Key Capabilities for {{company}}:*\n• Lead Tracking & Pipeline Automation\n• Automated WhatsApp & Email Dispatch\n• Invoicing, GST Billing & Financial Reports\n• Staff Performance & Task Dashboards\n\n📅 Schedule your live demo: https://xenotrix.in/book-demo\nOr reply directly to book a session.\n\nBest regards,\n*Enterprise Solutions Team* | Xenotrix Technologies`
+        },
+        'quotation_share': {
+            name: "Service Quotation & Commercial Proposal Share",
+            category: "quotation",
+            text: `Dear {{name}},\n\nPlease find attached the official project proposal for *{{service}}* for *{{company}}*.\n\n💼 *Proposal Highlights:*\n• Complete Scope of Work & Technical Deliverables\n• Milestone-based Payment Breakdown\n• 6-Month Complimentary Maintenance & SLA Support\n\n📄 Download Proposal: https://xenotrix.in/docs/proposal.pdf\n\nPlease let us know if you need any adjustments to the scope!\n\nBest regards,\n*Commercial Accounts* | Xenotrix Technologies`
+        },
+        'meeting_confirm': {
+            name: "Meeting Confirmation & Calendar Schedule",
+            category: "greetings",
+            text: `Hi {{name}},\n\nYour strategy meeting with *Xenotrix Technologies* is confirmed! 🗓️\n\n📌 *Meeting Details:*\n• Client: {{name}} ({{company}})\n• Topic: IT Strategy & Project Architecture\n• Mode: Google Meet / Phone Call\n\nWe look forward to speaking with you!\n\nBest regards,\n*Consulting Team* | Xenotrix Technologies`
+        },
+        'payment_reminder': {
+            name: "Milestone Payment & Invoice Update",
+            category: "quotation",
+            text: `Hello {{name}},\n\nThis is a gentle update regarding the project milestone payment for *{{company}}*.\n\n💳 *Invoice Summary:*\n• Direct Bank Transfer / UPI available\n\nThank you for choosing Xenotrix Technologies as your technology partner!\n\nBest regards,\n*Accounts Team* | Xenotrix Technologies`
+        },
+        'digital_marketing': {
+            name: "Digital Marketing, SEO & Ads Retainer Package",
+            category: "sales",
+            text: `Hi {{name}},\n\nReady to scale *{{company}}*'s online visibility and qualified leads? 🚀\n\n🎯 *Xenotrix Marketing Package includes:*\n• Technical SEO & Top 10 Google Ranking Strategy\n• High-ROI Google Search & Meta Ad Campaigns\n• Monthly Lead Analytics & ROI Reporting\n\nLet's connect for a custom growth strategy for *{{company}}*!\n\nBest regards,\n*Growth Marketing Team* | Xenotrix Technologies`
+        },
+        'technical_support': {
+            name: "Technical Support & Ticket Resolution Update",
+            category: "followup",
+            text: `Hello {{name}},\n\nYour support query regarding services for *{{company}}* has been resolved by our technical engineering team. ✅\n\nIf you need further assistance, please feel free to reply directly to this message.\n\nBest regards,\n*Support Engineering* | Xenotrix Technologies`
         }
+    };
 
+    let whatsappAttachmentsList = [];
 
-        function getAvailableTemplates() {
-            return Object.entries(XENOTRIX_TEMPLATES).map(
-                ([key, template]) => ({
-                    key,
-                    ...template
-                })
-            );
-        }
-
-
-        function replaceTemplateVariables(text, variables = {}) {
-            if (!text) return "";
-
-            return text.replace(
-                /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g,
-                (match, key) => {
-                    return variables[key] !== undefined
-                        ? variables[key]
-                        : match;
-                }
-            );
-        }
-
-
-        // ============================================================
-        // LEAD TEMPLATE VARIABLES
-        // ============================================================
-
-        function getLeadVariables(extraVariables = {}) {
-            return {
-                name: lead.name || "there",
-                company: lead.company || "your company",
-                phone: lead.phone || "",
-                email: lead.email || "",
-
-                executive_name:
-                    extraVariables.executive_name ||
-                    "{{ executive_name }}",
-
-                service:
-                    extraVariables.service ||
-                    "{{ service }}",
-
-                amount:
-                    extraVariables.amount ||
-                    "{{ amount }}",
-
-                due_date:
-                    extraVariables.due_date ||
-                    "{{ due_date }}",
-
-                proposal_url:
-                    extraVariables.proposal_url ||
-                    "{{ proposal_url }}",
-
-                ...extraVariables
-            };
-        }
-
-
-        // ============================================================
-        // BUILD MESSAGE
-        // ============================================================
-
-        function buildWhatsAppMessage(templateKey, variables = {}) {
-            const template = getTemplate(templateKey);
-
-            if (!template) {
-                console.error(
-                    `[Xenotrix WhatsApp] Template not found: ${templateKey}`
-                );
-
-                return "";
-            }
-
-            const mergedVariables = getLeadVariables(variables);
-
-            return replaceTemplateVariables(
-                template.text,
-                mergedVariables
-            );
-        }
-
-
-        // ============================================================
-        // TEMPLATE SEARCH
-        // ============================================================
-
-        function searchTemplates(searchTerm = "") {
-            const query = searchTerm.trim().toLowerCase();
-
-            if (!query) {
-                return getAvailableTemplates();
-            }
-
-            return getAvailableTemplates().filter(template => {
-                return (
-                    template.name.toLowerCase().includes(query) ||
-                    template.category.toLowerCase().includes(query) ||
-                    template.description.toLowerCase().includes(query)
-                );
-            });
-        }
-
-
-        // ============================================================
-        // TEMPLATE CATEGORY FILTER
-        // ============================================================
-
-        function getTemplatesByCategory(category) {
-            if (!category || category === "all") {
-                return getAvailableTemplates();
-            }
-
-            return getAvailableTemplates().filter(
-                template => template.category === category
-            );
-        }
-
-
-        // ============================================================
-        // DEBUG / DEVELOPMENT
-        // ============================================================
-
-        window.XenotrixWhatsApp = {
-            activeLeadId,
-            lead,
-            templates: XENOTRIX_TEMPLATES,
-            attachments: whatsappAttachmentsList,
-
-            getTemplate,
-            getAvailableTemplates,
-            getTemplatesByCategory,
-            searchTemplates,
-            replaceTemplateVariables,
-            buildWhatsAppMessage
-        };
-
-    })();
-
-    window.openWhatsAppModal = function () {
+    window.openWhatsAppModal = function() {
         const modal = document.getElementById('whatsapp-modal');
         const input = document.getElementById('whatsapp-msg-input');
         if (!modal) return;
 
         if (input && !input.value.trim()) {
-            input.value = XENOTRIX_TEMPLATES['xenotrix_intro'].text;
+            applySelectedTemplate('xenotrix_intro');
         }
 
         renderWhatsAppAttachmentsList();
@@ -1169,18 +690,23 @@
         modal.classList.remove('opacity-0', 'pointer-events-none');
     };
 
-    window.applySelectedTemplate = function (val) {
+    window.applySelectedTemplate = function(val) {
         const input = document.getElementById('whatsapp-msg-input');
         if (!input || !val) return;
 
-        let templateObj = XENOTRIX_TEMPLATES[val];
+        let templateObj = window.XENOTRIX_TEMPLATES[val];
         if (!templateObj) return;
 
-        input.value = templateObj.text;
+        let text = templateObj.text || '';
+        text = text.replace(/\{\{name\}\}/g, leadNameVal || 'there')
+                   .replace(/\{\{company\}\}/g, leadCompanyVal || 'your company')
+                   .replace(/\{\{phone\}\}/g, leadPhoneVal || '');
+
+        input.value = text;
         updateWhatsAppPreview();
     };
 
-    window.filterWhatsAppTemplates = function (category) {
+    window.filterWhatsAppTemplates = function(category) {
         const select = document.getElementById('wa-template-select');
         if (!select) return;
 
@@ -1213,17 +739,44 @@
         }
     };
 
-    window.openCreateTemplateModal = function () {
+    window.updateWhatsAppPreview = function() {
+        const input = document.getElementById('whatsapp-msg-input');
+        const preview = document.getElementById('whatsapp-preview-text');
+        if (!input || !preview) return;
+
+        let val = input.value || '';
+        val = val.replace(/\{\{name\}\}/g, leadNameVal || 'Client')
+                 .replace(/\{\{company\}\}/g, leadCompanyVal || 'Company')
+                 .replace(/\{\{phone\}\}/g, leadPhoneVal || '');
+
+        preview.innerText = val;
+    };
+
+    window.insertWhatsAppTag = function(tag) {
+        const input = document.getElementById('whatsapp-msg-input');
+        if (!input) return;
+
+        const start = input.selectionStart || 0;
+        const end = input.selectionEnd || 0;
+        const current = input.value;
+
+        input.value = current.substring(0, start) + tag + current.substring(end);
+        input.focus();
+        input.selectionStart = input.selectionEnd = start + tag.length;
+        updateWhatsAppPreview();
+    };
+
+    window.openCreateTemplateModal = function() {
         const m = document.getElementById('create-template-modal');
         if (m) m.classList.remove('opacity-0', 'pointer-events-none');
     };
 
-    window.closeCreateTemplateModal = function () {
+    window.closeCreateTemplateModal = function() {
         const m = document.getElementById('create-template-modal');
         if (m) m.classList.add('opacity-0', 'pointer-events-none');
     };
 
-    window.saveCustomWhatsAppTemplate = function () {
+    window.saveCustomWhatsAppTemplate = function() {
         const nameInput = document.getElementById('new-template-name');
         const catSelect = document.getElementById('new-template-category');
         const contentInput = document.getElementById('new-template-content');
@@ -1238,7 +791,7 @@
         const tCat = catSelect ? catSelect.value : 'greetings';
         const tContent = contentInput.value.trim();
 
-        XENOTRIX_TEMPLATES[templateKey] = {
+        window.XENOTRIX_TEMPLATES[templateKey] = {
             name: tName,
             category: tCat,
             text: tContent
@@ -1261,25 +814,25 @@
         alert(`Custom template "${tName}" saved successfully!`);
     };
 
-    window.closeWhatsAppModal = function () {
+    window.closeWhatsAppModal = function() {
         const modal = document.getElementById('whatsapp-modal');
         if (!modal) return;
         modal.classList.add('opacity-0', 'pointer-events-none');
     };
 
-    window.openApiStatusModal = function () {
+    window.openApiStatusModal = function() {
         const m = document.getElementById('api-status-modal');
         if (m) m.classList.remove('opacity-0', 'pointer-events-none');
     };
 
-    window.closeApiStatusModal = function () {
+    window.closeApiStatusModal = function() {
         const m = document.getElementById('api-status-modal');
         if (m) m.classList.add('opacity-0', 'pointer-events-none');
     };
 
     let currentSendMode = 'normal_whatsapp';
 
-    window.openSendConfirmationModal = function (mode) {
+    window.openSendConfirmationModal = function(mode) {
         currentSendMode = mode || 'normal_whatsapp';
         const input = document.getElementById('whatsapp-msg-input');
         if (!input || !input.value.trim()) {
@@ -1287,35 +840,30 @@
             return;
         }
 
-        document.getElementById('confirm-recipient-name').textContent = leadNameVal;
-        document.getElementById('confirm-recipient-phone').textContent = leadPhoneVal;
-
-        const modeBadge = document.getElementById('confirm-send-mode-badge');
-        if (modeBadge) {
-            modeBadge.textContent = currentSendMode === 'cloud_api' ? 'Meta Cloud API Engine' : 'WhatsApp Web / Mobile App';
-        }
+        const nameEl = document.getElementById('confirm-recipient-name');
+        const phoneEl = document.getElementById('confirm-recipient-phone');
+        if (nameEl) nameEl.textContent = leadNameVal;
+        if (phoneEl) phoneEl.textContent = leadPhoneVal;
 
         const m = document.getElementById('send-confirm-modal');
         if (m) m.classList.remove('opacity-0', 'pointer-events-none');
     };
 
-    window.closeSendConfirmationModal = function () {
+    window.closeSendConfirmationModal = function() {
         const m = document.getElementById('send-confirm-modal');
         if (m) m.classList.add('opacity-0', 'pointer-events-none');
     };
 
-    window.executeSendWhatsAppMessage = function () {
+    window.executeSendWhatsAppMessage = function() {
         const input = document.getElementById('whatsapp-msg-input');
         if (!input || !input.value.trim()) return;
         const btn = document.getElementById('confirm-send-btn');
 
-        // Resolve personalizations
         let fullMsg = input.value || '';
         fullMsg = fullMsg.replace(/\{\{name\}\}/g, leadNameVal)
-            .replace(/\{\{company\}\}/g, leadCompanyVal)
-            .replace(/\{\{phone\}\}/g, leadPhoneVal);
+                         .replace(/\{\{company\}\}/g, leadCompanyVal)
+                         .replace(/\{\{phone\}\}/g, leadPhoneVal);
 
-        // Include file attachment references if selected
         if (whatsappAttachmentsList.length) {
             const attLinks = whatsappAttachmentsList.map(a => `📎 Attachment: ${a.name}`).join('\n');
             fullMsg += `\n\n${attLinks}`;
@@ -1336,7 +884,6 @@
             return;
         }
 
-        // Meta WhatsApp Cloud API Mode
         if (btn) {
             btn.disabled = true;
             btn.innerHTML = `<span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> Dispatching Meta Cloud API...`;
@@ -1354,68 +901,89 @@
                 "buttons": "[]"
             })
         })
-            .then(res => res.json())
-            .then(data => {
-                closeSendConfirmationModal();
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = `<span>Confirm & Send</span>`;
-                }
+        .then(res => res.json())
+        .then(data => {
+            closeSendConfirmationModal();
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<span>Confirm & Send</span>`;
+            }
 
-                if (data.success) {
-                    alert(data.message);
-                    closeWhatsAppModal();
-                    window.location.reload();
-                } else {
-                    alert(data.error || "Meta WhatsApp Cloud API dispatch failed.");
-                }
-            })
-            .catch(err => {
-                closeSendConfirmationModal();
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = `<span>Confirm & Send</span>`;
-                }
-                alert("Error sending message via Meta Cloud API: " + err.message);
-            });
-    };
-
-    window.executeSendTestWhatsApp = function () {
-        const testPhone = document.getElementById('test-phone-input')?.value || '';
-        const input = document.getElementById('whatsapp-msg-input');
-        if (!input || !input.value.trim()) return;
-
-        const csrfToken = "{{ csrf_token }}";
-        fetch("{% url 'send_whatsapp_cloud_api' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRFToken": csrfToken,
-            },
-            body: new URLSearchParams({
-                "lead_id": activeLeadId,
-                "message": input.value,
-                "buttons": "[]"
-            })
+            if (data.success) {
+                alert(data.message);
+                closeWhatsAppModal();
+                window.location.reload();
+            } else {
+                alert(data.error || "Meta WhatsApp Cloud API dispatch failed.");
+            }
         })
-            .then(res => res.json())
-            .then(data => {
-                closeSendTestModal();
-                if (data.success) {
-                    alert(`Meta Cloud API Test Message dispatched successfully to ${testPhone}!`);
-                } else {
-                    alert(data.error || "Meta Cloud API Test failed.");
-                }
-            });
-    };
-
-    window.copyWhatsAppText = function () {
-        const input = document.getElementById('whatsapp-msg-input');
-        if (!input) return;
-        navigator.clipboard.writeText(input.value).then(() => {
-            alert("WhatsApp message text copied to clipboard!");
+        .catch(err => {
+            closeSendConfirmationModal();
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<span>Confirm & Send</span>`;
+            }
+            alert("Error sending message via Meta Cloud API: " + err.message);
         });
     };
 
-}) ();
+    window.triggerWhatsAppFileUpload = function() {
+        const fileInput = document.getElementById('wa-file-input');
+        if (fileInput) fileInput.click();
+    };
+
+    window.handleWhatsAppFileSelect = function(e) {
+        const files = e.target.files;
+        if (!files) return;
+        for (let i = 0; i < files.length; i++) {
+            whatsappAttachmentsList.push({
+                name: files[i].name,
+                type: 'custom',
+                file: files[i]
+            });
+        }
+        renderWhatsAppAttachmentsList();
+    };
+
+    window.addWhatsAppPresetAttachment = function(presetType) {
+        let name = presetType === 'brochure' ? 'Xenotrix_Company_Profile.pdf' : 'Services_Quotation_Proposal.pdf';
+        whatsappAttachmentsList.push({
+            name: name,
+            type: 'preset'
+        });
+        renderWhatsAppAttachmentsList();
+    };
+
+    window.removeWhatsAppAttachment = function(index) {
+        whatsappAttachmentsList.splice(index, 1);
+        renderWhatsAppAttachmentsList();
+    };
+
+    function renderWhatsAppAttachmentsList() {
+        const container = document.getElementById('wa-attachments-list');
+        if (!container) return;
+
+        if (!whatsappAttachmentsList.length) {
+            container.innerHTML = '';
+            return;
+        }
+
+        let html = '';
+        whatsappAttachmentsList.forEach((att, idx) => {
+            html += `
+                <div class="flex items-center justify-between bg-slate-950 p-2 rounded-xl border border-slate-800 text-xs">
+                    <div class="flex items-center gap-2 truncate">
+                        <span class="material-symbols-outlined text-[16px] text-emerald-400">description</span>
+                        <span class="truncate text-slate-200">${att.name}</span>
+                    </div>
+                    <button type="button" onclick="removeWhatsAppAttachment(${idx})" class="text-slate-400 hover:text-rose-400">
+                        <span class="material-symbols-outlined text-[16px]">close</span>
+                    </button>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    }
+
+})();
 </script>
