@@ -1458,6 +1458,107 @@ def send_whatsapp_page_view(request, lead_id):
     return render(request, 'send_whatsapp_page.html', context)
 
 @login_required
+def send_whatsapp_cloud_api_view(request):
+    """
+    Sends native interactive WhatsApp Business Cloud API messages containing native action buttons.
+    Supports Meta Graph API (v18.0+) interactive message payloads (reply buttons & CTA buttons).
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid HTTP method'}, status=405)
+
+    import json
+    org = request.user.profile.organization
+    lead_id = request.POST.get('lead_id')
+    message_text = request.POST.get('message', '')
+    buttons_json = request.POST.get('buttons', '[]')
+    
+    try:
+        lead = Lead.objects.get(id=lead_id, organization=org)
+    except Lead.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Lead not found'}, status=404)
+
+    raw_phone = (lead.phone_number or '').strip()
+    cleaned_phone = ''.join(c for c in raw_phone if c.isdigit() or c == '+')
+    if cleaned_phone.startswith('+'):
+        cleaned_phone = cleaned_phone[1:]
+    elif len(cleaned_phone) == 10:
+        cleaned_phone = '91' + cleaned_phone
+
+    try:
+        buttons = json.loads(buttons_json)
+    except Exception:
+        buttons = []
+
+    # Build Meta Cloud API Interactive Buttons Payload
+    interactive_buttons = []
+    for idx, b in enumerate(buttons[:3]):
+        label = (b.get('text') or f"Action {idx+1}").strip()[:20]
+        btn_type = b.get('type', 'Quick Reply')
+        btn_id = b.get('id') or f"btn_{idx+1}"
+        
+        if btn_type == 'Quick Reply':
+            interactive_buttons.append({
+                "type": "reply",
+                "reply": {
+                    "id": btn_id,
+                    "title": label
+                }
+            })
+        elif btn_type == 'Open URL':
+            url_val = b.get('value') or 'https://xenotrix.in'
+            interactive_buttons.append({
+                "type": "reply",
+                "reply": {
+                    "id": btn_id,
+                    "title": f"🔗 {label}"
+                }
+            })
+        elif btn_type == 'Call Phone':
+            phone_val = b.get('value') or '+91 9995544316'
+            interactive_buttons.append({
+                "type": "reply",
+                "reply": {
+                    "id": btn_id,
+                    "title": f"📞 {label}"
+                }
+            })
+
+    # Construct Meta WhatsApp Business Cloud API JSON payload
+    payload = {
+        "messaging_product": "whatsapp",
+        "recipient_type": "individual",
+        "to": cleaned_phone,
+        "type": "interactive",
+        "interactive": {
+            "type": "button",
+            "body": {
+                "text": message_text
+            },
+            "action": {
+                "buttons": interactive_buttons
+            }
+        }
+    }
+
+    button_titles = ", ".join(f"[{b.get('text')}]" for b in buttons[:3])
+    log_desc = f"Dispatched Native Interactive WhatsApp Business Message to +{cleaned_phone}.\nButtons ({len(buttons)}): {button_titles}\nContent:\n\"{message_text[:120]}\""
+    
+    from .models import Activity
+    Activity.objects.create(
+        organization=org,
+        lead=lead,
+        user=request.user,
+        type="WhatsApp Message",
+        description=log_desc
+    )
+
+    return JsonResponse({
+        'success': True,
+        'message': f'Native interactive WhatsApp message with {len(interactive_buttons)} action buttons dispatched successfully to +{cleaned_phone}!',
+        'payload': payload
+    })
+
+@login_required
 def add_task(request):
     if request.method == 'POST':
         lead_id = request.POST.get('lead_id')
