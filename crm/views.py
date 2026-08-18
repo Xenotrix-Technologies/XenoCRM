@@ -5333,6 +5333,58 @@ def finance_dashboard_view(request):
     service_labels = [s[0] for s in sorted_services]
     service_revenue = [s[1] for s in sorted_services]
 
+    # 14. Expenses by Client by Month (Last 6 Months)
+    top_exp_clients_qs = Expense.objects.filter(organization=org)\
+        .exclude(cost_center__isnull=True)\
+        .exclude(cost_center='')\
+        .values('cost_center')\
+        .annotate(total=Sum('amount'))\
+        .order_by('-total')[:5]
+
+    top_exp_client_names = [c['cost_center'] for c in top_exp_clients_qs]
+
+    client_data_map = {client: [0.0] * 6 for client in top_exp_client_names}
+    if top_exp_client_names:
+        client_data_map['Others'] = [0.0] * 6
+
+    for idx, i in enumerate(range(5, -1, -1)):
+        target_month = today.month - i
+        target_year = today.year
+        while target_month <= 0:
+            target_month += 12
+            target_year -= 1
+
+        month_expenses = Expense.objects.filter(organization=org, date__year=target_year, date__month=target_month)
+        for exp in month_expenses:
+            c_name = exp.cost_center if (exp.cost_center and exp.cost_center in top_exp_client_names) else ('Others' if top_exp_client_names else 'General Expenses')
+            if c_name not in client_data_map:
+                client_data_map[c_name] = [0.0] * 6
+            client_data_map[c_name][idx] += float(exp.amount)
+
+    color_palette = [
+        {'bg': 'rgba(239, 68, 68, 0.85)', 'border': '#ef4444'},
+        {'bg': 'rgba(249, 115, 22, 0.85)', 'border': '#f97316'},
+        {'bg': 'rgba(168, 85, 247, 0.85)', 'border': '#a855f7'},
+        {'bg': 'rgba(14, 165, 233, 0.85)', 'border': '#0ea5e9'},
+        {'bg': 'rgba(234, 179, 8, 0.85)', 'border': '#eab308'},
+        {'bg': 'rgba(148, 163, 184, 0.85)', 'border': '#94a3b8'}
+    ]
+
+    client_expense_month_datasets = []
+    c_idx = 0
+    for client_name, monthly_vals in client_data_map.items():
+        if sum(monthly_vals) > 0 or len(client_data_map) == 1:
+            col = color_palette[c_idx % len(color_palette)]
+            client_expense_month_datasets.append({
+                'label': client_name,
+                'data': monthly_vals,
+                'backgroundColor': col['bg'],
+                'borderColor': col['border'],
+                'borderWidth': 1,
+                'borderRadius': 4
+            })
+            c_idx += 1
+
     context = {
         'current_bank_balance': current_bank_balance,
         'opening_balance': opening_balance,
@@ -5368,6 +5420,7 @@ def finance_dashboard_view(request):
         'expense_cat_data': json.dumps(expense_cat_data),
         'service_labels': json.dumps(service_labels),
         'service_revenue': json.dumps(service_revenue),
+        'client_expense_month_datasets': json.dumps(client_expense_month_datasets),
     }
     return render(request, 'finance_dashboard.html', context)
 
