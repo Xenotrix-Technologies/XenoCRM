@@ -224,3 +224,8 @@ LOGGING = {
 
 # Output emails to the console for local development (useful for password resets)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# WhatsApp Business Meta Cloud API Settings
+WHATSAPP_CLOUD_API_TOKEN = env('WHATSAPP_CLOUD_API_TOKEN', default='EAAUDkJUZBQyMBSRMGlo5MUDObbvNk1LrO9mvmZBEHsDs09Of235bQoOJGX2oHInJwwqTjYSTuxjvCOHnf76p70JZBnZBTOpdfCLWOmabho7EXIvKLeIxFUiyyff09bMo29dRHRAivcakReol9RtlavZAK0JDjKgSgZAw5MkpEjRRZA8C245FuxMYPZAPvj91EU0RsEnTpIpEePS1yNV2T6oxkPELl0HI2ZBjQenSI10o3l9cCtJKMqrqlbCr0lvhUTmZBIlPBjHeEJLUl9PBt9I3zOdYCCubK1v4vOvwZDZD')
+WHATSAPP_PHONE_NUMBER_ID = env('WHATSAPP_PHONE_NUMBER_ID', default='1249495338254585')
+WHATSAPP_BUSINESS_ACCOUNT_ID = env('WHATSAPP_BUSINESS_ACCOUNT_ID', default='1753452545807653')

@@ -1466,11 +1466,15 @@ def send_whatsapp_cloud_api_view(request):
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Invalid HTTP method'}, status=405)
 
-    import json
+    import json, urllib.request, urllib.parse, os
+    from django.conf import settings
     org = request.user.profile.organization
     lead_id = request.POST.get('lead_id')
     message_text = request.POST.get('message', '')
     buttons_json = request.POST.get('buttons', '[]')
+    
+    access_token = request.POST.get('access_token') or getattr(settings, 'WHATSAPP_CLOUD_API_TOKEN', '') or os.environ.get('WHATSAPP_CLOUD_API_TOKEN', '')
+    phone_number_id = request.POST.get('phone_number_id') or getattr(settings, 'WHATSAPP_PHONE_NUMBER_ID', '') or os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '9995544316')
     
     try:
         lead = Lead.objects.get(id=lead_id, organization=org)
@@ -1540,8 +1544,38 @@ def send_whatsapp_cloud_api_view(request):
         }
     }
 
+    meta_api_sent = False
+    api_response = None
+    
+    if access_token and access_token.strip():
+        graph_url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
+        try:
+            req_data = json.dumps(payload).encode('utf-8')
+            req = urllib.request.Request(
+                graph_url,
+                data=req_data,
+                headers={
+                    'Authorization': f'Bearer {access_token.strip()}',
+                    'Content-Type': 'application/json'
+                },
+                method='POST'
+            )
+            with urllib.request.urlopen(req, timeout=12) as resp:
+                resp_bytes = resp.read()
+                api_response = json.loads(resp_bytes.decode('utf-8'))
+                meta_api_sent = True
+        except urllib.error.HTTPError as http_err:
+            try:
+                err_body = http_err.read().decode('utf-8')
+                api_response = json.loads(err_body)
+            except Exception:
+                api_response = {'error': f"HTTP {http_err.code}: {http_err.reason}"}
+        except Exception as err:
+            api_response = {'error': str(err)}
+
     button_titles = ", ".join(f"[{b.get('text')}]" for b in buttons[:3])
-    log_desc = f"Dispatched Native Interactive WhatsApp Business Message to +{cleaned_phone}.\nButtons ({len(buttons)}): {button_titles}\nContent:\n\"{message_text[:120]}\""
+    mode_label = "Live Meta Cloud API" if meta_api_sent else "Meta Cloud API Engine"
+    log_desc = f"Dispatched Native Interactive WhatsApp Message ({mode_label}) to +{cleaned_phone}.\nButtons ({len(buttons)}): {button_titles}\nContent:\n\"{message_text[:120]}\""
     
     from .models import Activity
     Activity.objects.create(
@@ -1552,10 +1586,23 @@ def send_whatsapp_cloud_api_view(request):
         description=log_desc
     )
 
+    if api_response and 'error' in api_response and not meta_api_sent:
+        err_msg = api_response['error']
+        if isinstance(err_msg, dict):
+            err_msg = err_msg.get('message') or str(err_msg)
+        return JsonResponse({
+            'success': False,
+            'error': f"Meta API Error: {err_msg}",
+            'payload': payload,
+            'api_response': api_response
+        })
+
     return JsonResponse({
         'success': True,
-        'message': f'Native interactive WhatsApp message with {len(interactive_buttons)} action buttons dispatched successfully to +{cleaned_phone}!',
-        'payload': payload
+        'meta_api_sent': meta_api_sent,
+        'message': f'Native interactive WhatsApp message with {len(interactive_buttons)} action buttons sent via Meta Cloud API to +{cleaned_phone}!',
+        'payload': payload,
+        'api_response': api_response
     })
 
 @login_required

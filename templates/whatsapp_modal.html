@@ -229,6 +229,41 @@
                     </div>
             </div>
 
+            <!-- Meta WhatsApp Cloud API Credentials Settings Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
+                <div class="flex items-center justify-between cursor-pointer select-none" onclick="toggleMetaAPISettings()">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold">
+                            <span class="material-symbols-outlined text-[18px]">key</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Meta WhatsApp Business API Keys</h3>
+                            <p class="text-[11px] text-slate-400">Configure Meta Access Token & Phone Number ID for direct Cloud API message dispatch</p>
+                        </div>
+                    </div>
+                    <span id="meta-api-toggle-icon" class="material-symbols-outlined text-[20px] text-slate-400">expand_more</span>
+                </div>
+
+                <div id="meta-api-settings-body" class="hidden space-y-3 pt-3 border-t border-slate-800">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Phone Number ID</label>
+                            <input type="text" id="meta-phone-number-id" placeholder="e.g. 100654321098765" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-emerald-500" />
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Permanent Access Token</label>
+                            <input type="password" id="meta-access-token" placeholder="EAAG..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-emerald-500" />
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-1">
+                        <button type="button" onclick="saveMetaAPISettings()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[15px]">save</span>
+                            Save Meta API Credentials
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- WhatsApp Interactive Buttons Builder Card (CTA / Quick Replies like Image 2) -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
                 <div class="flex flex-wrap items-center justify-between gap-3">
@@ -712,6 +747,37 @@ Innovative For Future`;
     ];
 
     let currentFilter = 'all';
+
+    // Meta WhatsApp Cloud API Settings State & Handlers
+    window.toggleMetaAPISettings = function() {
+        const body = document.getElementById('meta-api-settings-body');
+        const icon = document.getElementById('meta-api-toggle-icon');
+        if (body) {
+            body.classList.toggle('hidden');
+            if (icon) icon.textContent = body.classList.contains('hidden') ? 'expand_more' : 'expand_less';
+        }
+    };
+
+    window.saveMetaAPISettings = function() {
+        const phoneId = document.getElementById('meta-phone-number-id')?.value.trim() || '';
+        const token = document.getElementById('meta-access-token')?.value.trim() || '';
+        
+        localStorage.setItem('meta_whatsapp_phone_id', phoneId);
+        localStorage.setItem('meta_whatsapp_token', token);
+        alert("Meta WhatsApp Business API credentials saved successfully!");
+    };
+
+    // Load saved Meta credentials on initial load
+    setTimeout(() => {
+        const savedPhoneId = localStorage.getItem('meta_whatsapp_phone_id') || '';
+        const savedToken = localStorage.getItem('meta_whatsapp_token') || '';
+        if (document.getElementById('meta-phone-number-id')) {
+            document.getElementById('meta-phone-number-id').value = savedPhoneId;
+        }
+        if (document.getElementById('meta-access-token')) {
+            document.getElementById('meta-access-token').value = savedToken;
+        }
+    }, 300);
 
     // WhatsApp Attachments Store
     let whatsappAttachmentsList = [];
@@ -1507,6 +1573,9 @@ Innovative For Future`;
 
         if (sendMode === 'cloud_api') {
             const csrfToken = "{{ csrf_token }}";
+            const apiTokenVal = localStorage.getItem('meta_whatsapp_token') || document.getElementById('meta-access-token')?.value || '';
+            const phoneIdVal = localStorage.getItem('meta_whatsapp_phone_id') || document.getElementById('meta-phone-number-id')?.value || '';
+
             fetch("{% url 'send_whatsapp_cloud_api' %}", {
                 method: "POST",
                 headers: {
@@ -1516,7 +1585,9 @@ Innovative For Future`;
                 body: new URLSearchParams({
                     "lead_id": "{{ lead.id }}",
                     "message": input.value,
-                    "buttons": JSON.stringify(whatsappButtonsList)
+                    "buttons": JSON.stringify(whatsappButtonsList),
+                    "access_token": apiTokenVal,
+                    "phone_number_id": phoneIdVal
                 })
             })
             .then(res => res.json())
