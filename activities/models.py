@@ -1,80 +1,7 @@
-from crm.models import *
 from django.db import models
 from django.contrib.auth.models import User
-from crm.models import Lead, UserProfile, Organization, StatusStyleMixin
+from core.models import Organization, UserProfile, StatusStyleMixin
 
-class Activity(models.Model):
-    TYPE_CHOICES = [
-        ('Email', 'Email'),
-        ('Call', 'Call'),
-        ('Meeting', 'Meeting'),
-        ('Task', 'Task'),
-        ('Stage Update', 'Stage Update'),
-        ('Creation', 'Creation'),
-    ]
-
-    lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='activities')
-    type = models.CharField(max_length=50, choices=TYPE_CHOICES)
-    description = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'activities'
-
-    def __str__(self):
-        return f"{self.type} on {self.lead.name} at {self.timestamp}"
-
-class Task(models.Model):
-    PRIORITY_CHOICES = [
-        ('High', 'High'),
-        ('Medium', 'Medium'),
-        ('Low', 'Low'),
-    ]
-
-    lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='tasks')
-    title = models.CharField(max_length=255, default='Project Task')
-    description = models.TextField(blank=True, null=True)
-    assignees = models.ManyToManyField(UserProfile, blank=True, related_name='assigned_tasks')
-    start_date = models.DateField(blank=True, null=True)
-    due_date = models.DateField()
-    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Medium')
-    completed = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = 'tasks'
-
-    def __str__(self):
-        return f"{self.description} ({'Completed' if self.completed else 'Pending'})"
-
-class Meeting(models.Model):
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='meetings')
-    lead = models.ForeignKey(Lead, on_delete=models.SET_NULL, null=True, blank=True, related_name='meetings')
-    title = models.CharField(max_length=255)
-    date_time = models.DateTimeField()
-    location = models.CharField(max_length=255, default='Zoom')
-
-    class Meta:
-        db_table = 'meetings'
-
-    def __str__(self):
-        return f"{self.title} at {self.date_time}"
-
-class Event(models.Model):
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    recurring = models.BooleanField(default=False)
-    color = models.CharField(max_length=50, default='#004ac6')
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='events')
-
-    class Meta:
-        db_table = 'events'
-
-    def __str__(self):
-        return f"{self.title} ({self.start_time} - {self.end_time})"
 
 class CalendarStatus(models.Model, StatusStyleMixin):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='calendar_statuses')
@@ -86,4 +13,186 @@ class CalendarStatus(models.Model, StatusStyleMixin):
         unique_together = ('organization', 'name')
         ordering = ['position', 'id']
         db_table = 'calendar_statuses'
-    def __str__(self): return self.name
+
+    def __str__(self):
+        return self.name
+
+
+class Activity(models.Model):
+    TYPE_CHOICES = [
+        ('Email', 'Email'),
+        ('Call', 'Call'),
+        ('Meeting', 'Meeting'),
+        ('Task', 'Task'),
+        ('Stage Update', 'Stage Update'),
+        ('Creation', 'Creation'),
+    ]
+
+    lead = models.ForeignKey('leads.Lead', on_delete=models.CASCADE, related_name='activities')
+    type = models.CharField(max_length=50, choices=TYPE_CHOICES)
+    description = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'activities'
+
+    def __str__(self):
+        return f"{self.type} on {self.lead.name} at {self.timestamp}"
+
+
+class WhatsAppMessage(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='whatsapp_messages')
+    lead = models.ForeignKey('leads.Lead', on_delete=models.CASCADE, related_name='whatsapp_messages')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    recipient_phone = models.CharField(max_length=50)
+    template_name = models.CharField(max_length=100, blank=True, null=True)
+    message_content = models.TextField()
+    meta_message_id = models.CharField(max_length=255, blank=True, null=True)
+    status = models.CharField(max_length=50, default='Sent')
+    error_message = models.TextField(blank=True, null=True)
+    buttons_json = models.TextField(default='[]')
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'whatsapp_messages'
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f"WhatsApp to {self.recipient_phone} ({self.status}) - {self.sent_at}"
+
+
+class Task(models.Model):
+    PRIORITY_CHOICES = [
+        ('High', 'High'),
+        ('Medium', 'Medium'),
+        ('Low', 'Low'),
+    ]
+
+    RISK_CHOICES = [
+        ('Low', 'Low'),
+        ('Medium', 'Medium'),
+        ('High', 'High'),
+    ]
+
+    lead = models.ForeignKey('leads.Lead', on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='tasks', null=True, blank=True)
+    title = models.CharField(max_length=255, default='Project Task')
+    description = models.TextField(blank=True, null=True)
+    assignees = models.ManyToManyField(UserProfile, blank=True, related_name='assigned_tasks')
+    start_date = models.DateField(blank=True, null=True)
+    due_date = models.DateField()
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='Medium')
+    risk_level = models.CharField(max_length=20, choices=RISK_CHOICES, default='Low')
+    progress = models.IntegerField(default=0)
+    status = models.ForeignKey('projects.ProjectStatus', on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks')
+    completed = models.BooleanField(default=False)
+    is_starred = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'tasks'
+
+    def __str__(self):
+        return f"{self.title} - {self.description} ({'Completed' if self.completed else 'Pending'})"
+
+    @property
+    def calculated_progress(self):
+        total_todos = self.todos.count()
+        if total_todos > 0:
+            completed_todos = self.todos.filter(completed=True).count()
+            return int((completed_todos / total_todos) * 100)
+        if self.progress is not None and self.progress > 0:
+            return self.progress
+        return 100 if self.completed else 0
+
+
+class TaskTodo(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='todos')
+    title = models.CharField(max_length=255)
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'task_todos'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.title} ({'Completed' if self.completed else 'Pending'})"
+
+
+class TaskFile(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='files')
+    file = models.FileField(upload_to='project_files/')
+    filename = models.CharField(max_length=255)
+    file_size = models.CharField(max_length=50, blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta:
+        db_table = 'task_files'
+        ordering = ['-uploaded_at']
+
+    def __str__(self):
+        return f"{self.filename} ({self.task.title})"
+
+
+class TaskMilestone(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='milestones')
+    title = models.CharField(max_length=255)
+    due_date = models.DateField()
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'task_milestones'
+        ordering = ['due_date']
+
+    def __str__(self):
+        return f"{self.title} - {self.task.title}"
+
+
+class TaskComment(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='task_comments')
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'task_comments'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"{self.user.username} on {self.task.title}: {self.message[:30]}"
+
+
+class Meeting(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='meetings')
+    lead = models.ForeignKey('leads.Lead', on_delete=models.SET_NULL, null=True, blank=True, related_name='meetings')
+    title = models.CharField(max_length=255)
+    date_time = models.DateTimeField()
+    location = models.CharField(max_length=255, default='Zoom')
+
+    class Meta:
+        db_table = 'meetings'
+
+    def __str__(self):
+        return f"{self.title} at {self.date_time}"
+
+
+class Event(models.Model):
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    recurring = models.BooleanField(default=False)
+    color = models.CharField(max_length=50, default='#004ac6')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='events')
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='events')
+    notified_10h = models.BooleanField(default=False)
+    notified_1h = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'events'
+
+    def __str__(self):
+        return f"{self.title} ({self.start_time} - {self.end_time})"

@@ -84,8 +84,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'cloudinary_storage',
     'cloudinary',
-    'crm',
+    'core',
+    'leads',
+    'services',
+    'support',
+    'projects',
+    'activities',
+    'campaigns',
+    'content_tracker',
+    'finance',
     'hr',
+    'crm',
 ]
 
 MIDDLEWARE = [

@@ -1,81 +1,222 @@
 {% extends 'base.html' %}
 
-{% block title %}XenoCRM | Campaigns{% endblock %}
+{% block title %}Meta Campaigns & Ad Reports | XenoCRM{% endblock %}
 
 {% block content %}
 <div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
     <!-- Header -->
-    <div class="flex justify-between items-end mb-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
         <div>
-            <h2 class="font-headline-lg text-headline-lg text-on-background">Campaigns Hub</h2>
-            <p class="text-secondary font-body-md">Monitor and scale your outreach marketing campaigns, budget allocations, and performance trends.</p>
+            <div class="flex items-center space-x-3 mb-1">
+                <h2 class="font-headline-lg text-2xl font-bold text-on-background">Meta Ad Campaigns</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 flex items-center">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse mr-1.5"></span>
+                    Meta Ads Manager Cards
+                </span>
+            </div>
+            <p class="text-secondary text-sm">Monitor campaign cards, results, cost per result, Meta Taken GST (18%), and spend analytics.</p>
         </div>
-        <button onclick="openAddModal()" class="flex items-center px-4 py-2 bg-primary text-on-primary rounded-lg font-button text-button shadow-md hover:opacity-90 active:scale-95 transition-all">
-            <span class="material-symbols-outlined mr-2 text-sm">campaign</span>
-            Launch Campaign
-        </button>
+        
+        <div class="flex flex-wrap items-center gap-3">
+            <!-- Dashboard Link -->
+            <a href="{% url 'campaign_dashboard' %}" class="flex items-center px-4 py-2.5 bg-surface-container border border-outline-variant/60 text-on-surface rounded-xl text-xs font-bold shadow-sm hover:bg-surface-variant transition-all">
+                <span class="material-symbols-outlined text-sm mr-1.5 text-primary">analytics</span>
+                Campaign Dashboard
+            </a>
+
+            <!-- Add Campaign Button -->
+            <button onclick="openAddModal()" class="flex items-center px-4 py-2.5 bg-primary text-on-primary rounded-xl text-xs font-bold shadow-md hover:opacity-90 active:scale-95 transition-all">
+                <span class="material-symbols-outlined text-sm mr-1.5">add</span>
+                Create Campaign
+            </button>
+        </div>
     </div>
 
-    <!-- Campaigns Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {% for camp in campaigns %}
-        <div class="glass-card p-6 rounded-2xl border border-white/40 shadow-sm hover:shadow-md transition-all flex flex-col justify-between" id="campaign-card-{{ camp.id }}">
+    <!-- KPI Metric Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        <!-- Amount Spent & Meta GST -->
+        <div class="glass-card p-4 rounded-2xl border border-white/40 shadow-sm flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-xs text-secondary font-bold uppercase tracking-wider">Amount Spent</span>
+                <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <span class="material-symbols-outlined text-lg">payments</span>
+                </div>
+            </div>
             <div>
-                <div class="flex justify-between items-start mb-4">
-                    <span class="text-xs px-2.5 py-1 rounded-full font-bold uppercase tracking-wider {% if camp.status == 'Active' %}bg-primary/10 text-primary{% elif camp.status == 'Completed' %}bg-success/10 text-success{% else %}bg-surface-variant text-secondary{% endif %}">
-                        {{ camp.status }}
+                <h3 class="text-xl font-extrabold text-on-surface">₹{{ total_spend|floatformat:2 }}</h3>
+                <div class="mt-1 pt-1 border-t border-outline-variant/30 flex justify-between items-center text-[10px]">
+                    <span class="text-secondary font-medium">+ Meta GST (18%):</span>
+                    <span class="font-bold text-primary">₹{{ total_gst|floatformat:2 }}</span>
+                </div>
+                <div class="flex justify-between items-center text-[10px] font-bold text-on-surface">
+                    <span>Total with GST:</span>
+                    <span>₹{{ total_spend_with_gst|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Results -->
+        <div class="glass-card p-4 rounded-2xl border border-white/40 shadow-sm flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-xs text-secondary font-bold uppercase tracking-wider">Total Results</span>
+                <div class="w-8 h-8 rounded-xl bg-success/10 text-success flex items-center justify-center">
+                    <span class="material-symbols-outlined text-lg">chat</span>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xl font-extrabold text-on-surface">{{ total_results }}</h3>
+                <p class="text-[11px] text-success font-medium mt-1">Messaging & Leads generated</p>
+            </div>
+        </div>
+
+        <!-- Avg Cost per Result -->
+        <div class="glass-card p-4 rounded-2xl border border-white/40 shadow-sm flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-xs text-secondary font-bold uppercase tracking-wider">Avg Cost / Result</span>
+                <div class="w-8 h-8 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center">
+                    <span class="material-symbols-outlined text-lg">price_check</span>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xl font-extrabold text-on-surface">₹{{ avg_cost_per_result|floatformat:2 }}</h3>
+                <p class="text-[11px] text-secondary mt-1">Weighted average across ads</p>
+            </div>
+        </div>
+
+        <!-- Reach & Impressions -->
+        <div class="glass-card p-4 rounded-2xl border border-white/40 shadow-sm flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-xs text-secondary font-bold uppercase tracking-wider">Impressions & Reach</span>
+                <div class="w-8 h-8 rounded-xl bg-info/10 text-info flex items-center justify-center">
+                    <span class="material-symbols-outlined text-lg">visibility</span>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xl font-extrabold text-on-surface">{{ total_impressions }}</h3>
+                <p class="text-[11px] text-secondary mt-1">{{ total_reach }} Unique reach</p>
+            </div>
+        </div>
+
+        <!-- Active Campaigns -->
+        <div class="glass-card p-4 rounded-2xl border border-white/40 shadow-sm flex flex-col justify-between">
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-xs text-secondary font-bold uppercase tracking-wider">Active Campaigns</span>
+                <div class="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <span class="material-symbols-outlined text-lg">campaign</span>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-xl font-extrabold text-on-surface">{{ active_count }} <span class="text-sm font-normal text-secondary">/ {{ total_count }}</span></h3>
+                <p class="text-[11px] text-primary font-medium mt-1">Currently running ads</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- META CARDS GRID VIEW -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {% for camp in campaigns %}
+        <div class="glass-card p-6 rounded-2xl border border-white/50 shadow-sm hover:shadow-md transition-all flex flex-col justify-between" id="campaign-card-{{ camp.id }}">
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <!-- On/Off Switch -->
+                    <div class="flex items-center space-x-2.5">
+                        <button onclick="toggleCampaignStatus('{{ camp.id }}')" id="card-toggle-btn-{{ camp.id }}" class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {% if camp.is_active %}bg-primary{% else %}bg-outline/40{% endif %}" role="switch" aria-checked="{{ camp.is_active|lower }}">
+                            <span id="card-toggle-dot-{{ camp.id }}" class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {% if camp.is_active %}translate-x-5{% else %}translate-x-0{% endif %}"></span>
+                        </button>
+                        <span class="text-xs font-bold text-secondary uppercase tracking-wider" id="card-status-text-{{ camp.id }}">{{ camp.status }}</span>
+                    </div>
+
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                        ₹{{ camp.calc_cost_per_result|floatformat:2 }} / result
                     </span>
-                    <div class="text-right">
-                        <p class="text-[10px] text-outline font-label-md uppercase">Leads Generated</p>
-                        <p class="text-lg font-bold text-on-surface">{{ camp.leads_generated }}</p>
+                </div>
+
+                <h3 class="text-base font-bold text-on-surface mb-1">{{ camp.name }}</h3>
+                <p class="text-xs text-secondary mb-4 flex items-center">
+                    <span class="material-symbols-outlined text-xs mr-1 text-primary">campaign</span>
+                    {{ camp.platform }}
+                </p>
+
+                <!-- Results & Spent Card Box -->
+                <div class="p-3.5 rounded-xl bg-surface-container/60 mb-4 border border-outline-variant/30 space-y-3">
+                    <div class="grid grid-cols-3 gap-2 text-left">
+                        <div>
+                            <p class="text-[10px] text-secondary font-bold uppercase tracking-wider">Results</p>
+                            <p class="text-base font-extrabold text-on-surface">{{ camp.effective_results }}</p>
+                            <p class="text-[10px] text-secondary truncate" title="{{ camp.results_type }}">{{ camp.results_type }}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-primary font-bold uppercase tracking-wider">Avg Cost/Result</p>
+                            <p class="text-base font-extrabold text-primary">₹{{ camp.calc_cost_per_result|floatformat:2 }}</p>
+                            <p class="text-[10px] text-secondary">Per result</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-secondary font-bold uppercase tracking-wider">Base Spent</p>
+                            <p class="text-base font-extrabold text-on-surface">₹{{ camp.spend|floatformat:2 }}</p>
+                            <p class="text-[10px] text-secondary">Budget: ₹{{ camp.budget|floatformat:2 }}</p>
+                        </div>
+                    </div>
+
+                    <!-- META TAKEN GST & COST PER RESULT WITH GST BREAKDOWN -->
+                    <div class="pt-2.5 border-t border-outline-variant/40 space-y-1.5 text-xs">
+                        <div class="flex justify-between items-center text-secondary">
+                            <div class="flex items-center">
+                                <span class="material-symbols-outlined text-xs mr-1 text-tertiary">receipt_long</span>
+                                <span class="font-semibold text-[11px]">Meta Taken GST ({{ camp.gst_percentage|floatformat:0 }}%):</span>
+                            </div>
+                            <span class="font-bold text-tertiary">₹{{ camp.calc_gst_amount|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs font-bold text-on-surface">
+                            <span>Total Spent + GST:</span>
+                            <span class="text-primary font-extrabold">₹{{ camp.total_spend_with_gst|floatformat:2 }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[11px] font-bold text-secondary pt-0.5 border-t border-outline-variant/20">
+                            <span>Cost / Result (incl. GST):</span>
+                            <span class="text-secondary font-extrabold">₹{{ camp.calc_cost_per_result_with_gst|floatformat:2 }} / result</span>
+                        </div>
                     </div>
                 </div>
-                <h3 class="text-lg font-bold text-on-surface mb-4">{{ camp.name }}</h3>
-                
-                <div class="space-y-3">
-                    <div class="flex justify-between text-xs text-secondary">
-                        <span>Spend to Date</span>
-                        <span class="font-bold text-on-surface">₹{{ camp.spend|floatformat:2 }}</span>
+
+                <!-- Impressions & Reach bar -->
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between text-secondary">
+                        <span>Impressions / Reach</span>
+                        <span class="font-bold text-on-surface">{{ camp.impressions }} / {{ camp.reach }}</span>
                     </div>
-                    <div class="flex justify-between text-xs text-secondary">
-                        <span>Allocated Budget</span>
-                        <span class="font-bold text-on-surface">₹{{ camp.budget|floatformat:2 }}</span>
-                    </div>
-                    
-                    <!-- Progress Bar for Budget Spent -->
                     <div class="w-full h-2 bg-surface-variant rounded-full overflow-hidden">
                         <div class="h-full bg-primary" style="width: {% widthratio camp.spend camp.budget 100 %}%"></div>
                     </div>
                 </div>
             </div>
-            
-            <div class="mt-6 pt-4 border-t border-outline-variant/30 flex justify-end items-center">
+
+            <div class="mt-6 pt-4 border-t border-outline-variant/30 flex justify-between items-center">
+                <span class="text-xs text-secondary">Ends: {% if camp.end_date %}{{ camp.end_date|date:"d M Y" }}{% else %}Ongoing{% endif %}</span>
                 <div class="flex items-center space-x-2">
-                    <button onclick="openEditModal('{{ camp.id }}', '{{ camp.name|escapejs }}', '{{ camp.status|escapejs }}', '{{ camp.leads_generated }}', '{{ camp.spend }}', '{{ camp.budget }}')" class="p-1.5 text-secondary hover:text-primary hover:bg-primary/5 rounded-lg transition-all" title="Edit Campaign">
+                    <button onclick="openEditModalFromObj('{{ camp.id }}', '{{ camp.name|escapejs }}', '{{ camp.status|escapejs }}', '{{ camp.is_active|lower }}', '{{ camp.effective_results }}', '{{ camp.results_type|escapejs }}', '{{ camp.cost_per_result }}', '{{ camp.budget }}', '{{ camp.budget_type|escapejs }}', '{{ camp.spend }}', '{{ camp.gst_percentage }}', '{{ camp.gst_amount }}', '{{ camp.impressions }}', '{{ camp.reach }}', '{{ camp.end_date|date:"Y-m-d" }}')" class="p-1.5 text-secondary hover:text-primary hover:bg-primary/10 rounded-lg transition-all" title="Edit Campaign">
                         <span class="material-symbols-outlined text-lg">edit</span>
                     </button>
-                    <button onclick="openDeleteModal('{{ camp.id }}', '{{ camp.name|escapejs }}')" class="p-1.5 text-secondary hover:text-error hover:bg-error/5 rounded-lg transition-all" title="Delete Campaign">
+                    <button onclick="openDeleteModal('{{ camp.id }}', '{{ camp.name|escapejs }}')" class="p-1.5 text-secondary hover:text-error hover:bg-error/10 rounded-lg transition-all" title="Delete Campaign">
                         <span class="material-symbols-outlined text-lg">delete</span>
                     </button>
                 </div>
             </div>
         </div>
         {% empty %}
-        <div class="col-span-2 glass-card p-12 rounded-2xl text-center text-secondary border border-dashed border-outline-variant">
-            <span class="material-symbols-outlined text-5xl mb-2 opacity-50">campaign</span>
-            <p class="font-bold">No campaigns launched.</p>
+        <div class="col-span-full glass-card p-12 rounded-2xl text-center text-secondary border border-dashed border-outline-variant">
+            <span class="material-symbols-outlined text-5xl mb-2 opacity-50 block">campaign</span>
+            <p class="font-bold text-sm">No Meta campaigns found.</p>
         </div>
         {% endfor %}
     </div>
 </div>
 
-<!-- Launch Campaign Modal -->
+<!-- Launch / Create Meta Campaign Modal -->
 <div id="addCampaignModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-    <div class="bg-surface-container rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl border border-outline-variant transform scale-95 transition-transform duration-300">
+    <div class="bg-surface-container rounded-2xl p-6 w-full max-w-lg mx-4 shadow-xl border border-outline-variant transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold text-on-surface flex items-center">
                 <span class="material-symbols-outlined mr-2 text-primary">campaign</span>
-                Launch New Campaign
+                Launch Meta Ad Campaign
             </h3>
             <button onclick="closeAddModal()" class="text-secondary hover:text-on-surface p-1 rounded-full hover:bg-surface-variant">
                 <span class="material-symbols-outlined">close</span>
@@ -84,46 +225,100 @@
         <form action="{% url 'add_campaign' %}" method="POST" class="space-y-4">
             {% csrf_token %}
             <div>
-                <label class="block text-xs font-bold text-secondary mb-1">Campaign Name</label>
-                <input type="text" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface" placeholder="e.g. Winter Sale Email Outreach">
+                <label class="block text-xs font-bold text-secondary mb-1">Campaign Name *</label>
+                <input type="text" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface" placeholder="e.g. cotton davani">
             </div>
-            <div>
-                <label class="block text-xs font-bold text-secondary mb-1">Status</label>
-                <select id="add_status" name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
-                    <option value="Planning">Planning</option>
-                    <option value="Active">Active</option>
-                    <option value="Completed">Completed</option>
-                </select>
-            </div>
+
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-bold text-secondary mb-1">Budget ($)</label>
-                    <input type="number" name="budget" step="0.01" min="0" value="0.00" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                    <label class="block text-xs font-bold text-secondary mb-1">Status</label>
+                    <select name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                        <option value="Active" selected>Active</option>
+                        <option value="Paused">Paused</option>
+                        <option value="Planning">Planning</option>
+                        <option value="Completed">Completed</option>
+                    </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-secondary mb-1">Spend to Date ($)</label>
-                    <input type="number" name="spend" step="0.01" min="0" value="0.00" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                    <label class="block text-xs font-bold text-secondary mb-1">Platform</label>
+                    <input type="text" name="platform" value="Meta Ads" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
                 </div>
             </div>
-            <div>
-                <label class="block text-xs font-bold text-secondary mb-1">Leads Generated</label>
-                <input type="number" name="leads_generated" min="0" value="0" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Results Count</label>
+                    <input type="number" name="results_count" min="0" value="0" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface" placeholder="e.g. 57">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Results Description</label>
+                    <input type="text" name="results_type" value="Messaging conversations" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
             </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Cost / Result (₹)</label>
+                    <input type="number" name="cost_per_result" step="0.01" min="0" value="0.00" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Budget (₹)</label>
+                    <input type="number" name="budget" step="0.01" min="0" value="0.00" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Budget Type</label>
+                    <select name="budget_type" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                        <option value="Lifetime" selected>Lifetime</option>
+                        <option value="Daily">Daily</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Amount Spent (₹)</label>
+                    <input type="number" name="spend" step="0.01" min="0" value="0.00" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Meta GST Rate (%)</label>
+                    <input type="number" name="gst_percentage" step="0.01" min="0" value="18.00" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Meta Taken GST (₹)</label>
+                    <input type="number" name="gst_amount" step="0.01" min="0" value="0.00" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface" placeholder="Auto-calculated if 0">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Impressions</label>
+                    <input type="number" name="impressions" min="0" value="0" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Reach</label>
+                    <input type="number" name="reach" min="0" value="0" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">End Date</label>
+                    <input type="date" name="end_date" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+            </div>
+
             <div class="flex justify-end space-x-3 pt-4 border-t border-outline-variant/30">
-                <button type="button" onclick="closeAddModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg text-sm font-medium hover:bg-surface-variant transition-all">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-medium hover:opacity-90 transition-all">Launch</button>
+                <button type="button" onclick="closeAddModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-xl text-xs font-bold hover:bg-surface-variant transition-all">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold hover:opacity-90 transition-all">Launch Meta Campaign</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Edit Campaign Modal -->
+<!-- Edit Meta Campaign Modal -->
 <div id="editCampaignModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-    <div class="bg-surface-container rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl border border-outline-variant transform scale-95 transition-transform duration-300">
+    <div class="bg-surface-container rounded-2xl p-6 w-full max-w-lg mx-4 shadow-xl border border-outline-variant transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto custom-scrollbar">
         <div class="flex justify-between items-center mb-6">
             <h3 class="text-lg font-bold text-on-surface flex items-center">
                 <span class="material-symbols-outlined mr-2 text-primary">edit</span>
-                Update Campaign
+                Update Meta Campaign
             </h3>
             <button onclick="closeEditModal()" class="text-secondary hover:text-on-surface p-1 rounded-full hover:bg-surface-variant">
                 <span class="material-symbols-outlined">close</span>
@@ -132,34 +327,88 @@
         <form id="editCampaignForm" method="POST" class="space-y-4">
             {% csrf_token %}
             <div>
-                <label class="block text-xs font-bold text-secondary mb-1">Campaign Name</label>
-                <input type="text" id="edit_name" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                <label class="block text-xs font-bold text-secondary mb-1">Campaign Name *</label>
+                <input type="text" id="edit_name" name="name" required class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
             </div>
-            <div>
-                <label class="block text-xs font-bold text-secondary mb-1">Status</label>
-                <select id="edit_status" name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
-                    <option value="Planning">Planning</option>
-                    <option value="Active">Active</option>
-                    <option value="Completed">Completed</option>
-                </select>
-            </div>
+
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-bold text-secondary mb-1">Budget ($)</label>
-                    <input type="number" id="edit_budget" name="budget" step="0.01" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                    <label class="block text-xs font-bold text-secondary mb-1">Status</label>
+                    <select id="edit_status" name="status" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                        <option value="Active">Active</option>
+                        <option value="Paused">Paused</option>
+                        <option value="Planning">Planning</option>
+                        <option value="Completed">Completed</option>
+                    </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-secondary mb-1">Spend to Date ($)</label>
-                    <input type="number" id="edit_spend" name="spend" step="0.01" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                    <label class="block text-xs font-bold text-secondary mb-1">Platform</label>
+                    <input type="text" id="edit_platform" name="platform" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
                 </div>
             </div>
-            <div>
-                <label class="block text-xs font-bold text-secondary mb-1">Leads Generated</label>
-                <input type="number" id="edit_leads" name="leads_generated" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Results Count</label>
+                    <input type="number" id="edit_results_count" name="results_count" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Results Description</label>
+                    <input type="text" id="edit_results_type" name="results_type" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
             </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Cost / Result (₹)</label>
+                    <input type="number" id="edit_cost_per_result" name="cost_per_result" step="0.01" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Budget (₹)</label>
+                    <input type="number" id="edit_budget" name="budget" step="0.01" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Budget Type</label>
+                    <select id="edit_budget_type" name="budget_type" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                        <option value="Lifetime">Lifetime</option>
+                        <option value="Daily">Daily</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Amount Spent (₹)</label>
+                    <input type="number" id="edit_spend" name="spend" step="0.01" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Meta GST Rate (%)</label>
+                    <input type="number" id="edit_gst_percentage" name="gst_percentage" step="0.01" min="0" value="18.00" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Meta Taken GST (₹)</label>
+                    <input type="number" id="edit_gst_amount" name="gst_amount" step="0.01" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface" placeholder="Auto-calculated if 0">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Impressions</label>
+                    <input type="number" id="edit_impressions" name="impressions" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">Reach</label>
+                    <input type="number" id="edit_reach" name="reach" min="0" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-secondary mb-1">End Date</label>
+                    <input type="date" id="edit_end_date" name="end_date" class="w-full bg-surface-container-low border border-outline-variant rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-primary text-on-surface">
+                </div>
+            </div>
+
             <div class="flex justify-end space-x-3 pt-4 border-t border-outline-variant/30">
-                <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg text-sm font-medium hover:bg-surface-variant transition-all">Cancel</button>
-                <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-medium hover:opacity-90 transition-all">Update</button>
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-xl text-xs font-bold hover:bg-surface-variant transition-all">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold hover:opacity-90 transition-all">Save Changes</button>
             </div>
         </form>
     </div>
@@ -167,141 +416,118 @@
 
 <!-- Delete Confirmation Modal -->
 <div id="deleteCampaignModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
-    <div class="bg-surface-container rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl border border-outline-variant transform scale-95 transition-transform duration-300 text-center">
-        <div class="w-12 h-12 rounded-full bg-error/10 text-error flex items-center justify-center mx-auto mb-4">
-            <span class="material-symbols-outlined text-2xl">delete</span>
+    <div class="bg-surface-container rounded-2xl p-6 w-full max-w-sm mx-4 shadow-xl border border-outline-variant transform scale-95 transition-transform duration-300">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-base font-bold text-on-surface flex items-center">
+                <span class="material-symbols-outlined mr-2 text-error">warning</span>
+                Delete Meta Campaign
+            </h3>
+            <button onclick="closeDeleteModal()" class="text-secondary hover:text-on-surface p-1 rounded-full">
+                <span class="material-symbols-outlined">close</span>
+            </button>
         </div>
-        <h3 class="text-lg font-bold text-on-surface mb-2">Delete Campaign?</h3>
-        <p class="text-secondary text-sm mb-6">Are you sure you want to delete <span id="deleteCampaignName" class="font-bold text-on-surface"></span>? This action cannot be undone.</p>
-        <form id="deleteCampaignForm" method="POST" class="flex justify-center space-x-3">
+        <p class="text-xs text-secondary mb-6">Are you sure you want to delete <span id="delete_campaign_name" class="font-bold text-on-surface"></span>? This action cannot be undone.</p>
+        <form id="deleteCampaignForm" method="POST" class="flex justify-end space-x-3">
             {% csrf_token %}
-            <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-lg text-sm font-medium hover:bg-surface-variant transition-all">Cancel</button>
-            <button type="submit" class="px-4 py-2 bg-error text-on-error rounded-lg text-sm font-medium hover:opacity-90 transition-all">Delete</button>
+            <button type="button" onclick="closeDeleteModal()" class="px-4 py-2 border border-outline-variant text-secondary rounded-xl text-xs font-bold hover:bg-surface-variant">Cancel</button>
+            <button type="submit" class="px-4 py-2 bg-error text-on-error rounded-xl text-xs font-bold hover:opacity-90">Delete</button>
         </form>
     </div>
 </div>
 
 <script>
-// Dynamic Status population from localStorage
-function initStatusOptions() {
-    const defaultStatuses = [
-        { name: 'Planning' },
-        { name: 'Active' },
-        { name: 'Completed' }
-    ];
-    let customStatuses = defaultStatuses;
-    try {
-        const stored = localStorage.getItem('status_list_campaigns');
-        if (stored) {
-            customStatuses = JSON.parse(stored);
-        } else {
-            // Seed local storage with defaults so it aligns with Status Page
-            localStorage.setItem('status_list_campaigns', JSON.stringify([
-                { name: 'Planning', color: '#64748b' },
-                { name: 'Active', color: '#0053db' },
-                { name: 'Completed', color: '#22c55e' }
-            ]));
+function toggleCampaignStatus(campaignId) {
+    fetch(`/campaign/${campaignId}/toggle-active/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
         }
-    } catch(e) {
-        console.error(e);
-    }
-
-    const addSelect = document.getElementById('add_status');
-    const editSelect = document.getElementById('edit_status');
-
-    if (addSelect && editSelect) {
-        addSelect.innerHTML = '';
-        editSelect.innerHTML = '';
-        customStatuses.forEach(status => {
-            const opt1 = document.createElement('option');
-            opt1.value = status.name;
-            opt1.textContent = status.name;
-            addSelect.appendChild(opt1);
-
-            const opt2 = document.createElement('option');
-            opt2.value = status.name;
-            opt2.textContent = status.name;
-            editSelect.appendChild(opt2);
-        });
-    }
-}
-
-// Call on load
-document.addEventListener('DOMContentLoaded', initStatusOptions);
-
-function showModal(modalId) {
-    const modal = document.getElementById(modalId);
-    modal.classList.remove('hidden');
-    setTimeout(() => {
-        modal.classList.remove('opacity-0');
-        modal.querySelector('div').classList.remove('scale-95');
-    }, 10);
-}
-
-function hideModal(modalId) {
-    const modal = document.getElementById(modalId);
-    modal.classList.add('opacity-0');
-    modal.querySelector('div').classList.add('scale-95');
-    setTimeout(() => {
-        modal.classList.add('hidden');
-    }, 300);
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const cardBtn = document.getElementById(`card-toggle-btn-${campaignId}`);
+            const cardDot = document.getElementById(`card-toggle-dot-${campaignId}`);
+            const cardStatus = document.getElementById(`card-status-text-${campaignId}`);
+            if (cardBtn && cardDot) {
+                if (data.is_active) {
+                    cardBtn.className = "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-primary";
+                    cardDot.className = "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-5";
+                } else {
+                    cardBtn.className = "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none bg-outline/40";
+                    cardDot.className = "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0";
+                }
+            }
+            if (cardStatus) cardStatus.textContent = data.status;
+        }
+    })
+    .catch(err => console.error(err));
 }
 
 function openAddModal() {
-    initStatusOptions();
-    showModal('addCampaignModal');
+    const modal = document.getElementById('addCampaignModal');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.firstElementChild.classList.remove('scale-95');
+    }, 10);
 }
 
 function closeAddModal() {
-    hideModal('addCampaignModal');
+    const modal = document.getElementById('addCampaignModal');
+    modal.classList.add('opacity-0');
+    modal.firstElementChild.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 300);
 }
 
-function openEditModal(id, name, status, leads, spend, budget) {
-    initStatusOptions();
+function openEditModalFromObj(id, name, status, isActive, resultsCount, resultsType, costPerResult, budget, budgetType, spend, gstPercentage, gstAmount, impressions, reach, endDate) {
+    document.getElementById('editCampaignForm').action = `/campaign/${id}/edit/`;
     document.getElementById('edit_name').value = name;
-    document.getElementById('edit_status').value = status;
-    document.getElementById('edit_leads').value = leads;
-    document.getElementById('edit_spend').value = spend;
-    document.getElementById('edit_budget').value = budget;
-    
-    // Set form action URL dynamically
-    const form = document.getElementById('editCampaignForm');
-    form.action = `/campaign/${id}/edit/`;
-    
-    showModal('editCampaignModal');
+    document.getElementById('edit_status').value = status || 'Active';
+    document.getElementById('edit_results_count').value = resultsCount || 0;
+    document.getElementById('edit_results_type').value = resultsType || 'Messaging conversations';
+    document.getElementById('edit_cost_per_result').value = costPerResult || 0.00;
+    document.getElementById('edit_budget').value = budget || 0.00;
+    document.getElementById('edit_budget_type').value = budgetType || 'Lifetime';
+    document.getElementById('edit_spend').value = spend || 0.00;
+    document.getElementById('edit_gst_percentage').value = gstPercentage || 18.00;
+    document.getElementById('edit_gst_amount').value = gstAmount || 0.00;
+    document.getElementById('edit_impressions').value = impressions || 0;
+    document.getElementById('edit_reach').value = reach || 0;
+    document.getElementById('edit_end_date').value = endDate || '';
+
+    const modal = document.getElementById('editCampaignModal');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.firstElementChild.classList.remove('scale-95');
+    }, 10);
 }
 
 function closeEditModal() {
-    hideModal('editCampaignModal');
+    const modal = document.getElementById('editCampaignModal');
+    modal.classList.add('opacity-0');
+    modal.firstElementChild.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 300);
 }
 
 function openDeleteModal(id, name) {
-    document.getElementById('deleteCampaignName').textContent = name;
-    
-    // Set form action URL dynamically
-    const form = document.getElementById('deleteCampaignForm');
-    form.action = `/campaign/${id}/delete/`;
-    
-    showModal('deleteCampaignModal');
+    document.getElementById('delete_campaign_name').textContent = name;
+    document.getElementById('deleteCampaignForm').action = `/campaign/${id}/delete/`;
+    const modal = document.getElementById('deleteCampaignModal');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.firstElementChild.classList.remove('scale-95');
+    }, 10);
 }
 
 function closeDeleteModal() {
-    hideModal('deleteCampaignModal');
-}
-
-// Close modals when clicking outside
-window.onclick = function(event) {
-    const addModal = document.getElementById('addCampaignModal');
-    const editModal = document.getElementById('editCampaignModal');
-    const deleteModal = document.getElementById('deleteCampaignModal');
-    
-    if (event.target === addModal) {
-        closeAddModal();
-    } else if (event.target === editModal) {
-        closeEditModal();
-    } else if (event.target === deleteModal) {
-        closeDeleteModal();
-    }
+    const modal = document.getElementById('deleteCampaignModal');
+    modal.classList.add('opacity-0');
+    modal.firstElementChild.classList.add('scale-95');
+    setTimeout(() => modal.classList.add('hidden'), 300);
 }
 </script>
 {% endblock %}

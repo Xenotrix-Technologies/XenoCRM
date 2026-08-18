@@ -1,6 +1,6 @@
-from crm.models import *
 from django.db import models
-from django.contrib.auth.models import User
+from core.models import Organization
+
 
 class Service(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='services')

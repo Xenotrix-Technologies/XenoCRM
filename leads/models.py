@@ -1,7 +1,7 @@
-from crm.models import *
 from django.db import models
-from django.contrib.auth.models import User
 from django.utils import timezone
+from core.models import Organization, UserProfile
+
 
 class LeadStatus(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='lead_statuses')
@@ -44,6 +44,19 @@ class LeadStatus(models.Model):
     def badge_class(self):
         return ''
 
+
+def get_default_badge_class(status):
+    if status == 'Qualified':
+        return 'bg-primary-container/10 text-primary border border-primary/20'
+    elif status == 'Contacted':
+        return 'bg-surface-variant text-on-surface-variant border border-outline-variant/30'
+    elif status == 'New':
+        return 'bg-tertiary-container/20 text-tertiary border border-tertiary/20'
+    elif status == 'Cold Lead':
+        return 'bg-error-container/40 text-error border border-error/20'
+    return 'bg-error/10 text-error border border-error/20'
+
+
 class Lead(models.Model):
     STATUS_CHOICES = [
         ('New', 'New'),
@@ -64,17 +77,17 @@ class Lead(models.Model):
 
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='leads')
     name = models.CharField(max_length=255)
-    email = models.EmailField()
-    phone_number = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    phone_number = models.CharField(max_length=50)
     alt_phone_number = models.CharField(max_length=50, blank=True, null=True)
     company = models.CharField(max_length=255)
-    score = models.IntegerField(default=50) # Lead score 0-100
+    score = models.IntegerField(default=50)
     status = models.CharField(max_length=50, default='New')
     stage = models.CharField(max_length=50, choices=STAGE_CHOICES, default='New')
     value = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, blank=True, null=True)
     paid_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, blank=True, null=True)
     owner = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='owned_leads')
-    services = models.ManyToManyField('Service', blank=True, related_name='leads')
+    services = models.ManyToManyField('services.Service', blank=True, related_name='leads')
     lifecycle_stage = models.CharField(max_length=100, default='Prospect')
     annual_revenue = models.DecimalField(max_digits=15, decimal_places=2, default=0.00)
     health_score = models.IntegerField(default=50)
@@ -91,9 +104,15 @@ class Lead(models.Model):
     class Meta:
         db_table = 'leads'
 
+    def save(self, *args, **kwargs):
+        if self.status == 'Qualified':
+            self.is_client = True
+        super().save(*args, **kwargs)
+
     @property
     def status_badge_style(self):
         try:
+            from projects.models import ClientStatus
             if self.is_client:
                 status_obj = ClientStatus.objects.filter(organization=self.organization, name=self.status).first()
             else:
@@ -102,7 +121,6 @@ class Lead(models.Model):
                 return status_obj.badge_style
         except Exception:
             pass
-        # Fallback to default colors
         color_map = {
             'New': '#10b981',
             'Contacted': '#64748b',
@@ -120,6 +138,7 @@ class Lead(models.Model):
         if hasattr(self, '_badge_class'):
             return self._badge_class
         try:
+            from projects.models import ClientStatus
             if self.is_client:
                 status_obj = ClientStatus.objects.filter(organization=self.organization, name=self.status).first()
             else:
@@ -132,4 +151,4 @@ class Lead(models.Model):
         return get_default_badge_class(self.status)
 
     def __str__(self):
-        return f"{self.name} - {self.company}"
+        return f"{self.name} ({self.company})"

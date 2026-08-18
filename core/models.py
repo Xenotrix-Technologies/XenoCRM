@@ -1,6 +1,25 @@
-from crm.models import *
 from django.db import models
 from django.contrib.auth.models import User
+import json
+
+
+class StatusStyleMixin:
+    @property
+    def color_hex(self):
+        if getattr(self, 'color', '').startswith('#'):
+            return self.color
+        color_map = {
+            'blue': '#0053db', 'grey': '#64748b', 'green': '#10b981', 
+            'yellow': '#f59e0b', 'red': '#ef4444', 'orange': '#f97316', 
+            'purple': '#a855f7', 'pink': '#ec4899', 'teal': '#14b8a6',
+        }
+        return color_map.get(getattr(self, 'color', '').lower(), '#64748b')
+
+    @property
+    def badge_style(self):
+        hex_val = self.color_hex
+        return f"background-color: {hex_val}1a; color: {hex_val}; border: 1px solid {hex_val}33;"
+
 
 class Organization(models.Model):
     name = models.CharField(max_length=255)
@@ -11,6 +30,7 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.name
+
 
 class Department(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='departments')
@@ -23,6 +43,20 @@ class Department(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class StaffRole(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='staff_roles')
+    name = models.CharField(max_length=100)
+    permissions_json = models.TextField(default='{}')
+
+    class Meta:
+        unique_together = ('organization', 'name')
+        db_table = 'staff_roles'
+
+    def __str__(self):
+        return self.name
+
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
@@ -75,9 +109,6 @@ class UserProfile(models.Model):
     }
 
     def check_page_permission(self, page_name):
-        from crm.models import StaffRole
-        import json
-        
         role_lower = self.role.lower()
         pages_to_check = [page_name]
         alias = self.PERMISSION_ALIASES.get(page_name)
@@ -97,7 +128,7 @@ class UserProfile(models.Model):
                     val = custom_perms[settings_key]
                     if val is True or val == True or val == "true":
                         return True
-                    return False  # If explicitly false in overrides, deny
+                    return False
         except Exception:
             pass
 
@@ -172,6 +203,70 @@ class UserProfile(models.Model):
         return self.check_page_permission('projects_status')
 
     @property
+    def has_access_hr(self):
+        return self.check_page_permission('hr')
+
+    @property
+    def has_access_hr_dashboard(self):
+        return self.check_page_permission('hr') or self.check_page_permission('staff')
+
+    @property
+    def has_access_staff(self):
+        return self.check_page_permission('staff')
+
+    @property
+    def has_access_hr_attendance(self):
+        return self.check_page_permission('hr')
+
+    @property
+    def has_access_hr_leaves(self):
+        return self.check_page_permission('hr')
+
+    @property
+    def has_access_hr_payroll(self):
+        return self.check_page_permission('hr')
+
+    @property
+    def has_access_hr_settings(self):
+        return self.check_page_permission('hr')
+
+    @property
+    def has_access_finance(self):
+        return self.check_page_permission('finance')
+
+    @property
+    def has_access_finance_dashboard(self):
+        return self.check_page_permission('finance') or self.check_page_permission('finance_dashboard')
+
+    @property
+    def has_access_finance_invoices(self):
+        return self.check_page_permission('finance') or self.check_page_permission('finance_invoices')
+
+    @property
+    def has_access_finance_income(self):
+        return self.check_page_permission('finance') or self.check_page_permission('finance_income')
+
+    @property
+    def has_access_finance_expenses(self):
+        return self.check_page_permission('finance') or self.check_page_permission('finance_expenses')
+
+    @property
+    def has_access_finance_reports(self):
+        return self.check_page_permission('finance') or self.check_page_permission('finance_reports')
+
+    @property
+    def has_access_partner_payouts(self):
+        return self.check_page_permission('finance') or self.check_page_permission('partner_payouts')
+
+    @property
+    def has_access_finance_settings(self):
+        return self.check_page_permission('finance') or self.check_page_permission('finance_settings')
+
+    @property
+    def has_access_finance_status(self):
+        return self.check_page_permission('finance_status')
+
+    @property
     def has_access_agreements(self):
         return self.check_page_permission('agreements')
 
@@ -184,28 +279,12 @@ class UserProfile(models.Model):
         return self.check_page_permission('campaigns_status')
 
     @property
-    def has_access_staff(self):
-        return self.check_page_permission('staff')
-
-    @property
-    def has_access_content_tracker(self):
-        return self.check_page_permission('content_tracker')
-
-    @property
-    def has_access_settings(self):
-        return self.check_page_permission('settings')
-
-    @property
-    def has_access_content_settings(self):
-        return self.check_page_permission('content_settings')
+    def has_access_cms(self):
+        return self.check_page_permission('cms')
 
     @property
     def has_access_cms_settings(self):
-        return self.check_page_permission('cms_settings')
-
-    @property
-    def has_access_lead_statuses(self):
-        return self.check_page_permission('lead_statuses')
+        return self.check_page_permission('content_settings')
 
     @property
     def has_access_services(self):
@@ -227,124 +306,46 @@ class UserProfile(models.Model):
     def has_access_departments(self):
         return self.check_page_permission('departments')
 
-    def check_edit_permission(self, page_name):
-        """Check whether the user's role has edit access for a given page."""
-        from crm.models import StaffRole
-        import json
-        role_lower = self.role.lower()
-        pages_to_check = [page_name]
-        alias = self.PERMISSION_ALIASES.get(page_name)
-        if alias and alias not in pages_to_check:
-            pages_to_check.append(alias)
+    @property
+    def has_any_settings_access(self):
+        return (
+            self.has_access_cms_settings or
+            self.has_access_leads_settings or
+            self.has_access_services or
+            self.has_access_staff_roles or
+            self.has_access_notification_settings or
+            self.has_access_role_permissions or
+            self.has_access_departments or
+            self.has_access_finance_settings
+        )
 
-        # 1. Check Staff-specific overrides first
+    def check_edit_permission(self, page_name):
+        role_lower = self.role.lower()
+        if 'admin' in role_lower:
+            return True
+        edit_key = f"{page_name}-edit"
         try:
             custom_perms = json.loads(self.custom_permissions_json or '{}')
-            for p in pages_to_check:
-                edit_key = f"{role_lower}_{p}_edit"
-                if edit_key in custom_perms:
-                    val = custom_perms[edit_key]
-                    return val is True or val == True or val == "true"
+            if edit_key in custom_perms:
+                val = custom_perms[edit_key]
+                return val is True or val == True or val == "true"
         except Exception:
             pass
-
-        # 2. Check Role-level permissions
         try:
             role_obj = StaffRole.objects.get(organization=self.organization, name=self.role)
             perms = json.loads(role_obj.permissions_json)
-            for p in pages_to_check:
-                edit_key = f"{role_lower}_{p}_edit"
-                val = perms.get(edit_key)
-                if val is not None:
-                    return val is True or val == True or val == "true"
+            val = perms.get(edit_key)
+            if val is not None:
+                return val is True or val == True or val == "true"
         except Exception:
             pass
-            
-        # 3. Default: admins get edit, others don't
-        if 'admin' in role_lower:
-            return True
-        return False
-
-    @property
-    def has_edit_dashboard(self):
-        return self.check_edit_permission('dashboard')
-
-    @property
-    def has_edit_leads(self):
-        return self.check_edit_permission('leads')
-
-    @property
-    def has_edit_calendar(self):
-        return self.check_edit_permission('calendar')
-
-    @property
-    def has_edit_clients(self):
-        return self.check_edit_permission('clients')
-
-    @property
-    def has_edit_support(self):
-        return self.check_edit_permission('support')
-
-    @property
-    def has_edit_projects(self):
-        return self.check_edit_permission('projects')
-
-    @property
-    def has_edit_agreements(self):
-        return self.check_edit_permission('agreements')
-
-    @property
-    def has_edit_campaigns(self):
-        return self.check_edit_permission('campaigns')
-
-    @property
-    def has_edit_staff(self):
-        return self.check_edit_permission('staff')
-
-    @property
-    def has_edit_content_tracker(self):
-        return self.check_edit_permission('content_tracker')
-
-    @property
-    def has_edit_settings(self):
-        return self.check_edit_permission('settings')
-
-    @property
-    def has_edit_content_settings(self):
-        return self.check_edit_permission('content_settings')
-
-    @property
-    def has_edit_lead_statuses(self):
-        return self.check_edit_permission('lead_statuses')
-
-    @property
-    def has_edit_services(self):
-        return self.check_edit_permission('services')
-
-    @property
-    def has_edit_staff_roles(self):
-        return self.check_edit_permission('staff_roles')
-
-    @property
-    def has_edit_notification_settings(self):
-        return self.check_edit_permission('notification_settings')
-
-    @property
-    def has_edit_role_permissions(self):
-        return self.check_edit_permission('role_permissions')
-
-    @property
-    def has_edit_departments(self):
-        return self.check_edit_permission('departments')
+        return self.check_page_permission(page_name)
 
     def check_delete_permission(self, page_name):
-        """Check whether the user's role has delete access for a given page."""
-        from crm.models import StaffRole
-        import json
         role_lower = self.role.lower()
-        delete_key = f"{role_lower}_{page_name}_delete"
-
-        # 1. Check Staff-specific overrides first
+        if 'admin' in role_lower:
+            return True
+        delete_key = f"{page_name}-delete"
         try:
             custom_perms = json.loads(self.custom_permissions_json or '{}')
             if delete_key in custom_perms:
@@ -352,8 +353,6 @@ class UserProfile(models.Model):
                 return val is True or val == True or val == "true"
         except Exception:
             pass
-
-        # 2. Check Role-level permissions
         try:
             role_obj = StaffRole.objects.get(organization=self.organization, name=self.role)
             perms = json.loads(role_obj.permissions_json)
@@ -362,114 +361,13 @@ class UserProfile(models.Model):
                 return val is True or val == True or val == "true"
         except Exception:
             pass
-            
-        # 3. Default: only admins get delete
-        if 'admin' in role_lower:
-            return True
-        return False
+        return self.check_page_permission(page_name)
 
-    @property
-    def has_delete_dashboard(self):
-        return self.check_delete_permission('dashboard')
-
-    @property
-    def has_delete_leads(self):
-        return self.check_delete_permission('leads')
-
-    @property
-    def has_delete_calendar(self):
-        return self.check_delete_permission('calendar')
-
-    @property
-    def has_delete_clients(self):
-        return self.check_delete_permission('clients')
-
-    @property
-    def has_delete_support(self):
-        return self.check_delete_permission('support')
-
-    @property
-    def has_delete_projects(self):
-        return self.check_delete_permission('projects')
-
-    @property
-    def has_delete_agreements(self):
-        return self.check_delete_permission('agreements')
-
-    @property
-    def has_delete_campaigns(self):
-        return self.check_delete_permission('campaigns')
-
-    @property
-    def has_delete_staff(self):
-        return self.check_delete_permission('staff')
-
-    @property
-    def has_delete_content_tracker(self):
-        return self.check_delete_permission('content_tracker')
-
-    @property
-    def has_delete_settings(self):
-        return self.check_delete_permission('settings')
-
-    @property
-    def has_delete_content_settings(self):
-        return self.check_delete_permission('content_settings')
-
-    @property
-    def has_delete_lead_statuses(self):
-        return self.check_delete_permission('lead_statuses')
-
-    @property
-    def has_delete_services(self):
-        return self.check_delete_permission('services')
-
-    @property
-    def has_delete_staff_roles(self):
-        return self.check_delete_permission('staff_roles')
-
-    @property
-    def has_delete_notification_settings(self):
-        return self.check_delete_permission('notification_settings')
-
-    @property
-    def has_delete_role_permissions(self):
-        return self.check_delete_permission('role_permissions')
-
-    @property
-    def has_delete_departments(self):
-        return self.check_delete_permission('departments')
-
-    @property
-    def has_any_settings_access(self):
-        return (
-            self.has_access_settings or
-            self.has_access_content_settings or
-            self.has_access_lead_statuses or
-            self.has_access_services or
-            self.has_access_staff_roles or
-            self.has_access_notification_settings or
-            self.has_access_role_permissions or
-            self.has_access_departments
-        )
-
-class StaffRole(models.Model):
-    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='staff_roles')
-    name = models.CharField(max_length=100)
-
-    permissions_json = models.TextField(default='{}')
-
-    class Meta:
-        unique_together = ('organization', 'name')
-        db_table = 'staff_roles'
-
-    def __str__(self):
-        return self.name
 
 class SystemNotification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='system_notifications')
     message = models.TextField()
-    type = models.CharField(max_length=50, default='info') # success, error, info
+    type = models.CharField(max_length=50, default='info')
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -479,20 +377,3 @@ class SystemNotification(models.Model):
 
     def __str__(self):
         return f"{self.type} - {self.user.username}"
-
-class StatusStyleMixin:
-    @property
-    def color_hex(self):
-        if getattr(self, 'color', '').startswith('#'):
-            return self.color
-        color_map = {
-            'blue': '#0053db', 'grey': '#64748b', 'green': '#10b981', 
-            'yellow': '#f59e0b', 'red': '#ef4444', 'orange': '#f97316', 
-            'purple': '#a855f7', 'pink': '#ec4899', 'teal': '#14b8a6',
-        }
-        return color_map.get(getattr(self, 'color', '').lower(), '#64748b')
-
-    @property
-    def badge_style(self):
-        hex_val = self.color_hex
-        return f"background-color: {hex_val}1a; color: {hex_val}; border: 1px solid {hex_val}33;"
