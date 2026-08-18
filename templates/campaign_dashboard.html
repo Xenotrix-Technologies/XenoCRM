@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+
+{% block title %}Campaign Dashboard | XenoCRM Analytics{% endblock %}
+
+{% block content %}
+<div class="p-margin-edge flex-1 flex flex-col bg-surface-container-low overflow-y-auto custom-scrollbar">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
+        <div>
+            <div class="flex items-center space-x-3 mb-1">
+                <h2 class="font-headline-lg text-2xl font-bold text-on-background">Campaign Performance Dashboard</h2>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/10 text-primary border border-primary/20 flex items-center">
+                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse mr-1.5"></span>
+                    Live Analytics
+                </span>
+            </div>
+            <p class="text-secondary text-sm">Visual analysis of ad spend efficiency, cost per result trends, and conversion metrics.</p>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <a href="{% url 'campaign' %}" class="flex items-center px-4 py-2 bg-surface-container border border-outline-variant/60 text-on-surface rounded-xl text-xs font-bold shadow-sm hover:bg-surface-variant transition-all">
+                <span class="material-symbols-outlined text-sm mr-1.5 text-primary">table_rows</span>
+                Meta Ads Manager Report
+            </a>
+        </div>
+    </div>
+
+    <!-- Top KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+        <!-- Total Spend -->
+        <div class="glass-card p-5 rounded-2xl border border-white/40 shadow-sm">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-secondary uppercase tracking-wider">Total Ad Spend</span>
+                <span class="material-symbols-outlined text-primary text-xl">payments</span>
+            </div>
+            <h3 class="text-2xl font-extrabold text-on-surface">₹{{ total_spend|floatformat:2 }}</h3>
+            <p class="text-xs text-success font-medium mt-1 flex items-center">
+                <span class="material-symbols-outlined text-sm mr-1">trending_up</span>
+                {{ active_count }} Active Ads
+            </p>
+        </div>
+
+        <!-- Total Results -->
+        <div class="glass-card p-5 rounded-2xl border border-white/40 shadow-sm">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-secondary uppercase tracking-wider">Total Results</span>
+                <span class="material-symbols-outlined text-success text-xl">chat</span>
+            </div>
+            <h3 class="text-2xl font-extrabold text-on-surface">{{ total_results }}</h3>
+            <p class="text-xs text-secondary mt-1">Conversions & Leads</p>
+        </div>
+
+        <!-- Avg Cost per Result -->
+        <div class="glass-card p-5 rounded-2xl border border-white/40 shadow-sm">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-secondary uppercase tracking-wider">Avg Cost / Result</span>
+                <span class="material-symbols-outlined text-tertiary text-xl">sell</span>
+            </div>
+            <h3 class="text-2xl font-extrabold text-on-surface">₹{{ avg_cost_per_result|floatformat:2 }}</h3>
+            <p class="text-xs text-success font-medium mt-1">Optimal ROI range</p>
+        </div>
+
+        <!-- Impressions -->
+        <div class="glass-card p-5 rounded-2xl border border-white/40 shadow-sm">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-secondary uppercase tracking-wider">Impressions</span>
+                <span class="material-symbols-outlined text-info text-xl">visibility</span>
+            </div>
+            <h3 class="text-2xl font-extrabold text-on-surface">{{ total_impressions }}</h3>
+            <p class="text-xs text-secondary mt-1">Reach: {{ total_reach }}</p>
+        </div>
+
+        <!-- Total Budget Allocated -->
+        <div class="glass-card p-5 rounded-2xl border border-white/40 shadow-sm">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-secondary uppercase tracking-wider">Total Budget</span>
+                <span class="material-symbols-outlined text-primary text-xl">account_balance_wallet</span>
+            </div>
+            <h3 class="text-2xl font-extrabold text-on-surface">₹{{ total_budget|floatformat:2 }}</h3>
+            <p class="text-xs text-secondary mt-1">Overall campaign budget</p>
+        </div>
+    </div>
+
+    <!-- Analytics Charts Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Spend vs Results Chart -->
+        <div class="glass-card p-6 rounded-2xl border border-white/50 shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h3 class="font-bold text-on-surface text-base">Campaign Spend vs Results</h3>
+                    <p class="text-xs text-secondary">Comparison of total ad spend vs results generated per campaign</p>
+                </div>
+                <span class="material-symbols-outlined text-outline">bar_chart</span>
+            </div>
+            <div class="h-64 relative">
+                <canvas id="spendVsResultsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Cost Per Result Chart -->
+        <div class="glass-card p-6 rounded-2xl border border-white/50 shadow-sm">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h3 class="font-bold text-on-surface text-base">Cost Per Result Breakdown (₹)</h3>
+                    <p class="text-xs text-secondary">Average cost paid per conversion by campaign</p>
+                </div>
+                <span class="material-symbols-outlined text-outline">show_chart</span>
+            </div>
+            <div class="h-64 relative">
+                <canvas id="cprChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Campaigns Summary Table -->
+    <div class="glass-card rounded-2xl border border-white/50 shadow-sm overflow-hidden mb-8">
+        <div class="p-4 bg-surface-container/60 border-b border-outline-variant/40 flex justify-between items-center">
+            <h3 class="font-bold text-on-surface text-sm flex items-center">
+                <span class="material-symbols-outlined text-primary mr-2 text-base">campaign</span>
+                Active Campaign Overview
+            </h3>
+            <a href="{% url 'campaign' %}" class="text-xs font-bold text-primary hover:underline">View All Meta Reports &rarr;</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-surface-container-high/70 text-secondary border-b border-outline-variant/40 font-bold uppercase">
+                        <th class="py-3 px-4">Campaign Name</th>
+                        <th class="py-3 px-4 text-center">Status</th>
+                        <th class="py-3 px-4 text-right">Results</th>
+                        <th class="py-3 px-4 text-right">Cost / Result</th>
+                        <th class="py-3 px-4 text-right">Amount Spent</th>
+                        <th class="py-3 px-4 text-right">Budget</th>
+                        <th class="py-3 px-4 text-center">Budget Utilization</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/30 text-on-surface">
+                    {% for camp in campaigns %}
+                    <tr class="hover:bg-surface-container/50 transition-colors">
+                        <td class="py-3.5 px-4 font-bold text-primary">
+                            {{ camp.name }}
+                        </td>
+                        <td class="py-3.5 px-4 text-center">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase {% if camp.is_active %}bg-success/10 text-success{% else %}bg-outline/20 text-secondary{% endif %}">
+                                {{ camp.status }}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4 text-right font-extrabold">{{ camp.effective_results }}</td>
+                        <td class="py-3.5 px-4 text-right font-extrabold">₹{{ camp.calc_cost_per_result|floatformat:2 }}</td>
+                        <td class="py-3.5 px-4 text-right font-bold">₹{{ camp.spend|floatformat:2 }}</td>
+                        <td class="py-3.5 px-4 text-right">₹{{ camp.budget|floatformat:2 }}</td>
+                        <td class="py-3.5 px-4 text-center">
+                            <div class="w-24 bg-surface-variant h-2 rounded-full mx-auto overflow-hidden">
+                                <div class="h-full bg-primary" style="width: {% widthratio camp.spend camp.budget 100 %}%"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="py-8 text-center text-secondary">No active campaigns available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const labels = {{ chart_names_json|safe }};
+    const spends = {{ chart_spends_json|safe }};
+    const results = {{ chart_results_json|safe }};
+    const cpr = {{ chart_cpr_json|safe }};
+
+    // 1. Spend vs Results Combo Chart
+    const ctx1 = document.getElementById('spendVsResultsChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Amount Spent (₹)',
+                    data: spends,
+                    backgroundColor: 'rgba(0, 83, 219, 0.7)',
+                    borderColor: '#0053db',
+                    borderWidth: 1,
+                    borderRadius: 6,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Results (Conversions)',
+                    data: results,
+                    type: 'line',
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#10b981',
+                    tension: 0.3,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    grid: { color: 'rgba(200, 200, 200, 0.15)' },
+                    ticks: { callback: value => '₹' + value }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: { drawOnChartArea: false }
+                }
+            }
+        }
+    });
+
+    // 2. Cost Per Result Chart
+    const ctx2 = document.getElementById('cprChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Cost Per Result (₹)',
+                data: cpr,
+                backgroundColor: 'rgba(139, 92, 246, 0.7)',
+                borderColor: '#8b5cf6',
+                borderWidth: 1,
+                borderRadius: 6
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(200, 200, 200, 0.15)' },
+                    ticks: { callback: value => '₹' + value }
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

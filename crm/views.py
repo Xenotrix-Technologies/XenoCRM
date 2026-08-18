@@ -917,12 +917,111 @@ def agreement_print_view(request, agreement_id):
 
 
 @login_required
+@login_required
 @page_permission_required('campaigns')
 def campaign_view(request):
     org = request.user.profile.organization
-    campaigns = Campaign.objects.filter(organization=org)
+    campaigns = Campaign.objects.filter(organization=org).order_by('-created_at')
     
-    return render(request, 'campaign.html', {'campaigns': campaigns})
+    # Auto-seed realistic demo Meta campaigns if empty
+    if not campaigns.exists():
+        from datetime import date
+        Campaign.objects.create(
+            organization=org, name='49th Kids kurta mund 10/8/26 - campaign',
+            is_active=True, status='Active', results_count=119, results_type='Messaging conversations',
+            cost_per_result=4.97, budget=600.00, budget_type='Lifetime', spend=591.51,
+            impressions=9494, reach=6159, end_date=date(2026, 8, 15), platform='Meta Ads', leads_generated=119
+        )
+        Campaign.objects.create(
+            organization=org, name='50th davani video ad 11/8/26 – campaign',
+            is_active=False, status='Paused', results_count=10, results_type='Messaging conversations',
+            cost_per_result=15.65, budget=250.00, budget_type='Lifetime', spend=156.48,
+            impressions=2777, reach=2493, end_date=date(2026, 8, 13), platform='Meta Ads', leads_generated=10
+        )
+        campaigns = Campaign.objects.filter(organization=org).order_by('-created_at')
+
+    # Aggregated metrics for header cards
+    total_spend = sum(float(c.spend) for c in campaigns)
+    total_gst = sum(c.calc_gst_amount for c in campaigns)
+    total_spend_with_gst = round(total_spend + total_gst, 2)
+    total_budget = sum(float(c.budget) for c in campaigns)
+    total_results = sum(c.effective_results for c in campaigns)
+    total_impressions = sum(c.impressions for c in campaigns)
+    total_reach = sum(c.reach for c in campaigns)
+    avg_cost_per_result = round(total_spend / total_results, 2) if total_results > 0 else 0.00
+    active_count = campaigns.filter(is_active=True).count()
+    
+    context = {
+        'campaigns': campaigns,
+        'total_spend': total_spend,
+        'total_gst': total_gst,
+        'total_spend_with_gst': total_spend_with_gst,
+        'total_budget': total_budget,
+        'total_results': total_results,
+        'total_impressions': total_impressions,
+        'total_reach': total_reach,
+        'avg_cost_per_result': avg_cost_per_result,
+        'active_count': active_count,
+        'total_count': campaigns.count(),
+    }
+    return render(request, 'campaign.html', context)
+
+
+@login_required
+@page_permission_required('campaigns')
+def campaign_dashboard_view(request):
+    org = request.user.profile.organization
+    campaigns = Campaign.objects.filter(organization=org).order_by('-created_at')
+
+    total_spend = sum(float(c.spend) for c in campaigns)
+    total_budget = sum(float(c.budget) for c in campaigns)
+    total_results = sum(c.effective_results for c in campaigns)
+    total_impressions = sum(c.impressions for c in campaigns)
+    total_reach = sum(c.reach for c in campaigns)
+    avg_cost_per_result = round(total_spend / total_results, 2) if total_results > 0 else 0.00
+    active_count = campaigns.filter(is_active=True).count()
+
+    # Chart datasets
+    chart_names = [c.name[:25] + ('...' if len(c.name) > 25 else '') for c in campaigns[:6]]
+    chart_spends = [float(c.spend) for c in campaigns[:6]]
+    chart_results = [c.effective_results for c in campaigns[:6]]
+    chart_cpr = [c.calc_cost_per_result for c in campaigns[:6]]
+
+    context = {
+        'campaigns': campaigns,
+        'total_spend': total_spend,
+        'total_budget': total_budget,
+        'total_results': total_results,
+        'total_impressions': total_impressions,
+        'total_reach': total_reach,
+        'avg_cost_per_result': avg_cost_per_result,
+        'active_count': active_count,
+        'total_count': campaigns.count(),
+        'chart_names_json': json.dumps(chart_names),
+        'chart_spends_json': json.dumps(chart_spends),
+        'chart_results_json': json.dumps(chart_results),
+        'chart_cpr_json': json.dumps(chart_cpr),
+    }
+    return render(request, 'campaign_dashboard.html', context)
+
+
+@login_required
+@require_POST
+@page_permission_required('campaigns')
+def toggle_campaign_active(request, campaign_id):
+    org = request.user.profile.organization
+    campaign = get_object_or_404(Campaign, id=campaign_id, organization=org)
+    
+    campaign.is_active = not campaign.is_active
+    campaign.status = 'Active' if campaign.is_active else 'Paused'
+    campaign.save()
+    
+    return JsonResponse({
+        'success': True,
+        'is_active': campaign.is_active,
+        'status': campaign.status,
+        'message': f"Campaign is now {'Active' if campaign.is_active else 'Paused'}."
+    })
 
 
 @login_required
@@ -931,19 +1030,51 @@ def campaign_view(request):
 def add_campaign(request):
     org = request.user.profile.organization
     name = request.POST.get('name')
-    status = request.POST.get('status', 'Planning')
-    leads_generated = int(request.POST.get('leads_generated') or 0)
-    spend = float(request.POST.get('spend') or 0)
-    budget = float(request.POST.get('budget') or 0)
+    status = request.POST.get('status', 'Active')
+    is_active = request.POST.get('is_active') == 'true' or status == 'Active'
     
+    results_count = int(request.POST.get('results_count') or request.POST.get('leads_generated') or 0)
+    results_type = request.POST.get('results_type') or 'Messaging conversations'
+    cost_per_result = float(request.POST.get('cost_per_result') or 0.0)
+    budget = float(request.POST.get('budget') or 0)
+    budget_type = request.POST.get('budget_type') or 'Lifetime'
+    spend = float(request.POST.get('spend') or 0)
+    gst_percentage = float(request.POST.get('gst_percentage') or 18.0)
+    gst_amount = float(request.POST.get('gst_amount') or 0.0)
+    impressions = int(request.POST.get('impressions') or 0)
+    reach = int(request.POST.get('reach') or 0)
+    end_date_str = request.POST.get('end_date')
+    platform = request.POST.get('platform') or 'Meta Ads'
+    cost_center = request.POST.get('cost_center') or ''
+    
+    end_date = None
+    if end_date_str:
+        try:
+            from datetime import datetime
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except Exception:
+            pass
+
     try:
         Campaign.objects.create(
             organization=org,
             name=name,
             status=status,
-            leads_generated=leads_generated,
+            is_active=is_active,
+            results_count=results_count,
+            results_type=results_type,
+            cost_per_result=cost_per_result,
+            budget=budget,
+            budget_type=budget_type,
             spend=spend,
-            budget=budget
+            gst_percentage=gst_percentage,
+            gst_amount=gst_amount,
+            impressions=impressions,
+            reach=reach,
+            end_date=end_date,
+            platform=platform,
+            cost_center=cost_center,
+            leads_generated=results_count
         )
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'message': 'Campaign launched successfully.'})
@@ -965,18 +1096,37 @@ def edit_campaign(request, campaign_id):
     
     name = request.POST.get('name')
     status = request.POST.get('status')
-    leads_generated = int(request.POST.get('leads_generated') or 0)
-    spend = float(request.POST.get('spend') or 0)
-    budget = float(request.POST.get('budget') or 0)
-    
-    try:
-        campaign.name = name
-        campaign.status = status
-        campaign.leads_generated = leads_generated
-        campaign.spend = spend
-        campaign.budget = budget
-        campaign.save()
+    if 'is_active' in request.POST:
+        campaign.is_active = request.POST.get('is_active') == 'true'
+    else:
+        campaign.is_active = (status == 'Active')
         
+    campaign.name = name
+    campaign.status = status
+    campaign.results_count = int(request.POST.get('results_count') or request.POST.get('leads_generated') or campaign.results_count)
+    campaign.results_type = request.POST.get('results_type') or campaign.results_type
+    campaign.cost_per_result = float(request.POST.get('cost_per_result') or campaign.cost_per_result)
+    campaign.budget = float(request.POST.get('budget') or campaign.budget)
+    campaign.budget_type = request.POST.get('budget_type') or campaign.budget_type
+    campaign.spend = float(request.POST.get('spend') or campaign.spend)
+    campaign.gst_percentage = float(request.POST.get('gst_percentage') or campaign.gst_percentage or 18.0)
+    campaign.gst_amount = float(request.POST.get('gst_amount') or campaign.gst_amount or 0.0)
+    campaign.impressions = int(request.POST.get('impressions') or campaign.impressions)
+    campaign.reach = int(request.POST.get('reach') or campaign.reach)
+    campaign.platform = request.POST.get('platform') or campaign.platform
+    campaign.cost_center = request.POST.get('cost_center') or campaign.cost_center
+    campaign.leads_generated = campaign.results_count
+    
+    end_date_str = request.POST.get('end_date')
+    if end_date_str:
+        try:
+            from datetime import datetime
+            campaign.end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        except Exception:
+            pass
+
+    try:
+        campaign.save()
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True, 'message': 'Campaign updated successfully.'})
         SystemNotification.objects.create(user=request.user, message='Campaign updated successfully.', type='success')
@@ -5284,12 +5434,12 @@ def finance_dashboard_view(request):
     pending_payments_amount = float(invoices.exclude(status__iexact='Paid').aggregate(total=Sum('grand_total'))['total'] or 0)
     total_invoices_count = invoices.count()
 
-    # 10. Chart Data (6 Months Cash Flow)
+    # 10. Chart Data (Cash Flow Trend)
     months_labels = []
     revenue_data = []
     expense_data = []
 
-    for i in range(5, -1, -1):
+    for i in range(4, -1, -1):
         target_month = today.month - i
         target_year = today.year
         while target_month <= 0:
@@ -5333,7 +5483,7 @@ def finance_dashboard_view(request):
     service_labels = [s[0] for s in sorted_services]
     service_revenue = [s[1] for s in sorted_services]
 
-    # 14. Expenses by Client by Month (Last 6 Months)
+    # 14. Expenses by Client by Month (Apr to Aug)
     top_exp_clients_qs = Expense.objects.filter(organization=org)\
         .exclude(cost_center__isnull=True)\
         .exclude(cost_center='')\
@@ -5343,11 +5493,11 @@ def finance_dashboard_view(request):
 
     top_exp_client_names = [c['cost_center'] for c in top_exp_clients_qs]
 
-    client_data_map = {client: [0.0] * 6 for client in top_exp_client_names}
+    client_data_map = {client: [0.0] * 5 for client in top_exp_client_names}
     if top_exp_client_names:
-        client_data_map['Others'] = [0.0] * 6
+        client_data_map['Others'] = [0.0] * 5
 
-    for idx, i in enumerate(range(5, -1, -1)):
+    for idx, i in enumerate(range(4, -1, -1)):
         target_month = today.month - i
         target_year = today.year
         while target_month <= 0:
@@ -5358,7 +5508,7 @@ def finance_dashboard_view(request):
         for exp in month_expenses:
             c_name = exp.cost_center if (exp.cost_center and exp.cost_center in top_exp_client_names) else ('Others' if top_exp_client_names else 'General Expenses')
             if c_name not in client_data_map:
-                client_data_map[c_name] = [0.0] * 6
+                client_data_map[c_name] = [0.0] * 5
             client_data_map[c_name][idx] += float(exp.amount)
 
     color_palette = [

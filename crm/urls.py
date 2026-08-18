@@ -120,9 +120,11 @@ urlpatterns = [
     path('calendar/delete-ajax/<int:event_id>/', views.event_delete_ajax, name='event_delete_ajax'),
     path('profile/edit/', views.profile_edit_view, name='profile_edit'),
     path('campaign/', views.campaign_view, name='campaign'),
+    path('campaign/dashboard/', views.campaign_dashboard_view, name='campaign_dashboard'),
     path('campaign/add/', views.add_campaign, name='add_campaign'),
     path('campaign/<int:campaign_id>/edit/', views.edit_campaign, name='edit_campaign'),
     path('campaign/<int:campaign_id>/delete/', views.delete_campaign, name='delete_campaign'),
+    path('campaign/<int:campaign_id>/toggle-active/', views.toggle_campaign_active, name='toggle_campaign_active'),
 
     # Lead Status Management
     

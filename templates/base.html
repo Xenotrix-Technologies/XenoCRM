@@ -641,9 +641,13 @@
                 </button>
                 <div id="campaigns-dropdown-menu" class="pl-8 space-y-1 hidden">
                     {% if request.user.profile.has_access_campaign or request.user.profile.has_access_campaigns %}
+                    <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'campaign_dashboard' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
+                        href="{% url 'campaign_dashboard' %}">
+                        <span>Campaign Dashboard</span>
+                    </a>
                     <a class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {% if request.resolver_match.url_name == 'campaign' %}text-brand-600 font-bold bg-brand-50/50{% else %}text-slate-500 hover:text-slate-900 hover:bg-slate-100/60{% endif %}"
                         href="{% url 'campaign' %}">
-                        <span>Overview</span>
+                        <span>Meta Ad Reports</span>
                     </a>
                     {% endif %}
                     {% if request.user.profile.has_access_post_management %}
