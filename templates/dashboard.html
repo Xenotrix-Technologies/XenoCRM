@@ -273,19 +273,19 @@
                         {% for lead in new_leads|slice:":5" %}
                         <tr>
                             <td>
-                                <div class="flex items-center gap-3">
+                                <a href="{% url 'contact_detail' lead.id %}" class="flex items-center gap-3 group/leadlink">
                                     {% if lead.profile_image_url %}
-                                    <img class="w-8 h-8 rounded-full border border-slate-200 object-cover" src="{{ lead.profile_image_url }}" alt="" />
+                                    <img class="w-8 h-8 rounded-full border border-slate-200 object-cover group-hover/leadlink:border-brand-500 transition-colors" src="{{ lead.profile_image_url }}" alt="" />
                                     {% else %}
-                                    <div class="w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs border border-brand-200">
+                                    <div class="w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs border border-brand-200 group-hover/leadlink:bg-brand-600 group-hover/leadlink:text-white transition-colors">
                                         {{ lead.name|slice:":2"|upper }}
                                     </div>
                                     {% endif %}
                                     <div>
-                                        <a href="{% url 'contact_detail' lead.id %}" class="font-semibold text-slate-900 hover:text-brand-600 transition-colors">{{ lead.name }}</a>
+                                        <span class="font-semibold text-slate-900 group-hover/leadlink:text-brand-600 transition-colors block leading-tight">{{ lead.name }}</span>
                                         <p class="text-[11px] text-slate-400">{{ lead.email }}</p>
                                     </div>
-                                </div>
+                                </a>
                             </td>
                             <td class="text-slate-700 font-medium">{{ lead.company }}</td>
                             <td>

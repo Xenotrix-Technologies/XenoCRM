@@ -30,19 +30,19 @@
                             <input name="lead_ids" value="{{ lead.id }}" class="lead-checkbox rounded border-slate-300 text-brand-600 focus:ring-brand-500" type="checkbox"/>
                         </td>
                         <td>
-                            <div class="flex items-center gap-3">
+                            <a href="{% url 'contact_detail' lead.id %}" class="flex items-center gap-3 group/leadlink">
                                 {% if lead.profile_image_url %}
-                                <img class="w-8 h-8 rounded-full border border-slate-200 object-cover flex-shrink-0" src="{{ lead.profile_image_url }}" alt=""/>
+                                <img class="w-8 h-8 rounded-full border border-slate-200 object-cover flex-shrink-0 group-hover/leadlink:border-brand-500 transition-colors" src="{{ lead.profile_image_url }}" alt=""/>
                                 {% else %}
-                                <div class="w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs border border-brand-200 flex-shrink-0">
+                                <div class="w-8 h-8 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xs border border-brand-200 flex-shrink-0 group-hover/leadlink:bg-brand-600 group-hover/leadlink:text-white transition-colors">
                                     {{ lead.name|slice:":2"|upper }}
                                 </div>
                                 {% endif %}
                                 <div class="min-w-0">
-                                    <div class="font-bold text-slate-900 hover:text-brand-600 transition-colors truncate max-w-[180px]" title="{{ lead.name }}"><a href="{% url 'contact_detail' lead.id %}">{{ lead.name }}</a></div>
+                                    <div class="font-bold text-slate-900 group-hover/leadlink:text-brand-600 transition-colors truncate max-w-[180px]" title="{{ lead.name }}">{{ lead.name }}</div>
                                     <div class="text-[11px] text-slate-400 font-normal truncate max-w-[180px]" title="{{ lead.email }}">{{ lead.email }}</div>
                                 </div>
-                            </div>
+                            </a>
                         </td>
                         <td class="font-semibold text-slate-700 max-w-[160px]">
                             <div class="truncate" title="{{ lead.company }}">{{ lead.company }}</div>

@@ -1,37 +1,52 @@
 {% load static %}
 <!-- Enterprise WhatsApp Business Communication Platform (Xenotrix Technologies) -->
-<div id="whatsapp-modal" class="fixed inset-0 z-[100] w-full h-full bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden transition-all duration-300">
-    
+<div id="whatsapp-modal"
+    class="fixed inset-0 z-[100] w-full h-full bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden transition-all duration-300">
+
     <!-- Top Header Bar -->
-    <header class="bg-slate-900 border-b border-slate-800/90 px-6 py-3.5 flex items-center justify-between shrink-0 z-30 shadow-md">
+    <header
+        class="bg-slate-900 border-b border-slate-800/90 px-6 py-3.5 flex items-center justify-between shrink-0 z-30 shadow-md">
         <!-- Left Title & Description -->
         <div class="flex items-center gap-3.5">
-            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
+            <div
+                class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
                 <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z"/>
+                    <path
+                        d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z" />
                 </svg>
             </div>
             <div>
                 <div class="flex items-center gap-2">
-                    <h1 class="text-base font-extrabold text-white tracking-tight leading-none">Send WhatsApp Message</h1>
-                    <span class="px-2 py-0.5 text-[10px] font-extrabold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded uppercase">Meta Cloud API</span>
+                    <h1 class="text-base font-extrabold text-white tracking-tight leading-none">Send WhatsApp Message
+                    </h1>
+                    <span
+                        class="px-2 py-0.5 text-[10px] font-extrabold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded uppercase">Meta
+                        Cloud API</span>
                 </div>
-                <p class="text-xs text-slate-400 mt-1 font-medium hidden sm:block">Send personalized WhatsApp messages & interactive buttons to your leads via Meta WhatsApp Cloud API.</p>
+                <p class="text-xs text-slate-400 mt-1 font-medium hidden sm:block">Send personalized WhatsApp messages &
+                    interactive buttons to your leads via Meta WhatsApp Cloud API.</p>
             </div>
         </div>
 
         <!-- Right API Connection Status & Business Number -->
         <div class="flex items-center gap-3">
-            <div onclick="openApiStatusModal()" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 px-3.5 py-1.5 rounded-xl flex items-center gap-2.5 cursor-pointer transition-all shadow-xs group" title="Click to view Meta WhatsApp Cloud API Connection Details">
+            <div onclick="openApiStatusModal()"
+                class="bg-slate-950 hover:bg-slate-800 border border-slate-800 px-3.5 py-1.5 rounded-xl flex items-center gap-2.5 cursor-pointer transition-all shadow-xs group"
+                title="Click to view Meta WhatsApp Cloud API Connection Details">
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 <div class="text-left hidden md:block">
-                    <div class="text-[11px] font-bold text-slate-200 group-hover:text-emerald-400 transition-colors leading-tight">WhatsApp API Connected</div>
+                    <div
+                        class="text-[11px] font-bold text-slate-200 group-hover:text-emerald-400 transition-colors leading-tight">
+                        WhatsApp API Connected</div>
                     <div class="text-[9px] text-slate-500 font-mono leading-tight">+91 9995544316 • v18.0</div>
                 </div>
-                <span class="material-symbols-outlined text-[16px] text-slate-500 group-hover:text-slate-300">info</span>
+                <span
+                    class="material-symbols-outlined text-[16px] text-slate-500 group-hover:text-slate-300">info</span>
             </div>
 
-            <button type="button" onclick="closeWhatsAppModal()" class="w-9 h-9 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 flex items-center justify-center transition-all" title="Close Workspace">
+            <button type="button" onclick="closeWhatsAppModal()"
+                class="w-9 h-9 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 flex items-center justify-center transition-all"
+                title="Close Workspace">
                 <span class="material-symbols-outlined text-[18px]">close</span>
             </button>
         </div>
@@ -39,29 +54,35 @@
 
     <!-- Main Workspace Split Content Area -->
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden bg-slate-950">
-        
+
         <!-- Left Panel: Recipient, Template Selector, Rich Editor, Buttons, History (7 Cols) -->
-        <section class="lg:col-span-7 flex flex-col overflow-y-auto p-6 space-y-5 border-r border-slate-800/80 custom-scrollbar">
-            
+        <section
+            class="lg:col-span-7 flex flex-col overflow-y-auto p-6 space-y-5 border-r border-slate-800/80 custom-scrollbar">
+
             <!-- Recipient Information Card -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md relative">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-3.5">
                         {% if lead.profile_image_url %}
-                        <img src="{{ lead.profile_image_url }}" alt="{{ lead.name }}" class="w-12 h-12 rounded-xl object-cover border border-slate-700 shadow-sm" />
+                        <img src="{{ lead.profile_image_url }}" alt="{{ lead.name }}"
+                            class="w-12 h-12 rounded-xl object-cover border border-slate-700 shadow-sm" />
                         {% else %}
-                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-lg shadow-inner shrink-0">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-lg shadow-inner shrink-0">
                             {{ lead.name|slice:":2"|upper }}
                         </div>
                         {% endif %}
                         <div>
                             <div class="flex items-center gap-2 flex-wrap">
-                                <h2 id="lead-display-name" class="text-base font-extrabold text-white leading-tight">{{ lead.name }}</h2>
-                                <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                <h2 id="lead-display-name" class="text-base font-extrabold text-white leading-tight">{{
+                                    lead.name }}</h2>
+                                <span
+                                    class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                                     {{ lead.stage|default:lead.status|default:'New' }}
                                 </span>
                             </div>
-                            <p id="lead-display-company" class="text-xs text-slate-400 mt-0.5 flex items-center gap-1 font-medium">
+                            <p id="lead-display-company"
+                                class="text-xs text-slate-400 mt-0.5 flex items-center gap-1 font-medium">
                                 <span class="material-symbols-outlined text-[14px] text-slate-500">corporate_fare</span>
                                 <span>{{ lead.company|default:'Individual Client' }}</span>
                             </p>
@@ -70,12 +91,15 @@
 
                     <div class="flex items-center gap-3">
                         <div class="text-right">
-                            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Normalized Phone</div>
-                            <div id="lead-display-phone" class="font-mono font-extrabold text-xs text-emerald-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 mt-0.5">
+                            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Normalized Phone
+                            </div>
+                            <div id="lead-display-phone"
+                                class="font-mono font-extrabold text-xs text-emerald-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 mt-0.5">
                                 {{ lead.phone_number|default:'No Phone' }}
                             </div>
                         </div>
-                        <button type="button" onclick="openChangeRecipientModal()" class="px-3 py-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all flex items-center gap-1.5">
+                        <button type="button" onclick="openChangeRecipientModal()"
+                            class="px-3 py-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all flex items-center gap-1.5">
                             <span class="material-symbols-outlined text-[15px]">swap_horiz</span>
                             Change
                         </button>
@@ -87,12 +111,15 @@
                     <div class="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
                         <span class="text-[9px] font-bold text-slate-500 uppercase block">Assigned Executive</span>
                         <span class="font-semibold text-slate-300 truncate block mt-0.5">
-                            {% if lead.owner and lead.owner.user %}{{ lead.owner.user.get_full_name|default:lead.owner.user.username }}{% else %}Unassigned{% endif %}
+                            {% if lead.owner and lead.owner.user %}{{
+                            lead.owner.user.get_full_name|default:lead.owner.user.username }}{% else %}Unassigned{%
+                            endif %}
                         </span>
                     </div>
                     <div class="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
                         <span class="text-[9px] font-bold text-slate-500 uppercase block">Email Address</span>
-                        <span class="font-semibold text-slate-300 truncate block mt-0.5">{{ lead.email|default:'None' }}</span>
+                        <span class="font-semibold text-slate-300 truncate block mt-0.5">{{ lead.email|default:'None'
+                            }}</span>
                     </div>
                     <div class="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
                         <span class="text-[9px] font-bold text-slate-500 uppercase block">Lead Source</span>
@@ -100,7 +127,8 @@
                     </div>
                     <div class="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
                         <span class="text-[9px] font-bold text-slate-500 uppercase block">Last Activity</span>
-                        <span class="font-semibold text-slate-300 truncate block mt-0.5">{{ lead.last_activity|date:"M d, H:i" }}</span>
+                        <span class="font-semibold text-slate-300 truncate block mt-0.5">{{ lead.last_activity|date:"M
+                            d, H:i" }}</span>
                     </div>
                 </div>
             </div>
@@ -112,7 +140,8 @@
                         <span class="material-symbols-outlined text-[16px] text-emerald-400">format_quote</span>
                         Message Template
                     </label>
-                    <button type="button" onclick="openCreateTemplateModal()" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                    <button type="button" onclick="openCreateTemplateModal()"
+                        class="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
                         <span class="material-symbols-outlined text-[15px]">add_circle</span>
                         + Create New Template
                     </button>
@@ -120,25 +149,43 @@
 
                 <!-- Template Category Pills Bar -->
                 <div class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar text-[11px]">
-                    <button type="button" onclick="filterWhatsAppTemplates('all')" id="wa-filter-all" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 shrink-0">All</button>
-                    <button type="button" onclick="filterWhatsAppTemplates('greetings')" id="wa-filter-greetings" class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Greetings</button>
-                    <button type="button" onclick="filterWhatsAppTemplates('followup')" id="wa-filter-followup" class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Follow-up</button>
-                    <button type="button" onclick="filterWhatsAppTemplates('sales')" id="wa-filter-sales" class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Sales & Demo</button>
-                    <button type="button" onclick="filterWhatsAppTemplates('webdev')" id="wa-filter-webdev" class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Web Development</button>
-                    <button type="button" onclick="filterWhatsAppTemplates('quotation')" id="wa-filter-quotation" class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Quotation & Proposal</button>
+                    <button type="button" onclick="filterWhatsAppTemplates('all')" id="wa-filter-all"
+                        class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 shrink-0">All</button>
+                    <button type="button" onclick="filterWhatsAppTemplates('greetings')" id="wa-filter-greetings"
+                        class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Greetings</button>
+                    <button type="button" onclick="filterWhatsAppTemplates('followup')" id="wa-filter-followup"
+                        class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Follow-up</button>
+                    <button type="button" onclick="filterWhatsAppTemplates('sales')" id="wa-filter-sales"
+                        class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Sales
+                        & Demo</button>
+                    <button type="button" onclick="filterWhatsAppTemplates('webdev')" id="wa-filter-webdev"
+                        class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Web
+                        Development</button>
+                    <button type="button" onclick="filterWhatsAppTemplates('quotation')" id="wa-filter-quotation"
+                        class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Quotation
+                        & Proposal</button>
                 </div>
 
                 <!-- Searchable Select Input -->
                 <div class="relative">
-                    <select id="wa-template-select" onchange="applySelectedTemplate(this.value)" class="w-full bg-slate-950 border border-slate-800 text-xs font-semibold text-slate-200 rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
-                        <option value="xenotrix_intro" data-category="greetings" selected>Xenotrix Corporate Overview & Core Services (Default Meta Approved)</option>
-                        <option value="webdev_proposal" data-category="webdev">Web & Mobile App Development Proposal Follow-up</option>
-                        <option value="crm_demo_pitch" data-category="sales">XenoCRM & ERP System Live Walkthrough Demo</option>
-                        <option value="quotation_share" data-category="quotation">Service Quotation & Commercial Proposal Share</option>
-                        <option value="meeting_confirm" data-category="greetings">Meeting Confirmation & Calendar Schedule</option>
-                        <option value="payment_reminder" data-category="quotation">Milestone Payment & Invoice Update</option>
-                        <option value="digital_marketing" data-category="sales">Digital Marketing, SEO & Ads Retainer Package</option>
-                        <option value="technical_support" data-category="followup">Technical Support & Ticket Resolution Update</option>
+                    <select id="wa-template-select" onchange="applySelectedTemplate(this.value)"
+                        class="w-full bg-slate-950 border border-slate-800 text-xs font-semibold text-slate-200 rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="xenotrix_intro" data-category="greetings" selected>Xenotrix Corporate Overview &
+                            Core Services (Default Meta Approved)</option>
+                        <option value="webdev_proposal" data-category="webdev">Web & Mobile App Development Proposal
+                            Follow-up</option>
+                        <option value="crm_demo_pitch" data-category="sales">XenoCRM & ERP System Live Walkthrough Demo
+                        </option>
+                        <option value="quotation_share" data-category="quotation">Service Quotation & Commercial
+                            Proposal Share</option>
+                        <option value="meeting_confirm" data-category="greetings">Meeting Confirmation & Calendar
+                            Schedule</option>
+                        <option value="payment_reminder" data-category="quotation">Milestone Payment & Invoice Update
+                        </option>
+                        <option value="digital_marketing" data-category="sales">Digital Marketing, SEO & Ads Retainer
+                            Package</option>
+                        <option value="technical_support" data-category="followup">Technical Support & Ticket Resolution
+                            Update</option>
                     </select>
                 </div>
             </div>
@@ -159,31 +206,40 @@
 
                 <!-- Insert Variable Token Chips Bar -->
                 <div class="space-y-1.5">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Insert Dynamic Personalization Tokens</span>
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Insert Dynamic
+                        Personalization Tokens</span>
                     <div class="flex flex-wrap gap-1.5">
-                        <button type="button" onclick="insertWhatsAppTag('{{name}}')" class="px-2 py-1 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-all flex items-center gap-1">
+                        <button type="button" onclick="insertWhatsAppTag('{{name}}')"
+                            class="px-2 py-1 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-all flex items-center gap-1">
                             <span class="material-symbols-outlined text-[13px]">person</span> {{name}}
                         </button>
-                        <button type="button" onclick="insertWhatsAppTag('{{company}}')" class="px-2 py-1 text-[11px] font-semibold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all flex items-center gap-1">
+                        <button type="button" onclick="insertWhatsAppTag('{{company}}')"
+                            class="px-2 py-1 text-[11px] font-semibold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all flex items-center gap-1">
                             <span class="material-symbols-outlined text-[13px]">corporate_fare</span> {{company}}
                         </button>
-                        <button type="button" onclick="insertWhatsAppTag('{{phone}}')" class="px-2 py-1 text-[11px] font-semibold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all flex items-center gap-1">
+                        <button type="button" onclick="insertWhatsAppTag('{{phone}}')"
+                            class="px-2 py-1 text-[11px] font-semibold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all flex items-center gap-1">
                             <span class="material-symbols-outlined text-[13px]">call</span> {{phone}}
                         </button>
-                        <button type="button" onclick="insertWhatsAppTag('{{service}}')" class="px-2 py-1 text-[11px] font-semibold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all flex items-center gap-1">
+                        <button type="button" onclick="insertWhatsAppTag('{{service}}')"
+                            class="px-2 py-1 text-[11px] font-semibold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all flex items-center gap-1">
                             <span class="material-symbols-outlined text-[13px]">category</span> {{service}}
                         </button>
-                        <button type="button" onclick="insertWhatsAppTag('{{executive_name}}')" class="px-2 py-1 text-[11px] font-semibold bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border border-purple-500/20 rounded-lg transition-all flex items-center gap-1">
+                        <button type="button" onclick="insertWhatsAppTag('{{executive_name}}')"
+                            class="px-2 py-1 text-[11px] font-semibold bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border border-purple-500/20 rounded-lg transition-all flex items-center gap-1">
                             <span class="material-symbols-outlined text-[13px]">badge</span> {{executive_name}}
                         </button>
-                        <button type="button" onclick="insertWhatsAppTag('https://xenotrix.in')" class="px-2 py-1 text-[11px] font-semibold bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-all flex items-center gap-1">
+                        <button type="button" onclick="insertWhatsAppTag('https://xenotrix.in')"
+                            class="px-2 py-1 text-[11px] font-semibold bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-all flex items-center gap-1">
                             <span class="material-symbols-outlined text-[13px]">language</span> {{website}}
                         </button>
                     </div>
                 </div>
 
                 <!-- Textarea Editor -->
-                <textarea id="whatsapp-msg-input" oninput="updateWhatsAppPreview()" rows="7" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-100 font-sans leading-relaxed focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 custom-scrollbar" placeholder="Type your WhatsApp message here or select a template above..."></textarea>
+                <textarea id="whatsapp-msg-input" oninput="updateWhatsAppPreview()" rows="7"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-100 font-sans leading-relaxed focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 custom-scrollbar"
+                    placeholder="Type your WhatsApp message here or select a template above..."></textarea>
             </div>
 
             <!-- Documents & File Attachments Card -->
@@ -193,23 +249,29 @@
                         <span class="material-symbols-outlined text-[16px] text-emerald-400">attach_file</span>
                         Message Attachments & Documents
                     </label>
-                    <button type="button" onclick="triggerWhatsAppFileUpload()" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                    <button type="button" onclick="triggerWhatsAppFileUpload()"
+                        class="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
                         <span class="material-symbols-outlined text-[15px]">upload</span> Upload Custom File
                     </button>
                 </div>
 
                 <div class="flex flex-wrap gap-2 text-[11px]">
-                    <button type="button" onclick="addWhatsAppPresetAttachment('brochure')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 font-semibold text-slate-200 flex items-center gap-2 group">
-                        <span class="w-4 h-4 rounded bg-rose-500/20 text-rose-400 flex items-center justify-center text-[9px] font-bold">PDF</span>
+                    <button type="button" onclick="addWhatsAppPresetAttachment('brochure')"
+                        class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 font-semibold text-slate-200 flex items-center gap-2 group">
+                        <span
+                            class="w-4 h-4 rounded bg-rose-500/20 text-rose-400 flex items-center justify-center text-[9px] font-bold">PDF</span>
                         <span>Xenotrix_Company_Profile.pdf</span>
                     </button>
-                    <button type="button" onclick="addWhatsAppPresetAttachment('quotation')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 font-semibold text-slate-200 flex items-center gap-2 group">
-                        <span class="w-4 h-4 rounded bg-rose-500/20 text-rose-400 flex items-center justify-center text-[9px] font-bold">PDF</span>
+                    <button type="button" onclick="addWhatsAppPresetAttachment('quotation')"
+                        class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 font-semibold text-slate-200 flex items-center gap-2 group">
+                        <span
+                            class="w-4 h-4 rounded bg-rose-500/20 text-rose-400 flex items-center justify-center text-[9px] font-bold">PDF</span>
                         <span>Services_Quotation_Proposal.pdf</span>
                     </button>
                 </div>
 
-                <input type="file" id="wa-file-input" multiple onchange="handleWhatsAppFileSelect(event)" class="hidden" />
+                <input type="file" id="wa-file-input" multiple onchange="handleWhatsAppFileSelect(event)"
+                    class="hidden" />
                 <div id="wa-attachments-list" class="space-y-2"></div>
             </div>
 
@@ -225,32 +287,38 @@
 
                 <div class="space-y-2 text-xs">
                     {% if whatsapp_history %}
-                        {% for msg in whatsapp_history %}
-                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-3 flex items-start justify-between gap-3">
-                            <div class="min-w-0 space-y-1">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-bold text-slate-200">{{ msg.recipient_phone }}</span>
-                                    <span class="text-[10px] text-slate-500 font-mono">{{ msg.sent_at|date:"M d, H:i" }}</span>
-                                </div>
-                                <p class="text-slate-400 text-[11px] truncate max-w-md">"{{ msg.message_content }}"</p>
+                    {% for msg in whatsapp_history %}
+                    <div
+                        class="bg-slate-950 border border-slate-800/80 rounded-xl p-3 flex items-start justify-between gap-3">
+                        <div class="min-w-0 space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-200">{{ msg.recipient_phone }}</span>
+                                <span class="text-[10px] text-slate-500 font-mono">{{ msg.sent_at|date:"M d, H:i"
+                                    }}</span>
                             </div>
-                            <div class="shrink-0 text-right">
-                                {% if msg.status == 'Sent' or msg.status == 'Delivered' or msg.status == 'Read' %}
-                                <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[13px]">done_all</span> {{ msg.status }}
-                                </span>
-                                {% else %}
-                                <span class="px-2 py-0.5 text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[13px]">warning</span> {{ msg.status }}
-                                </span>
-                                {% endif %}
-                            </div>
+                            <p class="text-slate-400 text-[11px] truncate max-w-md">"{{ msg.message_content }}"</p>
                         </div>
-                        {% endfor %}
+                        <div class="shrink-0 text-right">
+                            {% if msg.status == 'Sent' or msg.status == 'Delivered' or msg.status == 'Read' %}
+                            <span
+                                class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[13px]">done_all</span> {{ msg.status }}
+                            </span>
+                            {% else %}
+                            <span
+                                class="px-2 py-0.5 text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[13px]">warning</span> {{ msg.status }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
                     {% else %}
-                        <div class="p-3 text-center text-slate-500 text-[11px] bg-slate-950 rounded-xl border border-slate-800">
-                            No previous WhatsApp messages recorded for this lead yet. Outgoing messages will be saved here automatically.
-                        </div>
+                    <div
+                        class="p-3 text-center text-slate-500 text-[11px] bg-slate-950 rounded-xl border border-slate-800">
+                        No previous WhatsApp messages recorded for this lead yet. Outgoing messages will be saved here
+                        automatically.
+                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -258,41 +326,51 @@
         </section>
 
         <!-- Right Panel: Sticky WhatsApp Business Smartphone Live Preview (5 Cols) -->
-        <section id="wa-preview-panel" class="lg:col-span-5 bg-slate-950 p-6 flex flex-col justify-start items-center overflow-y-auto custom-scrollbar">
+        <section id="wa-preview-panel"
+            class="lg:col-span-5 bg-slate-950 p-6 flex flex-col justify-start items-center overflow-y-auto custom-scrollbar">
             <div class="sticky top-0 w-full max-w-md space-y-4">
-                
+
                 <div class="flex items-center justify-between">
                     <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                         <span class="material-symbols-outlined text-[18px] text-emerald-400">smartphone</span>
                         Real-Time Live WhatsApp Preview
                     </label>
-                    <span class="text-[10px] font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                    <span
+                        class="text-[10px] font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                         Official Meta Chat UI
                     </span>
                 </div>
 
                 <!-- Realistic Smartphone Frame -->
-                <div class="bg-slate-900 rounded-[36px] p-3.5 border-2 border-slate-800 shadow-2xl overflow-hidden relative">
+                <div
+                    class="bg-slate-900 rounded-[36px] p-3.5 border-2 border-slate-800 shadow-2xl overflow-hidden relative">
                     <!-- Notch -->
-                    <div class="w-28 h-4 bg-slate-950 rounded-b-xl mx-auto mb-2 flex items-center justify-center gap-1.5">
+                    <div
+                        class="w-28 h-4 bg-slate-950 rounded-b-xl mx-auto mb-2 flex items-center justify-center gap-1.5">
                         <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-800"></div>
                         <div class="w-8 h-1 bg-slate-900 rounded-full"></div>
                     </div>
 
                     <!-- Inner Smartphone Screen -->
-                    <div class="bg-[#0b141a] rounded-[24px] border border-slate-800 overflow-hidden flex flex-col h-[480px]">
+                    <div
+                        class="bg-[#0b141a] rounded-[24px] border border-slate-800 overflow-hidden flex flex-col h-[480px]">
                         <!-- Chat Header -->
-                        <div class="bg-[#075e54] text-white px-4 py-3 flex items-center justify-between shadow-md shrink-0">
+                        <div
+                            class="bg-[#075e54] text-white px-4 py-3 flex items-center justify-between shadow-md shrink-0">
                             <div class="flex items-center gap-3 min-w-0">
-                                <div class="w-9 h-9 rounded-full bg-emerald-700 flex items-center justify-center font-bold text-xs text-white shadow-inner shrink-0">
+                                <div
+                                    class="w-9 h-9 rounded-full bg-emerald-700 flex items-center justify-center font-bold text-xs text-white shadow-inner shrink-0">
                                     XT
                                 </div>
                                 <div class="min-w-0">
                                     <div class="flex items-center gap-1">
-                                        <p class="text-xs font-bold leading-tight truncate text-white">Xenotrix Technologies</p>
-                                        <span class="material-symbols-outlined text-[15px] text-emerald-300 font-bold shrink-0">verified</span>
+                                        <p class="text-xs font-bold leading-tight truncate text-white">Xenotrix
+                                            Technologies</p>
+                                        <span
+                                            class="material-symbols-outlined text-[15px] text-emerald-300 font-bold shrink-0">verified</span>
                                     </div>
-                                    <p class="text-[10px] text-emerald-100/90 leading-tight">Official Business Account • Online</p>
+                                    <p class="text-[10px] text-emerald-100/90 leading-tight">Official Business Account •
+                                        Online</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 text-white/90">
@@ -303,29 +381,37 @@
                         </div>
 
                         <!-- Chat Body -->
-                        <div class="flex-1 bg-[#0b141a] p-4 overflow-y-auto custom-scrollbar space-y-3" style="background-image: radial-gradient(#1f2c34 1px, transparent 0); background-size: 16px 16px;">
-                            
+                        <div class="flex-1 bg-[#0b141a] p-4 overflow-y-auto custom-scrollbar space-y-3"
+                            style="background-image: radial-gradient(#1f2c34 1px, transparent 0); background-size: 16px 16px;">
+
                             <!-- Date Badge -->
                             <div class="text-center my-1">
-                                <span class="bg-[#182229] text-slate-400 text-[10px] px-3 py-1 rounded-lg font-medium shadow-xs border border-slate-800">TODAY</span>
+                                <span
+                                    class="bg-[#182229] text-slate-400 text-[10px] px-3 py-1 rounded-lg font-medium shadow-xs border border-slate-800">TODAY</span>
                             </div>
 
                             <!-- Outgoing Message Bubble -->
-                            <div class="bg-[#005c4b] text-white shadow-md border border-emerald-700/50 rounded-2xl rounded-tr-none p-3.5 text-xs leading-relaxed max-w-[92%] ml-auto relative space-y-2">
+                            <div
+                                class="bg-[#005c4b] text-white shadow-md border border-emerald-700/50 rounded-2xl rounded-tr-none p-3.5 text-xs leading-relaxed max-w-[92%] ml-auto relative space-y-2">
                                 <div id="whatsapp-preview-attachments" class="space-y-2 mb-2 hidden"></div>
-                                <div id="whatsapp-preview-text" class="whitespace-pre-wrap font-sans break-words text-[12.5px] text-white"></div>
-                                
-                                <div class="flex items-center justify-end gap-1 text-[10px] text-emerald-200/80 select-none pt-1">
+                                <div id="whatsapp-preview-text"
+                                    class="whitespace-pre-wrap font-sans break-words text-[12.5px] text-white"></div>
+
+                                <div
+                                    class="flex items-center justify-end gap-1 text-[10px] text-emerald-200/80 select-none pt-1">
                                     <span id="whatsapp-preview-time">16:55</span>
-                                    <span class="material-symbols-outlined text-[15px] text-sky-300 font-bold">done_all</span>
+                                    <span
+                                        class="material-symbols-outlined text-[15px] text-sky-300 font-bold">done_all</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Chat Footer Bar -->
-                        <div class="bg-slate-900/90 backdrop-blur-sm px-4 py-2 border-t border-slate-800 text-center shrink-0">
+                        <div
+                            class="bg-slate-900/90 backdrop-blur-sm px-4 py-2 border-t border-slate-800 text-center shrink-0">
                             <p class="text-[11px] text-slate-400 font-medium truncate">
-                                Sending to <span id="wa-footer-phone-display" class="font-bold text-emerald-400">{{ lead.phone_number|default:'Recipient Phone' }}</span>
+                                Sending to <span id="wa-footer-phone-display" class="font-bold text-emerald-400">{{
+                                    lead.phone_number|default:'Recipient Phone' }}</span>
                             </p>
                         </div>
                     </div>
@@ -339,27 +425,33 @@
     <!-- Bottom Actions Footer Bar -->
     <footer class="bg-slate-900 border-t border-slate-800 px-6 py-3 flex items-center justify-between shrink-0 z-20">
         <div class="flex items-center gap-2">
-            <button type="button" onclick="copyWhatsAppText()" class="px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded-xl transition-all border border-slate-800 flex items-center gap-1.5">
+            <button type="button" onclick="copyWhatsAppText()"
+                class="px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded-xl transition-all border border-slate-800 flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[15px]">content_copy</span> Copy Text
             </button>
-            <button type="button" onclick="openSendTestModal()" class="px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded-xl transition-all border border-slate-800 flex items-center gap-1.5">
+            <button type="button" onclick="openSendTestModal()"
+                class="px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded-xl transition-all border border-slate-800 flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[15px]">send_time_extension</span> Send Test
             </button>
         </div>
 
         <div class="flex items-center gap-2.5">
-            <button type="button" onclick="closeWhatsAppModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl transition-all">Cancel</button>
-            
+            <button type="button" onclick="closeWhatsAppModal()"
+                class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl transition-all">Cancel</button>
+
             <!-- Send via Meta Cloud API -->
-            <button type="button" onclick="openSendConfirmationModal('cloud_api')" class="px-4 py-2.5 bg-slate-950 hover:bg-slate-800 text-slate-200 hover:text-white font-bold rounded-xl border border-slate-800 transition-all text-xs flex items-center gap-2">
+            <button type="button" onclick="openSendConfirmationModal('cloud_api')"
+                class="px-4 py-2.5 bg-slate-950 hover:bg-slate-800 text-slate-200 hover:text-white font-bold rounded-xl border border-slate-800 transition-all text-xs flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                 Send via Meta Cloud API
             </button>
 
             <!-- Send via Normal WhatsApp Web / App -->
-            <button type="button" onclick="openSendConfirmationModal('normal_whatsapp')" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-500/20 transition-all active:scale-95 text-xs flex items-center gap-2">
+            <button type="button" onclick="openSendConfirmationModal('normal_whatsapp')"
+                class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-500/20 transition-all active:scale-95 text-xs flex items-center gap-2">
                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z"/>
+                    <path
+                        d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z" />
                 </svg>
                 Send via WhatsApp Web / App
             </button>
@@ -368,34 +460,47 @@
 </div>
 
 <!-- Modal 1: API Connection Status Drawer Modal -->
-<div id="api-status-modal" class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
+<div id="api-status-modal"
+    class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
             <div class="flex items-center gap-2.5">
                 <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
                 <h3 class="text-sm font-extrabold text-white">Meta WhatsApp Cloud API Status</h3>
             </div>
-            <button type="button" onclick="closeApiStatusModal()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined text-[18px]">close</span></button>
+            <button type="button" onclick="closeApiStatusModal()" class="text-slate-400 hover:text-white"><span
+                    class="material-symbols-outlined text-[18px]">close</span></button>
         </div>
         <div class="space-y-2 text-xs text-slate-300">
-            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Status</span><span class="font-bold text-emerald-400">● Connected</span></div>
-            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Business Sender</span><span class="font-bold text-white">+91 9995544316</span></div>
-            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Phone Number ID</span><span class="font-mono text-slate-300">1249495338254585</span></div>
-            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>WABA Account ID</span><span class="font-mono text-slate-300">1753452545807653</span></div>
-            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Meta API Version</span><span class="font-bold text-white">v18.0</span></div>
-            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Security Architecture</span><span class="font-bold text-emerald-400">Tokens Stored Server-Side Only</span></div>
+            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                <span>Status</span><span class="font-bold text-emerald-400">● Connected</span></div>
+            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Business
+                    Sender</span><span class="font-bold text-white">+91 9995544316</span></div>
+            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Phone Number
+                    ID</span><span class="font-mono text-slate-300">1249495338254585</span></div>
+            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>WABA Account
+                    ID</span><span class="font-mono text-slate-300">1753452545807653</span></div>
+            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Meta API
+                    Version</span><span class="font-bold text-white">v18.0</span></div>
+            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Security
+                    Architecture</span><span class="font-bold text-emerald-400">Tokens Stored Server-Side Only</span>
+            </div>
         </div>
         <div class="flex justify-end pt-2">
-            <button type="button" onclick="closeApiStatusModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl">Close Status</button>
+            <button type="button" onclick="closeApiStatusModal()"
+                class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl">Close
+                Status</button>
         </div>
     </div>
 </div>
 
 <!-- Modal 2: Send Confirmation Modal -->
-<div id="send-confirm-modal" class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
+<div id="send-confirm-modal"
+    class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
         <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
+            <div
+                class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
                 <span class="material-symbols-outlined text-[20px]">send</span>
             </div>
             <div>
@@ -405,13 +510,17 @@
         </div>
 
         <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-2">
-            <div class="flex justify-between"><span class="text-slate-500">Recipient:</span><span id="confirm-recipient-name" class="font-bold text-white"></span></div>
-            <div class="flex justify-between"><span class="text-slate-500">Phone Number:</span><span id="confirm-recipient-phone" class="font-mono text-emerald-400 font-bold"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Recipient:</span><span
+                    id="confirm-recipient-name" class="font-bold text-white"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Phone Number:</span><span
+                    id="confirm-recipient-phone" class="font-mono text-emerald-400 font-bold"></span></div>
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-            <button type="button" onclick="closeSendConfirmationModal()" class="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-xs rounded-xl border border-slate-800">Cancel</button>
-            <button type="button" id="confirm-send-btn" onclick="executeSendWhatsAppMessage()" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-2">
+            <button type="button" onclick="closeSendConfirmationModal()"
+                class="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-xs rounded-xl border border-slate-800">Cancel</button>
+            <button type="button" id="confirm-send-btn" onclick="executeSendWhatsAppMessage()"
+                class="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-2">
                 <span>Confirm & Send</span>
             </button>
         </div>
@@ -419,65 +528,80 @@
 </div>
 
 <!-- Modal 3: Change Recipient Modal -->
-<div id="change-recipient-modal" class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
+<div id="change-recipient-modal"
+    class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
             <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px] text-emerald-400">person_search</span>
                 Select Recipient Lead
             </h3>
-            <button type="button" onclick="closeChangeRecipientModal()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined text-[18px]">close</span></button>
+            <button type="button" onclick="closeChangeRecipientModal()" class="text-slate-400 hover:text-white"><span
+                    class="material-symbols-outlined text-[18px]">close</span></button>
         </div>
 
-        <input type="text" id="recipient-search-input" oninput="searchLeadsForWhatsApp(this.value)" placeholder="Type lead name, company, or phone number..." class="w-full bg-slate-950 border border-slate-800 text-xs rounded-xl px-3.5 py-2.5 text-white focus:ring-1 focus:ring-emerald-500" />
-        
+        <input type="text" id="recipient-search-input" oninput="searchLeadsForWhatsApp(this.value)"
+            placeholder="Type lead name, company, or phone number..."
+            class="w-full bg-slate-950 border border-slate-800 text-xs rounded-xl px-3.5 py-2.5 text-white focus:ring-1 focus:ring-emerald-500" />
+
         <div id="recipient-search-results" class="max-h-60 overflow-y-auto space-y-2 custom-scrollbar text-xs"></div>
     </div>
 </div>
 
 <!-- Modal 4: Send Test Modal -->
-<div id="send-test-modal" class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
+<div id="send-test-modal"
+    class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
             <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px] text-emerald-400">send_time_extension</span>
                 Send Test WhatsApp Message
             </h3>
-            <button type="button" onclick="closeSendTestModal()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined text-[18px]">close</span></button>
+            <button type="button" onclick="closeSendTestModal()" class="text-slate-400 hover:text-white"><span
+                    class="material-symbols-outlined text-[18px]">close</span></button>
         </div>
 
         <div>
-            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Test Phone Number (E.164 format)</label>
-            <input type="text" id="test-phone-input" value="+91 9995544316" class="w-full bg-slate-950 border border-slate-800 text-xs font-mono text-emerald-400 rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500" />
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Test Phone Number (E.164
+                format)</label>
+            <input type="text" id="test-phone-input" value="+91 9995544316"
+                class="w-full bg-slate-950 border border-slate-800 text-xs font-mono text-emerald-400 rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500" />
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-            <button type="button" onclick="closeSendTestModal()" class="px-4 py-2 bg-slate-950 text-slate-400 hover:text-white font-bold text-xs rounded-xl border border-slate-800">Cancel</button>
-            <button type="button" onclick="executeSendTestWhatsApp()" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-lg">Send Test Now</button>
+            <button type="button" onclick="closeSendTestModal()"
+                class="px-4 py-2 bg-slate-950 text-slate-400 hover:text-white font-bold text-xs rounded-xl border border-slate-800">Cancel</button>
+            <button type="button" onclick="executeSendTestWhatsApp()"
+                class="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-lg">Send
+                Test Now</button>
         </div>
     </div>
 </div>
 
 <!-- Modal 5: Create New Template Modal -->
-<div id="create-template-modal" class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
+<div id="create-template-modal"
+    class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-800">
             <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px] text-emerald-400">add_circle</span>
                 Create Custom WhatsApp Template
             </h3>
-            <button type="button" onclick="closeCreateTemplateModal()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined text-[18px]">close</span></button>
+            <button type="button" onclick="closeCreateTemplateModal()" class="text-slate-400 hover:text-white"><span
+                    class="material-symbols-outlined text-[18px]">close</span></button>
         </div>
 
         <div class="space-y-3">
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Template Name</label>
-                <input type="text" id="new-template-name" placeholder="e.g. Website Maintenance Renewal Pitch" class="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500" />
+                <input type="text" id="new-template-name" placeholder="e.g. Website Maintenance Renewal Pitch"
+                    class="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500" />
             </div>
 
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Category</label>
-                <select id="new-template-category" class="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500">
+                <select id="new-template-category"
+                    class="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500">
                     <option value="greetings">Greetings & Welcome</option>
                     <option value="followup">Follow-up & Check-in</option>
                     <option value="sales">Sales & Demo Pitch</option>
@@ -487,73 +611,559 @@
             </div>
 
             <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Message Content (Use {{name}}, {{company}}, {{service}}, {{phone}})</label>
-                <textarea id="new-template-content" rows="5" placeholder="Type template message here..." class="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-xl p-3.5 focus:ring-1 focus:ring-emerald-500 leading-relaxed custom-scrollbar"></textarea>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Message Content (Use {{name}},
+                    {{company}}, {{service}}, {{phone}})</label>
+                <textarea id="new-template-content" rows="5" placeholder="Type template message here..."
+                    class="w-full bg-slate-950 border border-slate-800 text-xs text-white rounded-xl p-3.5 focus:ring-1 focus:ring-emerald-500 leading-relaxed custom-scrollbar"></textarea>
             </div>
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
-            <button type="button" onclick="closeCreateTemplateModal()" class="px-4 py-2 bg-slate-950 text-slate-400 hover:text-white font-bold text-xs rounded-xl border border-slate-800">Cancel</button>
-            <button type="button" onclick="saveCustomWhatsAppTemplate()" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-lg">Save & Use Template</button>
+            <button type="button" onclick="closeCreateTemplateModal()"
+                class="px-4 py-2 bg-slate-950 text-slate-400 hover:text-white font-bold text-xs rounded-xl border border-slate-800">Cancel</button>
+            <button type="button" onclick="saveCustomWhatsAppTemplate()"
+                class="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-lg">Save
+                & Use Template</button>
         </div>
     </div>
 </div>
 
 <!-- JavaScript Logic Engine -->
 <script>
-(function() {
-    let activeLeadId = "{{ lead.id }}";
-    let leadNameVal = "{{ lead.name|escapejs }}";
-    let leadPhoneVal = "{{ lead.phone_number|escapejs }}";
-    let leadCompanyVal = "{{ lead.company|escapejs }}";
-    let leadEmailVal = "{{ lead.email|escapejs }}";
+    (function () {
+        "use strict";
 
-    const XENOTRIX_TEMPLATES = {
-        'xenotrix_intro': {
-            name: "Xenotrix Corporate Overview & Core Services (Default Meta Approved)",
-            category: "greetings",
-            text: `Hello {{name}},\n\nGreetings from *Xenotrix Technologies*! 👋\n\nThank you for reaching out to us regarding IT & Software solutions for *{{company}}*. We specialize in:\n\n🚀 *Our Core Services:*\n• Custom Web Application & Portal Development\n• Mobile App Development (iOS & Android)\n• Enterprise CRM & ERP Suite Implementation\n• AI Solutions & Workflow Automation\n• SEO, PPC & Performance Digital Marketing\n\n🌐 Explore our portfolio: https://xenotrix.in\n📞 Direct Hotline: +91 9995544316\n\nHow can we assist you with *{{company}}*'s upcoming project?\n\nBest regards,\n*{{executive_name}}*\nSenior Solutions Consultant | Xenotrix Technologies`
-        },
-        'webdev_proposal': {
-            name: "Web & Mobile App Development Proposal Follow-up",
-            category: "webdev",
-            text: `Hi {{name}},\n\nFollowing up on your web development & mobile app inquiry for *{{company}}*.\n\nOur engineering team has reviewed your technical requirements and prepared a customized project scope covering responsive UI/UX, database architecture, security, and API integrations.\n\n📋 *Next Steps:*\n1. Quick 10-minute discovery call to finalize scope.\n2. Delivery of official commercial proposal & delivery timeline.\n\nAre you available for a brief call today or tomorrow?\n\nBest regards,\n*{{executive_name}}* | Xenotrix Technologies`
-        },
-        'crm_demo_pitch': {
-            name: "XenoCRM & ERP System Live Walkthrough Demo",
-            category: "sales",
-            text: `Hello {{name}},\n\nStreamline your sales pipeline and operations with *XenoCRM & ERP System*! 📈\n\n✨ *Key Capabilities for {{company}}:*\n• Lead Tracking & Pipeline Automation\n• Automated WhatsApp & Email Dispatch\n• Invoicing, GST Billing & Financial Reports\n• Staff Performance & Task Dashboards\n\n📅 Schedule your live demo: https://xenotrix.in/book-demo\nOr reply directly to book a session.\n\nBest regards,\n*{{executive_name}}* | Xenotrix Technologies`
-        },
-        'quotation_share': {
-            name: "Service Quotation & Commercial Proposal Share",
-            category: "quotation",
-            text: `Dear {{name}},\n\nPlease find attached the official project proposal for *{{service}}* for *{{company}}*.\n\n💼 *Proposal Highlights:*\n• Complete Scope of Work & Technical Deliverables\n• Milestone-based Payment Breakdown\n• 6-Month Complimentary Maintenance & SLA Support\n\n📄 Download Proposal: https://xenotrix.in/docs/proposal.pdf\n\nPlease let us know if you need any adjustments to the scope!\n\nBest regards,\n*{{executive_name}}* | Xenotrix Technologies`
-        },
-        'meeting_confirm': {
-            name: "Meeting Confirmation & Calendar Schedule",
-            category: "greetings",
-            text: `Hi {{name}},\n\nYour strategy meeting with *Xenotrix Technologies* is confirmed! 🗓️\n\n📌 *Meeting Details:*\n• Client: {{name}} ({{company}})\n• Executive: {{executive_name}}\n• Topic: {{service}} Project Scope & Architecture\n• Mode: Google Meet / Phone Call\n\nWe look forward to speaking with you!\n\nBest regards,\n*{{executive_name}}* | Xenotrix Technologies`
-        },
-        'payment_reminder': {
-            name: "Milestone Payment & Invoice Update",
-            category: "quotation",
-            text: `Hello {{name}},\n\nThis is a gentle update regarding the project milestone payment for *{{company}}*.\n\n💳 *Invoice Summary:*\n• Project: {{service}}\n• Direct Bank Transfer / UPI available\n\nThank you for choosing Xenotrix Technologies as your technology partner!\n\nBest regards,\nAccounts Team | Xenotrix Technologies`
-        },
-        'digital_marketing': {
-            name: "Digital Marketing, SEO & Ads Retainer Package",
-            category: "sales",
-            text: `Hi {{name}},\n\nReady to scale *{{company}}*'s online visibility and qualified leads? 🚀\n\n🎯 *Xenotrix Marketing Package includes:*\n• Technical SEO & Top 10 Google Ranking Strategy\n• High-ROI Google Search & Meta Ad Campaigns\n• Monthly Lead Analytics & ROI Reporting\n\nLet's connect for a custom growth strategy for *{{company}}*!\n\nBest regards,\n*{{executive_name}}* | Xenotrix Technologies`
-        },
-        'technical_support': {
-            name: "Technical Support & Ticket Resolution Update",
-            category: "followup",
-            text: `Hello {{name}},\n\nYour support query regarding *{{service}}* for *{{company}}* has been resolved by our technical engineering team. ✅\n\nIf you need further assistance, please feel free to reply directly to this message.\n\nBest regards,\nSupport Engineering | Xenotrix Technologies`
+        // ============================================================
+        // LEAD CONTEXT
+        // ============================================================
+
+        const activeLeadId = "{{ lead.id }}";
+
+        const lead = {
+            name: "{{ lead.name|escapejs }}",
+            phone: "{{ lead.phone_number|escapejs }}",
+            company: "{{ lead.company|escapejs }}",
+            email: "{{ lead.email|escapejs }}"
+        };
+
+        // ============================================================
+        // XENOTRIX WHATSAPP MESSAGE TEMPLATES
+        // ============================================================
+
+        const XENOTRIX_TEMPLATES = {
+
+            // --------------------------------------------------------
+            // 01. INTRODUCTION
+            // --------------------------------------------------------
+            xenotrix_intro: {
+                name: "Xenotrix Introduction",
+                category: "utility",
+                description: "Professional first-contact message introducing Xenotrix Technologies and its services.",
+
+                text: `Hello {{name}},
+
+    Greetings from *Xenotrix Technologies*.
+
+    Thank you for your interest in our technology solutions for *{{company}}*.
+
+    We help businesses build and grow through:
+
+    • Custom Website & Web Application Development
+    • Mobile App Development
+    • CRM & ERP Solutions
+    • AI Solutions & Business Automation
+    • Digital Marketing, SEO & Performance Ads
+
+    🌐 Website: https://xenotrix.in
+    📞 +91 9995544316
+
+    We would be happy to understand your requirements and recommend the right solution for *{{company}}*.
+
+    Best regards,
+    *{{executive_name}}*
+    Xenotrix Technologies`
+            },
+
+
+            // --------------------------------------------------------
+            // 02. WEBSITE / SOFTWARE DEVELOPMENT
+            // --------------------------------------------------------
+            webdev_proposal: {
+                name: "Website & Software Development Follow-up",
+                category: "utility",
+                description: "Follow-up for website, web application and software development enquiries.",
+
+                text: `Hi {{name}},
+
+    Thank you for discussing your requirements for *{{company}}*.
+
+    Our team can help you build a professional, scalable and secure digital solution tailored to your business.
+
+    Our development process typically covers:
+
+    • UI/UX Design
+    • Responsive Web Development
+    • Backend & Database Development
+    • API Integrations
+    • Security & Performance
+    • Deployment & Technical Support
+
+    We can schedule a short discussion to understand your requirements and prepare a suitable proposal.
+
+    Would you be available for a quick call today or tomorrow?
+
+    Best regards,
+    *{{executive_name}}*
+    Xenotrix Technologies`
+            },
+
+
+            // --------------------------------------------------------
+            // 03. CRM / ERP
+            // --------------------------------------------------------
+            crm_demo_pitch: {
+                name: "XenoCRM & ERP Demo",
+                category: "marketing",
+                description: "Promotional message for XenoCRM and ERP solutions.",
+
+                text: `Hello {{name}},
+
+    Looking to streamline sales and business operations at *{{company}}*?
+
+    *XenoCRM & ERP* helps businesses manage their operations from one centralized platform.
+
+    Key capabilities include:
+
+    • Lead & Customer Management
+    • Sales Pipeline Tracking
+    • Task & Staff Management
+    • WhatsApp & Email Automation
+    • Quotations & Invoicing
+    • Business Reports & Dashboards
+
+    We can arrange a personalized walkthrough based on your business requirements.
+
+    📅 Book a demo:
+    https://xenotrix.in/book-demo
+
+    Or simply reply to this message and our team will assist you.
+
+    Best regards,
+    *{{executive_name}}*
+    Xenotrix Technologies`
+            },
+
+
+            // --------------------------------------------------------
+            // 04. QUOTATION
+            // --------------------------------------------------------
+            quotation_share: {
+                name: "Quotation & Project Proposal",
+                category: "utility",
+                description: "Professional quotation sharing message.",
+
+                text: `Dear {{name}},
+
+    Thank you for considering *Xenotrix Technologies* for your project.
+
+    We have prepared the proposal for:
+
+    *Service:* {{service}}
+    *Company:* {{company}}
+
+    The proposal includes:
+
+    • Project Scope
+    • Deliverables
+    • Development Timeline
+    • Commercial Details
+    • Payment Milestones
+    • Support & Maintenance Terms
+
+    📄 Proposal:
+    {{proposal_url}}
+
+    Please review the proposal and let us know if you would like to discuss any part of the scope or pricing.
+
+    We look forward to working with *{{company}}*.
+
+    Best regards,
+    *{{executive_name}}*
+    Xenotrix Technologies`
+            },
+
+
+            // --------------------------------------------------------
+            // 05. MEETING CONFIRMATION
+            // --------------------------------------------------------
+            meeting_confirm: {
+                name: "Meeting Confirmation",
+                category: "utility",
+                description: "Confirmation message for scheduled client meetings.",
+
+                text: `Hello {{name}},
+
+    Your meeting with *Xenotrix Technologies* has been confirmed.
+
+    *Meeting Details*
+
+    Client: {{name}}
+    Company: {{company}}
+    Executive: {{executive_name}}
+    Discussion: {{service}}
+
+    We look forward to understanding your requirements and discussing the best solution for *{{company}}*.
+
+    If you need to reschedule, simply reply to this message.
+
+    Best regards,
+    *{{executive_name}}*
+    Xenotrix Technologies`
+            },
+
+
+            // --------------------------------------------------------
+            // 06. PAYMENT REMINDER
+            // --------------------------------------------------------
+            payment_reminder: {
+                name: "Payment Reminder",
+                category: "utility",
+                description: "Professional payment follow-up without sounding aggressive.",
+
+                text: `Hello {{name}},
+
+    This is a gentle reminder regarding the pending payment for the *{{service}}* project for *{{company}}*.
+
+    *Payment Details*
+
+    Project: {{service}}
+    Amount Due: {{amount}}
+    Due Date: {{due_date}}
+
+    Payment can be completed through the available bank transfer or UPI details provided in the invoice.
+
+    If the payment has already been completed, please disregard this message and share the payment confirmation when convenient.
+
+    Thank you for choosing *Xenotrix Technologies*.
+
+    Best regards,
+    Accounts Team
+    Xenotrix Technologies`
+            },
+
+
+            // --------------------------------------------------------
+            // 07. DIGITAL MARKETING
+            // --------------------------------------------------------
+            digital_marketing: {
+                name: "Digital Marketing & Growth",
+                category: "marketing",
+                description: "Lead-generation focused digital marketing message.",
+
+                text: `Hi {{name}},
+
+    Would you like to increase the online visibility and qualified enquiries for *{{company}}*?
+
+    *Xenotrix Technologies* provides result-oriented digital marketing solutions covering:
+
+    • SEO & Search Visibility
+    • Google Ads
+    • Meta Ads
+    • Social Media Marketing
+    • Content & Creative Strategy
+    • Lead Generation
+    • Performance & Monthly Reporting
+
+    We can review your current digital presence and suggest a practical growth strategy based on your business goals.
+
+    Would you like us to share the details?
+
+    Best regards,
+    *{{executive_name}}*
+    Xenotrix Technologies`
+            },
+
+
+            // --------------------------------------------------------
+            // 08. TECHNICAL SUPPORT
+            // --------------------------------------------------------
+            technical_support: {
+                name: "Technical Support Update",
+                category: "utility",
+                description: "Client support and issue-resolution update.",
+
+                text: `Hello {{name}},
+
+    We wanted to update you regarding your support request for *{{service}}*.
+
+    Our technical team has reviewed the issue and the requested resolution has been completed.
+
+    If you experience any further issues or require additional assistance, simply reply to this message and our support team will assist you.
+
+    Thank you for choosing *Xenotrix Technologies*.
+
+    Best regards,
+    Support Team
+    Xenotrix Technologies`
+            },
+
+
+            // --------------------------------------------------------
+            // 09. LEAD FOLLOW-UP
+            // --------------------------------------------------------
+            lead_followup: {
+                name: "Lead Follow-up",
+                category: "utility",
+                description: "General follow-up for leads who have not responded.",
+
+                text: `Hello {{name}},
+
+    Just following up regarding your enquiry with *Xenotrix Technologies*.
+
+    We would be happy to understand your requirements for *{{company}}* and help you identify the right technology solution.
+
+    If you're still interested, simply reply to this message and we'll take it from there.
+
+    Best regards,
+    *{{executive_name}}*
+    Xenotrix Technologies`
+            },
+
+
+            // --------------------------------------------------------
+            // 10. REQUIREMENT COLLECTION
+            // --------------------------------------------------------
+            requirement_followup: {
+                name: "Requirement Collection",
+                category: "utility",
+                description: "Collect missing project requirements from a potential client.",
+
+                text: `Hello {{name}},
+
+    To prepare the right solution for *{{company}}*, could you please share a few details about your requirement?
+
+    • What solution do you need?
+    • What are the main features you require?
+    • Do you currently have an existing website or software?
+    • What is your expected timeline?
+    • Do you have an approximate project budget?
+
+    Once we have these details, our team can recommend the most suitable approach.
+
+    Best regards,
+    *{{executive_name}}*
+    Xenotrix Technologies`
+            },
+
+
+            // --------------------------------------------------------
+            // 11. PROJECT START
+            // --------------------------------------------------------
+            project_confirmation: {
+                name: "Project Confirmation",
+                category: "utility",
+                description: "Message confirming project onboarding.",
+
+                text: `Hello {{name}},
+
+    Thank you for choosing *Xenotrix Technologies* for your *{{service}}* project.
+
+    We are pleased to begin working with *{{company}}*.
+
+    Our team will now proceed with the project onboarding and initial requirements.
+
+    Your assigned executive:
+    *{{executive_name}}*
+
+    We look forward to building a successful solution for your business.
+
+    Best regards,
+    Xenotrix Technologies`
+            },
+
+
+            // --------------------------------------------------------
+            // 12. PROJECT COMPLETION
+            // --------------------------------------------------------
+            project_completion: {
+                name: "Project Completion Update",
+                category: "utility",
+                description: "Professional project completion notification.",
+
+                text: `Hello {{name}},
+
+    We are pleased to inform you that the *{{service}}* project for *{{company}}* has reached the completion stage.
+
+    Our team has completed the agreed project scope and the final review is now ready.
+
+    Please review the delivered work and share any feedback or required changes.
+
+    Thank you for trusting *Xenotrix Technologies*.
+
+    Best regards,
+    *{{executive_name}}*
+    Xenotrix Technologies`
+            }
+        };
+
+
+        // ============================================================
+        // WHATSAPP ATTACHMENTS
+        // ============================================================
+
+        let whatsappAttachmentsList = [];
+
+
+        // ============================================================
+        // TEMPLATE UTILITIES
+        // ============================================================
+
+        function getTemplate(templateKey) {
+            return XENOTRIX_TEMPLATES[templateKey] || null;
         }
-    };
 
-    let whatsappAttachmentsList = [];
 
-    window.openWhatsAppModal = function() {
+        function getAvailableTemplates() {
+            return Object.entries(XENOTRIX_TEMPLATES).map(
+                ([key, template]) => ({
+                    key,
+                    ...template
+                })
+            );
+        }
+
+
+        function replaceTemplateVariables(text, variables = {}) {
+            if (!text) return "";
+
+            return text.replace(
+                /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g,
+                (match, key) => {
+                    return variables[key] !== undefined
+                        ? variables[key]
+                        : match;
+                }
+            );
+        }
+
+
+        // ============================================================
+        // LEAD TEMPLATE VARIABLES
+        // ============================================================
+
+        function getLeadVariables(extraVariables = {}) {
+            return {
+                name: lead.name || "there",
+                company: lead.company || "your company",
+                phone: lead.phone || "",
+                email: lead.email || "",
+
+                executive_name:
+                    extraVariables.executive_name ||
+                    "{{ executive_name }}",
+
+                service:
+                    extraVariables.service ||
+                    "{{ service }}",
+
+                amount:
+                    extraVariables.amount ||
+                    "{{ amount }}",
+
+                due_date:
+                    extraVariables.due_date ||
+                    "{{ due_date }}",
+
+                proposal_url:
+                    extraVariables.proposal_url ||
+                    "{{ proposal_url }}",
+
+                ...extraVariables
+            };
+        }
+
+
+        // ============================================================
+        // BUILD MESSAGE
+        // ============================================================
+
+        function buildWhatsAppMessage(templateKey, variables = {}) {
+            const template = getTemplate(templateKey);
+
+            if (!template) {
+                console.error(
+                    `[Xenotrix WhatsApp] Template not found: ${templateKey}`
+                );
+
+                return "";
+            }
+
+            const mergedVariables = getLeadVariables(variables);
+
+            return replaceTemplateVariables(
+                template.text,
+                mergedVariables
+            );
+        }
+
+
+        // ============================================================
+        // TEMPLATE SEARCH
+        // ============================================================
+
+        function searchTemplates(searchTerm = "") {
+            const query = searchTerm.trim().toLowerCase();
+
+            if (!query) {
+                return getAvailableTemplates();
+            }
+
+            return getAvailableTemplates().filter(template => {
+                return (
+                    template.name.toLowerCase().includes(query) ||
+                    template.category.toLowerCase().includes(query) ||
+                    template.description.toLowerCase().includes(query)
+                );
+            });
+        }
+
+
+        // ============================================================
+        // TEMPLATE CATEGORY FILTER
+        // ============================================================
+
+        function getTemplatesByCategory(category) {
+            if (!category || category === "all") {
+                return getAvailableTemplates();
+            }
+
+            return getAvailableTemplates().filter(
+                template => template.category === category
+            );
+        }
+
+
+        // ============================================================
+        // DEBUG / DEVELOPMENT
+        // ============================================================
+
+        window.XenotrixWhatsApp = {
+            activeLeadId,
+            lead,
+            templates: XENOTRIX_TEMPLATES,
+            attachments: whatsappAttachmentsList,
+
+            getTemplate,
+            getAvailableTemplates,
+            getTemplatesByCategory,
+            searchTemplates,
+            replaceTemplateVariables,
+            buildWhatsAppMessage
+        };
+
+    })();
+
+    window.openWhatsAppModal = function () {
         const modal = document.getElementById('whatsapp-modal');
         const input = document.getElementById('whatsapp-msg-input');
         if (!modal) return;
@@ -567,7 +1177,7 @@
         modal.classList.remove('opacity-0', 'pointer-events-none');
     };
 
-    window.applySelectedTemplate = function(val) {
+    window.applySelectedTemplate = function (val) {
         const input = document.getElementById('whatsapp-msg-input');
         if (!input || !val) return;
 
@@ -578,7 +1188,7 @@
         updateWhatsAppPreview();
     };
 
-    window.filterWhatsAppTemplates = function(category) {
+    window.filterWhatsAppTemplates = function (category) {
         const select = document.getElementById('wa-template-select');
         if (!select) return;
 
@@ -611,17 +1221,17 @@
         }
     };
 
-    window.openCreateTemplateModal = function() {
+    window.openCreateTemplateModal = function () {
         const m = document.getElementById('create-template-modal');
         if (m) m.classList.remove('opacity-0', 'pointer-events-none');
     };
 
-    window.closeCreateTemplateModal = function() {
+    window.closeCreateTemplateModal = function () {
         const m = document.getElementById('create-template-modal');
         if (m) m.classList.add('opacity-0', 'pointer-events-none');
     };
 
-    window.saveCustomWhatsAppTemplate = function() {
+    window.saveCustomWhatsAppTemplate = function () {
         const nameInput = document.getElementById('new-template-name');
         const catSelect = document.getElementById('new-template-category');
         const contentInput = document.getElementById('new-template-content');
@@ -659,25 +1269,25 @@
         alert(`Custom template "${tName}" saved successfully!`);
     };
 
-    window.closeWhatsAppModal = function() {
+    window.closeWhatsAppModal = function () {
         const modal = document.getElementById('whatsapp-modal');
         if (!modal) return;
         modal.classList.add('opacity-0', 'pointer-events-none');
     };
 
-    window.openApiStatusModal = function() {
+    window.openApiStatusModal = function () {
         const m = document.getElementById('api-status-modal');
         if (m) m.classList.remove('opacity-0', 'pointer-events-none');
     };
 
-    window.closeApiStatusModal = function() {
+    window.closeApiStatusModal = function () {
         const m = document.getElementById('api-status-modal');
         if (m) m.classList.add('opacity-0', 'pointer-events-none');
     };
 
     let currentSendMode = 'normal_whatsapp';
 
-    window.openSendConfirmationModal = function(mode) {
+    window.openSendConfirmationModal = function (mode) {
         currentSendMode = mode || 'normal_whatsapp';
         const input = document.getElementById('whatsapp-msg-input');
         if (!input || !input.value.trim()) {
@@ -697,12 +1307,12 @@
         if (m) m.classList.remove('opacity-0', 'pointer-events-none');
     };
 
-    window.closeSendConfirmationModal = function() {
+    window.closeSendConfirmationModal = function () {
         const m = document.getElementById('send-confirm-modal');
         if (m) m.classList.add('opacity-0', 'pointer-events-none');
     };
 
-    window.executeSendWhatsAppMessage = function() {
+    window.executeSendWhatsAppMessage = function () {
         const input = document.getElementById('whatsapp-msg-input');
         if (!input || !input.value.trim()) return;
         const btn = document.getElementById('confirm-send-btn');
@@ -710,8 +1320,8 @@
         // Resolve personalizations
         let fullMsg = input.value || '';
         fullMsg = fullMsg.replace(/\{\{name\}\}/g, leadNameVal)
-                         .replace(/\{\{company\}\}/g, leadCompanyVal)
-                         .replace(/\{\{phone\}\}/g, leadPhoneVal);
+            .replace(/\{\{company\}\}/g, leadCompanyVal)
+            .replace(/\{\{phone\}\}/g, leadPhoneVal);
 
         // Include file attachment references if selected
         if (whatsappAttachmentsList.length) {
@@ -752,33 +1362,33 @@
                 "buttons": "[]"
             })
         })
-        .then(res => res.json())
-        .then(data => {
-            closeSendConfirmationModal();
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = `<span>Confirm & Send</span>`;
-            }
+            .then(res => res.json())
+            .then(data => {
+                closeSendConfirmationModal();
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>Confirm & Send</span>`;
+                }
 
-            if (data.success) {
-                alert(data.message);
-                closeWhatsAppModal();
-                window.location.reload();
-            } else {
-                alert(data.error || "Meta WhatsApp Cloud API dispatch failed.");
-            }
-        })
-        .catch(err => {
-            closeSendConfirmationModal();
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = `<span>Confirm & Send</span>`;
-            }
-            alert("Error sending message via Meta Cloud API: " + err.message);
-        });
+                if (data.success) {
+                    alert(data.message);
+                    closeWhatsAppModal();
+                    window.location.reload();
+                } else {
+                    alert(data.error || "Meta WhatsApp Cloud API dispatch failed.");
+                }
+            })
+            .catch(err => {
+                closeSendConfirmationModal();
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>Confirm & Send</span>`;
+                }
+                alert("Error sending message via Meta Cloud API: " + err.message);
+            });
     };
 
-    window.executeSendTestWhatsApp = function() {
+    window.executeSendTestWhatsApp = function () {
         const testPhone = document.getElementById('test-phone-input')?.value || '';
         const input = document.getElementById('whatsapp-msg-input');
         if (!input || !input.value.trim()) return;
@@ -796,18 +1406,18 @@
                 "buttons": "[]"
             })
         })
-        .then(res => res.json())
-        .then(data => {
-            closeSendTestModal();
-            if (data.success) {
-                alert(`Meta Cloud API Test Message dispatched successfully to ${testPhone}!`);
-            } else {
-                alert(data.error || "Meta Cloud API Test failed.");
-            }
-        });
+            .then(res => res.json())
+            .then(data => {
+                closeSendTestModal();
+                if (data.success) {
+                    alert(`Meta Cloud API Test Message dispatched successfully to ${testPhone}!`);
+                } else {
+                    alert(data.error || "Meta Cloud API Test failed.");
+                }
+            });
     };
 
-    window.copyWhatsAppText = function() {
+    window.copyWhatsAppText = function () {
         const input = document.getElementById('whatsapp-msg-input');
         if (!input) return;
         navigator.clipboard.writeText(input.value).then(() => {
@@ -815,5 +1425,5 @@
         });
     };
 
-})();
+}) ();
 </script>
