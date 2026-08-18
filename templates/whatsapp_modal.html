@@ -184,33 +184,6 @@
                 <textarea id="whatsapp-msg-input" oninput="updateWhatsAppPreview()" rows="7" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-100 font-sans leading-relaxed focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 custom-scrollbar" placeholder="Type your WhatsApp message here or select a template above..."></textarea>
             </div>
 
-            <!-- WhatsApp Interactive Action Buttons Builder Card -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-3">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <label class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-[16px] text-emerald-400">touch_app</span>
-                            WhatsApp Interactive Buttons (Action Buttons)
-                        </label>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Attach up to 3 interactive reply or call-to-action buttons (Meta WhatsApp Business API specification).</p>
-                    </div>
-                    <span id="wa-buttons-count-badge" class="px-2 py-0.5 text-[10px] font-extrabold bg-slate-950 text-slate-400 border border-slate-800 rounded-md">3 / 3 Buttons</span>
-                </div>
-
-                <!-- Quick Button Presets -->
-                <div class="flex flex-wrap gap-1.5 text-[11px]">
-                    <button type="button" onclick="addWhatsAppPresetButton('DOWNLOAD', 'Quick Reply', '')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 font-bold text-sky-400 flex items-center gap-1">+ DOWNLOAD</button>
-                    <button type="button" onclick="addWhatsAppPresetButton('EMT OFFER', 'Quick Reply', '')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 font-bold text-sky-400 flex items-center gap-1">+ EMT OFFER</button>
-                    <button type="button" onclick="addWhatsAppPresetButton('REFER & EARN', 'Quick Reply', '')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 font-bold text-sky-400 flex items-center gap-1">+ REFER & EARN</button>
-                    <button type="button" onclick="addWhatsAppPresetButton('BOOK DEMO', 'Quick Reply', '')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 font-bold text-emerald-400 flex items-center gap-1">+ BOOK DEMO</button>
-                    <button type="button" onclick="addWhatsAppPresetButton('CALL US', 'Call Phone', '+91 9995544316')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 font-bold text-emerald-400 flex items-center gap-1">+ CALL US</button>
-                    <button type="button" onclick="addWhatsAppPresetButton('VISIT WEBSITE', 'Open URL', 'https://xenotrix.in')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 font-bold text-blue-400 flex items-center gap-1">+ VISIT WEBSITE</button>
-                </div>
-
-                <!-- Configured Buttons List -->
-                <div id="wa-buttons-list" class="space-y-2"></div>
-            </div>
-
             <!-- Documents & File Attachments Card -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-3">
                 <div class="flex items-center justify-between">
@@ -345,9 +318,6 @@
                                     <span class="material-symbols-outlined text-[15px] text-sky-300 font-bold">done_all</span>
                                 </div>
                             </div>
-
-                            <!-- WhatsApp Interactive Action Buttons Preview -->
-                            <div id="whatsapp-preview-buttons" class="space-y-1.5 max-w-[92%] ml-auto mt-1.5 hidden"></div>
                         </div>
 
                         <!-- Chat Footer Bar -->
@@ -376,16 +346,16 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <select id="wa-send-mode" class="bg-slate-950 border border-slate-800 text-xs font-bold text-emerald-400 rounded-xl px-3 py-2 focus:ring-1 focus:ring-emerald-500 shadow-xs cursor-pointer">
-                <option value="cloud_api">Meta WhatsApp API (Native Action Buttons)</option>
-                <option value="web_app">WhatsApp Web / Desktop App Direct</option>
-            </select>
+            <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold px-3 py-2 rounded-xl flex items-center gap-1.5 shadow-xs">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Meta WhatsApp Cloud API Exclusive
+            </span>
             <button type="button" onclick="closeWhatsAppModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl transition-all">Cancel</button>
             <button type="button" onclick="openSendConfirmationModal()" class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-500/20 transition-all active:scale-95 text-xs flex items-center gap-2">
                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
                     <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z"/>
                 </svg>
-                Send WhatsApp Message
+                Send via Meta Cloud API
             </button>
         </div>
     </footer>
@@ -431,7 +401,6 @@
         <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-2">
             <div class="flex justify-between"><span class="text-slate-500">Recipient:</span><span id="confirm-recipient-name" class="font-bold text-white"></span></div>
             <div class="flex justify-between"><span class="text-slate-500">Phone Number:</span><span id="confirm-recipient-phone" class="font-mono text-emerald-400 font-bold"></span></div>
-            <div class="flex justify-between"><span class="text-slate-500">Interactive Buttons:</span><span id="confirm-buttons-count" class="font-bold text-white"></span></div>
         </div>
 
         <div class="flex justify-end gap-2 pt-2">
@@ -495,11 +464,6 @@
     const defaultXenotrixTemplate = `Hello ${leadNameVal},\n\nGreetings from Xenotrix Technologies! We provide custom web applications, mobile apps, AI solutions, and CRM systems.\n\nSimply reply to this message or click the action buttons below to download our catalog or connect with us.`;
 
     let whatsappAttachmentsList = [];
-    let whatsappButtonsList = [
-        { id: 'btn_1', text: 'DOWNLOAD', type: 'Quick Reply', value: '' },
-        { id: 'btn_2', text: 'EMT OFFER', type: 'Quick Reply', value: '' },
-        { id: 'btn_3', text: 'REFER & EARN', type: 'Quick Reply', value: '' }
-    ];
 
     window.openWhatsAppModal = function() {
         const modal = document.getElementById('whatsapp-modal');
@@ -510,7 +474,6 @@
             input.value = defaultXenotrixTemplate;
         }
 
-        renderWhatsAppButtonsList();
         renderWhatsAppAttachmentsList();
         updateWhatsAppPreview();
         modal.classList.remove('opacity-0', 'pointer-events-none');
@@ -541,7 +504,6 @@
 
         document.getElementById('confirm-recipient-name').textContent = leadNameVal;
         document.getElementById('confirm-recipient-phone').textContent = leadPhoneVal;
-        document.getElementById('confirm-buttons-count').textContent = `${whatsappButtonsList.length} Action Buttons`;
 
         const m = document.getElementById('send-confirm-modal');
         if (m) m.classList.remove('opacity-0', 'pointer-events-none');
@@ -611,48 +573,6 @@
 
         closeChangeRecipientModal();
         updateWhatsAppPreview();
-    };
-
-    window.addWhatsAppPresetButton = function(text, type, value) {
-        if (whatsappButtonsList.length >= 3) {
-            alert("WhatsApp allows up to 3 action buttons per message.");
-            return;
-        }
-        const newId = 'btn_' + Date.now();
-        whatsappButtonsList.push({ id: newId, text: text, type: type || 'Quick Reply', value: value || '' });
-        renderWhatsAppButtonsList();
-        updateWhatsAppPreview();
-    };
-
-    window.removeWhatsAppButton = function(id) {
-        whatsappButtonsList = whatsappButtonsList.filter(b => b.id !== id);
-        renderWhatsAppButtonsList();
-        updateWhatsAppPreview();
-    };
-
-    window.renderWhatsAppButtonsList = function() {
-        const container = document.getElementById('wa-buttons-list');
-        const badge = document.getElementById('wa-buttons-count-badge');
-        if (!container) return;
-
-        if (badge) badge.textContent = `${whatsappButtonsList.length} / 3 Buttons`;
-        container.innerHTML = whatsappButtonsList.map((btn, idx) => `
-            <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between gap-2 text-xs">
-                <div class="flex items-center gap-2 flex-1">
-                    <span class="w-5 h-5 rounded bg-sky-500/10 text-sky-400 font-bold text-[10px] flex items-center justify-center shrink-0">${idx+1}</span>
-                    <input type="text" value="${btn.text}" oninput="updateButtonText('${btn.id}', this.value)" class="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-white uppercase font-bold flex-1" />
-                </div>
-                <button type="button" onclick="removeWhatsAppButton('${btn.id}')" class="text-slate-400 hover:text-rose-400"><span class="material-symbols-outlined text-[16px]">delete</span></button>
-            </div>
-        `).join('');
-    };
-
-    window.updateButtonText = function(id, text) {
-        const b = whatsappButtonsList.find(x => x.id === id);
-        if (b) {
-            b.text = text;
-            updateWhatsAppPreview();
-        }
     };
 
     window.triggerWhatsAppFileUpload = function() {
@@ -731,7 +651,6 @@
         const input = document.getElementById('whatsapp-msg-input');
         const previewText = document.getElementById('whatsapp-preview-text');
         const previewTime = document.getElementById('whatsapp-preview-time');
-        const previewButtons = document.getElementById('whatsapp-preview-buttons');
 
         if (!input || !previewText) return;
 
@@ -744,87 +663,84 @@
 
         const now = new Date();
         if (previewTime) previewTime.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-
-        if (previewButtons) {
-            if (!whatsappButtonsList.length) {
-                previewButtons.classList.add('hidden');
-                previewButtons.innerHTML = '';
-            } else {
-                previewButtons.classList.remove('hidden');
-                previewButtons.innerHTML = whatsappButtonsList.map(btn => `
-                    <div class="bg-white hover:bg-slate-100 text-[#0084ff] font-extrabold text-[11.5px] uppercase tracking-wider py-2.5 px-3 rounded-2xl shadow-md border border-slate-200 text-center cursor-pointer">
-                        ${btn.text}
-                    </div>
-                `).join('');
-            }
-        }
     };
 
     window.executeSendWhatsAppMessage = function() {
         const input = document.getElementById('whatsapp-msg-input');
         if (!input || !input.value.trim()) return;
-
         const btn = document.getElementById('confirm-send-btn');
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = `<span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> Sending...`;
+            btn.innerHTML = `<span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> Dispatching Meta Cloud API...`;
         }
 
-        const sendMode = document.getElementById('wa-send-mode')?.value || 'cloud_api';
         const csrfToken = "{{ csrf_token }}";
 
-        if (sendMode === 'cloud_api') {
-            fetch("{% url 'send_whatsapp_cloud_api' %}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "X-CSRFToken": csrfToken,
-                },
-                body: new URLSearchParams({
-                    "lead_id": activeLeadId,
-                    "message": input.value,
-                    "buttons": JSON.stringify(whatsappButtonsList)
-                })
+        fetch("{% url 'send_whatsapp_cloud_api' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrfToken,
+            },
+            body: new URLSearchParams({
+                "lead_id": activeLeadId,
+                "message": input.value,
+                "buttons": JSON.stringify(whatsappButtonsList)
             })
-            .then(res => res.json())
-            .then(data => {
-                closeSendConfirmationModal();
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = `<span>Confirm & Send</span>`;
-                }
+        })
+        .then(res => res.json())
+        .then(data => {
+            closeSendConfirmationModal();
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<span>Confirm & Send</span>`;
+            }
 
-                if (data.success) {
-                    alert(data.message);
-                    closeWhatsAppModal();
-                    window.location.reload();
-                } else {
-                    const fallback = confirm((data.error || "Failed to send via Meta Cloud API.") + "\n\nWould you like to send this message via WhatsApp Web / Desktop App instead?");
-                    if (fallback) {
-                        document.getElementById('wa-send-mode').value = 'web_app';
-                        executeSendWhatsAppMessage();
-                    }
-                }
-            });
-            return;
-        }
-
-        // WhatsApp Web fallback
-        let msg = input.value;
-        const encodedText = encodeURIComponent(msg);
-        let cleaned = leadPhoneVal.replace(/[^\d+]/g, '');
-        if (cleaned.startsWith('+')) cleaned = cleaned.substring(1);
-        else if (cleaned.length === 10) cleaned = '91' + cleaned;
-
-        window.open(`https://api.whatsapp.com/send?phone=${cleaned}&text=${encodedText}`, '_blank');
-        closeSendConfirmationModal();
-        closeWhatsAppModal();
+            if (data.success) {
+                alert(data.message);
+                closeWhatsAppModal();
+                window.location.reload();
+            } else {
+                alert(data.error || "Meta WhatsApp Cloud API dispatch failed.");
+            }
+        })
+        .catch(err => {
+            closeSendConfirmationModal();
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = `<span>Confirm & Send</span>`;
+            }
+            alert("Error sending message via Meta Cloud API: " + err.message);
+        });
     };
 
     window.executeSendTestWhatsApp = function() {
         const testPhone = document.getElementById('test-phone-input')?.value || '';
-        alert(`Test message dispatched to ${testPhone}!`);
-        closeSendTestModal();
+        const input = document.getElementById('whatsapp-msg-input');
+        if (!input || !input.value.trim()) return;
+
+        const csrfToken = "{{ csrf_token }}";
+        fetch("{% url 'send_whatsapp_cloud_api' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": csrfToken,
+            },
+            body: new URLSearchParams({
+                "lead_id": activeLeadId,
+                "message": input.value,
+                "buttons": JSON.stringify(whatsappButtonsList)
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            closeSendTestModal();
+            if (data.success) {
+                alert(`Meta Cloud API Test Message dispatched successfully to ${testPhone}!`);
+            } else {
+                alert(data.error || "Meta Cloud API Test failed.");
+            }
+        });
     };
 
     window.copyWhatsAppText = function() {
