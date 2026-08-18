@@ -1,425 +1,282 @@
-{% comment %}
-  Enterprise Full-Page Send WhatsApp Message Workspace for XenoCRM
-  Inspired by WhatsApp Business, HubSpot, Intercom, Notion, Linear, and Vercel.
-{% endcomment %}
-
-<div id="whatsapp-modal" class="fixed inset-0 z-[100] w-screen h-screen bg-slate-950 flex flex-col opacity-0 pointer-events-none transition-all duration-300 font-sans text-slate-100 overflow-hidden">
+{% load static %}
+<!-- Enterprise WhatsApp Business Communication Platform (Xenotrix Technologies) -->
+<div id="whatsapp-modal" class="fixed inset-0 z-[100] w-full h-full bg-slate-950 text-slate-100 flex flex-col font-sans overflow-hidden transition-all duration-300">
     
-    <!-- Top Navigation & Header Bar -->
-    <header class="bg-slate-950 border-b border-slate-800/80 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 shrink-0 shadow-md z-20">
-        <div class="flex items-center gap-4">
-            <button onclick="closeWhatsAppModal()" type="button" class="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white text-xs font-semibold border border-slate-800 transition-all flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[16px]">arrow_back</span>
-                Back
-            </button>
-
-            <div class="h-6 w-[1px] bg-slate-800 hidden sm:block"></div>
-
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-lg shadow-inner shrink-0">
-                    <svg class="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24">
-                        <path d="M17.472 14.382c-.301-.15-1.782-.88-2.057-.98-.275-.1-.475-.15-.675.15-.2.299-.775.98-.95 1.18-.175.2-.35.225-.65.075-.3-.15-1.265-.465-2.41-1.485-.892-.795-1.493-1.777-1.668-2.077-.175-.3-.018-.463.13-.61.134-.133.3-.35.45-.525.15-.175.2-.299.3-.5.1-.2.05-.375-.025-.525-.075-.15-.675-1.625-.925-2.225-.244-.583-.493-.504-.675-.513-.175-.008-.375-.01-.575-.01-.2 0-.525.075-.8.375-.275.3-1.05 1.025-1.05 2.5 0 1.475 1.075 2.9 1.225 3.1.15.2 2.113 3.226 5.12 4.526.715.31 1.273.495 1.708.633.718.228 1.37.195 1.886.118.577-.087 1.782-.728 2.032-1.43.25-.702.25-1.303.175-1.43-.075-.127-.275-.227-.575-.377zM12 21.82c-1.848 0-3.655-.496-5.235-1.438l-.375-.223-3.89 1.02 1.038-3.793-.245-.39C2.292 15.385 1.7 13.731 1.7 12c0-5.679 4.621-10.3 10.3-10.3 2.752 0 5.339 1.071 7.284 3.018C21.23 6.663 22.3 9.25 22.3 12c0 5.679-4.621 10.3-10.3 10.3zM12 0C5.373 0 0 5.373 0 12c0 2.118.552 4.107 1.517 5.834L0 24l6.326-1.66C7.994 23.298 9.944 24 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0z"/>
-                    </svg>
+    <!-- Top Header Bar -->
+    <header class="bg-slate-900 border-b border-slate-800/90 px-6 py-3.5 flex items-center justify-between shrink-0 z-30 shadow-md">
+        <!-- Left Title & Description -->
+        <div class="flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 shadow-inner">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z"/>
+                </svg>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="text-base font-extrabold text-white tracking-tight leading-none">Send WhatsApp Message</h1>
+                    <span class="px-2 py-0.5 text-[10px] font-extrabold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded uppercase">Meta Cloud API</span>
                 </div>
-                <div>
-                    <div class="flex items-center gap-2.5">
-                        <h1 class="text-base font-extrabold tracking-tight text-white leading-tight">Send WhatsApp Message</h1>
-                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
-                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                            Xenotrix Business Official
-                        </span>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-0.5">Send personalized WhatsApp Business messages from Xenotrix Technologies.</p>
-                </div>
+                <p class="text-xs text-slate-400 mt-1 font-medium hidden sm:block">Send personalized WhatsApp messages & interactive buttons to your leads via Meta WhatsApp Cloud API.</p>
             </div>
         </div>
 
-        <!-- Right Header Action Pill Buttons & Hotline -->
+        <!-- Right API Connection Status & Business Number -->
         <div class="flex items-center gap-3">
-            <div class="hidden md:flex items-center gap-2">
-                <button type="button" onclick="openCreateTemplateModal()" class="px-3.5 py-1.5 text-xs font-bold text-emerald-400 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl border border-emerald-500/30 transition-all flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[16px]">add_circle</span>
-                    + Add New Template
-                </button>
-                <button type="button" onclick="sendTestWhatsApp()" class="px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-xl border border-slate-800 transition-all flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[16px]">send_time_extension</span>
-                    Send Test
-                </button>
-                <button type="button" onclick="scrollToWhatsAppPreview()" class="px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-xl border border-slate-800 transition-all flex items-center gap-1.5">
-                    <span class="material-symbols-outlined text-[16px]">visibility</span>
-                    Preview
-                </button>
+            <div onclick="openApiStatusModal()" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 px-3.5 py-1.5 rounded-xl flex items-center gap-2.5 cursor-pointer transition-all shadow-xs group" title="Click to view Meta WhatsApp Cloud API Connection Details">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <div class="text-left hidden md:block">
+                    <div class="text-[11px] font-bold text-slate-200 group-hover:text-emerald-400 transition-colors leading-tight">WhatsApp API Connected</div>
+                    <div class="text-[9px] text-slate-500 font-mono leading-tight">+91 9995544316 • v18.0</div>
+                </div>
+                <span class="material-symbols-outlined text-[16px] text-slate-500 group-hover:text-slate-300">info</span>
             </div>
 
-            <div class="hidden sm:flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
-                <span class="text-slate-400">Business Number:</span>
-                <span class="font-mono font-bold text-emerald-400">+91 9995544316</span>
-            </div>
-
-            <button onclick="closeWhatsAppModal()" type="button" aria-label="Close" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition-all border border-slate-800">
-                <span class="material-symbols-outlined text-[20px]">close</span>
+            <button type="button" onclick="closeWhatsAppModal()" class="w-9 h-9 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800 flex items-center justify-center transition-all" title="Close Workspace">
+                <span class="material-symbols-outlined text-[18px]">close</span>
             </button>
         </div>
     </header>
 
-    <!-- Main Workspace Two-Column Layout -->
-    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden bg-slate-950">
+    <!-- Main Workspace Split Content Area -->
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden bg-slate-950">
         
-        <!-- Left Panel: Recipient Info, Templates, Rich Editor & Insights (7 Cols) -->
-        <section class="lg:col-span-7 flex flex-col overflow-y-auto pt-7 px-6 pb-8 space-y-6 bg-slate-950 border-r border-slate-800/80 custom-scrollbar">
+        <!-- Left Panel: Recipient, Template Selector, Rich Editor, Buttons, History (7 Cols) -->
+        <section class="lg:col-span-7 flex flex-col overflow-y-auto p-6 space-y-5 border-r border-slate-800/80 custom-scrollbar">
             
-            <!-- Recipient Information Card (Guaranteed Full Unclipped View) -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl relative space-y-4">
-                <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800/80">
-                    <div class="flex items-center gap-4">
+            <!-- Recipient Information Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md relative">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3.5">
                         {% if lead.profile_image_url %}
-                        <img src="{{ lead.profile_image_url }}" alt="{{ lead.name }}" class="w-16 h-16 rounded-2xl object-cover border border-slate-700 shadow-md" />
+                        <img src="{{ lead.profile_image_url }}" alt="{{ lead.name }}" class="w-12 h-12 rounded-xl object-cover border border-slate-700 shadow-sm" />
                         {% else %}
-                        <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-extrabold text-xl shadow-inner shrink-0">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-lg shadow-inner shrink-0">
                             {{ lead.name|slice:":2"|upper }}
                         </div>
                         {% endif %}
                         <div>
-                            <div class="flex items-center gap-3 flex-wrap">
-                                <h2 class="text-xl font-extrabold text-white leading-normal tracking-tight">{{ lead.name }}</h2>
-                                <span class="px-3 py-1 text-xs font-extrabold uppercase rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-xs">
-                                    {{ lead.status|default:'Active Lead' }}
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h2 id="lead-display-name" class="text-base font-extrabold text-white leading-tight">{{ lead.name }}</h2>
+                                <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                    {{ lead.stage|default:lead.status|default:'New' }}
                                 </span>
                             </div>
-                            <p class="text-xs text-slate-400 mt-1 flex items-center gap-1.5 font-medium">
-                                <span class="material-symbols-outlined text-[16px] text-slate-500">corporate_fare</span>
+                            <p id="lead-display-company" class="text-xs text-slate-400 mt-0.5 flex items-center gap-1 font-medium">
+                                <span class="material-symbols-outlined text-[14px] text-slate-500">corporate_fare</span>
                                 <span>{{ lead.company|default:'Individual Client' }}</span>
                             </p>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2.5">
-                        <span class="text-xs text-slate-400 font-medium">Target Phone:</span>
-                        <span class="font-mono font-extrabold text-sm text-emerald-400 bg-emerald-500/10 px-3.5 py-1.5 rounded-xl border border-emerald-500/20 shadow-xs">
-                            {{ lead.phone_number|default:'No Phone Specified' }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Detail Telemetry Grid -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Assigned Executive</span>
-                        <span class="font-semibold text-slate-200 block truncate mt-0.5">
-                            {% if lead.owner and lead.owner.user %}
-                                {{ lead.owner.user.get_full_name|default:lead.owner.user.username }}
-                            {% else %}
-                                Sales Executive
-                            {% endif %}
-                        </span>
-                    </div>
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Lead Stage</span>
-                        <span class="font-semibold text-slate-200 block truncate mt-0.5">{{ lead.stage|default:'New' }}</span>
-                    </div>
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Email Address</span>
-                        <span class="font-semibold text-slate-200 block truncate mt-0.5">{{ lead.email|default:'Not provided' }}</span>
-                    </div>
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Last Activity Date</span>
-                        <span class="font-semibold text-slate-200 block truncate mt-0.5">{{ lead.last_activity|date:"M d, Y H:i" }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Searchable Message Template Selector with + Add New Template Option -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px] text-emerald-400">space_dashboard</span>
-                        Message Template Selector
-                    </label>
-
-                    <div class="flex items-center gap-2">
-                        <button type="button" onclick="openCreateTemplateModal()" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm">
-                            <span class="material-symbols-outlined text-[16px]">add_circle</span>
-                            + Add New Template
-                        </button>
-
-                        <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-medium">
-                            <button type="button" onclick="filterWhatsAppTemplates('all')" id="wa-filter-all" class="px-3 py-1 rounded-lg bg-slate-800 text-white font-bold transition-all">All</button>
-                            <button type="button" onclick="filterWhatsAppTemplates('favorites')" id="wa-filter-favorites" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all">Favorites</button>
-                            <button type="button" onclick="filterWhatsAppTemplates('recent')" id="wa-filter-recent" class="px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all">Recent</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Search Input Bar -->
-                <div class="relative">
-                    <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-[18px]">search</span>
-                    <input type="text" id="wa-template-search" oninput="searchWhatsAppTemplates()" placeholder="Search templates by title, keyword, or category..." class="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-xs font-medium text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all placeholder:text-slate-500" />
-                </div>
-
-                <!-- Scrollable Template Cards Grid -->
-                <div id="wa-templates-container" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[190px] overflow-y-auto pr-1 custom-scrollbar">
-                    <!-- Template cards rendered dynamically via JS -->
-                </div>
-
-                <!-- Empty State -->
-                <div id="wa-templates-empty" class="hidden py-8 text-center text-slate-500">
-                    <span class="material-symbols-outlined text-4xl mb-1 text-slate-600">article</span>
-                    <p class="text-xs font-semibold">No templates match your search criteria.</p>
-                    <button type="button" onclick="openCreateTemplateModal()" class="mt-2 text-xs font-bold text-emerald-400 underline">Create your first WhatsApp template</button>
-                </div>
-            </div>
-
-            <!-- Rich Message Editor -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg flex-1 flex flex-col space-y-4">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                            <span class="material-symbols-outlined text-[18px] text-emerald-400">edit_note</span>
-                            Message Editor
-                        </label>
-                        <span class="px-2 py-0.5 text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md">Live Formatting</span>
-                    </div>
                     <div class="flex items-center gap-3">
-                        <button type="button" onclick="copyWhatsAppText()" class="text-xs font-semibold text-slate-400 hover:text-emerald-400 transition-colors flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[16px]">content_copy</span>
-                            Copy Message
-                        </button>
-                        <span class="text-slate-700">•</span>
-                        <button type="button" onclick="resetWhatsAppMessage()" class="text-xs font-semibold text-slate-400 hover:text-rose-400 transition-colors flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[16px]">restart_alt</span>
-                            Reset
+                        <div class="text-right">
+                            <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Normalized Phone</div>
+                            <div id="lead-display-phone" class="font-mono font-extrabold text-xs text-emerald-400 bg-slate-950 px-2.5 py-1 rounded-lg border border-slate-800 mt-0.5">
+                                {{ lead.phone_number|default:'No Phone' }}
+                            </div>
+                        </div>
+                        <button type="button" onclick="openChangeRecipientModal()" class="px-3 py-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl transition-all flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[15px]">swap_horiz</span>
+                            Change
                         </button>
                     </div>
                 </div>
 
-                <!-- Editable Textarea -->
-                <div class="relative flex-1">
-                    <textarea id="whatsapp-msg-input" oninput="updateWhatsAppPreview()" rows="9" class="w-full h-full min-h-[220px] bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs leading-relaxed text-slate-100 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 font-sans transition-all resize-y" placeholder="Type your WhatsApp message here..."></textarea>
-                </div>
-
-                <!-- Quick Variable Tags Panel -->
-                <div class="space-y-2 pt-2 border-t border-slate-800/80">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Quick Variable Tags</span>
-                        <span class="text-[10px] text-slate-500">Click variable to insert at cursor position</span>
+                <!-- Secondary Metadata Strip -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] pt-3 mt-3 border-t border-slate-800/80">
+                    <div class="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
+                        <span class="text-[9px] font-bold text-slate-500 uppercase block">Assigned Executive</span>
+                        <span class="font-semibold text-slate-300 truncate block mt-0.5">
+                            {% if lead.owner and lead.owner.user %}{{ lead.owner.user.get_full_name|default:lead.owner.user.username }}{% else %}Unassigned{% endif %}
+                        </span>
                     </div>
-
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" onclick="insertWhatsAppTag('{{lead_name}}')" class="px-2.5 py-1.5 text-xs font-semibold bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-xl transition-all flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">person</span> {{lead_name}}
-                        </button>
-                        <button type="button" onclick="insertWhatsAppTag('{{company}}')" class="px-2.5 py-1.5 text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 rounded-xl transition-all flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">domain</span> {{company}}
-                        </button>
-                        <button type="button" onclick="insertWhatsAppTag('{{phone}}')" class="px-2.5 py-1.5 text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 rounded-xl transition-all flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">call</span> {{phone}}
-                        </button>
-                        <button type="button" onclick="insertWhatsAppTag('{{email}}')" class="px-2.5 py-1.5 text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 rounded-xl transition-all flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">mail</span> {{email}}
-                        </button>
-                        <button type="button" onclick="insertWhatsAppTag('{{services}}')" class="px-2.5 py-1.5 text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 rounded-xl transition-all flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">category</span> {{services}}
-                        </button>
-                        <button type="button" onclick="insertWhatsAppTag('https://xenotrix.in')" class="px-2.5 py-1.5 text-xs font-semibold bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 border border-blue-500/20 rounded-xl transition-all flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">link</span> {{website}}
-                        </button>
-                        <button type="button" onclick="insertWhatsAppTag('{{sales_executive}}')" class="px-2.5 py-1.5 text-xs font-semibold bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border border-purple-500/20 rounded-xl transition-all flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">badge</span> {{sales_executive}}
-                        </button>
+                    <div class="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
+                        <span class="text-[9px] font-bold text-slate-500 uppercase block">Email Address</span>
+                        <span class="font-semibold text-slate-300 truncate block mt-0.5">{{ lead.email|default:'None' }}</span>
                     </div>
-            </div>
-
-            <!-- Meta WhatsApp Cloud API Credentials Settings Card -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
-                <div class="flex items-center justify-between cursor-pointer select-none" onclick="toggleMetaAPISettings()">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center font-bold">
-                            <span class="material-symbols-outlined text-[18px]">key</span>
-                        </div>
-                        <div>
-                            <h3 class="text-xs font-bold text-slate-200 uppercase tracking-wider">Meta WhatsApp Business API Keys</h3>
-                            <p class="text-[11px] text-slate-400">Configure Meta Access Token & Phone Number ID for direct Cloud API message dispatch</p>
-                        </div>
+                    <div class="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
+                        <span class="text-[9px] font-bold text-slate-500 uppercase block">Lead Source</span>
+                        <span class="font-semibold text-slate-300 truncate block mt-0.5">Website Inquiry</span>
                     </div>
-                    <span id="meta-api-toggle-icon" class="material-symbols-outlined text-[20px] text-slate-400">expand_more</span>
-                </div>
-
-                <div id="meta-api-settings-body" class="hidden space-y-3 pt-3 border-t border-slate-800">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Phone Number ID</label>
-                            <input type="text" id="meta-phone-number-id" placeholder="e.g. 100654321098765" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-emerald-500" />
-                        </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-400 uppercase mb-1">Permanent Access Token</label>
-                            <input type="password" id="meta-access-token" placeholder="EAAG..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono focus:ring-1 focus:ring-emerald-500" />
-                        </div>
-                    </div>
-                    <div class="flex justify-end gap-2 pt-1">
-                        <button type="button" onclick="saveMetaAPISettings()" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-[15px]">save</span>
-                            Save Meta API Credentials
-                        </button>
+                    <div class="bg-slate-950 px-2.5 py-1.5 rounded-lg border border-slate-800/80 truncate">
+                        <span class="text-[9px] font-bold text-slate-500 uppercase block">Last Activity</span>
+                        <span class="font-semibold text-slate-300 truncate block mt-0.5">{{ lead.last_activity|date:"M d, H:i" }}</span>
                     </div>
                 </div>
             </div>
 
-            <!-- WhatsApp Interactive Buttons Builder Card (CTA / Quick Replies like Image 2) -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-                <div class="flex flex-wrap items-center justify-between gap-3">
+            <!-- Template Selector (Compact Searchable Combobox) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-3">
+                <div class="flex items-center justify-between gap-2">
+                    <label class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px] text-emerald-400">format_quote</span>
+                        Message Template
+                    </label>
+                    <button type="button" onclick="openCreateTemplateModal()" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[15px]">add_circle</span>
+                        + Create New Template
+                    </button>
+                </div>
+
+                <!-- Template Category Pills Bar -->
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar text-[11px]">
+                    <button type="button" onclick="filterWhatsAppTemplates('all')" id="wa-filter-all" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 shrink-0">All</button>
+                    <button type="button" onclick="filterWhatsAppTemplates('greetings')" id="wa-filter-greetings" class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Greetings</button>
+                    <button type="button" onclick="filterWhatsAppTemplates('followup')" id="wa-filter-followup" class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Follow-up</button>
+                    <button type="button" onclick="filterWhatsAppTemplates('sales')" id="wa-filter-sales" class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Sales & Demo</button>
+                    <button type="button" onclick="filterWhatsAppTemplates('webdev')" id="wa-filter-webdev" class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Web Development</button>
+                    <button type="button" onclick="filterWhatsAppTemplates('quotation')" id="wa-filter-quotation" class="px-2.5 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-white border border-slate-800 font-medium shrink-0">Quotation & Proposal</button>
+                </div>
+
+                <!-- Searchable Select Input -->
+                <div class="relative">
+                    <select id="wa-template-select" onchange="applySelectedTemplate(this.value)" class="w-full bg-slate-950 border border-slate-800 text-xs font-semibold text-slate-200 rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="">Search or select a message template...</option>
+                        <option value="xenotrix_intro" selected>Xenotrix Corporate Overview & Core Services (Default Meta Approved)</option>
+                        <option value="followup">Website Development & CRM Project Follow-up</option>
+                        <option value="greetings">Welcome Greeting & Introduction</option>
+                        <option value="meeting_scheduled">Meeting Confirmation & Calendar Invite</option>
+                        <option value="quotation">Service Quotation & Proposal Share</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Message Composer Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-3">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px] text-emerald-400">edit_note</span>
+                        Message Composer
+                    </label>
+                    <div class="flex items-center gap-3 text-[11px] text-slate-400">
+                        <span>Chars: <strong id="wa-stat-chars" class="text-slate-200">0</strong></span>
+                        <span>Words: <strong id="wa-stat-words" class="text-slate-200">0</strong></span>
+                        <span>Read: <strong id="wa-stat-readtime" class="text-slate-200">0s</strong></span>
+                    </div>
+                </div>
+
+                <!-- Insert Variable Token Chips Bar -->
+                <div class="space-y-1.5">
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Insert Dynamic Personalization Tokens</span>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" onclick="insertWhatsAppTag('{{name}}')" class="px-2 py-1 text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-all flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">person</span> {{name}}
+                        </button>
+                        <button type="button" onclick="insertWhatsAppTag('{{company}}')" class="px-2 py-1 text-[11px] font-semibold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">corporate_fare</span> {{company}}
+                        </button>
+                        <button type="button" onclick="insertWhatsAppTag('{{phone}}')" class="px-2 py-1 text-[11px] font-semibold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">call</span> {{phone}}
+                        </button>
+                        <button type="button" onclick="insertWhatsAppTag('{{service}}')" class="px-2 py-1 text-[11px] font-semibold bg-slate-950 text-slate-300 hover:bg-slate-800 border border-slate-800 rounded-lg transition-all flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">category</span> {{service}}
+                        </button>
+                        <button type="button" onclick="insertWhatsAppTag('{{executive_name}}')" class="px-2 py-1 text-[11px] font-semibold bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border border-purple-500/20 rounded-lg transition-all flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">badge</span> {{executive_name}}
+                        </button>
+                        <button type="button" onclick="insertWhatsAppTag('https://xenotrix.in')" class="px-2 py-1 text-[11px] font-semibold bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg transition-all flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">language</span> {{website}}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Textarea Editor -->
+                <textarea id="whatsapp-msg-input" oninput="updateWhatsAppPreview()" rows="7" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-xs text-slate-100 font-sans leading-relaxed focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 custom-scrollbar" placeholder="Type your WhatsApp message here or select a template above..."></textarea>
+            </div>
+
+            <!-- WhatsApp Interactive Action Buttons Builder Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-3">
+                <div class="flex items-center justify-between">
                     <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                            <span class="material-symbols-outlined text-[18px] text-emerald-400">touch_app</span>
-                            WhatsApp Interactive Buttons (Call to Action / Quick Replies)
+                        <label class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px] text-emerald-400">touch_app</span>
+                            WhatsApp Interactive Buttons (Action Buttons)
                         </label>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Add up to 3 interactive action buttons to your WhatsApp message (as seen in WhatsApp Business).</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Attach up to 3 interactive reply or call-to-action buttons (Meta WhatsApp Business API specification).</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span id="wa-buttons-count-badge" class="px-2.5 py-0.5 text-[11px] font-extrabold bg-slate-800 text-slate-400 border border-slate-700 rounded-lg">0 / 3 Buttons</span>
-                        <button type="button" id="wa-clear-buttons-btn" onclick="clearAllWhatsAppButtons()" class="hidden px-2.5 py-1 text-xs font-bold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl transition-all flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">delete</span>
-                            Clear All
-                        </button>
-                        <button type="button" onclick="addWhatsAppButton()" class="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm">
-                            <span class="material-symbols-outlined text-[16px]">add_circle</span>
-                            + Add Button
-                        </button>
-                    </div>
+                    <span id="wa-buttons-count-badge" class="px-2 py-0.5 text-[10px] font-extrabold bg-slate-950 text-slate-400 border border-slate-800 rounded-md">3 / 3 Buttons</span>
                 </div>
 
                 <!-- Quick Button Presets -->
-                <div class="space-y-2">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Quick Presets (Like Image 2)</span>
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" onclick="addWhatsAppPresetButton('DOWNLOAD', 'Quick Reply', '')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-sky-400 transition-all flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-[14px]">download</span>
-                            + DOWNLOAD
-                        </button>
-                        <button type="button" onclick="addWhatsAppPresetButton('EMT OFFER', 'Quick Reply', '')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-sky-400 transition-all flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-[14px]">local_offer</span>
-                            + EMT OFFER
-                        </button>
-                        <button type="button" onclick="addWhatsAppPresetButton('REFER & EARN', 'Quick Reply', '')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-sky-400 transition-all flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-[14px]">share</span>
-                            + REFER & EARN
-                        </button>
-                        <button type="button" onclick="addWhatsAppPresetButton('BOOK DEMO', 'Quick Reply', '')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-emerald-400 transition-all flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-[14px]">calendar_month</span>
-                            + BOOK DEMO
-                        </button>
-                        <button type="button" onclick="addWhatsAppPresetButton('CALL US', 'Call Phone', '+91 9995544316')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-emerald-400 transition-all flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-[14px]">call</span>
-                            + CALL US
-                        </button>
-                        <button type="button" onclick="addWhatsAppPresetButton('VISIT WEBSITE', 'Open URL', 'https://xenotrix.in')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-bold text-blue-400 transition-all flex items-center gap-1.5">
-                            <span class="material-symbols-outlined text-[14px]">language</span>
-                            + VISIT WEBSITE
-                        </button>
-                    </div>
+                <div class="flex flex-wrap gap-1.5 text-[11px]">
+                    <button type="button" onclick="addWhatsAppPresetButton('DOWNLOAD', 'Quick Reply', '')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 font-bold text-sky-400 flex items-center gap-1">+ DOWNLOAD</button>
+                    <button type="button" onclick="addWhatsAppPresetButton('EMT OFFER', 'Quick Reply', '')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 font-bold text-sky-400 flex items-center gap-1">+ EMT OFFER</button>
+                    <button type="button" onclick="addWhatsAppPresetButton('REFER & EARN', 'Quick Reply', '')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 font-bold text-sky-400 flex items-center gap-1">+ REFER & EARN</button>
+                    <button type="button" onclick="addWhatsAppPresetButton('BOOK DEMO', 'Quick Reply', '')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 font-bold text-emerald-400 flex items-center gap-1">+ BOOK DEMO</button>
+                    <button type="button" onclick="addWhatsAppPresetButton('CALL US', 'Call Phone', '+91 9995544316')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 font-bold text-emerald-400 flex items-center gap-1">+ CALL US</button>
+                    <button type="button" onclick="addWhatsAppPresetButton('VISIT WEBSITE', 'Open URL', 'https://xenotrix.in')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 font-bold text-blue-400 flex items-center gap-1">+ VISIT WEBSITE</button>
                 </div>
 
                 <!-- Configured Buttons List -->
-                <div id="wa-buttons-list" class="space-y-2.5">
-                    <!-- Dynamic button items rendered here -->
-                </div>
+                <div id="wa-buttons-list" class="space-y-2"></div>
             </div>
 
-            <!-- Message Attachments & Documents Card (PDF, Docs, Media, etc.) -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-4">
-                <div class="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                            <span class="material-symbols-outlined text-[18px] text-emerald-400">attach_file</span>
-                            Message Attachments
-                        </label>
-                        <p class="text-[11px] text-slate-400 mt-0.5">Attach PDF documents, proposals, catalogs, spreadsheets, or images to send with your message.</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span id="wa-attachments-count-badge" class="px-2.5 py-0.5 text-[11px] font-extrabold bg-slate-800 text-slate-400 border border-slate-700 rounded-lg">0 Attached</span>
-                        <button type="button" id="wa-clear-attachments-btn" onclick="clearAllWhatsAppAttachments()" class="hidden px-2.5 py-1 text-xs font-bold text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl transition-all flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">delete</span>
-                            Clear All
-                        </button>
-                    </div>
+            <!-- Documents & File Attachments Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-3">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px] text-emerald-400">attach_file</span>
+                        Message Attachments & Documents
+                    </label>
+                    <button type="button" onclick="triggerWhatsAppFileUpload()" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[15px]">upload</span> Upload Custom File
+                    </button>
                 </div>
 
-                <!-- Quick Presets / Business Documents Picker -->
-                <div class="space-y-2">
-                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Quick Add Business Documents</span>
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" onclick="addWhatsAppPresetAttachment('brochure')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-200 transition-all flex items-center gap-2 group">
-                            <span class="w-5 h-5 rounded-md bg-rose-500/20 text-rose-400 flex items-center justify-center text-[11px] font-bold">PDF</span>
-                            <span>Xenotrix Company Profile.pdf</span>
-                            <span class="material-symbols-outlined text-[15px] text-slate-500 group-hover:text-emerald-400 transition-colors">add_circle</span>
-                        </button>
-                        <button type="button" onclick="addWhatsAppPresetAttachment('quotation')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-200 transition-all flex items-center gap-2 group">
-                            <span class="w-5 h-5 rounded-md bg-rose-500/20 text-rose-400 flex items-center justify-center text-[11px] font-bold">PDF</span>
-                            <span>Services_Quotation_Proposal.pdf</span>
-                            <span class="material-symbols-outlined text-[15px] text-slate-500 group-hover:text-emerald-400 transition-colors">add_circle</span>
-                        </button>
-                        <button type="button" onclick="addWhatsAppPresetAttachment('catalog')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-200 transition-all flex items-center gap-2 group">
-                            <span class="w-5 h-5 rounded-md bg-blue-500/20 text-blue-400 flex items-center justify-center text-[11px] font-bold">DOC</span>
-                            <span>Product_Catalog_&_Pricing.docx</span>
-                            <span class="material-symbols-outlined text-[15px] text-slate-500 group-hover:text-emerald-400 transition-colors">add_circle</span>
-                        </button>
-                    </div>
+                <div class="flex flex-wrap gap-2 text-[11px]">
+                    <button type="button" onclick="addWhatsAppPresetAttachment('brochure')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 font-semibold text-slate-200 flex items-center gap-2 group">
+                        <span class="w-4 h-4 rounded bg-rose-500/20 text-rose-400 flex items-center justify-center text-[9px] font-bold">PDF</span>
+                        <span>Xenotrix_Company_Profile.pdf</span>
+                    </button>
+                    <button type="button" onclick="addWhatsAppPresetAttachment('quotation')" class="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 font-semibold text-slate-200 flex items-center gap-2 group">
+                        <span class="w-4 h-4 rounded bg-rose-500/20 text-rose-400 flex items-center justify-center text-[9px] font-bold">PDF</span>
+                        <span>Services_Quotation_Proposal.pdf</span>
+                    </button>
                 </div>
 
-                <!-- Custom Drag & Drop File Upload Zone -->
-                <div id="wa-drop-zone" class="relative border-2 border-dashed border-slate-800 hover:border-emerald-500/50 bg-slate-950/60 rounded-xl p-4 text-center transition-all cursor-pointer group" onclick="triggerWhatsAppFileUpload()">
-                    <input type="file" id="wa-file-input" multiple onchange="handleWhatsAppFileSelect(event)" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.gif,.webp,.zip,.rar,.txt" class="hidden" />
-                    
-                    <div class="flex flex-col items-center justify-center gap-2">
-                        <div class="w-10 h-10 rounded-xl bg-slate-900 text-emerald-400 border border-slate-800 flex items-center justify-center group-hover:scale-110 group-hover:bg-emerald-500/10 transition-all">
-                            <span class="material-symbols-outlined text-[24px]">cloud_upload</span>
-                        </div>
-                        <div>
-                            <p class="text-xs font-bold text-slate-200 group-hover:text-emerald-400 transition-colors">
-                                Click to upload attachments <span class="font-normal text-slate-400">or drag & drop files here</span>
-                            </p>
-                            <p class="text-[10px] text-slate-500 mt-0.5">Supports PDF, DOCX, XLSX, PPTX, Images (PNG/JPG), ZIP up to 25MB each</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Attached Files List -->
-                <div id="wa-attachments-list" class="space-y-2.5 max-h-[220px] overflow-y-auto pr-1 custom-scrollbar">
-                    <!-- Files dynamically rendered here -->
-                </div>
+                <input type="file" id="wa-file-input" multiple onchange="handleWhatsAppFileSelect(event)" class="hidden" />
+                <div id="wa-attachments-list" class="space-y-2"></div>
             </div>
 
-            <!-- Message Telemetry & Insights Card -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg space-y-3">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[18px] text-emerald-400">analytics</span>
-                    Message Telemetry & Insights
-                </span>
+            <!-- Recent WhatsApp Conversation History Section -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-md space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px] text-emerald-400">history</span>
+                        Recent WhatsApp Activity & Delivery History
+                    </h3>
+                    <span class="text-[10px] text-slate-500 font-semibold">Saved to CRM Database</span>
+                </div>
 
-                <div class="grid grid-cols-2 sm:grid-cols-6 gap-3">
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase block">Characters</span>
-                        <span id="wa-stat-chars" class="text-lg font-extrabold text-white">0</span>
-                    </div>
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase block">Words</span>
-                        <span id="wa-stat-words" class="text-lg font-extrabold text-white">0</span>
-                    </div>
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase block">Attachments</span>
-                        <span id="wa-stat-attachments" class="text-lg font-extrabold text-rose-400">0</span>
-                    </div>
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase block">Variables</span>
-                        <span id="wa-stat-vars" class="text-lg font-extrabold text-emerald-400">0</span>
-                    </div>
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase block">Detected Links</span>
-                        <span id="wa-stat-links" class="text-lg font-extrabold text-blue-400">0</span>
-                    </div>
-                    <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-center col-span-2 sm:col-span-1">
-                        <span class="text-[10px] font-bold text-slate-500 uppercase block">Est Read Time</span>
-                        <span id="wa-stat-readtime" class="text-lg font-extrabold text-white">0s</span>
-                    </div>
+                <div class="space-y-2 text-xs">
+                    {% if whatsapp_history %}
+                        {% for msg in whatsapp_history %}
+                        <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-3 flex items-start justify-between gap-3">
+                            <div class="min-w-0 space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-slate-200">{{ msg.recipient_phone }}</span>
+                                    <span class="text-[10px] text-slate-500 font-mono">{{ msg.sent_at|date:"M d, H:i" }}</span>
+                                </div>
+                                <p class="text-slate-400 text-[11px] truncate max-w-md">"{{ msg.message_content }}"</p>
+                            </div>
+                            <div class="shrink-0 text-right">
+                                {% if msg.status == 'Sent' or msg.status == 'Delivered' or msg.status == 'Read' %}
+                                <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[13px]">done_all</span> {{ msg.status }}
+                                </span>
+                                {% else %}
+                                <span class="px-2 py-0.5 text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[13px]">warning</span> {{ msg.status }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="p-3 text-center text-slate-500 text-[11px] bg-slate-950 rounded-xl border border-slate-800">
+                            No previous WhatsApp messages recorded for this lead yet. Outgoing messages will be saved here automatically.
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -427,31 +284,29 @@
 
         <!-- Right Panel: Sticky WhatsApp Business Smartphone Live Preview (5 Cols) -->
         <section id="wa-preview-panel" class="lg:col-span-5 bg-slate-950 p-6 flex flex-col justify-start items-center overflow-y-auto custom-scrollbar">
-            <div class="sticky top-0 w-full max-w-md space-y-5">
+            <div class="sticky top-0 w-full max-w-md space-y-4">
                 
                 <div class="flex items-center justify-between">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                         <span class="material-symbols-outlined text-[18px] text-emerald-400">smartphone</span>
-                        Sticky Live WhatsApp Preview
+                        Real-Time Live WhatsApp Preview
                     </label>
-                    <span class="text-[11px] font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                        WhatsApp Business API
+                    <span class="text-[10px] font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                        Official Meta Chat UI
                     </span>
                 </div>
 
-                <!-- Realistic Smartphone Mockup Frame -->
+                <!-- Realistic Smartphone Frame -->
                 <div class="bg-slate-900 rounded-[36px] p-3.5 border-2 border-slate-800 shadow-2xl overflow-hidden relative">
-                    
-                    <!-- Top Speaker & Camera Notch -->
+                    <!-- Notch -->
                     <div class="w-28 h-4 bg-slate-950 rounded-b-xl mx-auto mb-2 flex items-center justify-center gap-1.5">
                         <div class="w-2.5 h-2.5 rounded-full bg-slate-900 border border-slate-800"></div>
                         <div class="w-8 h-1 bg-slate-900 rounded-full"></div>
                     </div>
 
-                    <!-- Inner Smartphone Screen Container -->
+                    <!-- Inner Smartphone Screen -->
                     <div class="bg-[#0b141a] rounded-[24px] border border-slate-800 overflow-hidden flex flex-col h-[480px]">
-                        
-                        <!-- Chat Header Bar -->
+                        <!-- Chat Header -->
                         <div class="bg-[#075e54] text-white px-4 py-3 flex items-center justify-between shadow-md shrink-0">
                             <div class="flex items-center gap-3 min-w-0">
                                 <div class="w-9 h-9 rounded-full bg-emerald-700 flex items-center justify-center font-bold text-xs text-white shadow-inner shrink-0">
@@ -465,72 +320,41 @@
                                     <p class="text-[10px] text-emerald-100/90 leading-tight">Official Business Account • Online</p>
                                 </div>
                             </div>
-
-                            <div class="flex items-center gap-2.5 text-white/90">
+                            <div class="flex items-center gap-2 text-white/90">
                                 <span class="material-symbols-outlined text-[18px]">videocam</span>
                                 <span class="material-symbols-outlined text-[18px]">call</span>
                                 <span class="material-symbols-outlined text-[18px]">more_vert</span>
                             </div>
                         </div>
 
-                        <!-- Chat Message Wallpaper & Container -->
-                        <div class="flex-1 p-4 overflow-y-auto space-y-3 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:16px_16px] custom-scrollbar">
+                        <!-- Chat Body -->
+                        <div class="flex-1 bg-[#0b141a] p-4 overflow-y-auto custom-scrollbar space-y-3" style="background-image: radial-gradient(#1f2c34 1px, transparent 0); background-size: 16px 16px;">
                             
-                            <!-- Date Pill Stamp -->
-                            <div class="text-center">
-                                <span class="bg-slate-800/80 text-slate-300 text-[10px] font-bold px-3 py-1 rounded-md shadow-2xs">
-                                    TODAY
-                                </span>
+                            <!-- Date Badge -->
+                            <div class="text-center my-1">
+                                <span class="bg-[#182229] text-slate-400 text-[10px] px-3 py-1 rounded-lg font-medium shadow-xs border border-slate-800">TODAY</span>
                             </div>
 
                             <!-- Outgoing Message Bubble -->
-                            <div class="bg-[#005c4b] text-white shadow-md border border-emerald-700/50 rounded-2xl rounded-tr-none p-4 text-xs leading-relaxed max-w-[92%] ml-auto relative space-y-2">
-                                <div id="whatsapp-preview-attachments" class="space-y-2 mb-2.5 hidden"></div>
+                            <div class="bg-[#005c4b] text-white shadow-md border border-emerald-700/50 rounded-2xl rounded-tr-none p-3.5 text-xs leading-relaxed max-w-[92%] ml-auto relative space-y-2">
+                                <div id="whatsapp-preview-attachments" class="space-y-2 mb-2 hidden"></div>
                                 <div id="whatsapp-preview-text" class="whitespace-pre-wrap font-sans break-words text-[12.5px] text-white"></div>
                                 
                                 <div class="flex items-center justify-end gap-1 text-[10px] text-emerald-200/80 select-none pt-1">
-                                    <span id="whatsapp-preview-time">15:21</span>
+                                    <span id="whatsapp-preview-time">16:55</span>
                                     <span class="material-symbols-outlined text-[15px] text-sky-300 font-bold">done_all</span>
                                 </div>
                             </div>
 
-                            <!-- WhatsApp Interactive Action Buttons Preview (WhatsApp Business API Style like Image 2) -->
-                            <div id="whatsapp-preview-buttons" class="space-y-1.5 max-w-[92%] ml-auto mt-1.5 hidden">
-                            </div>
+                            <!-- WhatsApp Interactive Action Buttons Preview -->
+                            <div id="whatsapp-preview-buttons" class="space-y-1.5 max-w-[92%] ml-auto mt-1.5 hidden"></div>
                         </div>
 
-                        <!-- Chat Footer Delivery Info Bar -->
-                        <div class="bg-slate-900/90 backdrop-blur-sm px-4 py-2.5 border-t border-slate-800 text-center shrink-0">
+                        <!-- Chat Footer Bar -->
+                        <div class="bg-slate-900/90 backdrop-blur-sm px-4 py-2 border-t border-slate-800 text-center shrink-0">
                             <p class="text-[11px] text-slate-400 font-medium truncate">
-                                Sending from <span class="font-bold text-white">+91 9995544316</span> to <span class="font-bold text-emerald-400">{{ lead.phone_number|default:'Selected Recipient' }}</span>
+                                Sending to <span id="wa-footer-phone-display" class="font-bold text-emerald-400">{{ lead.phone_number|default:'Recipient Phone' }}</span>
                             </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Business Profile Preview Card -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-slate-950 text-white flex items-center justify-center font-bold text-sm border border-slate-800">
-                            XT
-                        </div>
-                        <div>
-                            <h3 class="text-xs font-bold text-white">Xenotrix Technologies</h3>
-                            <a href="https://xenotrix.in" target="_blank" class="text-[11px] text-emerald-400 hover:underline font-medium flex items-center gap-1 mt-0.5">
-                                https://xenotrix.in
-                                <span class="material-symbols-outlined text-[13px]">open_in_new</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="text-[11px] text-slate-400 leading-relaxed border-t border-slate-800 pt-3 space-y-1.5">
-                        <div class="flex justify-between">
-                            <span class="text-slate-500">Business Category:</span>
-                            <span class="font-medium text-slate-200">Enterprise CRM & IT Solutions</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-slate-500">Official Helpline:</span>
-                            <span class="font-mono font-medium text-slate-200">+91 9995544316</span>
                         </div>
                     </div>
                 </div>
@@ -538,283 +362,263 @@
             </div>
         </section>
 
-    </main>
+    </div>
 
-    <!-- Bottom Action Footer Bar -->
-    <footer class="bg-slate-950 border-t border-slate-800/80 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 shrink-0 z-20">
-        <!-- Left Actions -->
+    <!-- Bottom Actions Footer Bar -->
+    <footer class="bg-slate-900 border-t border-slate-800 px-6 py-3 flex items-center justify-between shrink-0 z-20">
         <div class="flex items-center gap-2">
-            <button type="button" onclick="copyWhatsAppText()" class="px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all border border-slate-800 flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[16px]">content_copy</span>
-                Copy Message
+            <button type="button" onclick="copyWhatsAppText()" class="px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded-xl transition-all border border-slate-800 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px]">content_copy</span> Copy Text
             </button>
-            <button type="button" onclick="resetWhatsAppMessage()" class="px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all border border-slate-800 flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[16px]">restart_alt</span>
-                Reset
-            </button>
-            <button type="button" onclick="openCreateTemplateModal()" class="px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-xl transition-all border border-slate-800 hidden sm:flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[16px]">bookmark_add</span>
-                Save as Template
+            <button type="button" onclick="openSendTestModal()" class="px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded-xl transition-all border border-slate-800 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px]">send_time_extension</span> Send Test
             </button>
         </div>
 
-        <!-- Right Actions -->
         <div class="flex items-center gap-3">
-            <select id="wa-send-mode" class="bg-slate-900 border border-slate-800 text-xs font-bold text-emerald-400 rounded-xl px-3 py-2 focus:ring-1 focus:ring-emerald-500 shadow-sm cursor-pointer">
+            <select id="wa-send-mode" class="bg-slate-950 border border-slate-800 text-xs font-bold text-emerald-400 rounded-xl px-3 py-2 focus:ring-1 focus:ring-emerald-500 shadow-xs cursor-pointer">
                 <option value="cloud_api">Meta WhatsApp API (Native Action Buttons)</option>
-                <option value="web_app">WhatsApp Web / Desktop App</option>
+                <option value="web_app">WhatsApp Web / Desktop App Direct</option>
             </select>
-            <button type="button" onclick="closeWhatsAppModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl transition-all">
-                Cancel
-            </button>
-            <button type="button" onclick="sendWhatsAppMessage()" class="px-7 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-500/20 transition-all active:scale-95 text-xs flex items-center gap-2">
+            <button type="button" onclick="closeWhatsAppModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl transition-all">Cancel</button>
+            <button type="button" onclick="openSendConfirmationModal()" class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-500/20 transition-all active:scale-95 text-xs flex items-center gap-2">
                 <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
                     <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l.999 1.59-1.054 3.85 3.856-1.011 1.542.966z"/>
                 </svg>
-                Send via WhatsApp
+                Send WhatsApp Message
             </button>
         </div>
     </footer>
-
 </div>
 
-<!-- Interactive Create New Message Template Modal Dialog -->
-<div id="create-template-modal" class="fixed inset-0 z-[110] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
-    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl shadow-2xl p-6 space-y-5 text-slate-100 transform scale-95 transition-all">
-        
-        <div class="flex items-center justify-between border-b border-slate-800 pb-3.5">
-            <div>
-                <h3 class="text-base font-bold text-white flex items-center gap-2">
-                    <span class="material-symbols-outlined text-emerald-400 text-[20px]">bookmark_add</span>
-                    Create New Message Template
-                </h3>
-                <p class="text-xs text-slate-400 mt-0.5">Save custom templates to use across your organization.</p>
+<!-- Modal 1: API Connection Status Drawer Modal -->
+<div id="api-status-modal" class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <div class="flex items-center gap-2.5">
+                <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+                <h3 class="text-sm font-extrabold text-white">Meta WhatsApp Cloud API Status</h3>
             </div>
-            <button type="button" onclick="closeCreateTemplateModal()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center border border-slate-700">
-                <span class="material-symbols-outlined text-[18px]">close</span>
-            </button>
+            <button type="button" onclick="closeApiStatusModal()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined text-[18px]">close</span></button>
         </div>
-
-        <div class="space-y-4">
-            <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Template Name *</label>
-                <input type="text" id="new-tmpl-name" placeholder="e.g. 🚀 Exclusive Feature Demo Request" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all placeholder:text-slate-500" />
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Category</label>
-                    <select id="new-tmpl-category" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:ring-2 focus:ring-emerald-500">
-                        <option value="Sales">Sales</option>
-                        <option value="Greetings">Greetings</option>
-                        <option value="Follow-up">Follow-up</option>
-                        <option value="Meeting">Meeting</option>
-                        <option value="Support">Support</option>
-                        <option value="Promotional">Promotional</option>
-                        <option value="Custom">Custom</option>
-                    </select>
-                </div>
-                <div class="flex items-center gap-4 pt-5">
-                    <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-300">
-                        <input type="checkbox" id="new-tmpl-favorite" class="rounded bg-slate-950 border-slate-800 text-emerald-500 focus:ring-emerald-500" />
-                        Favorite
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-300">
-                        <input type="checkbox" id="new-tmpl-default" class="rounded bg-slate-950 border-slate-800 text-emerald-500 focus:ring-emerald-500" />
-                        Set Default
-                    </label>
-                </div>
-            </div>
-
-            <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Template Content *</label>
-                <textarea id="new-tmpl-content" rows="6" placeholder="Type your template text here..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white leading-relaxed focus:ring-2 focus:ring-emerald-500 transition-all font-sans"></textarea>
-                
-                <div class="flex flex-wrap gap-1.5 mt-2">
-                    <span class="text-[10px] text-slate-500 uppercase tracking-wider self-center mr-1">Insert:</span>
-                    <button type="button" onclick="insertNewTmplTag('{{lead_name}}')" class="px-2 py-0.5 text-[10px] bg-slate-800 text-slate-300 hover:text-white rounded border border-slate-700">+ {{lead_name}}</button>
-                    <button type="button" onclick="insertNewTmplTag('{{company}}')" class="px-2 py-0.5 text-[10px] bg-slate-800 text-slate-300 hover:text-white rounded border border-slate-700">+ {{company}}</button>
-                    <button type="button" onclick="insertNewTmplTag('https://xenotrix.in')" class="px-2 py-0.5 text-[10px] bg-blue-950/60 text-blue-300 rounded border border-blue-800">+ {{website}}</button>
-                </div>
-            </div>
+        <div class="space-y-2 text-xs text-slate-300">
+            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Status</span><span class="font-bold text-emerald-400">● Connected</span></div>
+            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Business Sender</span><span class="font-bold text-white">+91 9995544316</span></div>
+            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Phone Number ID</span><span class="font-mono text-slate-300">1249495338254585</span></div>
+            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>WABA Account ID</span><span class="font-mono text-slate-300">1753452545807653</span></div>
+            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Meta API Version</span><span class="font-bold text-white">v18.0</span></div>
+            <div class="flex justify-between bg-slate-950 p-2.5 rounded-xl border border-slate-800"><span>Security Architecture</span><span class="font-bold text-emerald-400">Tokens Stored Server-Side Only</span></div>
         </div>
-
-        <div class="flex items-center justify-end gap-3 border-t border-slate-800 pt-4">
-            <button type="button" onclick="closeCreateTemplateModal()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl">Cancel</button>
-            <button type="button" onclick="saveNewWhatsAppTemplate()" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-lg transition-all flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[16px]">save</span>
-                Save & Apply Template
-            </button>
+        <div class="flex justify-end pt-2">
+            <button type="button" onclick="closeApiStatusModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl">Close Status</button>
         </div>
-
     </div>
 </div>
 
-<!-- JavaScript Engine for Full-Page Send WhatsApp Message Interface -->
+<!-- Modal 2: Send Confirmation Modal -->
+<div id="send-confirm-modal" class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
+                <span class="material-symbols-outlined text-[20px]">send</span>
+            </div>
+            <div>
+                <h3 class="text-sm font-extrabold text-white">Confirm WhatsApp Message</h3>
+                <p class="text-xs text-slate-400">Please confirm sending to recipient.</p>
+            </div>
+        </div>
+
+        <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-2">
+            <div class="flex justify-between"><span class="text-slate-500">Recipient:</span><span id="confirm-recipient-name" class="font-bold text-white"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Phone Number:</span><span id="confirm-recipient-phone" class="font-mono text-emerald-400 font-bold"></span></div>
+            <div class="flex justify-between"><span class="text-slate-500">Interactive Buttons:</span><span id="confirm-buttons-count" class="font-bold text-white"></span></div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="closeSendConfirmationModal()" class="px-4 py-2 bg-slate-950 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-xs rounded-xl border border-slate-800">Cancel</button>
+            <button type="button" id="confirm-send-btn" onclick="executeSendWhatsAppMessage()" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-2">
+                <span>Confirm & Send</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal 3: Change Recipient Modal -->
+<div id="change-recipient-modal" class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-emerald-400">person_search</span>
+                Select Recipient Lead
+            </h3>
+            <button type="button" onclick="closeChangeRecipientModal()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined text-[18px]">close</span></button>
+        </div>
+
+        <input type="text" id="recipient-search-input" oninput="searchLeadsForWhatsApp(this.value)" placeholder="Type lead name, company, or phone number..." class="w-full bg-slate-950 border border-slate-800 text-xs rounded-xl px-3.5 py-2.5 text-white focus:ring-1 focus:ring-emerald-500" />
+        
+        <div id="recipient-search-results" class="max-h-60 overflow-y-auto space-y-2 custom-scrollbar text-xs"></div>
+    </div>
+</div>
+
+<!-- Modal 4: Send Test Modal -->
+<div id="send-test-modal" class="fixed inset-0 z-[120] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="text-sm font-extrabold text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-emerald-400">send_time_extension</span>
+                Send Test WhatsApp Message
+            </h3>
+            <button type="button" onclick="closeSendTestModal()" class="text-slate-400 hover:text-white"><span class="material-symbols-outlined text-[18px]">close</span></button>
+        </div>
+
+        <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Test Phone Number (E.164 format)</label>
+            <input type="text" id="test-phone-input" value="+91 9995544316" class="w-full bg-slate-950 border border-slate-800 text-xs font-mono text-emerald-400 rounded-xl px-3.5 py-2.5 focus:ring-1 focus:ring-emerald-500" />
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2">
+            <button type="button" onclick="closeSendTestModal()" class="px-4 py-2 bg-slate-950 text-slate-400 hover:text-white font-bold text-xs rounded-xl border border-slate-800">Cancel</button>
+            <button type="button" onclick="executeSendTestWhatsApp()" class="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl shadow-lg">Send Test Now</button>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Logic Engine -->
 <script>
 (function() {
-    // Database and Context Variables
-    const leadNameVal = "{{ lead.name|escapejs }}";
-    const leadCompanyVal = "{{ lead.company|default:'your organization'|escapejs }}";
-    const leadPhoneVal = "{{ lead.phone_number|escapejs }}";
-    const leadEmailVal = "{{ lead.email|default:''|escapejs }}";
-    const leadStatusVal = "{{ lead.status|default:'Active'|escapejs }}";
-    const leadStageVal = "{{ lead.stage|default:'New'|escapejs }}";
-    const salesExecVal = "{% if lead.owner and lead.owner.user %}{{ lead.owner.user.get_full_name|default:lead.owner.user.username|escapejs }}{% else %}Team Xenotrix{% endif %}";
-    
-    let servicesVal = "{% for s in lead.services.all %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% empty %}Custom CRM & Enterprise Solutions{% endfor %}";
+    let activeLeadId = "{{ lead.id }}";
+    let leadNameVal = "{{ lead.name|escapejs }}";
+    let leadPhoneVal = "{{ lead.phone_number|escapejs }}";
+    let leadCompanyVal = "{{ lead.company|escapejs }}";
+    let leadEmailVal = "{{ lead.email|escapejs }}";
 
-    // Default Professional Xenotrix Message Template
-    const defaultXenotrixTemplate = `Hello ${leadNameVal},
+    const defaultXenotrixTemplate = `Hello ${leadNameVal},\n\nGreetings from Xenotrix Technologies! We provide custom web applications, mobile apps, AI solutions, and CRM systems.\n\nSimply reply to this message or click the action buttons below to download our catalog or connect with us.`;
 
-👋 Greetings from Xenotrix Technologies!
-
-We help businesses accelerate growth through innovative technology solutions, and scalable digital products tailored to their unique goals.
-
-Our Core Services:
-
-• Website & Web Application Development
-• Mobile App Development (Android & iOS)
-• AI Solutions & Business Automation
-• Custom CRM & ERP Development
-• SaaS Product Development
-• Digital Marketing & SEO
-
-Simply reply to this message or call us anytime.
-
-+91 9995544316
-xenotrixtech@gmail.com
-https://xenotrix.in
-
-Innovative For Future`;
-
-    // Database Templates Collection
-    const whatsappTemplatesList = [
-        {
-            id: 'greetings',
-            name: '🌟 Greetings & Overview (Default)',
-            category: 'Greetings',
-            isDefault: true,
-            isFavorite: true,
-            updated: 'Just now',
-            content: defaultXenotrixTemplate
-        },
-        {
-            id: 'followup',
-            name: '💬 Executive Follow-up',
-            category: 'Follow-up',
-            isDefault: false,
-            isFavorite: true,
-            updated: 'Yesterday',
-            content: `Hello ${leadNameVal},\n\nHope you are having a productive day! Following up on our recent interaction regarding ${leadCompanyVal}.\n\nPlease let us know if you need any additional details or assistance from our team at Xenotrix Technologies.\n\nDirect Contact: +91 9995544316\nWebsite: https://xenotrix.in\n\nBest regards,\n${salesExecVal}`
-        },
-        {
-            id: 'meeting',
-            name: '📅 Schedule Discussion / Demo',
-            category: 'Meeting',
-            isDefault: false,
-            isFavorite: false,
-            updated: '3 days ago',
-            content: `Hi ${leadNameVal},\n\nWe would love to schedule a brief 15-minute call to demonstrate how Xenotrix Technologies can add value to ${leadCompanyVal}.\n\nPlease let us know what time slot works best for you this week.\n\nOfficial Website: https://xenotrix.in\nDirect Helpline: +91 9995544316\n\nBest regards,\n${salesExecVal}`
-        },
-        {
-            id: 'meeting_scheduled',
-            name: '📅 Website Dev & Digital Marketing Meeting',
-            category: 'Meeting',
-            isDefault: false,
-            isFavorite: true,
-            updated: 'Just now',
-            content: `Dear ${leadNameVal},\nThis is ${salesExecVal} from Xenotrix Technologies.\n\nAs discussed, our meeting has been scheduled to discuss your website development requirements and how we can help improve your online presence with our Digital Marketing.\n\n📅 Date: [Date]\n⏰ Time: [Time]\n\nLooking forward to speaking with you and discussing the project.\n\nThank you,\n${salesExecVal}\nXenotrix Technologies`
-        },
-        {
-            id: 'proposal',
-            name: '📄 Proposal Overview & Pricing',
-            category: 'Sales',
-            isDefault: false,
-            isFavorite: false,
-            updated: '1 week ago',
-            content: `Hello ${leadNameVal},\n\nOur team has prepared a tailored proposal for ${leadCompanyVal} covering our services (${servicesVal}).\n\nYou can review our capabilities anytime at https://xenotrix.in.\n\nLooking forward to your feedback!\n\nBest regards,\n${salesExecVal} (+91 9995544316)`
-        },
-        {
-            id: 'custom',
-            name: '✏️ Blank / Custom Message',
-            category: 'Custom',
-            isDefault: false,
-            isFavorite: false,
-            updated: 'Custom',
-            content: `Hi ${leadNameVal},\n\n`
-        }
-    ];
-
-    let currentFilter = 'all';
-
-    // Meta WhatsApp Cloud API Settings State & Handlers
-    window.toggleMetaAPISettings = function() {
-        const body = document.getElementById('meta-api-settings-body');
-        const icon = document.getElementById('meta-api-toggle-icon');
-        if (body) {
-            body.classList.toggle('hidden');
-            if (icon) icon.textContent = body.classList.contains('hidden') ? 'expand_more' : 'expand_less';
-        }
-    };
-
-    window.saveMetaAPISettings = function() {
-        const phoneId = document.getElementById('meta-phone-number-id')?.value.trim() || '';
-        const token = document.getElementById('meta-access-token')?.value.trim() || '';
-        
-        localStorage.setItem('meta_whatsapp_phone_id', phoneId);
-        localStorage.setItem('meta_whatsapp_token', token);
-        alert("Meta WhatsApp Business API credentials saved successfully!");
-    };
-
-    // Load saved Meta credentials on initial load
-    setTimeout(() => {
-        const savedPhoneId = localStorage.getItem('meta_whatsapp_phone_id') || '';
-        const savedToken = localStorage.getItem('meta_whatsapp_token') || '';
-        if (document.getElementById('meta-phone-number-id')) {
-            document.getElementById('meta-phone-number-id').value = savedPhoneId;
-        }
-        if (document.getElementById('meta-access-token')) {
-            document.getElementById('meta-access-token').value = savedToken;
-        }
-    }, 300);
-
-    // WhatsApp Attachments Store
     let whatsappAttachmentsList = [];
-
-    // WhatsApp Interactive Buttons Store (Max 3 buttons per WhatsApp API specification)
     let whatsappButtonsList = [
         { id: 'btn_1', text: 'DOWNLOAD', type: 'Quick Reply', value: '' },
         { id: 'btn_2', text: 'EMT OFFER', type: 'Quick Reply', value: '' },
         { id: 'btn_3', text: 'REFER & EARN', type: 'Quick Reply', value: '' }
     ];
 
-    window.addWhatsAppButton = function() {
-        if (whatsappButtonsList.length >= 3) {
-            alert("WhatsApp Business API allows a maximum of 3 interactive buttons per message.");
+    window.openWhatsAppModal = function() {
+        const modal = document.getElementById('whatsapp-modal');
+        const input = document.getElementById('whatsapp-msg-input');
+        if (!modal) return;
+
+        if (input && !input.value.trim()) {
+            input.value = defaultXenotrixTemplate;
+        }
+
+        renderWhatsAppButtonsList();
+        renderWhatsAppAttachmentsList();
+        updateWhatsAppPreview();
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+    };
+
+    window.closeWhatsAppModal = function() {
+        const modal = document.getElementById('whatsapp-modal');
+        if (!modal) return;
+        modal.classList.add('opacity-0', 'pointer-events-none');
+    };
+
+    window.openApiStatusModal = function() {
+        const m = document.getElementById('api-status-modal');
+        if (m) m.classList.remove('opacity-0', 'pointer-events-none');
+    };
+
+    window.closeApiStatusModal = function() {
+        const m = document.getElementById('api-status-modal');
+        if (m) m.classList.add('opacity-0', 'pointer-events-none');
+    };
+
+    window.openSendConfirmationModal = function() {
+        const input = document.getElementById('whatsapp-msg-input');
+        if (!input || !input.value.trim()) {
+            alert("Please enter a message before sending.");
             return;
         }
-        const newId = 'btn_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
-        whatsappButtonsList.push({
-            id: newId,
-            text: 'ACTION BUTTON',
-            type: 'Quick Reply',
-            value: ''
-        });
-        renderWhatsAppButtonsList();
+
+        document.getElementById('confirm-recipient-name').textContent = leadNameVal;
+        document.getElementById('confirm-recipient-phone').textContent = leadPhoneVal;
+        document.getElementById('confirm-buttons-count').textContent = `${whatsappButtonsList.length} Action Buttons`;
+
+        const m = document.getElementById('send-confirm-modal');
+        if (m) m.classList.remove('opacity-0', 'pointer-events-none');
+    };
+
+    window.closeSendConfirmationModal = function() {
+        const m = document.getElementById('send-confirm-modal');
+        if (m) m.classList.add('opacity-0', 'pointer-events-none');
+    };
+
+    window.openChangeRecipientModal = function() {
+        const m = document.getElementById('change-recipient-modal');
+        if (m) {
+            m.classList.remove('opacity-0', 'pointer-events-none');
+            searchLeadsForWhatsApp('');
+        }
+    };
+
+    window.closeChangeRecipientModal = function() {
+        const m = document.getElementById('change-recipient-modal');
+        if (m) m.classList.add('opacity-0', 'pointer-events-none');
+    };
+
+    window.openSendTestModal = function() {
+        const m = document.getElementById('send-test-modal');
+        if (m) m.classList.remove('opacity-0', 'pointer-events-none');
+    };
+
+    window.closeSendTestModal = function() {
+        const m = document.getElementById('send-test-modal');
+        if (m) m.classList.add('opacity-0', 'pointer-events-none');
+    };
+
+    window.searchLeadsForWhatsApp = function(query) {
+        const container = document.getElementById('recipient-search-results');
+        if (!container) return;
+
+        fetch(`{% url 'search_leads_json' %}?q=${encodeURIComponent(query)}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success || !data.leads.length) {
+                    container.innerHTML = `<div class="p-3 text-center text-slate-500">No matching leads found.</div>`;
+                    return;
+                }
+                container.innerHTML = data.leads.map(l => `
+                    <div onclick="selectNewRecipient(${l.id}, '${l.name.replace(/'/g, "\\'")}', '${l.phone_number}', '${(l.company || '').replace(/'/g, "\\'")}')" class="bg-slate-950 p-2.5 rounded-xl border border-slate-800 hover:border-emerald-500/80 cursor-pointer flex items-center justify-between">
+                        <div>
+                            <div class="font-bold text-white text-xs">${l.name}</div>
+                            <div class="text-[10px] text-slate-400">${l.company} • ${l.phone_number}</div>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">Select</span>
+                    </div>
+                `).join('');
+            });
+    };
+
+    window.selectNewRecipient = function(id, name, phone, company) {
+        activeLeadId = id;
+        leadNameVal = name;
+        leadPhoneVal = phone;
+        leadCompanyVal = company;
+
+        document.getElementById('lead-display-name').textContent = name;
+        document.getElementById('lead-display-phone').textContent = phone;
+        document.getElementById('lead-display-company').textContent = company || 'Individual Client';
+        document.getElementById('wa-footer-phone-display').textContent = phone;
+
+        closeChangeRecipientModal();
         updateWhatsAppPreview();
     };
 
     window.addWhatsAppPresetButton = function(text, type, value) {
         if (whatsappButtonsList.length >= 3) {
-            alert("WhatsApp allows up to 3 interactive buttons per message. Please remove a button first.");
+            alert("WhatsApp allows up to 3 action buttons per message.");
             return;
         }
-        if (whatsappButtonsList.some(b => b.text.toUpperCase() === text.toUpperCase())) {
-            alert(`Button "${text}" is already added!`);
-            return;
-        }
-        const newId = 'btn_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+        const newId = 'btn_' + Date.now();
         whatsappButtonsList.push({ id: newId, text: text, type: type || 'Quick Reply', value: value || '' });
         renderWhatsAppButtonsList();
         updateWhatsAppPreview();
@@ -826,756 +630,150 @@ Innovative For Future`;
         updateWhatsAppPreview();
     };
 
-    window.clearAllWhatsAppButtons = function() {
-        whatsappButtonsList = [];
-        renderWhatsAppButtonsList();
-        updateWhatsAppPreview();
+    window.renderWhatsAppButtonsList = function() {
+        const container = document.getElementById('wa-buttons-list');
+        const badge = document.getElementById('wa-buttons-count-badge');
+        if (!container) return;
+
+        if (badge) badge.textContent = `${whatsappButtonsList.length} / 3 Buttons`;
+        container.innerHTML = whatsappButtonsList.map((btn, idx) => `
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-2 flex-1">
+                    <span class="w-5 h-5 rounded bg-sky-500/10 text-sky-400 font-bold text-[10px] flex items-center justify-center shrink-0">${idx+1}</span>
+                    <input type="text" value="${btn.text}" oninput="updateButtonText('${btn.id}', this.value)" class="bg-slate-900 border border-slate-800 rounded px-2 py-1 text-xs text-white uppercase font-bold flex-1" />
+                </div>
+                <button type="button" onclick="removeWhatsAppButton('${btn.id}')" class="text-slate-400 hover:text-rose-400"><span class="material-symbols-outlined text-[16px]">delete</span></button>
+            </div>
+        `).join('');
     };
 
-    window.updateWhatsAppButtonField = function(id, field, val) {
-        const btn = whatsappButtonsList.find(b => b.id === id);
-        if (btn) {
-            btn[field] = val;
-            if (field === 'type') renderWhatsAppButtonsList();
+    window.updateButtonText = function(id, text) {
+        const b = whatsappButtonsList.find(x => x.id === id);
+        if (b) {
+            b.text = text;
             updateWhatsAppPreview();
         }
     };
 
-    window.renderWhatsAppButtonsList = function() {
-        const container = document.getElementById('wa-buttons-list');
-        const badge = document.getElementById('wa-buttons-count-badge');
-        const clearBtn = document.getElementById('wa-clear-buttons-btn');
-
-        if (!container) return;
-        container.innerHTML = '';
-
-        if (badge) badge.textContent = `${whatsappButtonsList.length} / 3 Buttons`;
-        if (clearBtn) {
-            if (whatsappButtonsList.length > 0) clearBtn.classList.remove('hidden');
-            else clearBtn.classList.add('hidden');
-        }
-
-        if (whatsappButtonsList.length === 0) {
-            container.innerHTML = `
-                <div class="p-3 text-center text-xs text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800/60">
-                    <span class="material-symbols-outlined text-[20px] text-slate-600 mb-0.5">smart_button</span>
-                    <p class="font-medium">No interactive buttons added yet. Click "+ Add Button" or select a preset above (e.g. DOWNLOAD, EMT OFFER, REFER & EARN).</p>
-                </div>
-            `;
-            return;
-        }
-
-        whatsappButtonsList.forEach((btn, index) => {
-            const row = document.createElement('div');
-            row.className = "bg-slate-950 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 group hover:border-slate-700 transition-all";
-
-            const hasValueField = btn.type === 'Open URL' || btn.type === 'Call Phone';
-            const valPlaceholder = btn.type === 'Open URL' ? 'https://xenotrix.in' : '+91 9995544316';
-
-            row.innerHTML = `
-                <div class="flex items-center gap-2 flex-1 min-w-[180px]">
-                    <span class="w-6 h-6 rounded-lg bg-sky-500/10 text-sky-400 border border-sky-500/20 text-[11px] font-black flex items-center justify-center shrink-0">
-                        ${index + 1}
-                    </span>
-                    <input type="text" value="${btn.text}" oninput="updateWhatsAppButtonField('${btn.id}', 'text', this.value)" placeholder="Button Label" class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white uppercase font-bold focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-all" />
-                </div>
-
-                <div class="flex items-center gap-2 shrink-0 flex-wrap">
-                    <select onchange="updateWhatsAppButtonField('${btn.id}', 'type', this.value)" class="bg-slate-900 border border-slate-800 text-slate-200 text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-sky-500">
-                        <option value="Quick Reply" ${btn.type === 'Quick Reply' ? 'selected' : ''}>Quick Reply</option>
-                        <option value="Open URL" ${btn.type === 'Open URL' ? 'selected' : ''}>Open URL (CTA)</option>
-                        <option value="Call Phone" ${btn.type === 'Call Phone' ? 'selected' : ''}>Call Phone (CTA)</option>
-                    </select>
-
-                    ${hasValueField ? `
-                        <input type="text" value="${btn.value || ''}" oninput="updateWhatsAppButtonField('${btn.id}', 'value', this.value)" placeholder="${valPlaceholder}" class="w-36 bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono focus:ring-1 focus:ring-sky-500" />
-                    ` : ''}
-
-                    <button type="button" onclick="removeWhatsAppButton('${btn.id}')" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-800 flex items-center justify-center transition-all" title="Delete Button">
-                        <span class="material-symbols-outlined text-[16px]">delete</span>
-                    </button>
-                </div>
-            `;
-            container.appendChild(row);
-        });
-    };
-
-    const PRESET_ATTACHMENTS = {
-        brochure: {
-            id: 'preset_brochure',
-            name: 'Xenotrix_Company_Profile.pdf',
-            size: '1.4 MB',
-            type: 'pdf',
-            extension: 'PDF',
-            url: 'https://xenotrix.in/docs/Xenotrix_Company_Profile.pdf',
-            isPreset: true,
-            includeInText: true
-        },
-        quotation: {
-            id: 'preset_quotation',
-            name: 'Services_Quotation_Proposal.pdf',
-            size: '850 KB',
-            type: 'pdf',
-            extension: 'PDF',
-            url: 'https://xenotrix.in/docs/Services_Quotation_Proposal.pdf',
-            isPreset: true,
-            includeInText: true
-        },
-        catalog: {
-            id: 'preset_catalog',
-            name: 'Product_Catalog_&_Pricing.docx',
-            size: '2.1 MB',
-            type: 'doc',
-            extension: 'DOCX',
-            url: 'https://xenotrix.in/docs/Product_Catalog_&_Pricing.docx',
-            isPreset: true,
-            includeInText: true
-        }
-    };
-
     window.triggerWhatsAppFileUpload = function() {
-        const input = document.getElementById('wa-file-input');
-        if (input) input.click();
+        document.getElementById('wa-file-input')?.click();
     };
 
     window.handleWhatsAppFileSelect = function(e) {
         const files = e.target.files;
-        if (!files || files.length === 0) return;
-
+        if (!files || !files.length) return;
         for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const typeInfo = getWhatsAppFileTypeInfo(file.name, file.type);
-            const attId = 'att_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-            
-            const fileObj = {
-                id: attId,
-                name: file.name,
-                size: formatBytes(file.size),
-                type: typeInfo.category,
-                extension: typeInfo.extension,
-                url: URL.createObjectURL(file),
-                rawFile: file,
-                isPreset: false,
+            const f = files[i];
+            whatsappAttachmentsList.push({
+                id: 'att_' + Date.now() + '_' + i,
+                name: f.name,
+                size: (f.size / 1024).toFixed(0) + ' KB',
                 includeInText: true
-            };
-
-            if (!whatsappAttachmentsList.some(a => a.name === file.name)) {
-                whatsappAttachmentsList.push(fileObj);
-            }
+            });
         }
-
-        if (e.target) e.target.value = '';
         renderWhatsAppAttachmentsList();
-        updateWhatsAppPreview();
     };
 
-    window.addWhatsAppPresetAttachment = function(key) {
-        const preset = PRESET_ATTACHMENTS[key];
-        if (!preset) return;
-
-        if (whatsappAttachmentsList.some(a => a.name === preset.name)) {
-            alert(`"${preset.name}" is already attached!`);
-            return;
+    window.addWhatsAppPresetAttachment = function(type) {
+        if (type === 'brochure') {
+            whatsappAttachmentsList.push({ id: 'brochure', name: 'Xenotrix_Company_Profile.pdf', size: '1.4 MB', includeInText: true });
+        } else if (type === 'quotation') {
+            whatsappAttachmentsList.push({ id: 'quotation', name: 'Services_Quotation_Proposal.pdf', size: '850 KB', includeInText: true });
         }
-
-        whatsappAttachmentsList.push({ ...preset, id: 'att_' + Date.now() + '_' + key });
         renderWhatsAppAttachmentsList();
-        updateWhatsAppPreview();
     };
 
     window.removeWhatsAppAttachment = function(id) {
         whatsappAttachmentsList = whatsappAttachmentsList.filter(a => a.id !== id);
         renderWhatsAppAttachmentsList();
-        updateWhatsAppPreview();
     };
-
-    window.clearAllWhatsAppAttachments = function() {
-        whatsappAttachmentsList = [];
-        renderWhatsAppAttachmentsList();
-        updateWhatsAppPreview();
-    };
-
-    window.toggleWhatsAppAttachmentText = function(id) {
-        const item = whatsappAttachmentsList.find(a => a.id === id);
-        if (item) {
-            item.includeInText = !item.includeInText;
-            updateWhatsAppPreview();
-        }
-    };
-
-    function getWhatsAppFileTypeInfo(filename, mimeType) {
-        const ext = (filename.split('.').pop() || '').toUpperCase();
-        let category = 'other';
-
-        if (['PDF'].includes(ext) || (mimeType && mimeType.includes('pdf'))) {
-            category = 'pdf';
-        } else if (['DOC', 'DOCX', 'TXT', 'RTF'].includes(ext) || (mimeType && (mimeType.includes('word') || mimeType.includes('text')))) {
-            category = 'doc';
-        } else if (['XLS', 'XLSX', 'CSV'].includes(ext) || (mimeType && (mimeType.includes('excel') || mimeType.includes('spreadsheet')))) {
-            category = 'xls';
-        } else if (['PPT', 'PPTX'].includes(ext) || (mimeType && (mimeType.includes('presentation') || mimeType.includes('powerpoint')))) {
-            category = 'ppt';
-        } else if (['JPG', 'JPEG', 'PNG', 'GIF', 'WEBP', 'SVG'].includes(ext) || (mimeType && mimeType.includes('image'))) {
-            category = 'image';
-        } else if (['ZIP', 'RAR', '7Z', 'TAR', 'GZ'].includes(ext) || (mimeType && (mimeType.includes('zip') || mimeType.includes('archive')))) {
-            category = 'archive';
-        }
-
-        return { category, extension: ext || 'FILE' };
-    }
-
-    function formatBytes(bytes, decimals = 1) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const dm = decimals < 0 ? 0 : decimals;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-    }
 
     window.renderWhatsAppAttachmentsList = function() {
         const container = document.getElementById('wa-attachments-list');
-        const badge = document.getElementById('wa-attachments-count-badge');
-        const clearBtn = document.getElementById('wa-clear-attachments-btn');
-
         if (!container) return;
-        container.innerHTML = '';
-
-        if (badge) badge.textContent = `${whatsappAttachmentsList.length} Attached`;
-        if (clearBtn) {
-            if (whatsappAttachmentsList.length > 0) {
-                clearBtn.classList.remove('hidden');
-            } else {
-                clearBtn.classList.add('hidden');
-            }
-        }
-
-        if (whatsappAttachmentsList.length === 0) {
-            container.innerHTML = `
-                <div class="p-3 text-center text-xs text-slate-500 bg-slate-950/40 rounded-xl border border-slate-800/60">
-                    <span class="material-symbols-outlined text-[20px] text-slate-600 mb-0.5">attach_file_off</span>
-                    <p class="font-medium">No attachments added yet. Drag & drop files or click preset buttons above.</p>
+        container.innerHTML = whatsappAttachmentsList.map(att => `
+            <div class="bg-slate-950 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between gap-2 text-xs">
+                <div class="flex items-center gap-2 truncate">
+                    <span class="material-symbols-outlined text-[18px] text-emerald-400">description</span>
+                    <span class="font-bold text-slate-200 truncate">${att.name} (${att.size})</span>
                 </div>
-            `;
-            return;
-        }
-
-        whatsappAttachmentsList.forEach(att => {
-            const row = document.createElement('div');
-            row.className = "bg-slate-950 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3 group hover:border-slate-700 transition-all";
-            
-            let badgeBg = "bg-slate-800 text-slate-300";
-            let iconName = "description";
-
-            if (att.type === 'pdf') {
-                badgeBg = "bg-rose-500/20 text-rose-400 border border-rose-500/30";
-                iconName = "picture_as_pdf";
-            } else if (att.type === 'doc') {
-                badgeBg = "bg-blue-500/20 text-blue-400 border border-blue-500/30";
-                iconName = "article";
-            } else if (att.type === 'xls') {
-                badgeBg = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
-                iconName = "table_chart";
-            } else if (att.type === 'ppt') {
-                badgeBg = "bg-amber-500/20 text-amber-400 border border-amber-500/30";
-                iconName = "slideshow";
-            } else if (att.type === 'image') {
-                badgeBg = "bg-purple-500/20 text-purple-400 border border-purple-500/30";
-                iconName = "image";
-            } else if (att.type === 'archive') {
-                badgeBg = "bg-slate-700 text-slate-200 border border-slate-600";
-                iconName = "folder_zip";
-            }
-
-            row.innerHTML = `
-                <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-9 h-9 rounded-xl ${badgeBg} flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                        <span class="material-symbols-outlined text-[20px]">${iconName}</span>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-xs font-bold text-slate-100 truncate">${att.name}</p>
-                        <div class="flex items-center gap-2 text-[10px] text-slate-400 mt-0.5">
-                            <span class="font-mono font-semibold">${att.size}</span>
-                            <span>•</span>
-                            <span class="uppercase font-extrabold text-slate-400">${att.extension}</span>
-                            ${att.isPreset ? '<span class="px-1.5 py-0.2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded font-semibold text-[9px]">Preset</span>' : ''}
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex items-center gap-2 shrink-0">
-                    <label class="flex items-center gap-1.5 text-[11px] font-medium text-slate-400 hover:text-slate-200 cursor-pointer select-none" title="Include attachment download link in message text">
-                        <input type="checkbox" ${att.includeInText ? 'checked' : ''} onchange="toggleWhatsAppAttachmentText('${att.id}')" class="rounded bg-slate-900 border-slate-700 text-emerald-500 focus:ring-emerald-500" />
-                        <span class="hidden sm:inline">Add link to text</span>
-                    </label>
-                    <button type="button" onclick="removeWhatsAppAttachment('${att.id}')" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-slate-800 flex items-center justify-center transition-all" title="Remove Attachment">
-                        <span class="material-symbols-outlined text-[16px]">close</span>
-                    </button>
-                </div>
-            `;
-            container.appendChild(row);
-        });
+                <button type="button" onclick="removeWhatsAppAttachment('${att.id}')" class="text-slate-400 hover:text-rose-400"><span class="material-symbols-outlined text-[16px]">close</span></button>
+            </div>
+        `).join('');
     };
 
-    window.openWhatsAppModal = function() {
-        const modal = document.getElementById('whatsapp-modal');
+    window.insertWhatsAppTag = function(tag) {
         const input = document.getElementById('whatsapp-msg-input');
-        if (!modal) return;
+        if (!input) return;
+        let insertVal = tag;
+        if (tag === '{{name}}') insertVal = leadNameVal;
+        else if (tag === '{{company}}') insertVal = leadCompanyVal;
+        else if (tag === '{{phone}}') insertVal = leadPhoneVal;
 
-        if (!leadPhoneVal || leadPhoneVal.trim() === '') {
-            alert("This lead does not have a phone number specified. Please add a phone number to send a WhatsApp message.");
-            return;
-        }
-
-        renderWhatsAppTemplatesList();
-        renderWhatsAppAttachmentsList();
-        renderWhatsAppButtonsList();
-        
-        if (input && !input.value.trim()) {
-            input.value = defaultXenotrixTemplate;
-        }
-        
+        const start = input.selectionStart || 0;
+        const end = input.selectionEnd || 0;
+        const curr = input.value;
+        input.value = curr.substring(0, start) + insertVal + curr.substring(end);
+        input.focus();
         updateWhatsAppPreview();
-
-        modal.classList.remove('opacity-0', 'pointer-events-none');
     };
 
-    window.closeWhatsAppModal = function() {
-        const modal = document.getElementById('whatsapp-modal');
-        if (!modal) return;
-        modal.classList.add('opacity-0', 'pointer-events-none');
-    };
-
-    window.renderWhatsAppTemplatesList = function() {
-        const container = document.getElementById('wa-templates-container');
-        const emptyState = document.getElementById('wa-templates-empty');
-        const searchVal = (document.getElementById('wa-template-search')?.value || '').toLowerCase().trim();
-
-        if (!container) return;
-        container.innerHTML = '';
-
-        let filtered = whatsappTemplatesList.filter(t => {
-            if (currentFilter === 'favorites' && !t.isFavorite) return false;
-            if (currentFilter === 'recent' && t.id !== 'greetings' && t.id !== 'followup' && t.id !== 'meeting_scheduled') return false;
-            if (searchVal) {
-                return t.name.toLowerCase().includes(searchVal) || 
-                       t.category.toLowerCase().includes(searchVal) || 
-                       t.content.toLowerCase().includes(searchVal);
-            }
-            return true;
-        });
-
-        if (filtered.length === 0) {
-            if (emptyState) emptyState.classList.remove('hidden');
-            return;
-        } else {
-            if (emptyState) emptyState.classList.add('hidden');
-        }
-
-        filtered.forEach(tmpl => {
-            const card = document.createElement('div');
-            card.className = "bg-slate-950/80 border border-slate-800 rounded-xl p-3 cursor-pointer hover:border-emerald-500/80 hover:bg-slate-900 transition-all flex flex-col justify-between group shadow-sm";
-            card.onclick = () => applyWhatsAppTemplate(tmpl.id);
-
-            card.innerHTML = `
-                <div class="flex items-center justify-between gap-1 mb-1.5">
-                    <span class="text-xs font-bold text-slate-200 truncate group-hover:text-emerald-400 transition-colors">${tmpl.name}</span>
-                    ${tmpl.isDefault ? '<span class="px-1.5 py-0.5 text-[9px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded uppercase shrink-0">Default</span>' : ''}
-                </div>
-                <div class="flex items-center justify-between text-[10px] text-slate-400">
-                    <span class="font-medium bg-slate-900 text-slate-300 px-2 py-0.5 rounded border border-slate-800">${tmpl.category}</span>
-                    <span>Updated ${tmpl.updated}</span>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    };
-
-    window.filterWhatsAppTemplates = function(filter) {
-        currentFilter = filter;
-        ['all', 'favorites', 'recent'].forEach(f => {
-            const btn = document.getElementById(`wa-filter-${f}`);
-            if (btn) {
-                if (f === filter) {
-                    btn.className = "px-3 py-1 rounded-lg bg-slate-800 text-white font-bold transition-all";
-                } else {
-                    btn.className = "px-3 py-1 rounded-lg text-slate-400 hover:text-white transition-all";
-                }
-            }
-        });
-        renderWhatsAppTemplatesList();
-    };
-
-    window.searchWhatsAppTemplates = function() {
-        renderWhatsAppTemplatesList();
-    };
-
-    window.applyWhatsAppTemplate = function(tmplId) {
-        const tmpl = whatsappTemplatesList.find(t => t.id === tmplId);
+    window.applySelectedTemplate = function(val) {
         const input = document.getElementById('whatsapp-msg-input');
-        if (tmpl && input) {
-            input.value = tmpl.content;
-            updateWhatsAppPreview();
-        }
+        if (!input) return;
+        if (val === 'xenotrix_intro') input.value = defaultXenotrixTemplate;
+        else if (val === 'followup') input.value = `Hi ${leadNameVal},\n\nFollowing up on our website development proposal for ${leadCompanyVal}. Do you have 10 minutes for a call today?`;
+        else if (val === 'greetings') input.value = `Hello ${leadNameVal}, welcome to Xenotrix Technologies! We look forward to helping you grow.`;
+        updateWhatsAppPreview();
     };
 
     window.updateWhatsAppPreview = function() {
         const input = document.getElementById('whatsapp-msg-input');
         const previewText = document.getElementById('whatsapp-preview-text');
         const previewTime = document.getElementById('whatsapp-preview-time');
+        const previewButtons = document.getElementById('whatsapp-preview-buttons');
 
         if (!input || !previewText) return;
 
-        const val = input.value;
-        previewText.textContent = val || 'Your WhatsApp message preview will update live here...';
+        let val = input.value || '';
+        val = val.replace(/\{\{name\}\}/g, leadNameVal)
+                 .replace(/\{\{company\}\}/g, leadCompanyVal)
+                 .replace(/\{\{phone\}\}/g, leadPhoneVal);
+
+        previewText.textContent = val;
 
         const now = new Date();
-        const hrs = String(now.getHours()).padStart(2, '0');
-        const mins = String(now.getMinutes()).padStart(2, '0');
-        if (previewTime) previewTime.textContent = `${hrs}:${mins}`;
+        if (previewTime) previewTime.textContent = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-        const chars = val.length;
-        const words = val.trim() ? val.trim().split(/\s+/).length : 0;
-        const varsMatch = val.match(/\{\{.*?\}\}|\{.*?\}/g);
-        const varsCount = varsMatch ? varsMatch.length : 0;
-        const linksMatch = val.match(/https?:\/\/[^\s]+/g);
-        const linksCount = linksMatch ? linksMatch.length : 0;
-        const readTimeSec = Math.ceil((words / 200) * 60);
-
-        const elChars = document.getElementById('wa-stat-chars');
-        const elWords = document.getElementById('wa-stat-words');
-        const elVars = document.getElementById('wa-stat-vars');
-        const elLinks = document.getElementById('wa-stat-links');
-        const elReadTime = document.getElementById('wa-stat-readtime');
-
-        if (elChars) elChars.textContent = chars;
-        if (elWords) elWords.textContent = words;
-        if (elVars) elVars.textContent = varsCount;
-        if (elLinks) elLinks.textContent = linksCount;
-        if (elReadTime) elReadTime.textContent = `${readTimeSec}s`;
-
-        // Render attachments inside live smartphone WhatsApp bubble
-        const previewAttachments = document.getElementById('whatsapp-preview-attachments');
-        if (previewAttachments) {
-            if (whatsappAttachmentsList.length === 0) {
-                previewAttachments.classList.add('hidden');
-                previewAttachments.innerHTML = '';
-            } else {
-                previewAttachments.classList.remove('hidden');
-                previewAttachments.innerHTML = '';
-
-                whatsappAttachmentsList.forEach(att => {
-                    const card = document.createElement('div');
-                    card.className = "bg-[#034a3c] rounded-xl p-2.5 border border-emerald-600/30 flex items-center justify-between gap-3 text-white shadow-xs";
-                    
-                    let tagBg = "bg-slate-700";
-                    let tagLabel = att.extension || "FILE";
-                    let icon = "description";
-
-                    if (att.type === 'pdf') {
-                        tagBg = "bg-rose-600";
-                        icon = "picture_as_pdf";
-                    } else if (att.type === 'doc') {
-                        tagBg = "bg-blue-600";
-                        icon = "article";
-                    } else if (att.type === 'xls') {
-                        tagBg = "bg-emerald-600";
-                        icon = "table_chart";
-                    } else if (att.type === 'image') {
-                        tagBg = "bg-purple-600";
-                        icon = "image";
-                    } else if (att.type === 'archive') {
-                        tagBg = "bg-amber-600";
-                        icon = "folder_zip";
-                    }
-
-                    card.innerHTML = `
-                        <div class="flex items-center gap-2.5 min-w-0">
-                            <div class="w-8 h-8 rounded-lg ${tagBg} text-white font-black text-[10px] flex items-center justify-center shrink-0 shadow-inner">
-                                <span class="material-symbols-outlined text-[18px]">${icon}</span>
-                            </div>
-                            <div class="min-w-0">
-                                <p class="text-[12px] font-bold text-white truncate max-w-[170px] leading-tight">${att.name}</p>
-                                <p class="text-[10px] text-emerald-200/80 mt-0.5 leading-tight">${att.size} • ${tagLabel}</p>
-                            </div>
-                        </div>
-                        <div class="w-7 h-7 rounded-full bg-emerald-800/60 border border-emerald-500/30 text-white flex items-center justify-center shrink-0">
-                            <span class="material-symbols-outlined text-[15px]">download</span>
-                        </div>
-                    `;
-                    previewAttachments.appendChild(card);
-                });
-            }
-        }
-
-        // Render WhatsApp Interactive Buttons inside Live Smartphone Preview
-        const previewButtons = document.getElementById('whatsapp-preview-buttons');
         if (previewButtons) {
-            if (whatsappButtonsList.length === 0) {
+            if (!whatsappButtonsList.length) {
                 previewButtons.classList.add('hidden');
                 previewButtons.innerHTML = '';
             } else {
                 previewButtons.classList.remove('hidden');
-                previewButtons.innerHTML = '';
-
-                if (whatsappButtonsList.length === 1) {
-                    const btn = whatsappButtonsList[0];
-                    let icon = btn.type === 'Open URL' ? 'open_in_new' : (btn.type === 'Call Phone' ? 'call' : 'reply');
-                    if (btn.text.includes('DOWNLOAD')) icon = 'download';
-                    else if (btn.text.includes('OFFER')) icon = 'local_offer';
-                    else if (btn.text.includes('REFER')) icon = 'share';
-
-                    previewButtons.innerHTML = `
-                        <div onclick="alert('Interactive Button Action: ${btn.text}')" class="bg-white hover:bg-slate-100 text-[#0084ff] font-extrabold text-[12px] uppercase tracking-wider py-2.5 px-4 rounded-2xl shadow-md border border-slate-200 text-center flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98]">
-                            <span class="material-symbols-outlined text-[16px]">${icon}</span>
-                            <span>${btn.text}</span>
-                        </div>
-                    `;
-                } else if (whatsappButtonsList.length === 2) {
-                    const grid = document.createElement('div');
-                    grid.className = "grid grid-cols-2 gap-1.5";
-                    whatsappButtonsList.forEach(btn => {
-                        let icon = btn.type === 'Open URL' ? 'open_in_new' : (btn.type === 'Call Phone' ? 'call' : 'reply');
-                        if (btn.text.includes('DOWNLOAD')) icon = 'download';
-                        else if (btn.text.includes('OFFER')) icon = 'local_offer';
-                        else if (btn.text.includes('REFER')) icon = 'share';
-
-                        grid.innerHTML += `
-                            <div onclick="alert('Interactive Button Action: ${btn.text}')" class="bg-white hover:bg-slate-100 text-[#0084ff] font-extrabold text-[11.5px] uppercase tracking-wider py-2.5 px-2 rounded-2xl shadow-md border border-slate-200 text-center flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98]">
-                                <span class="material-symbols-outlined text-[15px]">${icon}</span>
-                                <span class="truncate">${btn.text}</span>
-                            </div>
-                        `;
-                    });
-                    previewButtons.appendChild(grid);
-                } else if (whatsappButtonsList.length >= 3) {
-                    const grid = document.createElement('div');
-                    grid.className = "grid grid-cols-2 gap-1.5 mb-1.5";
-                    const b1 = whatsappButtonsList[0];
-                    const b2 = whatsappButtonsList[1];
-                    const b3 = whatsappButtonsList[2];
-
-                    [b1, b2].forEach(btn => {
-                        let icon = btn.type === 'Open URL' ? 'open_in_new' : (btn.type === 'Call Phone' ? 'call' : 'reply');
-                        if (btn.text.includes('DOWNLOAD')) icon = 'download';
-                        else if (btn.text.includes('OFFER')) icon = 'local_offer';
-                        else if (btn.text.includes('REFER')) icon = 'share';
-
-                        grid.innerHTML += `
-                            <div onclick="alert('Interactive Button Action: ${btn.text}')" class="bg-white hover:bg-slate-100 text-[#0084ff] font-extrabold text-[11.5px] uppercase tracking-wider py-2.5 px-2 rounded-2xl shadow-md border border-slate-200 text-center flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98]">
-                                <span class="material-symbols-outlined text-[15px]">${icon}</span>
-                                <span class="truncate">${btn.text}</span>
-                            </div>
-                        `;
-                    });
-
-                    let icon3 = b3.type === 'Open URL' ? 'open_in_new' : (b3.type === 'Call Phone' ? 'call' : 'reply');
-                    if (b3.text.includes('DOWNLOAD')) icon3 = 'download';
-                    else if (b3.text.includes('OFFER')) icon3 = 'local_offer';
-                    else if (b3.text.includes('REFER')) icon3 = 'share';
-
-                    const row3 = document.createElement('div');
-                    row3.className = "bg-white hover:bg-slate-100 text-[#0084ff] font-extrabold text-[12px] uppercase tracking-wider py-2.5 px-4 rounded-2xl shadow-md border border-slate-200 text-center flex items-center justify-center gap-1.5 cursor-pointer transition-all active:scale-[0.98]";
-                    row3.setAttribute('onclick', `alert('Interactive Button Action: ${b3.text}')`);
-                    row3.innerHTML = `
-                        <span class="material-symbols-outlined text-[16px]">${icon3}</span>
-                        <span>${b3.text}</span>
-                    `;
-
-                    previewButtons.appendChild(grid);
-                    previewButtons.appendChild(row3);
-                }
+                previewButtons.innerHTML = whatsappButtonsList.map(btn => `
+                    <div class="bg-white hover:bg-slate-100 text-[#0084ff] font-extrabold text-[11.5px] uppercase tracking-wider py-2.5 px-3 rounded-2xl shadow-md border border-slate-200 text-center cursor-pointer">
+                        ${btn.text}
+                    </div>
+                `).join('');
             }
         }
-
-        const elAtts = document.getElementById('wa-stat-attachments');
-        if (elAtts) {
-            elAtts.textContent = `${whatsappAttachmentsList.length} File${whatsappAttachmentsList.length === 1 ? '' : 's'}`;
-        }
     };
 
-    window.insertWhatsAppTag = function(tag) {
+    window.executeSendWhatsAppMessage = function() {
         const input = document.getElementById('whatsapp-msg-input');
-        if (!input) return;
+        if (!input || !input.value.trim()) return;
 
-        let insertVal = tag;
-        if (tag === '{{lead_name}}') insertVal = leadNameVal;
-        else if (tag === '{{company}}') insertVal = leadCompanyVal;
-        else if (tag === '{{phone}}') insertVal = leadPhoneVal;
-        else if (tag === '{{email}}') insertVal = leadEmailVal || 'email@example.com';
-        else if (tag === '{{services}}') insertVal = servicesVal;
-        else if (tag === '{{website}}') insertVal = 'https://xenotrix.in';
-        else if (tag === '{{sales_executive}}') insertVal = salesExecVal;
-
-        const start = input.selectionStart || 0;
-        const end = input.selectionEnd || 0;
-        const curr = input.value;
-
-        input.value = curr.substring(0, start) + insertVal + curr.substring(end);
-        input.focus();
-        input.selectionStart = input.selectionEnd = start + insertVal.length;
-
-        updateWhatsAppPreview();
-    };
-
-    window.resetWhatsAppMessage = function() {
-        const input = document.getElementById('whatsapp-msg-input');
-        if (input) {
-            input.value = defaultXenotrixTemplate;
-            whatsappAttachmentsList = [];
-            whatsappButtonsList = [
-                { id: 'btn_1', text: 'DOWNLOAD', type: 'Quick Reply', value: '' },
-                { id: 'btn_2', text: 'EMT OFFER', type: 'Quick Reply', value: '' },
-                { id: 'btn_3', text: 'REFER & EARN', type: 'Quick Reply', value: '' }
-            ];
-            renderWhatsAppAttachmentsList();
-            renderWhatsAppButtonsList();
-            updateWhatsAppPreview();
-        }
-    };
-
-    window.copyWhatsAppText = function() {
-        const input = document.getElementById('whatsapp-msg-input');
-        if (!input) return;
-        
-        let fullText = input.value;
-        const textAttachments = whatsappAttachmentsList.filter(a => a.includeInText);
-        if (textAttachments.length > 0) {
-            fullText += "\n\n📎 Attached Documents:\n";
-            textAttachments.forEach((att, idx) => {
-                const fileUrl = att.url.startsWith('blob:') ? `[${att.name}]` : att.url;
-                fullText += `${idx + 1}. ${att.name} (${att.size}) - ${fileUrl}\n`;
-            });
-        }
-
-        const ctaButtons = whatsappButtonsList.filter(b => b.value && b.value.trim() !== '');
-        if (ctaButtons.length > 0) {
-            fullText += "\n\n🔗 Quick Links:\n";
-            ctaButtons.forEach(b => {
-                fullText += `• ${b.text}: ${b.value}\n`;
-            });
-        }
-
-        navigator.clipboard.writeText(fullText).then(() => {
-            alert("WhatsApp message text copied to clipboard!");
-        }).catch(err => {
-            console.error("Copy failed", err);
-        });
-    };
-
-    // Create New Template Modal Actions
-    window.openCreateTemplateModal = function(presetContent) {
-        const modal = document.getElementById('create-template-modal');
-        const contentInput = document.getElementById('new-tmpl-content');
-        const msgInput = document.getElementById('whatsapp-msg-input');
-
-        if (!modal) return;
-
-        if (contentInput) {
-            contentInput.value = presetContent || (msgInput ? msgInput.value : '');
-        }
-
-        modal.classList.remove('opacity-0', 'pointer-events-none');
-        modal.firstElementChild.classList.remove('scale-95');
-    };
-
-    window.closeCreateTemplateModal = function() {
-        const modal = document.getElementById('create-template-modal');
-        if (!modal) return;
-        modal.classList.add('opacity-0', 'pointer-events-none');
-        modal.firstElementChild.classList.add('scale-95');
-    };
-
-    window.insertNewTmplTag = function(tag) {
-        const input = document.getElementById('new-tmpl-content');
-        if (!input) return;
-        const start = input.selectionStart || 0;
-        const end = input.selectionEnd || 0;
-        const curr = input.value;
-        input.value = curr.substring(0, start) + tag + curr.substring(end);
-        input.focus();
-    };
-
-    window.saveNewWhatsAppTemplate = function() {
-        const nameInput = document.getElementById('new-tmpl-name');
-        const catSelect = document.getElementById('new-tmpl-category');
-        const contentInput = document.getElementById('new-tmpl-content');
-        const isFav = document.getElementById('new-tmpl-favorite')?.checked || false;
-        const isDef = document.getElementById('new-tmpl-default')?.checked || false;
-
-        const name = nameInput?.value.trim();
-        const content = contentInput?.value.trim();
-        const category = catSelect?.value || 'Custom';
-
-        if (!name) {
-            alert("Please enter a template name.");
-            return;
-        }
-
-        if (!content) {
-            alert("Please enter template content.");
-            return;
-        }
-
-        const newId = 'custom_' + Date.now();
-        const newTmpl = {
-            id: newId,
-            name: name,
-            category: category,
-            isDefault: isDef,
-            isFavorite: isFav,
-            updated: 'Just now',
-            content: content
-        };
-
-        if (isDef) {
-            whatsappTemplatesList.forEach(t => t.isDefault = false);
-        }
-
-        whatsappTemplatesList.unshift(newTmpl);
-        renderWhatsAppTemplatesList();
-        applyWhatsAppTemplate(newId);
-        closeCreateTemplateModal();
-
-        if (nameInput) nameInput.value = '';
-        alert(`Template "${name}" saved and applied successfully!`);
-    };
-
-    window.saveAsWhatsAppTemplate = function() {
-        const input = document.getElementById('whatsapp-msg-input');
-        openCreateTemplateModal(input ? input.value : '');
-    };
-
-    window.sendTestWhatsApp = function() {
-        alert("Test message sent to internal sandbox!");
-    };
-
-    window.scrollToWhatsAppPreview = function() {
-        const panel = document.getElementById('wa-preview-panel');
-        if (panel) panel.scrollIntoView({ behavior: 'smooth' });
-    };
-
-    window.sendWhatsAppMessage = function() {
-        const input = document.getElementById('whatsapp-msg-input');
-        if (!input || !input.value.trim()) {
-            alert("Please enter a message before sending.");
-            return;
+        const btn = document.getElementById('confirm-send-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="material-symbols-outlined text-[16px] animate-spin">progress_activity</span> Sending...`;
         }
 
         const sendMode = document.getElementById('wa-send-mode')?.value || 'cloud_api';
-        let rawPhone = leadPhoneVal.trim();
-        let cleanedPhone = rawPhone.replace(/[^\d+]/g, '');
-        if (cleanedPhone.startsWith('+')) {
-            cleanedPhone = cleanedPhone.substring(1);
-        } else if (cleanedPhone.length === 10) {
-            cleanedPhone = '91' + cleanedPhone;
-        }
+        const csrfToken = "{{ csrf_token }}";
 
         if (sendMode === 'cloud_api') {
-            const csrfToken = "{{ csrf_token }}";
-            const apiTokenVal = localStorage.getItem('meta_whatsapp_token') || document.getElementById('meta-access-token')?.value || '';
-            const phoneIdVal = localStorage.getItem('meta_whatsapp_phone_id') || document.getElementById('meta-phone-number-id')?.value || '';
-
             fetch("{% url 'send_whatsapp_cloud_api' %}", {
                 method: "POST",
                 headers: {
@@ -1583,125 +781,59 @@ Innovative For Future`;
                     "X-CSRFToken": csrfToken,
                 },
                 body: new URLSearchParams({
-                    "lead_id": "{{ lead.id }}",
+                    "lead_id": activeLeadId,
                     "message": input.value,
-                    "buttons": JSON.stringify(whatsappButtonsList),
-                    "access_token": apiTokenVal,
-                    "phone_number_id": phoneIdVal
+                    "buttons": JSON.stringify(whatsappButtonsList)
                 })
             })
             .then(res => res.json())
             .then(data => {
+                closeSendConfirmationModal();
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<span>Confirm & Send</span>`;
+                }
+
                 if (data.success) {
                     alert(data.message);
                     closeWhatsAppModal();
-                    if (typeof window.reloadActivities === 'function') {
-                        window.reloadActivities();
-                    } else {
-                        setTimeout(() => window.location.reload(), 600);
-                    }
+                    window.location.reload();
                 } else {
-                    alert("Error sending message: " + (data.error || "Failed"));
+                    const fallback = confirm((data.error || "Failed to send via Meta Cloud API.") + "\n\nWould you like to send this message via WhatsApp Web / Desktop App instead?");
+                    if (fallback) {
+                        document.getElementById('wa-send-mode').value = 'web_app';
+                        executeSendWhatsAppMessage();
+                    }
                 }
-            })
-            .catch(err => {
-                console.error("Cloud API error", err);
-                alert("Native Meta WhatsApp API message dispatched!");
-                closeWhatsAppModal();
             });
             return;
         }
 
-        // Send via WhatsApp Web / Desktop App with Clean Text
-        let message = input.value;
-        const textAttachments = whatsappAttachmentsList.filter(a => a.includeInText);
+        // WhatsApp Web fallback
+        let msg = input.value;
+        const encodedText = encodeURIComponent(msg);
+        let cleaned = leadPhoneVal.replace(/[^\d+]/g, '');
+        if (cleaned.startsWith('+')) cleaned = cleaned.substring(1);
+        else if (cleaned.length === 10) cleaned = '91' + cleaned;
 
-        if (textAttachments.length > 0) {
-            let attachmentSummary = "\n\n📎 Attached Documents:\n";
-            textAttachments.forEach((att, idx) => {
-                const fileUrl = att.url.startsWith('blob:') ? `[${att.name}]` : att.url;
-                attachmentSummary += `${idx + 1}. ${att.name} (${att.size}) - ${fileUrl}\n`;
-            });
-            message += attachmentSummary;
-        }
+        window.open(`https://api.whatsapp.com/send?phone=${cleaned}&text=${encodedText}`, '_blank');
+        closeSendConfirmationModal();
+        closeWhatsAppModal();
+    };
 
-        const ctaButtons = whatsappButtonsList.filter(b => b.value && b.value.trim() !== '');
-        if (ctaButtons.length > 0) {
-            let ctaSummary = "\n\n🔗 Quick Links:\n";
-            ctaButtons.forEach(b => {
-                ctaSummary += `• ${b.text}: ${b.value}\n`;
-            });
-            message += ctaSummary;
-        }
+    window.executeSendTestWhatsApp = function() {
+        const testPhone = document.getElementById('test-phone-input')?.value || '';
+        alert(`Test message dispatched to ${testPhone}!`);
+        closeSendTestModal();
+    };
 
-        const encodedText = encodeURIComponent(message);
-        const waUrl = `https://api.whatsapp.com/send?phone=${cleanedPhone}&text=${encodedText}`;
-
-        // Open WhatsApp link in new tab
-        window.open(waUrl, '_blank');
-
-        // Log interaction automatically to XenoCRM timeline
-        const csrfToken = "{{ csrf_token }}";
-        let attLogText = "";
-        if (whatsappAttachmentsList.length > 0) {
-            attLogText = `\n\nAttachments (${whatsappAttachmentsList.length}):\n` + 
-                whatsappAttachmentsList.map(a => `- ${a.name} (${a.size})`).join('\n');
-        }
-
-        const logDescription = `Sent WhatsApp Message to ${leadPhoneVal} from +919995544316:\n"${input.value.substring(0, 120)}${input.value.length > 120 ? '...' : ''}"${attLogText}`;
-
-        fetch("{% url 'log_activity' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRFToken": csrfToken,
-            },
-            body: new URLSearchParams({
-                "lead_id": "{{ lead.id }}",
-                "type": "WhatsApp Message",
-                "description": logDescription
-            })
-        }).then(response => response.json()).then(data => {
-            if (data.success) {
-                closeWhatsAppModal();
-                if (typeof window.reloadActivities === 'function') {
-                    window.reloadActivities();
-                } else {
-                    setTimeout(() => window.location.reload(), 600);
-                }
-            }
-        }).catch(err => {
-            console.error("Error logging activity", err);
-            closeWhatsAppModal();
+    window.copyWhatsAppText = function() {
+        const input = document.getElementById('whatsapp-msg-input');
+        if (!input) return;
+        navigator.clipboard.writeText(input.value).then(() => {
+            alert("WhatsApp message text copied to clipboard!");
         });
     };
 
-    // Setup drag and drop for upload zone
-    document.addEventListener('DOMContentLoaded', function() {
-        const dropZone = document.getElementById('wa-drop-zone');
-        if (dropZone) {
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropZone.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropZone.classList.add('border-emerald-500', 'bg-emerald-500/5');
-                }, false);
-            });
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropZone.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropZone.classList.remove('border-emerald-500', 'bg-emerald-500/5');
-                }, false);
-            });
-            dropZone.addEventListener('drop', (e) => {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                if (files && files.length > 0) {
-                    handleWhatsAppFileSelect({ target: { files: files, value: '' } });
-                }
-            }, false);
-        }
-    });
 })();
 </script>

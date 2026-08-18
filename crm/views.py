@@ -1448,12 +1448,18 @@ def send_whatsapp_page_view(request, lead_id):
     owners = UserProfile.objects.filter(organization=org)
     services = Service.objects.filter(organization=org)
     
+    from .whatsapp_service import get_whatsapp_api_status
+    api_status = get_whatsapp_api_status()
+    whatsapp_history = getattr(lead, 'whatsapp_messages', None).all().order_by('-sent_at')[:20] if hasattr(lead, 'whatsapp_messages') else []
+
     context = {
         'lead': lead,
         'activities': activities,
         'tasks': tasks,
         'owners': owners,
         'services': services,
+        'api_status': api_status,
+        'whatsapp_history': whatsapp_history,
     }
     return render(request, 'send_whatsapp_page.html', context)
 
@@ -1461,149 +1467,72 @@ def send_whatsapp_page_view(request, lead_id):
 def send_whatsapp_cloud_api_view(request):
     """
     Sends native interactive WhatsApp Business Cloud API messages containing native action buttons.
-    Supports Meta Graph API (v18.0+) interactive message payloads (reply buttons & CTA buttons).
+    Uses backend whatsapp_service module keeping tokens secure server-side.
     """
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Invalid HTTP method'}, status=405)
 
-    import json, urllib.request, urllib.parse, os
-    from django.conf import settings
+    import json
     org = request.user.profile.organization
     lead_id = request.POST.get('lead_id')
     message_text = request.POST.get('message', '')
     buttons_json = request.POST.get('buttons', '[]')
-    
-    access_token = request.POST.get('access_token') or getattr(settings, 'WHATSAPP_CLOUD_API_TOKEN', '') or os.environ.get('WHATSAPP_CLOUD_API_TOKEN', '')
-    phone_number_id = request.POST.get('phone_number_id') or getattr(settings, 'WHATSAPP_PHONE_NUMBER_ID', '') or os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '9995544316')
+    template_name = request.POST.get('template_name', '')
+    custom_token = request.POST.get('access_token', '').strip() or None
+    custom_phone_id = request.POST.get('phone_number_id', '').strip() or None
     
     try:
         lead = Lead.objects.get(id=lead_id, organization=org)
     except Lead.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Lead not found'}, status=404)
 
-    raw_phone = (lead.phone_number or '').strip()
-    cleaned_phone = ''.join(c for c in raw_phone if c.isdigit() or c == '+')
-    if cleaned_phone.startswith('+'):
-        cleaned_phone = cleaned_phone[1:]
-    elif len(cleaned_phone) == 10:
-        cleaned_phone = '91' + cleaned_phone
-
     try:
         buttons = json.loads(buttons_json)
     except Exception:
         buttons = []
 
-    # Build Meta Cloud API Interactive Buttons Payload
-    interactive_buttons = []
-    for idx, b in enumerate(buttons[:3]):
-        label = (b.get('text') or f"Action {idx+1}").strip()[:20]
-        btn_type = b.get('type', 'Quick Reply')
-        btn_id = b.get('id') or f"btn_{idx+1}"
-        
-        if btn_type == 'Quick Reply':
-            interactive_buttons.append({
-                "type": "reply",
-                "reply": {
-                    "id": btn_id,
-                    "title": label
-                }
-            })
-        elif btn_type == 'Open URL':
-            url_val = b.get('value') or 'https://xenotrix.in'
-            interactive_buttons.append({
-                "type": "reply",
-                "reply": {
-                    "id": btn_id,
-                    "title": f"🔗 {label}"
-                }
-            })
-        elif btn_type == 'Call Phone':
-            phone_val = b.get('value') or '+91 9995544316'
-            interactive_buttons.append({
-                "type": "reply",
-                "reply": {
-                    "id": btn_id,
-                    "title": f"📞 {label}"
-                }
-            })
-
-    # Construct Meta WhatsApp Business Cloud API JSON payload
-    payload = {
-        "messaging_product": "whatsapp",
-        "recipient_type": "individual",
-        "to": cleaned_phone,
-        "type": "interactive",
-        "interactive": {
-            "type": "button",
-            "body": {
-                "text": message_text
-            },
-            "action": {
-                "buttons": interactive_buttons
-            }
-        }
-    }
-
-    meta_api_sent = False
-    api_response = None
-    
-    if access_token and access_token.strip():
-        graph_url = f"https://graph.facebook.com/v18.0/{phone_number_id}/messages"
-        try:
-            req_data = json.dumps(payload).encode('utf-8')
-            req = urllib.request.Request(
-                graph_url,
-                data=req_data,
-                headers={
-                    'Authorization': f'Bearer {access_token.strip()}',
-                    'Content-Type': 'application/json'
-                },
-                method='POST'
-            )
-            with urllib.request.urlopen(req, timeout=12) as resp:
-                resp_bytes = resp.read()
-                api_response = json.loads(resp_bytes.decode('utf-8'))
-                meta_api_sent = True
-        except urllib.error.HTTPError as http_err:
-            try:
-                err_body = http_err.read().decode('utf-8')
-                api_response = json.loads(err_body)
-            except Exception:
-                api_response = {'error': f"HTTP {http_err.code}: {http_err.reason}"}
-        except Exception as err:
-            api_response = {'error': str(err)}
-
-    button_titles = ", ".join(f"[{b.get('text')}]" for b in buttons[:3])
-    mode_label = "Live Meta Cloud API" if meta_api_sent else "Meta Cloud API Engine"
-    log_desc = f"Dispatched Native Interactive WhatsApp Message ({mode_label}) to +{cleaned_phone}.\nButtons ({len(buttons)}): {button_titles}\nContent:\n\"{message_text[:120]}\""
-    
-    from .models import Activity
-    Activity.objects.create(
-        organization=org,
+    from .whatsapp_service import send_meta_cloud_api_message
+    res = send_meta_cloud_api_message(
         lead=lead,
-        user=request.user,
-        type="WhatsApp Message",
-        description=log_desc
+        message_text=message_text,
+        buttons=buttons,
+        template_name=template_name,
+        custom_token=custom_token,
+        custom_phone_id=custom_phone_id,
+        user=request.user
     )
 
-    if api_response and 'error' in api_response and not meta_api_sent:
-        err_msg = api_response['error']
-        if isinstance(err_msg, dict):
-            err_msg = err_msg.get('message') or str(err_msg)
-        return JsonResponse({
-            'success': False,
-            'error': f"Meta API Error: {err_msg}",
-            'payload': payload,
-            'api_response': api_response
-        })
+    return JsonResponse(res)
 
-    return JsonResponse({
-        'success': True,
-        'meta_api_sent': meta_api_sent,
-        'message': f'Native interactive WhatsApp message with {len(interactive_buttons)} action buttons sent via Meta Cloud API to +{cleaned_phone}!',
-        'payload': payload,
-        'api_response': api_response
-    })
+@login_required
+def whatsapp_status_json_view(request):
+    from .whatsapp_service import get_whatsapp_api_status
+    status = get_whatsapp_api_status()
+    return JsonResponse(status)
+
+@login_required
+def search_leads_json_view(request):
+    org = request.user.profile.organization
+    query = request.GET.get('q', '').strip().lower()
+    
+    leads_qs = Lead.objects.filter(organization=org)
+    if query:
+        from django.db.models import Q
+        leads_qs = leads_qs.filter(Q(name__icontains=query) | Q(phone_number__icontains=query) | Q(company__icontains=query))
+    
+    leads_data = []
+    for l in leads_qs[:15]:
+        leads_data.append({
+            'id': l.id,
+            'name': l.name,
+            'company': l.company or 'Individual Client',
+            'phone_number': l.phone_number,
+            'status': l.status,
+            'is_client': l.is_client,
+            'avatar_url': l.profile_image_url or ''
+        })
+        
+    return JsonResponse({'success': True, 'leads': leads_data})
 
 @login_required
 def add_task(request):

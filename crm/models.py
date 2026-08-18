@@ -963,6 +963,26 @@ class Activity(models.Model):
     def __str__(self):
         return f"{self.type} on {self.lead.name} at {self.timestamp}"
 
+class WhatsAppMessage(models.Model):
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='whatsapp_messages')
+    lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='whatsapp_messages')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    recipient_phone = models.CharField(max_length=50)
+    template_name = models.CharField(max_length=100, blank=True, null=True)
+    message_content = models.TextField()
+    meta_message_id = models.CharField(max_length=255, blank=True, null=True)
+    status = models.CharField(max_length=50, default='Sent')  # Sent, Delivered, Read, Failed
+    error_message = models.TextField(blank=True, null=True)
+    buttons_json = models.TextField(default='[]')
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'whatsapp_messages'
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f"WhatsApp to {self.recipient_phone} ({self.status}) - {self.sent_at}"
+
 class Task(models.Model):
     PRIORITY_CHOICES = [
         ('High', 'High'),
