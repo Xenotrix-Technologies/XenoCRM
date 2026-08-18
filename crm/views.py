@@ -5145,7 +5145,7 @@ def finance_dashboard_view(request):
     account_name = doc_settings.account_name if doc_settings and doc_settings.account_name else ''
     ifsc_code = doc_settings.ifsc_code if doc_settings and doc_settings.ifsc_code else ''
     upi_id = doc_settings.upi_id if doc_settings and doc_settings.upi_id else ''
-    opening_balance = float(getattr(doc_settings, 'opening_balance', 0.0) or 0.0)
+    opening_balance = float(getattr(doc_settings, 'opening_balance', 10285.21) or 10285.21)
 
     # 4. Current Bank Balance Calculation
     current_bank_balance = opening_balance + total_revenue - total_outflow
