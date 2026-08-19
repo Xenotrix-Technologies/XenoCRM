@@ -5015,7 +5015,7 @@ def _seed_content_defaults(org):
         if not ContentDropdownOption.objects.filter(organization=org, category=category).exists():
             for i, val in enumerate(values):
                 ContentDropdownOption.objects.create(
-                    organization=org, category=category, value=val, display_order=i
+                    organization=org, category=category, value=val, display_order=i, is_active=True
                 )
 
 
@@ -5071,7 +5071,7 @@ def add_content_option(request):
         # Get next display order
         max_order = ContentDropdownOption.objects.filter(organization=org, category=category).count()
         ContentDropdownOption.objects.create(
-            organization=org, category=category, value=value, display_order=max_order
+            organization=org, category=category, value=value, display_order=max_order, is_active=True
         )
         SystemNotification.objects.create(user=request.user, message=f'"{value}" added successfully.', type='success')
         return redirect('content_settings')
