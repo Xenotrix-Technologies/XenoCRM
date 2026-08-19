@@ -224,17 +224,17 @@
       </div>
     </div>
 
-    <!-- Main Layout (3:1 Grid: Calendar / Analytics Sidebar) -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start w-full min-w-0">
-      <!-- Calendar Main Card (75%) -->
-      <div class="lg:col-span-3 min-w-0 w-full">
-        <div class="bg-white rounded-2xl p-4 md:p-6 border border-slate-200/80 shadow-xs">
+    <!-- Main Layout (3:1 Grid on xl: Calendar / Analytics Sidebar) -->
+    <div class="grid grid-cols-1 xl:grid-cols-4 gap-6 items-start w-full min-w-0">
+      <!-- Calendar Main Card (75% on xl) -->
+      <div class="xl:col-span-3 min-w-0 w-full overflow-x-auto custom-scrollbar">
+        <div class="bg-white rounded-2xl p-4 md:p-6 border border-slate-200/80 shadow-xs min-w-[620px] xl:min-w-0">
           <div id="calendar" class="w-full"></div>
         </div>
       </div>
 
-      <!-- Right Sidebar (25%) -->
-      <div class="lg:col-span-1 space-y-6 w-full min-w-0">
+      <!-- Right Sidebar (25% on xl) -->
+      <div class="xl:col-span-1 space-y-6 w-full min-w-0">
         <!-- Calendar Analytics -->
         <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs">
           <h3 class="font-bold text-sm text-slate-900 mb-4 flex items-center gap-2">
@@ -527,6 +527,7 @@
       }
     });
     calendar.render();
+    window.calendarObj = calendar;
     
     // Keyboard Shortcuts
     document.addEventListener('keydown', function(e) {

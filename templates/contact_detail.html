@@ -21,9 +21,10 @@
         <span class="text-brand-600 font-bold">Contact Profile</span>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    <!-- Contact Details Main Layout Grid -->
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start min-w-0">
         <!-- Left Column: Main Profile & Content -->
-        <div class="col-span-1 lg:col-span-8 space-y-6 min-w-0">
+        <div class="col-span-1 xl:col-span-8 space-y-6 min-w-0">
             <!-- Profile Edit Form -->
             <form method="POST" action="{% url 'edit_lead' lead.id %}" class="space-y-6">
                 {% csrf_token %}
@@ -247,7 +248,7 @@
             </div>
 
             <!-- Right Column: Widgets -->
-            <div class="col-span-1 lg:col-span-4 space-y-6 min-w-0">
+            <div class="col-span-1 xl:col-span-4 space-y-6 min-w-0">
 
                 <!-- Sales Documents Widget -->
                 <div class="glass-card rounded-2xl p-5 sm:p-6 border border-slate-200/80 bg-white shadow-sm space-y-4 min-w-0">
