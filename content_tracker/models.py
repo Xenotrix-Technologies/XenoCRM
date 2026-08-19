@@ -70,6 +70,7 @@ class ContentDropdownOption(models.Model):
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
     value = models.CharField(max_length=100)
     display_order = models.IntegerField(default=0)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'content_dropdown_options'
