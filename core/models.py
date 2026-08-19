@@ -228,7 +228,9 @@ class UserProfile(models.Model):
                 'dashboard', 'leads', 'calendar', 'clients', 'support', 'projects',
                 'hr', 'finance', 'agreements', 'campaigns', 'cms', 'staff', 'services',
                 'lead_statuses', 'leads_settings', 'clients_status', 'projects_status',
-                'campaigns_status', 'calendar_status', 'support_status', 'finance_status'
+                'campaigns_status', 'calendar_status', 'support_status', 'finance_status',
+                'content_tracker', 'editor_dashboard', 'editor_board', 'content_settings',
+                'cms_settings', 'post_management'
             ]
 
     @property
@@ -381,11 +383,31 @@ class UserProfile(models.Model):
 
     @property
     def has_access_cms(self):
-        return self.check_page_permission('cms')
+        return self.check_page_permission('cms') or self.check_page_permission('content_tracker')
+
+    @property
+    def has_access_content_tracker(self):
+        return self.check_page_permission('content_tracker') or self.check_page_permission('cms')
+
+    @property
+    def has_access_editor_dashboard(self):
+        return self.check_page_permission('editor_dashboard') or self.check_page_permission('cms') or self.check_page_permission('content_tracker')
+
+    @property
+    def has_access_editor_board(self):
+        return self.check_page_permission('editor_board') or self.check_page_permission('cms') or self.check_page_permission('content_tracker')
+
+    @property
+    def has_access_content_settings(self):
+        return self.check_page_permission('content_settings') or self.check_page_permission('cms_settings') or self.check_page_permission('cms')
 
     @property
     def has_access_cms_settings(self):
-        return self.check_page_permission('content_settings')
+        return self.check_page_permission('cms_settings') or self.check_page_permission('content_settings') or self.check_page_permission('cms')
+
+    @property
+    def has_access_post_management(self):
+        return self.check_page_permission('post_management') or self.check_page_permission('campaigns')
 
     @property
     def has_access_services(self):
