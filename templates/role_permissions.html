@@ -56,10 +56,10 @@
     </div>
 
     <!-- 2-Column Layout -->
-    <div class="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-12 gap-6">
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 min-w-0">
       
       <!-- Left Sidebar: Selection Pane (25%) -->
-      <div class="md:col-span-4 lg:col-span-3 flex flex-col h-[calc(100vh-140px)]">
+      <div class="xl:col-span-3 flex flex-col h-[calc(100vh-140px)] min-w-0">
         <div class="bg-white rounded-[16px] shadow-sm border border-outline-variant/50 flex flex-col h-full overflow-hidden">
             
             <!-- Segmented Control -->
@@ -126,7 +126,7 @@
       </div>
 
       <!-- Right Content Area: Permissions (75%) -->
-      <div class="md:col-span-8 lg:col-span-9 flex flex-col h-[calc(100vh-140px)] hidden" id="permissions-pane">
+      <div class="xl:col-span-9 flex flex-col h-[calc(100vh-140px)] min-w-0 hidden" id="permissions-pane">
         
         <div class="bg-white rounded-[16px] shadow-sm border border-outline-variant/50 flex flex-col h-full overflow-hidden relative">
             

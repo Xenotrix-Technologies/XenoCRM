@@ -974,12 +974,22 @@
             }, 5000);
         }
 
+        function triggerLayoutResize() {
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+                if (window.calendarObj && typeof window.calendarObj.updateSize === 'function') {
+                    try { window.calendarObj.updateSize(); } catch(e) {}
+                }
+            }, 260);
+        }
+
         function toggleSidebarState(event) {
             if (event) event.stopPropagation();
             if (window.innerWidth < 1024) {
                 toggleMobileSidebar();
             } else {
                 document.getElementById('app-body').classList.toggle('sidebar-collapsed');
+                triggerLayoutResize();
             }
         }
 
@@ -1011,6 +1021,7 @@
             const body = document.getElementById('app-body');
             if (window.innerWidth >= 1024 && body.classList.contains('sidebar-collapsed')) {
                 body.classList.remove('sidebar-collapsed');
+                triggerLayoutResize();
             }
 
             const menu = document.getElementById(id + '-dropdown-menu');
