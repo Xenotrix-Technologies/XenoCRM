@@ -39,16 +39,27 @@ PERM_REDIRECT_ORDER = [
 
 
 def page_permission_required(permission_name):
-    """Require a UserProfile permission property such as has_access_content_settings."""
+    """Require a UserProfile permission check."""
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
+            if request.user and request.user.is_superuser:
+                return view_func(request, *args, **kwargs)
+
             try:
                 profile = getattr(request.user, 'profile', None)
             except Exception:
                 profile = None
 
-            if profile and getattr(profile, f'has_access_{permission_name}', False):
+            has_perm = False
+            if profile:
+                perm_prop = f'has_access_{permission_name}'
+                if hasattr(profile, perm_prop):
+                    has_perm = getattr(profile, perm_prop)
+                if not has_perm:
+                    has_perm = profile.check_page_permission(permission_name)
+
+            if has_perm:
                 return view_func(request, *args, **kwargs)
 
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -58,7 +69,7 @@ def page_permission_required(permission_name):
 
             if profile:
                 for perm, target_name in PERM_REDIRECT_ORDER:
-                    if perm != permission_name and getattr(profile, f'has_access_{perm}', False):
+                    if perm != permission_name and (getattr(profile, f'has_access_{perm}', False) or profile.check_page_permission(perm)):
                         return redirect(target_name)
 
             return redirect('login')
@@ -3244,7 +3255,7 @@ def reorder_lead_statuses(request):
 
 
 @login_required
-@page_permission_required('lead_statuses')
+@page_permission_required('finance_status')
 def add_finance_method(request):
     if request.method == 'POST':
         org = request.user.profile.organization
@@ -3263,7 +3274,7 @@ def add_finance_method(request):
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 @login_required
-@page_permission_required('lead_statuses')
+@page_permission_required('finance_status')
 def edit_finance_method(request, method_id):
     if request.method == 'POST':
         org = request.user.profile.organization
@@ -3282,7 +3293,7 @@ def edit_finance_method(request, method_id):
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 @login_required
-@page_permission_required('lead_statuses')
+@page_permission_required('finance_status')
 def delete_finance_method(request, method_id):
     if request.method == 'POST':
         org = request.user.profile.organization
@@ -6217,6 +6228,19 @@ def delete_finance_category(request, cat_id):
     return JsonResponse({'success': False, 'error': 'Invalid request.'})
 
 
+CATEGORY_PERM_MAP = {
+    'leads': 'lead_statuses',
+    'clients': 'clients_status',
+    'projects': 'projects_status',
+    'campaigns': 'campaigns_status',
+    'calendar': 'calendar_status',
+    'tickets': 'support_status',
+    'support': 'support_status',
+    'priority': 'support_status',
+    'ticket_priorities': 'support_status',
+    'invoices': 'finance_status',
+}
+
 def get_dynamic_model_class(category):
     return {
         'clients': ClientStatus,
@@ -6225,13 +6249,24 @@ def get_dynamic_model_class(category):
         'calendar': CalendarStatus,
         'tickets': TicketStatus,
         'priority': PriorityStatus,
+        'ticket_priorities': PriorityStatus,
         'invoices': InvoiceStatus,
     }.get(category)
 
+def check_dynamic_status_perm(request, category):
+    if request.user and request.user.is_superuser:
+        return True
+    profile = getattr(request.user, 'profile', None)
+    if not profile:
+        return False
+    perm_name = CATEGORY_PERM_MAP.get(category, 'lead_statuses')
+    return profile.check_page_permission(perm_name) or profile.check_page_permission('leads_settings') or profile.check_page_permission('settings')
+
 @login_required
-@page_permission_required('lead_statuses')
 def add_dynamic_status(request, category):
     if request.method == 'POST':
+        if not check_dynamic_status_perm(request, category):
+            return JsonResponse({'success': False, 'error': 'You do not have permission for this action.'}, status=403)
         org = request.user.profile.organization
         model_class = get_dynamic_model_class(category)
         if not model_class:
@@ -6250,9 +6285,10 @@ def add_dynamic_status(request, category):
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 @login_required
-@page_permission_required('lead_statuses')
 def edit_dynamic_status(request, category, status_id):
     if request.method == 'POST':
+        if not check_dynamic_status_perm(request, category):
+            return JsonResponse({'success': False, 'error': 'You do not have permission for this action.'}, status=403)
         org = request.user.profile.organization
         model_class = get_dynamic_model_class(category)
         if not model_class:
@@ -6277,9 +6313,10 @@ def edit_dynamic_status(request, category, status_id):
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 @login_required
-@page_permission_required('lead_statuses')
 def delete_dynamic_status(request, category, status_id):
     if request.method == 'POST':
+        if not check_dynamic_status_perm(request, category):
+            return JsonResponse({'success': False, 'error': 'You do not have permission for this action.'}, status=403)
         org = request.user.profile.organization
         model_class = get_dynamic_model_class(category)
         if not model_class:
@@ -6301,6 +6338,8 @@ def delete_dynamic_status(request, category, status_id):
 @login_required
 def reorder_dynamic_statuses(request, category):
     if request.method == 'POST':
+        if not check_dynamic_status_perm(request, category):
+            return JsonResponse({'success': False, 'error': 'You do not have permission for this action.'}, status=403)
         import json
         org = request.user.profile.organization
         model_class = get_dynamic_model_class(category)
@@ -6319,7 +6358,6 @@ def reorder_dynamic_statuses(request, category):
     return JsonResponse({'success': False, 'error': 'Invalid request method.'})
 
 @login_required
-@page_permission_required('lead_statuses')
 def generic_status_settings_view(request, category, model_class, category_title, add_url, edit_url_prefix, delete_url_prefix, reorder_url):
     org = request.user.profile.organization
     if category == 'leads':
@@ -6348,7 +6386,7 @@ def lead_status_settings(request):
     })
 
 @login_required
-@page_permission_required('clients')
+@page_permission_required('clients_status')
 def client_status_settings(request):
     from django.urls import reverse
     return generic_status_settings_view(
@@ -6360,7 +6398,7 @@ def client_status_settings(request):
     )
 
 @login_required
-@page_permission_required('projects')
+@page_permission_required('projects_status')
 def project_status_settings(request):
     from django.urls import reverse
     return generic_status_settings_view(
@@ -6372,7 +6410,7 @@ def project_status_settings(request):
     )
 
 @login_required
-@page_permission_required('campaigns')
+@page_permission_required('campaigns_status')
 def campaign_status_settings(request):
     from django.urls import reverse
     return generic_status_settings_view(
@@ -6384,7 +6422,7 @@ def campaign_status_settings(request):
     )
 
 @login_required
-@page_permission_required('calendar')
+@page_permission_required('calendar_status')
 def calendar_status_settings(request):
     from django.urls import reverse
     return generic_status_settings_view(
@@ -6396,7 +6434,7 @@ def calendar_status_settings(request):
     )
 
 @login_required
-@page_permission_required('support')
+@page_permission_required('support_status')
 def ticket_status_settings(request):
     org = request.user.profile.organization
     statuses = TicketStatus.objects.filter(organization=org)
@@ -6408,7 +6446,7 @@ def ticket_status_settings(request):
     })
 
 @login_required
-@page_permission_required('support')
+@page_permission_required('support_status')
 def priority_status_settings(request):
     from django.urls import reverse
     return generic_status_settings_view(
