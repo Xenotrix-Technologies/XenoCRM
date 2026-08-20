@@ -15,11 +15,11 @@
 {% block content %}
 <div class="py-6 px-4 sm:px-6 lg:px-8 w-full max-w-7xl mx-auto space-y-6 min-h-screen">
     <!-- Page Header / Breadcrumbs -->
-    <h2 class="text-xl font-bold flex items-center text-slate-900 mb-4">
-        <a href="{% url 'clients' %}" class="text-slate-500 hover:text-brand-600 transition-colors text-xs font-semibold">Clients</a>
-        <span class="material-symbols-outlined mx-2 text-slate-400 text-xs">chevron_right</span>
-        <span class="text-brand-600 font-bold text-xs">Client Contact Profile</span>
-    </h2>
+    <div class="flex items-center gap-2 mb-4 text-xs font-semibold text-slate-500">
+        <a href="{% url 'clients' %}" class="hover:text-brand-600 transition-colors">Clients</a>
+        <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+        <span class="text-brand-600 font-bold">Contact Profile</span>
+    </div>
 
     <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start min-w-0">
         <!-- Left Column: Main Profile & Content -->
