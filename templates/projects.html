@@ -1419,6 +1419,7 @@
 
     // Developer Chat JS Logic
     let activeChatTaskId = null;
+    let chatPollInterval = null;
 
     function selectChatProject(taskId) {
         if (!taskId) return;
@@ -1435,20 +1436,31 @@
             activeBtn.classList.add('bg-blue-50/80', 'border-blue-200', 'text-blue-900', 'shadow-xs');
         }
 
-        loadChatMessages(taskId);
+        loadChatMessages(taskId, false);
+
+        if (chatPollInterval) clearInterval(chatPollInterval);
+        chatPollInterval = setInterval(() => {
+            if (activeChatTaskId && !document.hidden) {
+                loadChatMessages(activeChatTaskId, true);
+            }
+        }, 3000);
     }
 
-    function loadChatMessages(taskId) {
+    function loadChatMessages(taskId, isPoll = false) {
         const container = document.getElementById('chat-messages-container');
         if (!container) return;
 
-        container.innerHTML = '<div class="text-center py-12 text-slate-400 text-xs italic">Loading developer discussion...</div>';
+        if (!isPoll) {
+            container.innerHTML = '<div class="text-center py-12 text-slate-400 text-xs italic">Loading developer discussion...</div>';
+        }
 
         fetch(`/task/${taskId}/comments/`)
             .then(res => res.json())
             .then(data => {
                 if (!data.success) {
-                    container.innerHTML = `<div class="text-center py-12 text-rose-500 text-xs">${data.error || 'Failed to load comments.'}</div>`;
+                    if (!isPoll) {
+                        container.innerHTML = `<div class="text-center py-12 text-rose-500 text-xs">${data.error || 'Failed to load comments.'}</div>`;
+                    }
                     return;
                 }
 
@@ -1515,12 +1527,18 @@
                         </div>`;
                     }
                 });
+                
+                const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
                 container.innerHTML = html;
-                container.scrollTop = container.scrollHeight;
+                if (!isPoll || isAtBottom) {
+                    container.scrollTop = container.scrollHeight;
+                }
             })
             .catch(err => {
                 console.error(err);
-                container.innerHTML = '<div class="text-center py-12 text-rose-500 text-xs">Error loading discussion thread.</div>';
+                if (!isPoll) {
+                    container.innerHTML = '<div class="text-center py-12 text-rose-500 text-xs">Error loading discussion thread.</div>';
+                }
             });
     }
 
@@ -1549,7 +1567,7 @@
         .then(data => {
             if (data.success) {
                 input.value = '';
-                loadChatMessages(activeChatTaskId);
+                loadChatMessages(activeChatTaskId, false);
             } else {
                 alert(data.error || 'Failed to send message.');
             }
