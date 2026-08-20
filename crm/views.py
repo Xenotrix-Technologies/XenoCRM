@@ -2073,6 +2073,35 @@ def add_task_comment(request, task_id):
         user_name = request.user.get_full_name() or request.user.username
         initials = (user_name[:2]).upper()
 
+        # Log Activity if task has associated lead
+        if task.lead:
+            Activity.objects.create(
+                lead=task.lead,
+                type='Task',
+                description=f"{user_name} posted a message on '{task.title}': {msg[:80]}"
+            )
+
+        # Notify assigned team members, lead owner, and organization staff
+        notify_users = set()
+        for assignee in task.assignees.all():
+            if assignee.user and assignee.user != request.user:
+                notify_users.add(assignee.user)
+
+        if task.lead and task.lead.owner and task.lead.owner.user and task.lead.owner.user != request.user:
+            notify_users.add(task.lead.owner.user)
+
+        for member in org.members.all():
+            if member.user and member.user != request.user and member.user not in notify_users:
+                notify_users.add(member.user)
+
+        preview_msg = msg[:70] + ('...' if len(msg) > 70 else '')
+        for u in notify_users:
+            SystemNotification.objects.create(
+                user=u,
+                message=f"[{task.title}] {user_name}: \"{preview_msg}\"",
+                type='info'
+            )
+
         return JsonResponse({
             'success': True,
             'comment': {
